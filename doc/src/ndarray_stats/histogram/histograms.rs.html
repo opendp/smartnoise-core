@@ -173,7 +173,7 @@
     <span class="doccomment">/// Returns a new instance of Histogram given a [`Grid`].</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`Grid`]: struct.Grid.html</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">grid</span>: <span class="ident">Grid</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">grid</span>: <span class="ident">Grid</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">counts</span> <span class="op">=</span> <span class="ident">ArrayD</span>::<span class="ident">zeros</span>(<span class="ident">grid</span>.<span class="ident">shape</span>());
         <span class="ident">Histogram</span> { <span class="ident">counts</span>, <span class="ident">grid</span> }
     }
@@ -205,32 +205,32 @@
     <span class="doccomment">/// assert_eq!(histogram_matrix, expected.into_dyn());</span>
     <span class="doccomment">/// # Ok::&lt;(), Box&lt;std::error::Error&gt;&gt;(())</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_observation</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">observation</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">BinNotFound</span><span class="op">&gt;</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_observation</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">observation</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">BinNotFound</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
     {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">grid</span>.<span class="ident">index_of</span>(<span class="ident">observation</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">bin_index</span>) <span class="op">=&gt;</span> {
-                <span class="self">self</span>.<span class="ident">counts</span>[<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">bin_index</span>] <span class="op">+=</span> <span class="number">1</span>;
+            <span class="prelude-val">Some</span>(<span class="ident">bin_index</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="self">self</span>.<span class="ident">counts</span>[<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">bin_index</span>] <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                 <span class="prelude-val">Ok</span>(())
             }
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">BinNotFound</span>),
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">BinNotFound</span>),
         }
     }
 
     <span class="doccomment">/// Returns the number of dimensions of the space the histogram is covering.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ndim</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ndim</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="macro">debug_assert_eq</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">counts</span>.<span class="ident">ndim</span>(), <span class="self">self</span>.<span class="ident">grid</span>.<span class="ident">ndim</span>());
         <span class="self">self</span>.<span class="ident">counts</span>.<span class="ident">ndim</span>()
     }
 
     <span class="doccomment">/// Borrows a view on the histogram counts matrix.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">counts</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">ArrayViewD</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">counts</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArrayViewD</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">usize</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">counts</span>.<span class="ident">view</span>()
     }
 
     <span class="doccomment">/// Borrows an immutable reference to the histogram grid.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">grid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Grid</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">grid</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Grid</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">grid</span>
     }
 }
@@ -294,7 +294,7 @@
     <span class="doccomment">/// ];</span>
     <span class="doccomment">/// assert_eq!(histogram_matrix, expected.into_dyn());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">histogram</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">grid</span>: <span class="ident">Grid</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Histogram</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">histogram</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">grid</span>: <span class="ident">Grid</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Histogram</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">A</span>: <span class="ident">Ord</span>;
 
@@ -306,7 +306,7 @@
     <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
     <span class="ident">A</span>: <span class="ident">Ord</span>,
 {
-    <span class="kw">fn</span> <span class="ident">histogram</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">grid</span>: <span class="ident">Grid</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Histogram</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">histogram</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">grid</span>: <span class="ident">Grid</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Histogram</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">histogram</span> <span class="op">=</span> <span class="ident">Histogram</span>::<span class="ident">new</span>(<span class="ident">grid</span>);
         <span class="kw">for</span> <span class="ident">point</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">axis_iter</span>(<span class="ident">Axis</span>(<span class="number">0</span>)) {
             <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">histogram</span>.<span class="ident">add_observation</span>(<span class="kw-2">&amp;</span><span class="ident">point</span>);

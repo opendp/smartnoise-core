@@ -538,12 +538,12 @@
 
 <span class="kw">fn</span> <span class="ident">compute_batch_privacy_usage</span>(
     <span class="ident">privacy_usages</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span>
-) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span> {
     <span class="comment">// TODO: insert advanced composition here</span>
     <span class="comment">//    This is just linear composition</span>
     <span class="ident">privacy_usages</span>.<span class="ident">into_iter</span>().<span class="ident">cloned</span>().<span class="ident">map</span>(<span class="prelude-val">Ok</span>)
         .<span class="ident">fold1</span>(<span class="op">|</span><span class="ident">l</span>, <span class="ident">r</span><span class="op">|</span> <span class="ident">l</span><span class="question-mark">?</span> <span class="op">+</span> <span class="ident">r</span><span class="question-mark">?</span>)
-        .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="prelude-val">Ok</span>(<span class="ident">proto</span>::<span class="ident">PrivacyUsage</span> {
+        .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="ident">proto</span>::<span class="ident">PrivacyUsage</span> {
             <span class="ident">distance</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">Distance</span>::<span class="ident">Approximate</span>(<span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">DistanceApproximate</span> {
                 <span class="ident">epsilon</span>: <span class="number">0.</span>,
                 <span class="ident">delta</span>: <span class="number">0.</span>,
@@ -558,11 +558,11 @@
 <span class="doccomment">///     The partition ids are returned as a second argument.</span>
 <span class="kw">fn</span> <span class="ident">batch_partition</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(
     <span class="ident">graph</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;</span>,
-    <span class="ident">privacy_usages</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;&gt;</span>,
-) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">BatchIdentifier</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;&gt;</span>, <span class="ident">PartitionIds</span>)<span class="op">&gt;</span> {
+    <span class="ident">privacy_usages</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">BatchIdentifier</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">PartitionIds</span>)<span class="op">&gt;</span> {
 
     <span class="comment">// contains the subgraph for each submission id</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">submissions</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;&gt;</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">submissions</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 
     <span class="comment">// populate/create the submissions partitioning</span>
     <span class="ident">graph</span>.<span class="ident">iter</span>()
@@ -575,7 +575,7 @@
 
     <span class="comment">// each batch is identified by the (submission_id, dependency_id),</span>
     <span class="comment">//    where the dependency_id is the maximum number of releases prior to a node id in the batch</span>
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">batches</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="op">&lt;</span><span class="ident">BatchIdentifier</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;&gt;</span>::<span class="ident">new</span>();
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">batches</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="op">&lt;</span><span class="ident">BatchIdentifier</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">new</span>();
 
     <span class="comment">// node ids of partitions - these will require special treatment, and are not yet counted</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">partition_ids</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
@@ -604,7 +604,7 @@
                     <span class="ident">parents</span>.<span class="ident">get</span>(<span class="ident">id</span>).<span class="ident">cloned</span>().<span class="ident">unwrap_or_else</span>(<span class="ident">HashSet</span>::<span class="ident">new</span>)
                 })
                 .<span class="ident">flatten</span>()
-                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;&gt;</span>();
+                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
             <span class="comment">// consume the entire graph after the partition node</span>
             <span class="kw">while</span> <span class="op">!</span><span class="ident">blacklist_traversal</span>.<span class="ident">is_empty</span>() {
@@ -612,13 +612,13 @@
                 <span class="ident">blacklist</span>.<span class="ident">insert</span>(<span class="ident">node_id</span>);
 
                 <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">graph</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">node_id</span>) {
-                    <span class="prelude-val">Some</span>(<span class="ident">component</span>) <span class="op">=&gt;</span> <span class="ident">component</span>,
-                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">continue</span>
+                    <span class="prelude-val">Some</span>(<span class="ident">component</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">component</span>,
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">continue</span>
                 };
 
                 <span class="comment">// only keep the first layer of partitions in the returned partition set</span>
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">Partition</span>(<span class="kw">_</span>)) <span class="op">=</span> <span class="ident">component</span>.<span class="ident">variant</span> {
-                    <span class="ident">partition_ids</span>.<span class="ident">retain</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span> <span class="op">!=</span> <span class="kw-2">&amp;</span><span class="ident">node_id</span>);
+                    <span class="ident">partition_ids</span>.<span class="ident">retain</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span> <span class="op">!</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">node_id</span>);
                 }
 
                 <span class="ident">component</span>.<span class="ident">arguments</span>().<span class="ident">values</span>()
@@ -638,11 +638,11 @@
                 .<span class="ident">filter</span>(<span class="op">|</span>(<span class="ident">id</span>, <span class="ident">component</span>)<span class="op">|</span>
                     <span class="op">!</span><span class="ident">blacklist</span>.<span class="ident">contains</span>(<span class="ident">id</span>) <span class="op">&amp;&amp;</span> <span class="ident">component</span>.<span class="ident">arguments</span>().<span class="ident">values</span>()
                         .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">id</span><span class="op">|</span> <span class="ident">subgraph</span>.<span class="ident">contains_key</span>(<span class="ident">id</span>))
-                        .<span class="ident">count</span>() <span class="op">==</span> <span class="number">0</span>
+                        .<span class="ident">count</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span>
                 )
                 <span class="comment">// (node_id, dependency_id)</span>
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">id</span>, <span class="kw">_</span>)<span class="op">|</span> (<span class="kw-2">*</span><span class="ident">id</span>, <span class="number">0</span>))
-                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BatchIdentifier</span><span class="op">&gt;&gt;</span>();
+                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BatchIdentifier</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
             <span class="comment">// determine how many releases are necessary to reach each node id in the submission</span>
             <span class="kw">while</span> <span class="op">!</span><span class="ident">traversal</span>.<span class="ident">is_empty</span>() {
@@ -663,7 +663,7 @@
 
                 <span class="comment">// split parents into new batch anytime privacy is used</span>
                 <span class="kw">if</span> <span class="ident">privacy_usages</span>.<span class="ident">contains_key</span>(<span class="kw-2">&amp;</span><span class="ident">node_id</span>) {
-                    <span class="ident">dependency_id</span> <span class="op">+=</span> <span class="number">1</span>;
+                    <span class="ident">dependency_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                 }
 
                 <span class="comment">// add all parents to the traversal, with the number of releases needed to reach this point</span>
@@ -673,7 +673,7 @@
             }
 
             <span class="comment">// use the dependency structure discovered in the traversal to enumerate the batches present in this submission</span>
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dependency_batches</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;&gt;</span>::<span class="ident">new</span>();
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">dependency_batches</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">new</span>();
             <span class="ident">dependency_ids</span>.<span class="ident">iter</span>()
                 .<span class="ident">for_each</span>(<span class="op">|</span>(<span class="ident">node_id</span>, <span class="ident">dependency_id</span>)<span class="op">|</span> {
                     <span class="ident">dependency_batches</span>.<span class="ident">entry</span>(<span class="kw-2">*</span><span class="ident">dependency_id</span>)
@@ -687,7 +687,7 @@
                 <span class="ident">batches</span>.<span class="ident">insert</span>((<span class="ident">submission_id</span>, <span class="ident">dependency_id</span>), <span class="ident">batch_values</span>.<span class="ident">iter</span>()
                     .<span class="ident">map</span>(<span class="op">|</span><span class="ident">node_id</span><span class="op">|</span> <span class="ident">privacy_usages</span>.<span class="ident">get</span>(<span class="ident">node_id</span>))
                     .<span class="ident">flatten</span>().<span class="ident">flatten</span>()
-                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;&gt;</span>());
+                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span><span class="op">&gt;</span>());
             });
             <span class="prelude-val">Ok</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span>(())
         })<span class="question-mark">?</span>;
@@ -703,7 +703,7 @@
     <span class="ident">privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
     <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">ValueProperties</span><span class="op">&gt;</span>,
     <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="ident">Release</span>,
-) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span> {
 
     <span class="comment">// compute the privacy usage for every node in the graph</span>
     <span class="comment">//    include updated privacy usages for nodes that have already been released and may have actually consumed a different amount</span>
@@ -714,9 +714,9 @@
                 .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">privacy_usages</span>.<span class="ident">as_ref</span>()),
             <span class="kw-2">&amp;</span><span class="ident">get_input_properties</span>(<span class="ident">component</span>, <span class="kw-2">&amp;</span><span class="ident">properties</span>)<span class="question-mark">?</span>)<span class="question-mark">?</span>))
         )
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">u32</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;&gt;</span>)<span class="op">&gt;&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">u32</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span><span class="op">&gt;</span>)<span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>
         .<span class="ident">into_iter</span>().<span class="ident">filter_map</span>(<span class="op">|</span>(<span class="ident">node_id</span>, <span class="ident">usages</span>)<span class="op">|</span> <span class="prelude-val">Some</span>((<span class="ident">node_id</span>, <span class="ident">usages</span><span class="question-mark">?</span>)))
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>();
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
     <span class="comment">// for any node id in the submission, list all nodes that use it</span>
     <span class="kw">let</span> <span class="ident">dependent_edges</span> <span class="op">=</span> <span class="ident">get_dependents</span>(<span class="ident">graph</span>);
@@ -726,7 +726,7 @@
     <span class="comment">//     also return the node ids of partitions, as parallel composition needs to be applied to its dependents</span>
     <span class="kw">let</span> (<span class="ident">batches</span>, <span class="ident">partition_ids</span>) <span class="op">=</span> <span class="ident">batch_partition</span>(<span class="ident">graph</span>, <span class="kw-2">&amp;</span><span class="ident">release_privacy_usages</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">let</span> <span class="ident">zero_usage</span> <span class="op">=</span> <span class="op">||</span> <span class="ident">proto</span>::<span class="ident">PrivacyUsage</span> {
+    <span class="kw">let</span> <span class="ident">zero_usage</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> <span class="ident">proto</span>::<span class="ident">PrivacyUsage</span> {
         <span class="ident">distance</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">Distance</span>::<span class="ident">Approximate</span>(<span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">DistanceApproximate</span> {
             <span class="ident">epsilon</span>: <span class="number">0.0</span>,
             <span class="ident">delta</span>: <span class="number">0.0</span>,
@@ -736,10 +736,10 @@
     <span class="comment">// get all node ids that are indexed by a specific category</span>
     <span class="kw">let</span> <span class="ident">get_category_indexes</span> <span class="op">=</span> <span class="op">|</span>
         <span class="ident">category</span>: <span class="ident">IndexKey</span>, <span class="ident">partition_id</span>: <span class="ident">u32</span>,
-    <span class="op">|</span> <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;&gt;</span> {
+    <span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">dependents</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">dependent_edges</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">partition_id</span>) {
-            <span class="prelude-val">Some</span>(<span class="ident">dependents</span>) <span class="op">=&gt;</span> <span class="ident">dependents</span>,
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="macro">vec</span><span class="macro">!</span>[])
+            <span class="prelude-val">Some</span>(<span class="ident">dependents</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">dependents</span>,
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="macro">vec</span><span class="macro">!</span>[])
         };
         <span class="comment">// for each node that uses the partition...</span>
         <span class="prelude-val">Ok</span>(<span class="ident">dependents</span>.<span class="ident">iter</span>()
@@ -748,11 +748,11 @@
                 <span class="comment">// if an index, only keep the index if the partition name (category) is the same as the category (passed in the signature)</span>
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">Index</span>(<span class="kw">_</span>)) <span class="op">=</span> <span class="ident">node</span>.<span class="ident">variant</span> {
                     <span class="kw">let</span> <span class="ident">node_id</span> <span class="op">=</span> <span class="ident">node</span>.<span class="ident">arguments</span>().<span class="ident">remove</span>(<span class="kw-2">&amp;</span><span class="ident">IndexKey</span>::<span class="ident">from</span>(<span class="string">&quot;names&quot;</span>))
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;names argument must be specified on an index into partitions&quot;</span>)<span class="question-mark">?</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;names argument must be specified on an index into partitions&quot;</span>)<span class="question-mark">?</span>;
                     <span class="prelude-val">Ok</span>((
                         <span class="kw-2">*</span><span class="ident">index_id</span>,
-                        <span class="ident">category</span> <span class="op">==</span> <span class="ident">IndexKey</span>::<span class="ident">new</span>(<span class="ident">release</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">node_id</span>)
-                            .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;names value must be defined&quot;</span>)<span class="question-mark">?</span>.<span class="ident">value</span>.<span class="ident">clone</span>().<span class="ident">array</span>()<span class="question-mark">?</span>)<span class="question-mark">?</span>
+                        <span class="ident">category</span> <span class="op">=</span><span class="op">=</span> <span class="ident">IndexKey</span>::<span class="ident">new</span>(<span class="ident">release</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">node_id</span>)
+                            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;names value must be defined&quot;</span>)<span class="question-mark">?</span>.<span class="ident">value</span>.<span class="ident">clone</span>().<span class="ident">array</span>()<span class="question-mark">?</span>)<span class="question-mark">?</span>
                     ))
                 }
                 <span class="comment">// if a union, always keep it- the output of the union will always contain data from the partition</span>
@@ -764,17 +764,17 @@
             })
 
             <span class="comment">// return if an error was encountered</span>
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">u32</span>, <span class="ident">bool</span>)<span class="op">&gt;&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>.<span class="ident">iter</span>()
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">u32</span>, <span class="ident">bool</span>)<span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>.<span class="ident">iter</span>()
 
             <span class="comment">// collect the index ids of the indexes whose category matched the category in the signature</span>
             .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">pair</span><span class="op">|</span> <span class="ident">pair</span>.<span class="number">1</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">pair</span><span class="op">|</span> <span class="ident">pair</span>.<span class="number">0</span>)
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;&gt;</span>())
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span><span class="op">&gt;</span>())
     };
 
     <span class="comment">// get all node ids that are dependents of a specific node_id</span>
     <span class="kw">let</span> <span class="ident">get_downstream_ids</span> <span class="op">=</span> <span class="op">|</span>
         <span class="ident">category</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>, <span class="ident">node_id</span>: <span class="ident">u32</span>
-    <span class="op">|</span> <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;&gt;</span> {
+    <span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">downstream_ids</span> <span class="op">=</span> <span class="ident">HashSet</span>::<span class="ident">new</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">traversal</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">node_id</span>];
         <span class="kw">while</span> <span class="op">!</span><span class="ident">traversal</span>.<span class="ident">is_empty</span>() {
@@ -803,25 +803,25 @@
     <span class="comment">// get the subset of a graph downstream of a specific node id</span>
     <span class="kw">let</span> <span class="ident">get_downstream_graph</span> <span class="op">=</span> <span class="op">|</span>
         <span class="ident">category</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>, <span class="ident">node_id</span>: <span class="ident">u32</span>
-    <span class="op">|</span> <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;&gt;</span> {
+    <span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">get_downstream_ids</span>(<span class="ident">category</span>, <span class="ident">node_id</span>)<span class="question-mark">?</span>.<span class="ident">iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">node_id</span><span class="op">|</span> (<span class="kw-2">*</span><span class="ident">node_id</span>, <span class="ident">graph</span>.<span class="ident">get</span>(<span class="ident">node_id</span>).<span class="ident">unwrap</span>().<span class="ident">clone</span>()))
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;&gt;</span>())
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;</span><span class="op">&gt;</span>())
     };
 
     <span class="comment">// return the max of the left and right privacy usages</span>
-    <span class="kw">let</span> <span class="ident">max_usage</span> <span class="op">=</span> <span class="op">|</span><span class="ident">l</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span>, <span class="ident">r</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span><span class="op">|</span> <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">max_usage</span> <span class="op">=</span> <span class="op">|</span><span class="ident">l</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span>, <span class="ident">r</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">DistanceApproximate</span> {
             <span class="ident">epsilon</span>: <span class="ident">eps_l</span>, <span class="ident">delta</span>: <span class="ident">del_l</span>
         } <span class="op">=</span> <span class="kw">match</span> <span class="ident">l</span><span class="question-mark">?</span>.<span class="ident">distance</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">Distance</span>::<span class="ident">Approximate</span>(<span class="ident">x</span>)) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>),
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;expected approximate privacy&quot;</span>)
+            <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">Distance</span>::<span class="ident">Approximate</span>(<span class="ident">x</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;expected approximate privacy&quot;</span>)
         }<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">DistanceApproximate</span> {
             <span class="ident">epsilon</span>: <span class="ident">eps_r</span>, <span class="ident">delta</span>: <span class="ident">del_r</span>
         } <span class="op">=</span> <span class="kw">match</span> <span class="ident">r</span><span class="question-mark">?</span>.<span class="ident">distance</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">Distance</span>::<span class="ident">Approximate</span>(<span class="ident">x</span>)) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>),
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;expected approximate privacy&quot;</span>)
+            <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">Distance</span>::<span class="ident">Approximate</span>(<span class="ident">x</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">x</span>),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;expected approximate privacy&quot;</span>)
         }<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(<span class="ident">proto</span>::<span class="ident">PrivacyUsage</span> {
@@ -836,13 +836,13 @@
     <span class="comment">//     where the subset is indicated by a collection of node ids</span>
     <span class="kw">let</span> <span class="ident">compute_all_partitions_usage</span> <span class="op">=</span> <span class="op">|</span>
         <span class="ident">partition_ids</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>
-    <span class="op">|</span> <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span> {
+    <span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span> {
         <span class="ident">partition_ids</span>.<span class="ident">iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">partition_id</span><span class="op">|</span> <span class="ident">compute_graph_privacy_usage</span>(
                 <span class="kw-2">&amp;</span><span class="ident">get_downstream_graph</span>(<span class="prelude-val">None</span>, <span class="kw-2">*</span><span class="ident">partition_id</span>)<span class="question-mark">?</span>,
                 <span class="ident">privacy_definition</span>, <span class="ident">properties</span>, <span class="ident">release</span>))
             .<span class="ident">fold1</span>(<span class="ident">max_usage</span>)
-            .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="prelude-val">Ok</span>(<span class="ident">zero_usage</span>()))
+            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="ident">zero_usage</span>()))
     };
 
     <span class="comment">// compute the overall privacy usage</span>
@@ -850,7 +850,7 @@
         <span class="comment">// for each partition component...</span>
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">partition_node_id</span><span class="op">|</span> {
             <span class="kw">let</span> <span class="ident">partition_properties</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">partition_node_id</span>)
-                .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;partition properties must be defined&quot;</span>)<span class="question-mark">?</span>;
+                .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;partition properties must be defined&quot;</span>)<span class="question-mark">?</span>;
 
             <span class="ident">partition_properties</span>.<span class="ident">partitions</span>()<span class="question-mark">?</span>.<span class="ident">children</span>.<span class="ident">keys</span>()
                 <span class="comment">// for each category/part in the partition...</span>
@@ -858,28 +858,28 @@
                     <span class="kw">let</span> <span class="ident">unioned_downstream_graph</span> <span class="op">=</span> <span class="ident">get_category_indexes</span>(<span class="ident">category</span>.<span class="ident">clone</span>(), <span class="ident">partition_node_id</span>)<span class="question-mark">?</span>.<span class="ident">iter</span>()
                         <span class="comment">// for each index into the category...</span>
                         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">index_id</span><span class="op">|</span> <span class="ident">get_downstream_graph</span>(<span class="prelude-val">Some</span>(<span class="ident">category</span>.<span class="ident">clone</span>()), <span class="kw-2">*</span><span class="ident">index_id</span>))
-                        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>.<span class="ident">into_iter</span>().<span class="ident">flatten</span>()
-                        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;&gt;</span>();
+                        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>.<span class="ident">into_iter</span>().<span class="ident">flatten</span>()
+                        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">Component</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
                     <span class="kw">let</span> (<span class="ident">batches</span>, <span class="ident">partition_ids</span>) <span class="op">=</span> <span class="ident">batch_partition</span>(
                         <span class="kw-2">&amp;</span><span class="ident">unioned_downstream_graph</span>, <span class="kw-2">&amp;</span><span class="ident">release_privacy_usages</span>)<span class="question-mark">?</span>;
                     <span class="kw">let</span> <span class="ident">batch_usages</span> <span class="op">=</span> <span class="ident">batches</span>.<span class="ident">into_iter</span>()
                         .<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">batch</span>)<span class="op">|</span> <span class="ident">compute_batch_privacy_usage</span>(<span class="ident">batch</span>))
                         .<span class="ident">fold1</span>(<span class="op">|</span><span class="ident">l</span>, <span class="ident">r</span><span class="op">|</span> <span class="ident">l</span><span class="question-mark">?</span> <span class="op">+</span> <span class="ident">r</span><span class="question-mark">?</span>)
-                        .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="prelude-val">Ok</span>(<span class="ident">zero_usage</span>()))<span class="question-mark">?</span>;
+                        .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="ident">zero_usage</span>()))<span class="question-mark">?</span>;
 
                     <span class="ident">batch_usages</span> <span class="op">+</span> <span class="ident">compute_all_partitions_usage</span>(<span class="ident">partition_ids</span>)<span class="question-mark">?</span>
                 })
                 .<span class="ident">fold1</span>(<span class="ident">max_usage</span>)
-                .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="prelude-val">Ok</span>(<span class="ident">zero_usage</span>()))
+                .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="ident">zero_usage</span>()))
         })
         .<span class="ident">fold1</span>(<span class="op">|</span><span class="ident">l</span>, <span class="ident">r</span><span class="op">|</span> <span class="ident">l</span><span class="question-mark">?</span> <span class="op">+</span> <span class="ident">r</span><span class="question-mark">?</span>)
-        .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="prelude-val">Ok</span>(<span class="ident">zero_usage</span>()))<span class="question-mark">?</span>;
+        .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="ident">zero_usage</span>()))<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">batch_usages</span> <span class="op">=</span> <span class="ident">batches</span>.<span class="ident">into_iter</span>()
         .<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">batch</span>)<span class="op">|</span> <span class="ident">compute_batch_privacy_usage</span>(<span class="ident">batch</span>))
         .<span class="ident">fold1</span>(<span class="op">|</span><span class="ident">l</span>, <span class="ident">r</span><span class="op">|</span> <span class="ident">l</span><span class="question-mark">?</span> <span class="op">+</span> <span class="ident">r</span><span class="question-mark">?</span>)
-        .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="prelude-val">Ok</span>(<span class="ident">zero_usage</span>()))<span class="question-mark">?</span>;
+        .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="ident">zero_usage</span>()))<span class="question-mark">?</span>;
 
     <span class="ident">batch_usages</span> <span class="op">+</span> <span class="ident">partitions_usage</span>
 }
@@ -906,13 +906,13 @@
     <span class="ident">privacy_usage</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span>,
     <span class="ident">num_records</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>,
     <span class="ident">strict_delta_check</span>: <span class="ident">bool</span>,
-) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;&gt;</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">warnings</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
 
     <span class="kw">match</span> <span class="ident">privacy_usage</span>.<span class="ident">distance</span>
-        .<span class="ident">as_ref</span>().<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;usage distance must be defined&quot;</span>)<span class="question-mark">?</span> {
-        <span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">Distance</span>::<span class="ident">Approximate</span>(<span class="ident">usage</span>) <span class="op">=&gt;</span> {
-            <span class="kw">if</span> <span class="ident">usage</span>.<span class="ident">epsilon</span> <span class="op">&lt;=</span> <span class="number">0.0</span> {
+        .<span class="ident">as_ref</span>().<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;usage distance must be defined&quot;</span>)<span class="question-mark">?</span> {
+        <span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">Distance</span>::<span class="ident">Approximate</span>(<span class="ident">usage</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="kw">if</span> <span class="ident">usage</span>.<span class="ident">epsilon</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;epsilon: privacy parameter epsilon must be greater than 0&quot;</span>.<span class="ident">into</span>());
             }
 
@@ -921,15 +921,15 @@
             }
 
             <span class="kw">match</span> <span class="ident">usage</span>.<span class="ident">delta</span>.<span class="ident">partial_cmp</span>(<span class="kw-2">&amp;</span><span class="number">0.0</span>)
-                .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;delta: must not be null&quot;</span>))<span class="question-mark">?</span> {
-                <span class="ident">Ordering</span>::<span class="ident">Less</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;delta: privacy parameter may not be less than 0&quot;</span>.<span class="ident">into</span>()),
-                <span class="ident">Ordering</span>::<span class="ident">Equal</span> <span class="op">=&gt;</span> (),
-                <span class="ident">Ordering</span>::<span class="ident">Greater</span> <span class="op">=&gt;</span> {
-                    <span class="kw">if</span> <span class="ident">usage</span>.<span class="ident">delta</span> <span class="op">&gt;=</span> <span class="number">1.0</span> {
+                .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;delta: must not be null&quot;</span>))<span class="question-mark">?</span> {
+                <span class="ident">Ordering</span>::<span class="ident">Less</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;delta: privacy parameter may not be less than 0&quot;</span>.<span class="ident">into</span>()),
+                <span class="ident">Ordering</span>::<span class="ident">Equal</span> <span class="op">=</span><span class="op">&gt;</span> (),
+                <span class="ident">Ordering</span>::<span class="ident">Greater</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="kw">if</span> <span class="ident">usage</span>.<span class="ident">delta</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">1.0</span> {
                         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;delta: must be smaller than one&quot;</span>.<span class="ident">into</span>());
                     }
                     <span class="kw">match</span> <span class="ident">num_records</span> {
-                        <span class="prelude-val">Some</span>(<span class="ident">num_records</span>) <span class="op">=&gt;</span> {
+                        <span class="prelude-val">Some</span>(<span class="ident">num_records</span>) <span class="op">=</span><span class="op">&gt;</span> {
                             <span class="kw">if</span> <span class="ident">usage</span>.<span class="ident">delta</span> <span class="op">*</span> <span class="ident">num_records</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">&gt;</span> <span class="number">1.0</span> {
                                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;delta: a value greater than 1 / num_records is not differentially private&quot;</span>.<span class="ident">into</span>());
                             }
@@ -938,7 +938,7 @@
                                 <span class="ident">warnings</span>.<span class="ident">push</span>(<span class="string">&quot;delta: a value greater than 1 / num_records^2 exposes individuals to significant risk&quot;</span>.<span class="ident">into</span>());
                             }
                         }
-                        <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
+                        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
                             <span class="kw">let</span> <span class="ident">message</span> <span class="op">=</span> <span class="string">&quot;delta: the number of records must be known to check if delta is a value that satisfies differential privacy&quot;</span>;
                             <span class="kw">if</span> <span class="ident">strict_delta_check</span> {
                                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">message</span>.<span class="ident">into</span>());
@@ -954,29 +954,29 @@
     <span class="prelude-val">Ok</span>(<span class="ident">warnings</span>)
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_epsilon</span>(<span class="ident">usage</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_epsilon</span>(<span class="ident">usage</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
     <span class="kw">match</span> <span class="ident">usage</span>.<span class="ident">distance</span>.<span class="ident">clone</span>()
-        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;distance must be defined on a PrivacyUsage&quot;</span>))<span class="question-mark">?</span> {
-        <span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">Distance</span>::<span class="ident">Approximate</span>(<span class="ident">distance</span>) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">distance</span>.<span class="ident">epsilon</span>),
+        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;distance must be defined on a PrivacyUsage&quot;</span>))<span class="question-mark">?</span> {
+        <span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">Distance</span>::<span class="ident">Approximate</span>(<span class="ident">distance</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">distance</span>.<span class="ident">epsilon</span>),
 <span class="comment">//        _ =&gt; Err(&quot;epsilon is not defined&quot;.into())</span>
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_delta</span>(<span class="ident">usage</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_delta</span>(<span class="ident">usage</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
     <span class="kw">match</span> <span class="ident">usage</span>.<span class="ident">distance</span>.<span class="ident">clone</span>()
-        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;distance must be defined on a PrivacyUsage&quot;</span>))<span class="question-mark">?</span> {
-        <span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">Distance</span>::<span class="ident">Approximate</span>(<span class="ident">distance</span>) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">distance</span>.<span class="ident">delta</span>),
+        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;distance must be defined on a PrivacyUsage&quot;</span>))<span class="question-mark">?</span> {
+        <span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">Distance</span>::<span class="ident">Approximate</span>(<span class="ident">distance</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">distance</span>.<span class="ident">delta</span>),
         <span class="comment">// _ =&gt; Err(&quot;delta is not defined&quot;.into())</span>
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">spread_privacy_usage</span>(<span class="ident">usages</span>: <span class="kw-2">&amp;</span>[<span class="ident">proto</span>::<span class="ident">PrivacyUsage</span>], <span class="ident">length</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;&gt;</span> {
-    <span class="kw">if</span> <span class="ident">usages</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="ident">length</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">spread_privacy_usage</span>(<span class="ident">usages</span>: <span class="kw-2">&amp;</span>[<span class="ident">proto</span>::<span class="ident">PrivacyUsage</span>], <span class="ident">length</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">if</span> <span class="ident">usages</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">length</span> {
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">usages</span>.<span class="ident">to_owned</span>());
     }
 
-    <span class="kw">if</span> <span class="ident">usages</span>.<span class="ident">len</span>() <span class="op">!=</span> <span class="number">1</span> {
-        <span class="kw">if</span> <span class="ident">length</span> <span class="op">!=</span> <span class="number">1</span> {
+    <span class="kw">if</span> <span class="ident">usages</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="number">1</span> {
+        <span class="kw">if</span> <span class="ident">length</span> <span class="op">!</span><span class="op">=</span> <span class="number">1</span> {
             <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;{} privacy parameters passed when either 1 or {} was required&quot;</span>, <span class="ident">usages</span>.<span class="ident">len</span>(), <span class="ident">length</span>);
         } <span class="kw">else</span> {
             <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;{} privacy parameters passed when one was required&quot;</span>, <span class="ident">usages</span>.<span class="ident">len</span>());
@@ -984,7 +984,7 @@
     }
 
     <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">usages</span>[<span class="number">0</span>].<span class="ident">distance</span>.<span class="ident">clone</span>().<span class="ident">ok_or</span>(<span class="string">&quot;distance must be defined on a privacy usage&quot;</span>)<span class="question-mark">?</span> {
-        <span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">Distance</span>::<span class="ident">Approximate</span>(<span class="ident">approx</span>) <span class="op">=&gt;</span> (<span class="number">0</span>..<span class="ident">length</span>)
+        <span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">Distance</span>::<span class="ident">Approximate</span>(<span class="ident">approx</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="number">0</span>..<span class="ident">length</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">proto</span>::<span class="ident">PrivacyUsage</span> {
                 <span class="ident">distance</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">Distance</span>::<span class="ident">Approximate</span>(<span class="ident">proto</span>::<span class="ident">privacy_usage</span>::<span class="ident">DistanceApproximate</span> {
                     <span class="ident">epsilon</span>: <span class="ident">approx</span>.<span class="ident">epsilon</span> <span class="op">/</span> (<span class="ident">length</span> <span class="kw">as</span> <span class="ident">f64</span>),
@@ -994,13 +994,13 @@
     })
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_group_id_path</span>(<span class="ident">arguments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">GroupId</span><span class="op">&gt;&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">GroupId</span><span class="op">&gt;&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_group_id_path</span>(<span class="ident">arguments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">GroupId</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">GroupId</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">partition_depth</span> <span class="op">=</span> <span class="ident">get_common_value</span>(<span class="kw-2">&amp;</span><span class="ident">arguments</span>.<span class="ident">iter</span>()
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">group_ids</span><span class="op">|</span> <span class="ident">group_ids</span>.<span class="ident">len</span>())
         .<span class="ident">collect</span>())
-        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;all arguments must be parts of the same partition&quot;</span>)<span class="question-mark">?</span>;
+        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;all arguments must be parts of the same partition&quot;</span>)<span class="question-mark">?</span>;
 
-    <span class="kw">if</span> <span class="ident">partition_depth</span> <span class="op">==</span> <span class="number">0</span> {
+    <span class="kw">if</span> <span class="ident">partition_depth</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;arguments must come from a partition&quot;</span>.<span class="ident">into</span>());
     }
 
@@ -1009,20 +1009,20 @@
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">group_ids</span><span class="op">|</span> <span class="ident">group_ids</span>[<span class="ident">depth</span>].<span class="ident">clone</span>())
             .<span class="ident">collect</span>()
         ))
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">GroupId</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>()
-        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;partition paths of all arguments must match&quot;</span>.<span class="ident">into</span>())
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">GroupId</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;partition paths of all arguments must match&quot;</span>.<span class="ident">into</span>())
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_c_stability_multiplier</span>(<span class="ident">arguments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">GroupId</span><span class="op">&gt;&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_c_stability_multiplier</span>(<span class="ident">arguments</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">GroupId</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">partition_depth</span> <span class="op">=</span> <span class="ident">get_common_value</span>(<span class="kw-2">&amp;</span><span class="ident">arguments</span>.<span class="ident">iter</span>()
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">group_ids</span><span class="op">|</span> <span class="ident">group_ids</span>.<span class="ident">len</span>())
         .<span class="ident">collect</span>())
-        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;all arguments must be parts of the same partition&quot;</span>)<span class="question-mark">?</span>;
+        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;all arguments must be parts of the same partition&quot;</span>)<span class="question-mark">?</span>;
 
     <span class="kw">if</span> <span class="ident">arguments</span>.<span class="ident">is_empty</span>() {
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;c-stability cannot be determined on an empty argument set&quot;</span>.<span class="ident">into</span>());
     }
-    <span class="kw">if</span> <span class="ident">partition_depth</span> <span class="op">==</span> <span class="number">0</span> {
+    <span class="kw">if</span> <span class="ident">partition_depth</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="number">1.</span>);
     }
 
@@ -1036,15 +1036,15 @@
 
     <span class="kw">let</span> <span class="ident">group_ids</span> <span class="op">=</span> <span class="ident">arguments</span>.<span class="ident">into_iter</span>()
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">group_id</span><span class="op">|</span> <span class="ident">group_id</span>.<span class="ident">last</span>().<span class="ident">unwrap</span>().<span class="ident">clone</span>())
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">GroupId</span><span class="op">&gt;&gt;</span>();
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">GroupId</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
     <span class="ident">get_common_value</span>(<span class="kw-2">&amp;</span><span class="ident">group_ids</span>.<span class="ident">iter</span>()
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">group_id</span><span class="op">|</span> <span class="ident">group_id</span>.<span class="ident">partition_id</span>).<span class="ident">collect</span>())
-        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;all arguments must be parts of the same partition&quot;</span>)<span class="question-mark">?</span>;
+        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;all arguments must be parts of the same partition&quot;</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">counts</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">new</span>();
     <span class="ident">group_ids</span>.<span class="ident">into_iter</span>().<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">group_id</span><span class="op">|</span>
-        <span class="kw-2">*</span><span class="ident">counts</span>.<span class="ident">entry</span>(<span class="ident">group_id</span>.<span class="ident">index</span>).<span class="ident">or_insert</span>(<span class="number">0</span>) <span class="op">+=</span> <span class="number">1</span>);
+        <span class="kw-2">*</span><span class="ident">counts</span>.<span class="ident">entry</span>(<span class="ident">group_id</span>.<span class="ident">index</span>).<span class="ident">or_insert</span>(<span class="number">0</span>) <span class="op">+</span><span class="op">=</span> <span class="number">1</span>);
 
     <span class="prelude-val">Ok</span>(<span class="kw-2">*</span><span class="ident">counts</span>.<span class="ident">values</span>().<span class="ident">max</span>().<span class="ident">unwrap</span>() <span class="kw">as</span> <span class="ident">Float</span>)
 }</pre></div>

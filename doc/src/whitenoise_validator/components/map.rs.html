@@ -143,11 +143,11 @@
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
         <span class="ident">component_id</span>: <span class="ident">u32</span>,
         <span class="kw-2">mut</span> <span class="ident">maximum_id</span>: <span class="ident">u32</span>
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">expansion</span> <span class="op">=</span> <span class="ident">base</span>::<span class="ident">ComponentExpansion</span>::<span class="ident">default</span>();
 
         <span class="kw">let</span> <span class="ident">mapped_component</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">component</span>.<span class="ident">as_ref</span>()
-            .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;component must be defined&quot;</span>)<span class="question-mark">?</span>;
+            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;component must be defined&quot;</span>)<span class="question-mark">?</span>;
 
         <span class="kw">let</span> (<span class="ident">props_partitioned</span>, <span class="ident">props_singular</span>): (
             <span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">IndexKey</span>, <span class="ident">ValueProperties</span><span class="op">&gt;</span>,
@@ -157,8 +157,8 @@
 
         <span class="kw">let</span> <span class="ident">indexes</span> <span class="op">=</span> <span class="ident">props_partitioned</span>.<span class="ident">values</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="ident">v</span>.<span class="ident">partitions</span>()<span class="question-mark">?</span>.<span class="ident">children</span>.<span class="ident">keys</span>().<span class="ident">collect</span>()))
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">IndexKey</span><span class="op">&gt;&gt;</span><span class="op">&gt;&gt;</span>()<span class="question-mark">?</span>.<span class="ident">into_iter</span>().<span class="ident">flatten</span>()
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">IndexSet</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">IndexKey</span><span class="op">&gt;&gt;</span>();
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">IndexKey</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>.<span class="ident">into_iter</span>().<span class="ident">flatten</span>()
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">IndexSet</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">IndexKey</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
         <span class="kw">let</span> <span class="ident">arguments</span> <span class="op">=</span> <span class="ident">component</span>.<span class="ident">arguments</span>();
 
@@ -169,30 +169,30 @@
                 <span class="ident">partition_idx</span>.<span class="ident">clone</span>(),
                 <span class="ident">props_partitioned</span>.<span class="ident">iter</span>()
                     .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">name</span>, <span class="kw">_</span>)<span class="op">|</span> {
-                        <span class="ident">maximum_id</span> <span class="op">+=</span> <span class="number">1</span>;
+                        <span class="ident">maximum_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                         <span class="kw">let</span> <span class="ident">id_index_name</span> <span class="op">=</span> <span class="ident">maximum_id</span>;
                         <span class="kw">let</span> (<span class="ident">patch_node</span>, <span class="ident">release</span>) <span class="op">=</span> <span class="ident">get_literal</span>(<span class="ident">Value</span>::<span class="ident">from_index_key</span>(<span class="ident">partition_idx</span>.<span class="ident">clone</span>())<span class="question-mark">?</span>, <span class="ident">component</span>.<span class="ident">submission</span>)<span class="question-mark">?</span>;
                         <span class="ident">expansion</span>.<span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">id_index_name</span>, <span class="ident">patch_node</span>);
                         <span class="ident">expansion</span>.<span class="ident">properties</span>.<span class="ident">insert</span>(<span class="ident">id_index_name</span>, <span class="ident">infer_property</span>(<span class="kw-2">&amp;</span><span class="ident">release</span>.<span class="ident">value</span>, <span class="prelude-val">None</span>)<span class="question-mark">?</span>);
                         <span class="ident">expansion</span>.<span class="ident">releases</span>.<span class="ident">insert</span>(<span class="ident">id_index_name</span>, <span class="ident">release</span>);
 
-                        <span class="ident">maximum_id</span> <span class="op">+=</span> <span class="number">1</span>;
+                        <span class="ident">maximum_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                         <span class="kw">let</span> <span class="ident">id_index</span> <span class="op">=</span> <span class="ident">maximum_id</span>;
                         <span class="kw">let</span> <span class="ident">id_data</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">arguments</span>.<span class="ident">get</span>(<span class="ident">name</span>)
-                            .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:?}: missing from component arguments&quot;</span>, <span class="ident">name</span>)))<span class="question-mark">?</span>;
+                            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:?}: missing from component arguments&quot;</span>, <span class="ident">name</span>)))<span class="question-mark">?</span>;
                         <span class="ident">expansion</span>.<span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">id_index</span>, <span class="ident">proto</span>::<span class="ident">Component</span> {
-                            <span class="ident">arguments</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">ArgumentNodeIds</span>::<span class="ident">new</span>(<span class="macro">indexmap</span><span class="macro">!</span>[<span class="string">&quot;data&quot;</span>.<span class="ident">into</span>() <span class="op">=&gt;</span> <span class="ident">id_data</span>, <span class="string">&quot;names&quot;</span>.<span class="ident">into</span>() <span class="op">=&gt;</span> <span class="ident">id_index_name</span>])),
+                            <span class="ident">arguments</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">ArgumentNodeIds</span>::<span class="ident">new</span>(<span class="macro">indexmap</span><span class="macro">!</span>[<span class="string">&quot;data&quot;</span>.<span class="ident">into</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">id_data</span>, <span class="string">&quot;names&quot;</span>.<span class="ident">into</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="ident">id_index_name</span>])),
                             <span class="ident">omit</span>: <span class="bool-val">true</span>,
                             <span class="ident">submission</span>: <span class="ident">component</span>.<span class="ident">submission</span>,
                             <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">Index</span>(<span class="ident">proto</span>::<span class="ident">Index</span> {})),
                         });
 
                         <span class="kw">match</span> (<span class="ident">public_arguments</span>.<span class="ident">get</span>(<span class="ident">name</span>), <span class="ident">properties</span>.<span class="ident">get</span>(<span class="ident">name</span>)) {
-                            (<span class="prelude-val">Some</span>(<span class="ident">release_node</span>), <span class="prelude-val">Some</span>(<span class="ident">properties</span>)) <span class="op">=&gt;</span> <span class="kw">match</span> (
+                            (<span class="prelude-val">Some</span>(<span class="ident">release_node</span>), <span class="prelude-val">Some</span>(<span class="ident">properties</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> (
                                 <span class="ident">release_node</span>.<span class="ident">ref_partitions</span>()<span class="question-mark">?</span>.<span class="ident">get</span>(<span class="ident">partition_idx</span>),
                                 <span class="ident">properties</span>.<span class="ident">partitions</span>()<span class="question-mark">?</span>.<span class="ident">children</span>.<span class="ident">get</span>(<span class="ident">partition_idx</span>)
                             ) {
-                                (<span class="prelude-val">Some</span>(<span class="ident">partition_value</span>), <span class="prelude-val">Some</span>(<span class="ident">partition_properties</span>)) <span class="op">=&gt;</span> {
+                                (<span class="prelude-val">Some</span>(<span class="ident">partition_value</span>), <span class="prelude-val">Some</span>(<span class="ident">partition_properties</span>)) <span class="op">=</span><span class="op">&gt;</span> {
                                     <span class="ident">expansion</span>.<span class="ident">releases</span>.<span class="ident">insert</span>(<span class="ident">id_index</span>, <span class="ident">ReleaseNode</span> {
                                         <span class="ident">value</span>: <span class="ident">partition_value</span>.<span class="ident">clone</span>(),
                                         <span class="ident">privacy_usages</span>: <span class="prelude-val">None</span>,
@@ -200,24 +200,24 @@
                                     });
                                     <span class="ident">expansion</span>.<span class="ident">properties</span>.<span class="ident">insert</span>(<span class="ident">id_index</span>, <span class="ident">partition_properties</span>.<span class="ident">clone</span>());
                                 },
-                                <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">expansion</span>.<span class="ident">traversal</span>.<span class="ident">push</span>(<span class="ident">id_index</span>)
+                                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">expansion</span>.<span class="ident">traversal</span>.<span class="ident">push</span>(<span class="ident">id_index</span>)
                             },
-                            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">expansion</span>.<span class="ident">traversal</span>.<span class="ident">push</span>(<span class="ident">id_index</span>)
+                            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">expansion</span>.<span class="ident">traversal</span>.<span class="ident">push</span>(<span class="ident">id_index</span>)
                         }
 
                         <span class="prelude-val">Ok</span>((<span class="ident">name</span>.<span class="ident">clone</span>(), <span class="ident">id_index</span>))
                     })
                     .<span class="ident">chain</span>(<span class="ident">props_singular</span>.<span class="ident">clone</span>().<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">name</span>, <span class="kw">_</span>)<span class="op">|</span> {
-                        <span class="kw">let</span> <span class="ident">id_arg</span> <span class="op">=</span> <span class="ident">arguments</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>).<span class="ident">ok_or_else</span>(<span class="op">||</span>
+                        <span class="kw">let</span> <span class="ident">id_arg</span> <span class="op">=</span> <span class="ident">arguments</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>).<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span>
                             <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:?}: missing from component arguments&quot;</span>, <span class="ident">name</span>))<span class="question-mark">?</span>;
                         <span class="prelude-val">Ok</span>((<span class="ident">name</span>, <span class="kw-2">*</span><span class="ident">id_arg</span>))
                     }))
-                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">IndexKey</span>, <span class="ident">u32</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>
+                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">IndexKey</span>, <span class="ident">u32</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>
             )))
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">IndexKey</span>, <span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">IndexKey</span>, <span class="ident">u32</span><span class="op">&gt;&gt;</span><span class="op">&gt;&gt;</span>()<span class="question-mark">?</span>.<span class="ident">into_iter</span>()
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">IndexKey</span>, <span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">IndexKey</span>, <span class="ident">u32</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>.<span class="ident">into_iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">partition_idx</span>, <span class="ident">arguments</span>)<span class="op">|</span> {
 
-                <span class="ident">maximum_id</span> <span class="op">+=</span> <span class="number">1</span>;
+                <span class="ident">maximum_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                 <span class="kw">let</span> <span class="ident">id_inner_component</span> <span class="op">=</span> <span class="ident">maximum_id</span>;
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">inner_component</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">mapped_component</span>.<span class="ident">clone</span>();
 
@@ -229,7 +229,7 @@
 
                 <span class="prelude-val">Ok</span>((<span class="ident">partition_idx</span>, <span class="ident">id_inner_component</span>))
             })
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">IndexKey</span>, <span class="ident">u32</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">IndexKey</span>, <span class="ident">u32</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
 
         <span class="ident">expansion</span>.<span class="ident">computation_graph</span>.<span class="ident">insert</span>(<span class="ident">component_id</span>, <span class="ident">proto</span>::<span class="ident">Component</span> {
             <span class="ident">arguments</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">ArgumentNodeIds</span>::<span class="ident">new</span>(<span class="ident">union_arguments</span>)),

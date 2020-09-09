@@ -69,7 +69,7 @@ openssl = &quot;0.10&quot;
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=</span> <span class="ident">env</span>::<span class="ident">var</span>(<span class="string">&quot;DEP_OPENSSL_VERSION_NUMBER&quot;</span>) {
         <span class="kw">let</span> <span class="ident">version</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from_str_radix</span>(<span class="kw-2">&amp;</span><span class="ident">v</span>, <span class="number">16</span>).<span class="ident">unwrap</span>();
 
-        <span class="kw">if</span> <span class="ident">version</span> <span class="op">&gt;=</span> <span class="number">0x1_01_01_00_0</span> {
+        <span class="kw">if</span> <span class="ident">version</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0x1_01_01_00_0</span> {
             <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;cargo:rustc-cfg=openssl111&quot;</span>);
         }
     }

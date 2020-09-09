@@ -702,37 +702,37 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">f64</span>;
 
 <span class="kw">impl</span> <span class="ident">OrderStatistics</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> <span class="kw">for</span> [<span class="ident">f64</span>] {
-    <span class="kw">fn</span> <span class="ident">order_statistic</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">order</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">order_statistic</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">order</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">len</span>();
         <span class="kw">match</span> <span class="ident">order</span> {
-            <span class="number">1</span> <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">min</span>(),
-            <span class="kw">_</span> <span class="kw">if</span> <span class="ident">order</span> <span class="op">==</span> <span class="ident">n</span> <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">max</span>(),
-            <span class="kw">_</span> <span class="kw">if</span> <span class="ident">order</span> <span class="op">&lt;</span> <span class="number">1</span> <span class="op">||</span> <span class="ident">order</span> <span class="op">&gt;</span> <span class="ident">n</span> <span class="op">=&gt;</span> <span class="ident">f64</span>::<span class="ident">NAN</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">select_inplace</span>(<span class="self">self</span>, <span class="ident">order</span> <span class="op">-</span> <span class="number">1</span>),
+            <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">min</span>(),
+            <span class="kw">_</span> <span class="kw">if</span> <span class="ident">order</span> <span class="op">=</span><span class="op">=</span> <span class="ident">n</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">max</span>(),
+            <span class="kw">_</span> <span class="kw">if</span> <span class="ident">order</span> <span class="op">&lt;</span> <span class="number">1</span> <span class="op">|</span><span class="op">|</span> <span class="ident">order</span> <span class="op">&gt;</span> <span class="ident">n</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f64</span>::<span class="ident">NAN</span>,
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">select_inplace</span>(<span class="self">self</span>, <span class="ident">order</span> <span class="op">-</span> <span class="number">1</span>),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">len</span>() <span class="op">/</span> <span class="number">2</span>;
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">len</span>() <span class="op">%</span> <span class="number">2</span> <span class="op">!=</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">len</span>() <span class="op">%</span> <span class="number">2</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
             <span class="ident">select_inplace</span>(<span class="self">self</span>, <span class="ident">k</span>)
         } <span class="kw">else</span> {
             (<span class="ident">select_inplace</span>(<span class="self">self</span>, <span class="ident">k</span>.<span class="ident">saturating_sub</span>(<span class="number">1</span>)) <span class="op">+</span> <span class="ident">select_inplace</span>(<span class="self">self</span>, <span class="ident">k</span>)) <span class="op">/</span> <span class="number">2.0</span>
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">quantile</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">tau</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
-        <span class="kw">if</span> <span class="ident">tau</span> <span class="op">&lt;</span> <span class="number">0.0</span> <span class="op">||</span> <span class="ident">tau</span> <span class="op">&gt;</span> <span class="number">1.0</span> <span class="op">||</span> <span class="self">self</span>.<span class="ident">is_empty</span>() {
+    <span class="kw">fn</span> <span class="ident">quantile</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">tau</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+        <span class="kw">if</span> <span class="ident">tau</span> <span class="op">&lt;</span> <span class="number">0.0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">tau</span> <span class="op">&gt;</span> <span class="number">1.0</span> <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">is_empty</span>() {
             <span class="kw">return</span> <span class="ident">f64</span>::<span class="ident">NAN</span>;
         }
 
         <span class="kw">let</span> <span class="ident">h</span> <span class="op">=</span> (<span class="self">self</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">f64</span> <span class="op">+</span> <span class="number">1.0</span> <span class="op">/</span> <span class="number">3.0</span>) <span class="op">*</span> <span class="ident">tau</span> <span class="op">+</span> <span class="number">1.0</span> <span class="op">/</span> <span class="number">3.0</span>;
         <span class="kw">let</span> <span class="ident">hf</span> <span class="op">=</span> <span class="ident">h</span> <span class="kw">as</span> <span class="ident">i64</span>;
 
-        <span class="kw">if</span> <span class="ident">hf</span> <span class="op">&lt;=</span> <span class="number">0</span> <span class="op">||</span> <span class="ident">tau</span> <span class="op">==</span> <span class="number">0.0</span> {
+        <span class="kw">if</span> <span class="ident">hf</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">tau</span> <span class="op">=</span><span class="op">=</span> <span class="number">0.0</span> {
             <span class="kw">return</span> <span class="self">self</span>.<span class="ident">min</span>();
         }
-        <span class="kw">if</span> <span class="ident">hf</span> <span class="op">&gt;=</span> <span class="self">self</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">i64</span> <span class="op">||</span> <span class="ident">tau</span> <span class="op">==</span> <span class="number">1.0</span> {
+        <span class="kw">if</span> <span class="ident">hf</span> <span class="op">&gt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">i64</span> <span class="op">|</span><span class="op">|</span> <span class="ident">tau</span> <span class="op">=</span><span class="op">=</span> <span class="number">1.0</span> {
             <span class="kw">return</span> <span class="self">self</span>.<span class="ident">max</span>();
         }
 
@@ -741,29 +741,29 @@
         <span class="ident">a</span> <span class="op">+</span> (<span class="ident">h</span> <span class="op">-</span> <span class="ident">hf</span> <span class="kw">as</span> <span class="ident">f64</span>) <span class="op">*</span> (<span class="ident">b</span> <span class="op">-</span> <span class="ident">a</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">percentile</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">p</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">percentile</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">p</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">quantile</span>(<span class="ident">p</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">/</span> <span class="number">100.0</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">lower_quartile</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">lower_quartile</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">quantile</span>(<span class="number">0.25</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">upper_quartile</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">upper_quartile</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">quantile</span>(<span class="number">0.75</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">interquartile_range</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">interquartile_range</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">upper_quartile</span>() <span class="op">-</span> <span class="self">self</span>.<span class="ident">lower_quartile</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">ranks</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">tie_breaker</span>: <span class="ident">RankTieBreaker</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">ranks</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">tie_breaker</span>: <span class="ident">RankTieBreaker</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">len</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ranks</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0.0</span>; <span class="ident">n</span>];
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">index</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">n</span>).<span class="ident">collect</span>();
 
         <span class="kw">match</span> <span class="ident">tie_breaker</span> {
-            <span class="ident">RankTieBreaker</span>::<span class="ident">First</span> <span class="op">=&gt;</span> {
+            <span class="ident">RankTieBreaker</span>::<span class="ident">First</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="ident">quick_sort_all</span>(<span class="self">self</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">index</span>, <span class="number">0</span>, <span class="ident">n</span> <span class="op">-</span> <span class="number">1</span>);
                 <span class="kw">unsafe</span> {
                     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">ranks</span>.<span class="ident">len</span>() {
@@ -772,15 +772,15 @@
                 }
                 <span class="ident">ranks</span>
             }
-            <span class="kw">_</span> <span class="op">=&gt;</span> {
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="ident">sort</span>(<span class="self">self</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">index</span>);
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">prev_idx</span> <span class="op">=</span> <span class="number">0</span>;
                 <span class="kw">unsafe</span> {
                     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">1</span>..<span class="ident">n</span> {
-                        <span class="kw">if</span> (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">get_unchecked</span>(<span class="ident">i</span>) <span class="op">-</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">get_unchecked</span>(<span class="ident">prev_idx</span>)).<span class="ident">abs</span>() <span class="op">&lt;=</span> <span class="number">0.0</span> {
+                        <span class="kw">if</span> (<span class="kw-2">*</span><span class="self">self</span>.<span class="ident">get_unchecked</span>(<span class="ident">i</span>) <span class="op">-</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">get_unchecked</span>(<span class="ident">prev_idx</span>)).<span class="ident">abs</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
                             <span class="kw">continue</span>;
                         }
-                        <span class="kw">if</span> <span class="ident">i</span> <span class="op">==</span> <span class="ident">prev_idx</span> <span class="op">+</span> <span class="number">1</span> {
+                        <span class="kw">if</span> <span class="ident">i</span> <span class="op">=</span><span class="op">=</span> <span class="ident">prev_idx</span> <span class="op">+</span> <span class="number">1</span> {
                             <span class="ident">ranks</span>[<span class="kw-2">*</span><span class="ident">index</span>.<span class="ident">get_unchecked</span>(<span class="ident">prev_idx</span>)] <span class="op">=</span> <span class="ident">i</span> <span class="kw">as</span> <span class="ident">f64</span>;
                         } <span class="kw">else</span> {
                             <span class="ident">handle_rank_ties</span>(
@@ -830,7 +830,7 @@
     <span class="doccomment">/// let z = [0.0, 3.0, -2.0];</span>
     <span class="doccomment">/// assert_eq!(z.min(), -2.0);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">min</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">min</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="ident">Statistics</span>::<span class="ident">min</span>(<span class="self">self</span>)
     }
 }
@@ -857,7 +857,7 @@
     <span class="doccomment">/// let z = [0.0, 3.0, -2.0];</span>
     <span class="doccomment">/// assert_eq!(z.max(), 3.0);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="ident">Statistics</span>::<span class="ident">max</span>(<span class="self">self</span>)
     }
 }
@@ -890,7 +890,7 @@
     <span class="doccomment">/// assert_almost_eq!(z.mean(), 1.0 / 3.0, 1e-15);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="ident">Statistics</span>::<span class="ident">mean</span>(<span class="self">self</span>)
     }
 }
@@ -921,7 +921,7 @@
     <span class="doccomment">/// let z = [0.0, 3.0, -2.0];</span>
     <span class="doccomment">/// assert_eq!(z.variance(), 19.0 / 3.0);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="ident">Statistics</span>::<span class="ident">variance</span>(<span class="self">self</span>)
     }
 
@@ -951,7 +951,7 @@
     <span class="doccomment">/// let z = [0.0, 3.0, -2.0];</span>
     <span class="doccomment">/// assert_eq!(z.std_dev(), (19f64 / 3.0).sqrt());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="ident">Statistics</span>::<span class="ident">std_dev</span>(<span class="self">self</span>)
     }
 }
@@ -973,7 +973,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// let y = [0.0, 3.0, -2.0];</span>
     <span class="doccomment">/// assert_eq!(y.median(), 0.0);</span>
-    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">copy</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">to_vec</span>();
         <span class="ident">OrderStatistics</span>::<span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">copy</span>)
     }
@@ -987,10 +987,10 @@
     <span class="ident">tie_breaker</span>: <span class="ident">RankTieBreaker</span>,
 ) {
     <span class="kw">let</span> <span class="ident">rank</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">tie_breaker</span> {
-        <span class="ident">RankTieBreaker</span>::<span class="ident">Average</span> <span class="op">=&gt;</span> (<span class="ident">b</span> <span class="op">+</span> <span class="ident">a</span> <span class="op">-</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">f64</span> <span class="op">/</span> <span class="number">2.0</span> <span class="op">+</span> <span class="number">1.0</span>,
-        <span class="ident">RankTieBreaker</span>::<span class="ident">Min</span> <span class="op">=&gt;</span> (<span class="ident">a</span> <span class="op">+</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">f64</span>,
-        <span class="ident">RankTieBreaker</span>::<span class="ident">Max</span> <span class="op">=&gt;</span> <span class="ident">b</span> <span class="kw">as</span> <span class="ident">f64</span>,
-        <span class="ident">RankTieBreaker</span>::<span class="ident">First</span> <span class="op">=&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
+        <span class="ident">RankTieBreaker</span>::<span class="ident">Average</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">b</span> <span class="op">+</span> <span class="ident">a</span> <span class="op">-</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">f64</span> <span class="op">/</span> <span class="number">2.0</span> <span class="op">+</span> <span class="number">1.0</span>,
+        <span class="ident">RankTieBreaker</span>::<span class="ident">Min</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">a</span> <span class="op">+</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">f64</span>,
+        <span class="ident">RankTieBreaker</span>::<span class="ident">Max</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">b</span> <span class="kw">as</span> <span class="ident">f64</span>,
+        <span class="ident">RankTieBreaker</span>::<span class="ident">First</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
     };
     <span class="kw">unsafe</span> {
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">a</span>..<span class="ident">b</span> {
@@ -1001,8 +1001,8 @@
 
 <span class="comment">// Selection algorithm from Numerical Recipes</span>
 <span class="comment">// See: https://en.wikipedia.org/wiki/Selection_algorithm</span>
-<span class="kw">fn</span> <span class="ident">select_inplace</span>(<span class="ident">arr</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">f64</span>], <span class="ident">rank</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
-    <span class="kw">if</span> <span class="ident">rank</span> <span class="op">==</span> <span class="number">0</span> {
+<span class="kw">fn</span> <span class="ident">select_inplace</span>(<span class="ident">arr</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">f64</span>], <span class="ident">rank</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">if</span> <span class="ident">rank</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
         <span class="kw">return</span> <span class="ident">arr</span>.<span class="ident">min</span>();
     }
     <span class="kw">if</span> <span class="ident">rank</span> <span class="op">&gt;</span> <span class="ident">arr</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span> {
@@ -1013,14 +1013,14 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">low</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">high</span> <span class="op">=</span> <span class="ident">arr</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>;
         <span class="kw">loop</span> {
-            <span class="kw">if</span> <span class="ident">high</span> <span class="op">&lt;=</span> <span class="ident">low</span> <span class="op">+</span> <span class="number">1</span> {
-                <span class="kw">if</span> <span class="ident">high</span> <span class="op">==</span> <span class="ident">low</span> <span class="op">+</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="kw-2">*</span><span class="ident">arr</span>.<span class="ident">get_unchecked</span>(<span class="ident">high</span>) <span class="op">&lt;</span> <span class="kw-2">*</span><span class="ident">arr</span>.<span class="ident">get_unchecked</span>(<span class="ident">low</span>) {
+            <span class="kw">if</span> <span class="ident">high</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">low</span> <span class="op">+</span> <span class="number">1</span> {
+                <span class="kw">if</span> <span class="ident">high</span> <span class="op">=</span><span class="op">=</span> <span class="ident">low</span> <span class="op">+</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="kw-2">*</span><span class="ident">arr</span>.<span class="ident">get_unchecked</span>(<span class="ident">high</span>) <span class="op">&lt;</span> <span class="kw-2">*</span><span class="ident">arr</span>.<span class="ident">get_unchecked</span>(<span class="ident">low</span>) {
                     <span class="ident">arr</span>.<span class="ident">swap</span>(<span class="ident">low</span>, <span class="ident">high</span>)
                 }
                 <span class="kw">return</span> <span class="kw-2">*</span><span class="ident">arr</span>.<span class="ident">get_unchecked</span>(<span class="ident">rank</span>);
             }
 
-            <span class="kw">let</span> <span class="ident">middle</span> <span class="op">=</span> (<span class="ident">low</span> <span class="op">+</span> <span class="ident">high</span>) <span class="op">&gt;&gt;</span> <span class="number">1</span>;
+            <span class="kw">let</span> <span class="ident">middle</span> <span class="op">=</span> (<span class="ident">low</span> <span class="op">+</span> <span class="ident">high</span>) <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">1</span>;
             <span class="ident">arr</span>.<span class="ident">swap</span>(<span class="ident">middle</span>, <span class="ident">low</span> <span class="op">+</span> <span class="number">1</span>);
 
             <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">arr</span>.<span class="ident">get_unchecked</span>(<span class="ident">low</span>) <span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">arr</span>.<span class="ident">get_unchecked</span>(<span class="ident">high</span>) {
@@ -1038,14 +1038,14 @@
             <span class="kw">let</span> <span class="ident">pivot</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">arr</span>.<span class="ident">get_unchecked</span>(<span class="ident">begin</span>);
             <span class="kw">loop</span> {
                 <span class="kw">loop</span> {
-                    <span class="ident">begin</span> <span class="op">+=</span> <span class="number">1</span>;
-                    <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">arr</span>.<span class="ident">get_unchecked</span>(<span class="ident">begin</span>) <span class="op">&gt;=</span> <span class="ident">pivot</span> {
+                    <span class="ident">begin</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                    <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">arr</span>.<span class="ident">get_unchecked</span>(<span class="ident">begin</span>) <span class="op">&gt;</span><span class="op">=</span> <span class="ident">pivot</span> {
                         <span class="kw">break</span>;
                     }
                 }
                 <span class="kw">loop</span> {
-                    <span class="ident">end</span> <span class="op">-=</span> <span class="number">1</span>;
-                    <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">arr</span>.<span class="ident">get_unchecked</span>(<span class="ident">end</span>) <span class="op">&lt;=</span> <span class="ident">pivot</span> {
+                    <span class="ident">end</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
+                    <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">arr</span>.<span class="ident">get_unchecked</span>(<span class="ident">end</span>) <span class="op">&lt;</span><span class="op">=</span> <span class="ident">pivot</span> {
                         <span class="kw">break</span>;
                     }
                 }
@@ -1058,10 +1058,10 @@
             <span class="ident">arr</span>[<span class="ident">low</span> <span class="op">+</span> <span class="number">1</span>] <span class="op">=</span> <span class="kw-2">*</span><span class="ident">arr</span>.<span class="ident">get_unchecked</span>(<span class="ident">end</span>);
             <span class="ident">arr</span>[<span class="ident">end</span>] <span class="op">=</span> <span class="ident">pivot</span>;
 
-            <span class="kw">if</span> <span class="ident">end</span> <span class="op">&gt;=</span> <span class="ident">rank</span> {
+            <span class="kw">if</span> <span class="ident">end</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">rank</span> {
                 <span class="ident">high</span> <span class="op">=</span> <span class="ident">end</span> <span class="op">-</span> <span class="number">1</span>;
             }
-            <span class="kw">if</span> <span class="ident">end</span> <span class="op">&lt;=</span> <span class="ident">rank</span> {
+            <span class="kw">if</span> <span class="ident">end</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">rank</span> {
                 <span class="ident">low</span> <span class="op">=</span> <span class="ident">begin</span>;
             }
         }
@@ -1080,10 +1080,10 @@
     );
 
     <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">primary</span>.<span class="ident">len</span>();
-    <span class="kw">if</span> <span class="ident">n</span> <span class="op">&lt;=</span> <span class="number">1</span> {
+    <span class="kw">if</span> <span class="ident">n</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1</span> {
         <span class="kw">return</span>;
     }
-    <span class="kw">if</span> <span class="ident">n</span> <span class="op">==</span> <span class="number">2</span> {
+    <span class="kw">if</span> <span class="ident">n</span> <span class="op">=</span><span class="op">=</span> <span class="number">2</span> {
         <span class="kw">unsafe</span> {
             <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="number">0</span>) <span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="number">1</span>) {
                 <span class="ident">primary</span>.<span class="ident">swap</span>(<span class="number">0</span>, <span class="number">1</span>);
@@ -1094,16 +1094,16 @@
     }
 
     <span class="comment">// insertion sort for really short containers</span>
-    <span class="kw">if</span> <span class="ident">n</span> <span class="op">&lt;=</span> <span class="number">10</span> {
+    <span class="kw">if</span> <span class="ident">n</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">10</span> {
         <span class="kw">unsafe</span> {
             <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">1</span>..<span class="ident">n</span> {
                 <span class="kw">let</span> <span class="ident">key</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">i</span>);
                 <span class="kw">let</span> <span class="ident">item</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">secondary</span>.<span class="ident">get_unchecked</span>(<span class="ident">i</span>);
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">j</span> <span class="op">=</span> <span class="ident">i</span> <span class="kw">as</span> <span class="ident">isize</span> <span class="op">-</span> <span class="number">1</span>;
-                <span class="kw">while</span> <span class="ident">j</span> <span class="op">&gt;=</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">j</span> <span class="kw">as</span> <span class="ident">usize</span>) <span class="op">&gt;</span> <span class="ident">key</span> {
+                <span class="kw">while</span> <span class="ident">j</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0</span> <span class="op">&amp;&amp;</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">j</span> <span class="kw">as</span> <span class="ident">usize</span>) <span class="op">&gt;</span> <span class="ident">key</span> {
                     <span class="ident">primary</span>[<span class="ident">j</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">+</span> <span class="number">1</span>] <span class="op">=</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">j</span> <span class="kw">as</span> <span class="ident">usize</span>);
                     <span class="ident">secondary</span>[<span class="ident">j</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">+</span> <span class="number">1</span>] <span class="op">=</span> <span class="kw-2">*</span><span class="ident">secondary</span>.<span class="ident">get_unchecked</span>(<span class="ident">j</span> <span class="kw">as</span> <span class="ident">usize</span>);
-                    <span class="ident">j</span> <span class="op">-=</span> <span class="number">1</span>;
+                    <span class="ident">j</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
                 }
                 <span class="ident">primary</span>[<span class="ident">j</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">+</span> <span class="number">1</span>] <span class="op">=</span> <span class="ident">key</span>;
                 <span class="ident">secondary</span>[<span class="ident">j</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">+</span> <span class="number">1</span>] <span class="op">=</span> <span class="ident">item</span>;
@@ -1133,7 +1133,7 @@
             <span class="comment">// Pivoting</span>
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">a</span> <span class="op">=</span> <span class="ident">left</span>;
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">right</span>;
-            <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">a</span> <span class="op">+</span> ((<span class="ident">b</span> <span class="op">-</span> <span class="ident">a</span>) <span class="op">&gt;&gt;</span> <span class="number">1</span>);
+            <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">a</span> <span class="op">+</span> ((<span class="ident">b</span> <span class="op">-</span> <span class="ident">a</span>) <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">1</span>);
 
             <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">a</span>) <span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">p</span>) {
                 <span class="ident">primary</span>.<span class="ident">swap</span>(<span class="ident">a</span>, <span class="ident">p</span>);
@@ -1153,10 +1153,10 @@
             <span class="comment">// Hoare partitioning</span>
             <span class="kw">loop</span> {
                 <span class="kw">while</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">a</span>) <span class="op">&lt;</span> <span class="ident">pivot</span> {
-                    <span class="ident">a</span> <span class="op">+=</span> <span class="number">1</span>;
+                    <span class="ident">a</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                 }
                 <span class="kw">while</span> <span class="ident">pivot</span> <span class="op">&lt;</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">b</span>) {
-                    <span class="ident">b</span> <span class="op">-=</span> <span class="number">1</span>;
+                    <span class="ident">b</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
                 }
                 <span class="kw">if</span> <span class="ident">a</span> <span class="op">&gt;</span> <span class="ident">b</span> {
                     <span class="kw">break</span>;
@@ -1166,8 +1166,8 @@
                     <span class="ident">secondary</span>.<span class="ident">swap</span>(<span class="ident">a</span>, <span class="ident">b</span>);
                 }
 
-                <span class="ident">a</span> <span class="op">+=</span> <span class="number">1</span>;
-                <span class="ident">b</span> <span class="op">-=</span> <span class="number">1</span>;
+                <span class="ident">a</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                <span class="ident">b</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
 
                 <span class="kw">if</span> <span class="ident">a</span> <span class="op">&gt;</span> <span class="ident">b</span> {
                     <span class="kw">break</span>;
@@ -1179,7 +1179,7 @@
             <span class="comment">//</span>
             <span class="comment">// Must cast to isize as it&#39;s possible for left &gt; b or a &gt; right/</span>
             <span class="comment">// TODO: make this more robust</span>
-            <span class="kw">if</span> (<span class="ident">b</span> <span class="kw">as</span> <span class="ident">isize</span> <span class="op">-</span> <span class="ident">left</span> <span class="kw">as</span> <span class="ident">isize</span>) <span class="op">&lt;=</span> (<span class="ident">right</span> <span class="kw">as</span> <span class="ident">isize</span> <span class="op">-</span> <span class="ident">a</span> <span class="kw">as</span> <span class="ident">isize</span>) {
+            <span class="kw">if</span> (<span class="ident">b</span> <span class="kw">as</span> <span class="ident">isize</span> <span class="op">-</span> <span class="ident">left</span> <span class="kw">as</span> <span class="ident">isize</span>) <span class="op">&lt;</span><span class="op">=</span> (<span class="ident">right</span> <span class="kw">as</span> <span class="ident">isize</span> <span class="op">-</span> <span class="ident">a</span> <span class="kw">as</span> <span class="ident">isize</span>) {
                 <span class="kw">if</span> <span class="ident">left</span> <span class="op">&lt;</span> <span class="ident">b</span> {
                     <span class="ident">quick_sort</span>(<span class="ident">primary</span>, <span class="ident">secondary</span>, <span class="ident">left</span>, <span class="ident">b</span>);
                 }
@@ -1191,7 +1191,7 @@
                 <span class="ident">right</span> <span class="op">=</span> <span class="ident">b</span>;
             }
 
-            <span class="kw">if</span> <span class="ident">left</span> <span class="op">&gt;=</span> <span class="ident">right</span> {
+            <span class="kw">if</span> <span class="ident">left</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">right</span> {
                 <span class="kw">break</span>;
             }
         }
@@ -1217,24 +1217,24 @@
             <span class="comment">// Pivoting</span>
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">a</span> <span class="op">=</span> <span class="ident">left</span>;
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">right</span>;
-            <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">a</span> <span class="op">+</span> ((<span class="ident">b</span> <span class="op">-</span> <span class="ident">a</span>) <span class="op">&gt;&gt;</span> <span class="number">1</span>);
+            <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">a</span> <span class="op">+</span> ((<span class="ident">b</span> <span class="op">-</span> <span class="ident">a</span>) <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">1</span>);
 
             <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">a</span>) <span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">p</span>)
-                <span class="op">||</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">a</span>) <span class="op">==</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">p</span>)
+                <span class="op">|</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">a</span>) <span class="op">=</span><span class="op">=</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">p</span>)
                     <span class="op">&amp;&amp;</span> <span class="kw-2">*</span><span class="ident">secondary</span>.<span class="ident">get_unchecked</span>(<span class="ident">a</span>) <span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">secondary</span>.<span class="ident">get_unchecked</span>(<span class="ident">p</span>)
             {
                 <span class="ident">primary</span>.<span class="ident">swap</span>(<span class="ident">a</span>, <span class="ident">p</span>);
                 <span class="ident">secondary</span>.<span class="ident">swap</span>(<span class="ident">a</span>, <span class="ident">p</span>);
             }
             <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">a</span>) <span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">b</span>)
-                <span class="op">||</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">a</span>) <span class="op">==</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">b</span>)
+                <span class="op">|</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">a</span>) <span class="op">=</span><span class="op">=</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">b</span>)
                     <span class="op">&amp;&amp;</span> <span class="kw-2">*</span><span class="ident">secondary</span>.<span class="ident">get_unchecked</span>(<span class="ident">a</span>) <span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">secondary</span>.<span class="ident">get_unchecked</span>(<span class="ident">b</span>)
             {
                 <span class="ident">primary</span>.<span class="ident">swap</span>(<span class="ident">a</span>, <span class="ident">b</span>);
                 <span class="ident">secondary</span>.<span class="ident">swap</span>(<span class="ident">a</span>, <span class="ident">b</span>);
             }
             <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">p</span>) <span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">b</span>)
-                <span class="op">||</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">p</span>) <span class="op">==</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">b</span>)
+                <span class="op">|</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">p</span>) <span class="op">=</span><span class="op">=</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">b</span>)
                     <span class="op">&amp;&amp;</span> <span class="kw-2">*</span><span class="ident">secondary</span>.<span class="ident">get_unchecked</span>(<span class="ident">p</span>) <span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">secondary</span>.<span class="ident">get_unchecked</span>(<span class="ident">b</span>)
             {
                 <span class="ident">primary</span>.<span class="ident">swap</span>(<span class="ident">p</span>, <span class="ident">b</span>);
@@ -1247,14 +1247,14 @@
             <span class="comment">// Hoare partitioning</span>
             <span class="kw">loop</span> {
                 <span class="kw">while</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">a</span>) <span class="op">&lt;</span> <span class="ident">pivot1</span>
-                    <span class="op">||</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">a</span>) <span class="op">==</span> <span class="ident">pivot1</span> <span class="op">&amp;&amp;</span> <span class="kw-2">*</span><span class="ident">secondary</span>.<span class="ident">get_unchecked</span>(<span class="ident">a</span>) <span class="op">&lt;</span> <span class="ident">pivot2</span>
+                    <span class="op">|</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">a</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">pivot1</span> <span class="op">&amp;&amp;</span> <span class="kw-2">*</span><span class="ident">secondary</span>.<span class="ident">get_unchecked</span>(<span class="ident">a</span>) <span class="op">&lt;</span> <span class="ident">pivot2</span>
                 {
-                    <span class="ident">a</span> <span class="op">+=</span> <span class="number">1</span>;
+                    <span class="ident">a</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                 }
                 <span class="kw">while</span> <span class="ident">pivot1</span> <span class="op">&lt;</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">b</span>)
-                    <span class="op">||</span> <span class="ident">pivot1</span> <span class="op">==</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">b</span>) <span class="op">&amp;&amp;</span> <span class="ident">pivot2</span> <span class="op">&lt;</span> <span class="kw-2">*</span><span class="ident">secondary</span>.<span class="ident">get_unchecked</span>(<span class="ident">b</span>)
+                    <span class="op">|</span><span class="op">|</span> <span class="ident">pivot1</span> <span class="op">=</span><span class="op">=</span> <span class="kw-2">*</span><span class="ident">primary</span>.<span class="ident">get_unchecked</span>(<span class="ident">b</span>) <span class="op">&amp;&amp;</span> <span class="ident">pivot2</span> <span class="op">&lt;</span> <span class="kw-2">*</span><span class="ident">secondary</span>.<span class="ident">get_unchecked</span>(<span class="ident">b</span>)
                 {
-                    <span class="ident">b</span> <span class="op">-=</span> <span class="number">1</span>;
+                    <span class="ident">b</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
                 }
                 <span class="kw">if</span> <span class="ident">a</span> <span class="op">&gt;</span> <span class="ident">b</span> {
                     <span class="kw">break</span>;
@@ -1264,8 +1264,8 @@
                     <span class="ident">secondary</span>.<span class="ident">swap</span>(<span class="ident">a</span>, <span class="ident">b</span>);
                 }
 
-                <span class="ident">a</span> <span class="op">+=</span> <span class="number">1</span>;
-                <span class="ident">b</span> <span class="op">-=</span> <span class="number">1</span>;
+                <span class="ident">a</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                <span class="ident">b</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
 
                 <span class="kw">if</span> <span class="ident">a</span> <span class="op">&gt;</span> <span class="ident">b</span> {
                     <span class="kw">break</span>;
@@ -1277,7 +1277,7 @@
             <span class="comment">//</span>
             <span class="comment">// Must cast to isize as it&#39;s possible for left &gt; b or a &gt; right/</span>
             <span class="comment">// TODO: make this more robust</span>
-            <span class="kw">if</span> (<span class="ident">b</span> <span class="kw">as</span> <span class="ident">isize</span> <span class="op">-</span> <span class="ident">left</span> <span class="kw">as</span> <span class="ident">isize</span>) <span class="op">&lt;=</span> (<span class="ident">right</span> <span class="kw">as</span> <span class="ident">isize</span> <span class="op">-</span> <span class="ident">a</span> <span class="kw">as</span> <span class="ident">isize</span>) {
+            <span class="kw">if</span> (<span class="ident">b</span> <span class="kw">as</span> <span class="ident">isize</span> <span class="op">-</span> <span class="ident">left</span> <span class="kw">as</span> <span class="ident">isize</span>) <span class="op">&lt;</span><span class="op">=</span> (<span class="ident">right</span> <span class="kw">as</span> <span class="ident">isize</span> <span class="op">-</span> <span class="ident">a</span> <span class="kw">as</span> <span class="ident">isize</span>) {
                 <span class="kw">if</span> <span class="ident">left</span> <span class="op">&lt;</span> <span class="ident">b</span> {
                     <span class="ident">quick_sort_all</span>(<span class="ident">primary</span>, <span class="ident">secondary</span>, <span class="ident">left</span>, <span class="ident">b</span>);
                 }
@@ -1289,7 +1289,7 @@
                 <span class="ident">right</span> <span class="op">=</span> <span class="ident">b</span>;
             }
 
-            <span class="kw">if</span> <span class="ident">left</span> <span class="op">&gt;=</span> <span class="ident">right</span> {
+            <span class="kw">if</span> <span class="ident">left</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">right</span> {
                 <span class="kw">break</span>;
             }
         }

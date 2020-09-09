@@ -104,40 +104,40 @@
 <span class="doccomment">/// Error functions.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Error</span> {
     <span class="doccomment">/// Compute the error function.</span>
-    <span class="kw">fn</span> <span class="ident">error</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">error</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Compute the complementary error function.</span>
-    <span class="kw">fn</span> <span class="ident">compl_error</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">compl_error</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Compute the inverse of the error function.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The code is based on a [C implementation][1] by Alijah Ahmed.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [1]: https://scistatcalc.blogspot.com/2013/09/numerical-estimate-of-inverse-error.html</span>
-    <span class="kw">fn</span> <span class="ident">inv_error</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">inv_error</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 }
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">implement</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span>:<span class="ident">ty</span>) <span class="op">=&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span>:<span class="ident">ty</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span> {
             <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">fn</span> <span class="ident">error</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+            <span class="kw">fn</span> <span class="ident">error</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
                 <span class="kw">unsafe</span> { <span class="ident">math</span>::<span class="ident">erf</span>(<span class="self">self</span> <span class="kw">as</span> <span class="ident">f64</span>) <span class="kw">as</span> <span class="self">Self</span> }
             }
 
             <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">fn</span> <span class="ident">compl_error</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+            <span class="kw">fn</span> <span class="ident">compl_error</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
                 <span class="kw">unsafe</span> { <span class="ident">math</span>::<span class="ident">erfc</span>(<span class="self">self</span> <span class="kw">as</span> <span class="ident">f64</span>) <span class="kw">as</span> <span class="self">Self</span> }
             }
 
-            <span class="kw">fn</span> <span class="ident">inv_error</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+            <span class="kw">fn</span> <span class="ident">inv_error</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
                 <span class="kw">const</span> <span class="ident">SQRT_PI</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span> <span class="op">=</span> <span class="number">1.772453850905515881919427556567825376987457275391</span>;
 
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">w</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span> <span class="op">=</span> <span class="op">-</span>((<span class="number">1.0</span> <span class="op">-</span> <span class="self">self</span>) <span class="op">*</span> (<span class="number">1.0</span> <span class="op">+</span> <span class="self">self</span>)).<span class="ident">ln</span>();
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">p</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span>;
 
                 <span class="kw">if</span> <span class="ident">w</span> <span class="op">&lt;</span> <span class="number">5.0</span> {
-                    <span class="ident">w</span> <span class="op">-=</span> <span class="number">2.5</span>;
+                    <span class="ident">w</span> <span class="op">-</span><span class="op">=</span> <span class="number">2.5</span>;
                     <span class="ident">p</span> <span class="op">=</span> <span class="number">2.81022636e-08</span>;
                     <span class="ident">p</span> <span class="op">=</span> <span class="number">3.43273939e-07</span> <span class="op">+</span> <span class="ident">p</span> <span class="op">*</span> <span class="ident">w</span>;
                     <span class="ident">p</span> <span class="op">=</span> <span class="op">-</span><span class="number">3.5233877e-06</span> <span class="op">+</span> <span class="ident">p</span> <span class="op">*</span> <span class="ident">w</span>;

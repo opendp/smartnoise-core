@@ -15,7 +15,7 @@
 <span class="macro">assert_eq</span><span class="macro">!</span>((<span class="op">-</span><span class="number">1</span>).<span class="ident">overflowing_as</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>(), (<span class="ident">wrapped</span>, <span class="bool-val">true</span>));
 
 <span class="comment">// Wrapping can also be obtained using `Wrapping`</span>
-<span class="macro">assert_eq</span><span class="macro">!</span>((<span class="op">-</span><span class="number">1</span>).<span class="ident">az</span>::<span class="op">&lt;</span><span class="ident">Wrapping</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;&gt;</span>().<span class="number">0</span>, <span class="ident">wrapped</span>);</pre></div>
+<span class="macro">assert_eq</span><span class="macro">!</span>((<span class="op">-</span><span class="number">1</span>).<span class="ident">az</span>::<span class="op">&lt;</span><span class="ident">Wrapping</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="number">0</span>, <span class="ident">wrapped</span>);</pre></div>
 <p>Conversions from floating-point to integers are also supported.
 Numbers are rounded towards zero, but the <a href="struct.Round.html"><code>Round</code></a> wrapper can be
 used to convert floating-point numbers to integers with rounding to

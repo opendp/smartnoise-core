@@ -308,58 +308,58 @@
         <span class="ident">public_arguments</span>: <span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span>, <span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="ident">NodeProperties</span>,
         <span class="ident">_node_id</span>: <span class="ident">u32</span>
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Warnable</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Warnable</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;data&quot;</span>.<span class="ident">into</span>())
-            .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;data: missing&quot;</span>))<span class="question-mark">?</span>.<span class="ident">array</span>()
+            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;data: missing&quot;</span>))<span class="question-mark">?</span>.<span class="ident">array</span>()
             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
 
         <span class="ident">data_property</span>.<span class="ident">assert_is_not_aggregated</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">prior_datatype</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">data_type</span>.<span class="ident">clone</span>();
 
         <span class="ident">data_property</span>.<span class="ident">data_type</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">atomic_type</span>.<span class="ident">to_lowercase</span>().<span class="ident">as_str</span>() {
-            <span class="string">&quot;float&quot;</span> <span class="op">=&gt;</span> <span class="ident">DataType</span>::<span class="ident">Float</span>,
-            <span class="string">&quot;real&quot;</span> <span class="op">=&gt;</span> <span class="ident">DataType</span>::<span class="ident">Float</span>,
-            <span class="string">&quot;int&quot;</span> <span class="op">=&gt;</span> <span class="ident">DataType</span>::<span class="ident">Int</span>,
-            <span class="string">&quot;integer&quot;</span> <span class="op">=&gt;</span> <span class="ident">DataType</span>::<span class="ident">Int</span>,
-            <span class="string">&quot;bool&quot;</span> <span class="op">=&gt;</span> <span class="ident">DataType</span>::<span class="ident">Bool</span>,
-            <span class="string">&quot;string&quot;</span> <span class="op">=&gt;</span> <span class="ident">DataType</span>::<span class="ident">Str</span>,
-            <span class="string">&quot;str&quot;</span> <span class="op">=&gt;</span> <span class="ident">DataType</span>::<span class="ident">Str</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;data type is not recognized. Must be one of \&quot;float\&quot;, \&quot;int\&quot;, \&quot;bool\&quot; or \&quot;string\&quot;&quot;</span>)
+            <span class="string">&quot;float&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">DataType</span>::<span class="ident">Float</span>,
+            <span class="string">&quot;real&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">DataType</span>::<span class="ident">Float</span>,
+            <span class="string">&quot;int&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">DataType</span>::<span class="ident">Int</span>,
+            <span class="string">&quot;integer&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">DataType</span>::<span class="ident">Int</span>,
+            <span class="string">&quot;bool&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">DataType</span>::<span class="ident">Bool</span>,
+            <span class="string">&quot;string&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">DataType</span>::<span class="ident">Str</span>,
+            <span class="string">&quot;str&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">DataType</span>::<span class="ident">Str</span>,
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;data type is not recognized. Must be one of \&quot;float\&quot;, \&quot;int\&quot;, \&quot;bool\&quot; or \&quot;string\&quot;&quot;</span>)
         };
 
         <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">data_type</span> {
-            <span class="ident">DataType</span>::<span class="ident">Unknown</span> <span class="op">=&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
-            <span class="ident">DataType</span>::<span class="ident">Bool</span> <span class="op">=&gt;</span> {
+            <span class="ident">DataType</span>::<span class="ident">Unknown</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
+            <span class="ident">DataType</span>::<span class="ident">Bool</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="comment">// true label must be defined</span>
                 <span class="kw">let</span> <span class="ident">true_label</span> <span class="op">=</span> <span class="ident">get_argument</span>(<span class="kw-2">&amp;</span><span class="ident">public_arguments</span>, <span class="string">&quot;true_label&quot;</span>)<span class="question-mark">?</span>.<span class="ident">clone</span>().<span class="ident">array</span>()<span class="question-mark">?</span>;
 
                 <span class="comment">// check categories for equality with true_label</span>
                 <span class="ident">data_property</span>.<span class="ident">nature</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">nature</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">nature</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">nature</span> {
-                        <span class="ident">Nature</span>::<span class="ident">Categorical</span>(<span class="ident">cat_nature</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Nature</span>::<span class="ident">Categorical</span>(<span class="ident">NatureCategorical</span> {
+                    <span class="prelude-val">Some</span>(<span class="ident">nature</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">nature</span> {
+                        <span class="ident">Nature</span>::<span class="ident">Categorical</span>(<span class="ident">cat_nature</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Nature</span>::<span class="ident">Categorical</span>(<span class="ident">NatureCategorical</span> {
                             <span class="ident">categories</span>: <span class="kw">match</span> (<span class="ident">cat_nature</span>.<span class="ident">categories</span>, <span class="ident">true_label</span>) {
-                                (<span class="ident">Jagged</span>::<span class="ident">Int</span>(<span class="ident">cats</span>), <span class="ident">Array</span>::<span class="ident">Int</span>(<span class="ident">true_label</span>)) <span class="op">=&gt;</span> <span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">cats</span>.<span class="ident">iter</span>()
-                                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">cats</span><span class="op">|</span> <span class="ident">cats</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">==</span> <span class="ident">true_label</span>.<span class="ident">first</span>())
-                                        .<span class="ident">unique</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>())
-                                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>()),
-                                (<span class="ident">Jagged</span>::<span class="ident">Float</span>(<span class="ident">cats</span>), <span class="ident">Array</span>::<span class="ident">Float</span>(<span class="ident">true_label</span>)) <span class="op">=&gt;</span> <span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">cats</span>.<span class="ident">iter</span>()
-                                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">cats</span><span class="op">|</span> <span class="ident">cats</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">==</span> <span class="ident">true_label</span>.<span class="ident">first</span>())
-                                        .<span class="ident">unique</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>())
-                                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>()),
-                                (<span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">cats</span>), <span class="ident">Array</span>::<span class="ident">Bool</span>(<span class="ident">true_label</span>)) <span class="op">=&gt;</span> <span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">cats</span>.<span class="ident">iter</span>()
-                                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">cats</span><span class="op">|</span> <span class="ident">cats</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">==</span> <span class="ident">true_label</span>.<span class="ident">first</span>())
-                                        .<span class="ident">unique</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>())
-                                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>()),
-                                (<span class="ident">Jagged</span>::<span class="ident">Str</span>(<span class="ident">cats</span>), <span class="ident">Array</span>::<span class="ident">Str</span>(<span class="ident">true_label</span>)) <span class="op">=&gt;</span> <span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">cats</span>.<span class="ident">iter</span>()
-                                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">cats</span><span class="op">|</span> <span class="ident">cats</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">==</span> <span class="ident">true_label</span>.<span class="ident">first</span>())
-                                        .<span class="ident">unique</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>())
-                                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>()),
-                                <span class="kw">_</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;type of true_label must match the data type&quot;</span>.<span class="ident">into</span>())
+                                (<span class="ident">Jagged</span>::<span class="ident">Int</span>(<span class="ident">cats</span>), <span class="ident">Array</span>::<span class="ident">Int</span>(<span class="ident">true_label</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">cats</span>.<span class="ident">iter</span>()
+                                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">cats</span><span class="op">|</span> <span class="ident">cats</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">true_label</span>.<span class="ident">first</span>())
+                                        .<span class="ident">unique</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>())
+                                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()),
+                                (<span class="ident">Jagged</span>::<span class="ident">Float</span>(<span class="ident">cats</span>), <span class="ident">Array</span>::<span class="ident">Float</span>(<span class="ident">true_label</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">cats</span>.<span class="ident">iter</span>()
+                                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">cats</span><span class="op">|</span> <span class="ident">cats</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">true_label</span>.<span class="ident">first</span>())
+                                        .<span class="ident">unique</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>())
+                                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()),
+                                (<span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">cats</span>), <span class="ident">Array</span>::<span class="ident">Bool</span>(<span class="ident">true_label</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">cats</span>.<span class="ident">iter</span>()
+                                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">cats</span><span class="op">|</span> <span class="ident">cats</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">true_label</span>.<span class="ident">first</span>())
+                                        .<span class="ident">unique</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>())
+                                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()),
+                                (<span class="ident">Jagged</span>::<span class="ident">Str</span>(<span class="ident">cats</span>), <span class="ident">Array</span>::<span class="ident">Str</span>(<span class="ident">true_label</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">cats</span>.<span class="ident">iter</span>()
+                                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">cats</span><span class="op">|</span> <span class="ident">cats</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">true_label</span>.<span class="ident">first</span>())
+                                        .<span class="ident">unique</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>())
+                                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()),
+                                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;type of true_label must match the data type&quot;</span>.<span class="ident">into</span>())
                             }
                         })),
-                        <span class="ident">Nature</span>::<span class="ident">Continuous</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="prelude-val">None</span>
+                        <span class="ident">Nature</span>::<span class="ident">Continuous</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
                     },
-                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
                 };
 
                 <span class="kw">if</span> <span class="ident">data_property</span>.<span class="ident">nature</span>.<span class="ident">is_none</span>() {
@@ -371,7 +371,7 @@
 
                 <span class="ident">data_property</span>.<span class="ident">nullity</span> <span class="op">=</span> <span class="bool-val">false</span>;
             },
-            <span class="ident">DataType</span>::<span class="ident">Int</span> <span class="op">=&gt;</span> {
+            <span class="ident">DataType</span>::<span class="ident">Int</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="comment">// lower must be defined, for imputation of values that won&#39;t cast</span>
                 <span class="ident">get_argument</span>(<span class="kw-2">&amp;</span><span class="ident">public_arguments</span>, <span class="string">&quot;lower&quot;</span>)<span class="question-mark">?</span>.<span class="ident">ref_array</span>()<span class="question-mark">?</span>.<span class="ident">first_int</span>()
                     .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;type:&quot;</span>))<span class="question-mark">?</span>;
@@ -381,25 +381,25 @@
 
                 <span class="ident">data_property</span>.<span class="ident">nature</span> <span class="op">=</span> <span class="prelude-val">None</span>;
                 <span class="ident">data_property</span>.<span class="ident">nature</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">nature</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">nature</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">nature</span>.<span class="ident">clone</span>() {
-                        <span class="ident">Nature</span>::<span class="ident">Categorical</span>(<span class="ident">cat_nature</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">cat_nature</span>.<span class="ident">categories</span> {
+                    <span class="prelude-val">Some</span>(<span class="ident">nature</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">nature</span>.<span class="ident">clone</span>() {
+                        <span class="ident">Nature</span>::<span class="ident">Categorical</span>(<span class="ident">cat_nature</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">cat_nature</span>.<span class="ident">categories</span> {
                             <span class="comment">// properties are lost because floats cannot be categorical</span>
-                            <span class="ident">Jagged</span>::<span class="ident">Float</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
-                            <span class="ident">Jagged</span>::<span class="ident">Int</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">nature</span>),
-                            <span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">cats</span>) <span class="op">=&gt;</span>
+                            <span class="ident">Jagged</span>::<span class="ident">Float</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                            <span class="ident">Jagged</span>::<span class="ident">Int</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">nature</span>),
+                            <span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">cats</span>) <span class="op">=</span><span class="op">&gt;</span>
                                 <span class="prelude-val">Some</span>(<span class="ident">Nature</span>::<span class="ident">Categorical</span>(<span class="ident">NatureCategorical</span> {
                                     <span class="ident">categories</span>: <span class="ident">Jagged</span>::<span class="ident">Int</span>(<span class="ident">cats</span>.<span class="ident">into_iter</span>()
                                         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">cats</span><span class="op">|</span> <span class="ident">cats</span>.<span class="ident">into_iter</span>()
                                             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="kw">if</span> <span class="ident">v</span> { <span class="number">1</span> } <span class="kw">else</span> { <span class="number">0</span> })
-                                            .<span class="ident">unique</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Integer</span><span class="op">&gt;&gt;</span>())
+                                            .<span class="ident">unique</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Integer</span><span class="op">&gt;</span><span class="op">&gt;</span>())
                                         .<span class="ident">collect</span>())
                                 })),
 
                             <span class="comment">// properties are lost because of potential imputation</span>
-                            <span class="ident">Jagged</span>::<span class="ident">Str</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="prelude-val">None</span>
+                            <span class="ident">Jagged</span>::<span class="ident">Str</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
                         },
-                        <span class="ident">Nature</span>::<span class="ident">Continuous</span>(<span class="ident">bounds</span>) <span class="op">=&gt;</span> <span class="kw">match</span> (<span class="ident">bounds</span>.<span class="ident">lower</span>.<span class="ident">clone</span>(), <span class="ident">bounds</span>.<span class="ident">upper</span>.<span class="ident">clone</span>()) {
-                            (<span class="ident">Vector1DNull</span>::<span class="ident">Float</span>(<span class="ident">lower</span>), <span class="ident">Vector1DNull</span>::<span class="ident">Float</span>(<span class="ident">upper</span>)) <span class="op">=&gt;</span>
+                        <span class="ident">Nature</span>::<span class="ident">Continuous</span>(<span class="ident">bounds</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> (<span class="ident">bounds</span>.<span class="ident">lower</span>.<span class="ident">clone</span>(), <span class="ident">bounds</span>.<span class="ident">upper</span>.<span class="ident">clone</span>()) {
+                            (<span class="ident">Vector1DNull</span>::<span class="ident">Float</span>(<span class="ident">lower</span>), <span class="ident">Vector1DNull</span>::<span class="ident">Float</span>(<span class="ident">upper</span>)) <span class="op">=</span><span class="op">&gt;</span>
                                 <span class="prelude-val">Some</span>(<span class="ident">Nature</span>::<span class="ident">Continuous</span>(<span class="ident">NatureContinuous</span> {
                                     <span class="ident">lower</span>: <span class="ident">Vector1DNull</span>::<span class="ident">Int</span>(<span class="ident">lower</span>.<span class="ident">into_iter</span>()
                                         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">round</span>() <span class="kw">as</span> <span class="ident">Integer</span>))
@@ -408,52 +408,52 @@
                                         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">round</span>() <span class="kw">as</span> <span class="ident">Integer</span>))
                                         .<span class="ident">collect</span>())
                                 })),
-                            (<span class="ident">Vector1DNull</span>::<span class="ident">Int</span>(<span class="kw">_</span>), <span class="ident">Vector1DNull</span>::<span class="ident">Int</span>(<span class="kw">_</span>)) <span class="op">=&gt;</span>
+                            (<span class="ident">Vector1DNull</span>::<span class="ident">Int</span>(<span class="kw">_</span>), <span class="ident">Vector1DNull</span>::<span class="ident">Int</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span>
                                 <span class="prelude-val">Some</span>(<span class="ident">Nature</span>::<span class="ident">Continuous</span>(<span class="ident">NatureContinuous</span> { <span class="ident">lower</span>: <span class="ident">bounds</span>.<span class="ident">lower</span>, <span class="ident">upper</span>: <span class="ident">bounds</span>.<span class="ident">upper</span> })),
-                            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>
+                            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
                         }
                     },
-                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
                 };
                 <span class="ident">data_property</span>.<span class="ident">nullity</span> <span class="op">=</span> <span class="bool-val">false</span>;
             },
-            <span class="ident">DataType</span>::<span class="ident">Str</span> <span class="op">=&gt;</span> {
+            <span class="ident">DataType</span>::<span class="ident">Str</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="ident">data_property</span>.<span class="ident">nullity</span> <span class="op">=</span> <span class="bool-val">false</span>;
                 <span class="ident">data_property</span>.<span class="ident">nature</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">nature</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">nature</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">nature</span> {
-                        <span class="ident">Nature</span>::<span class="ident">Categorical</span>(<span class="ident">nature</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">nature</span>.<span class="ident">categories</span> {
-                            <span class="ident">Jagged</span>::<span class="ident">Float</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
-                            <span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">jagged</span>) <span class="op">=&gt;</span>
+                    <span class="prelude-val">Some</span>(<span class="ident">nature</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">nature</span> {
+                        <span class="ident">Nature</span>::<span class="ident">Categorical</span>(<span class="ident">nature</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">nature</span>.<span class="ident">categories</span> {
+                            <span class="ident">Jagged</span>::<span class="ident">Float</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                            <span class="ident">Jagged</span>::<span class="ident">Bool</span>(<span class="ident">jagged</span>) <span class="op">=</span><span class="op">&gt;</span>
                                 <span class="prelude-val">Some</span>(<span class="ident">Nature</span>::<span class="ident">Categorical</span>(<span class="ident">NatureCategorical</span> {
                                     <span class="ident">categories</span>: <span class="ident">Jagged</span>::<span class="ident">Str</span>(<span class="ident">jagged</span>.<span class="ident">into_iter</span>()
                                         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">cats</span><span class="op">|</span> <span class="ident">cats</span>.<span class="ident">into_iter</span>()
                                             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">to_string</span>())
                                             .<span class="ident">unique</span>().<span class="ident">collect</span>())
-                                        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>())
+                                        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>())
                                 })),
-                            <span class="ident">Jagged</span>::<span class="ident">Int</span>(<span class="ident">jagged</span>) <span class="op">=&gt;</span>
+                            <span class="ident">Jagged</span>::<span class="ident">Int</span>(<span class="ident">jagged</span>) <span class="op">=</span><span class="op">&gt;</span>
                                 <span class="prelude-val">Some</span>(<span class="ident">Nature</span>::<span class="ident">Categorical</span>(<span class="ident">NatureCategorical</span> {
                                     <span class="ident">categories</span>: <span class="ident">Jagged</span>::<span class="ident">Str</span>(<span class="ident">jagged</span>.<span class="ident">into_iter</span>()
                                         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">cats</span><span class="op">|</span> <span class="ident">cats</span>.<span class="ident">into_iter</span>()
                                             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">to_string</span>())
                                             .<span class="ident">unique</span>().<span class="ident">collect</span>())
-                                        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>())
+                                        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>())
                                 })),
-                            <span class="ident">Jagged</span>::<span class="ident">Str</span>(<span class="ident">jagged</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Nature</span>::<span class="ident">Categorical</span>(<span class="ident">NatureCategorical</span> {
+                            <span class="ident">Jagged</span>::<span class="ident">Str</span>(<span class="ident">jagged</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">Nature</span>::<span class="ident">Categorical</span>(<span class="ident">NatureCategorical</span> {
                                 <span class="ident">categories</span>: <span class="ident">Jagged</span>::<span class="ident">Str</span>(<span class="ident">jagged</span>)
                             }))
                         },
-                        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>
+                        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
                     },
-                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
                 }
             },
-            <span class="ident">DataType</span>::<span class="ident">Float</span> <span class="op">=&gt;</span> {
+            <span class="ident">DataType</span>::<span class="ident">Float</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="ident">data_property</span>.<span class="ident">nature</span> <span class="op">=</span> <span class="prelude-val">None</span>;
                 <span class="ident">data_property</span>.<span class="ident">nullity</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">prior_datatype</span> {
-                    <span class="ident">DataType</span>::<span class="ident">Float</span> <span class="op">=&gt;</span> <span class="ident">data_property</span>.<span class="ident">nullity</span>,
-                    <span class="ident">DataType</span>::<span class="ident">Bool</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
-                    <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>
+                    <span class="ident">DataType</span>::<span class="ident">Float</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_property</span>.<span class="ident">nullity</span>,
+                    <span class="ident">DataType</span>::<span class="ident">Bool</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>
                 }
             }
         };
@@ -464,7 +464,7 @@
 }
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">make_expandable</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">var_type</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">var_type</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">impl</span> <span class="ident">Expandable</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span> {
             <span class="kw">fn</span> <span class="ident">expand_component</span>(
                 <span class="kw-2">&amp;</span><span class="self">self</span>,
@@ -474,9 +474,9 @@
                 <span class="ident">_properties</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
                 <span class="ident">component_id</span>: <span class="ident">u32</span>,
                 <span class="kw-2">mut</span> <span class="ident">_maximum_id</span>: <span class="ident">u32</span>,
-            ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
+            ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
                 <span class="prelude-val">Ok</span>(<span class="ident">base</span>::<span class="ident">ComponentExpansion</span> {
-                    <span class="ident">computation_graph</span>: <span class="macro">hashmap</span><span class="macro">!</span>[<span class="ident">component_id</span> <span class="op">=&gt;</span> <span class="ident">proto</span>::<span class="ident">Component</span> {
+                    <span class="ident">computation_graph</span>: <span class="macro">hashmap</span><span class="macro">!</span>[<span class="ident">component_id</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">proto</span>::<span class="ident">Component</span> {
                         <span class="ident">arguments</span>: <span class="ident">component</span>.<span class="ident">arguments</span>.<span class="ident">clone</span>(),
                         <span class="ident">variant</span>: <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">Cast</span>(<span class="ident">proto</span>::<span class="ident">Cast</span> {
                             <span class="ident">atomic_type</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">var_type</span>
@@ -510,31 +510,31 @@
         <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">bindings</span>::<span class="ident">Analysis</span>;
         <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::<span class="ident">Value</span>;
 
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_f64</span>(<span class="ident">value</span>: <span class="ident">Value</span>) <span class="op">-&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_f64</span>(<span class="ident">value</span>: <span class="ident">Value</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
             <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">analysis</span>, <span class="ident">literal</span>) <span class="op">=</span> <span class="ident">test_literal</span>::<span class="ident">analysis_literal</span>(<span class="ident">value</span>, <span class="bool-val">true</span>);
             <span class="kw">let</span> <span class="ident">cast</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">to_float</span>(<span class="ident">literal</span>).<span class="ident">build</span>();
             (<span class="ident">analysis</span>, <span class="ident">cast</span>)
         }
 
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_i64</span>(<span class="ident">value</span>: <span class="ident">Value</span>, <span class="ident">lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>, <span class="ident">upper</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_i64</span>(<span class="ident">value</span>: <span class="ident">Value</span>, <span class="ident">lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>, <span class="ident">upper</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
             <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">analysis</span>, <span class="ident">literal</span>) <span class="op">=</span> <span class="ident">test_literal</span>::<span class="ident">analysis_literal</span>(<span class="ident">value</span>, <span class="bool-val">true</span>);
             <span class="kw">let</span> <span class="ident">lower</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">literal</span>().<span class="ident">value</span>(<span class="kw">match</span> <span class="ident">lower</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=&gt;</span> <span class="ident">lower</span>, <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="number">0</span>.<span class="ident">into</span>()
+                <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">lower</span>, <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>.<span class="ident">into</span>()
             }).<span class="ident">value_public</span>(<span class="bool-val">true</span>).<span class="ident">build</span>();
             <span class="kw">let</span> <span class="ident">upper</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">literal</span>().<span class="ident">value</span>(<span class="kw">match</span> <span class="ident">upper</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=&gt;</span> <span class="ident">upper</span>, <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="number">10</span>.<span class="ident">into</span>()
+                <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">upper</span>, <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">10</span>.<span class="ident">into</span>()
             }).<span class="ident">value_public</span>(<span class="bool-val">true</span>).<span class="ident">build</span>();
             <span class="kw">let</span> <span class="ident">cast</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">to_int</span>(<span class="ident">literal</span>, <span class="ident">lower</span>, <span class="ident">upper</span>).<span class="ident">build</span>();
             (<span class="ident">analysis</span>, <span class="ident">cast</span>)
         }
 
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_string</span>(<span class="ident">value</span>: <span class="ident">Value</span>) <span class="op">-&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_string</span>(<span class="ident">value</span>: <span class="ident">Value</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
             <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">analysis</span>, <span class="ident">literal</span>) <span class="op">=</span> <span class="ident">test_literal</span>::<span class="ident">analysis_literal</span>(<span class="ident">value</span>, <span class="bool-val">true</span>);
             <span class="kw">let</span> <span class="ident">cast</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">to_string</span>(<span class="ident">literal</span>).<span class="ident">build</span>();
             (<span class="ident">analysis</span>, <span class="ident">cast</span>)
         }
 
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_bool</span>(<span class="ident">value</span>: <span class="ident">Value</span>, <span class="ident">true_label</span>: <span class="ident">Value</span>) <span class="op">-&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_bool</span>(<span class="ident">value</span>: <span class="ident">Value</span>, <span class="ident">true_label</span>: <span class="ident">Value</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
             <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">analysis</span>, <span class="ident">literal</span>) <span class="op">=</span> <span class="ident">test_literal</span>::<span class="ident">analysis_literal</span>(<span class="ident">value</span>, <span class="bool-val">true</span>);
             <span class="kw">let</span> <span class="ident">true_label</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">literal</span>().<span class="ident">value</span>(<span class="ident">true_label</span>).<span class="ident">value_public</span>(<span class="bool-val">true</span>).<span class="ident">build</span>();
             <span class="kw">let</span> <span class="ident">cast</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">to_bool</span>(<span class="ident">literal</span>, <span class="ident">true_label</span>).<span class="ident">build</span>();
@@ -543,7 +543,7 @@
     }
 
     <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">test_propagation</span> {
-        ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">true_label</span>:<span class="ident">expr</span>, )<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
+        ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">true_label</span>:<span class="ident">expr</span>, )<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
             $(
                 <span class="attribute">#[<span class="ident">test</span>]</span>
                 <span class="kw">fn</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>() {

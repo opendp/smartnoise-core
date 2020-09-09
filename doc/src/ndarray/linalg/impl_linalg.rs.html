@@ -825,13 +825,13 @@
 <span id="824">824</span>
 <span id="825">825</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. This file may not be copied, modified, or distributed</span>
-<span class="comment">// except according to those terms.</span>
+<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">imp_prelude</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">numeric_util</span>;
@@ -852,51 +852,51 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;blas&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">cblas_sys</span>::{<span class="ident">CblasNoTrans</span>, <span class="ident">CblasRowMajor</span>, <span class="ident">CblasTrans</span>, <span class="ident">CBLAS_LAYOUT</span>};
 
-<span class="doccomment">/// len of vector before we use blas</span>
+<span class="doccomment">/// len of vector before we use blas</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;blas&quot;</span>)]</span>
 <span class="kw">const</span> <span class="ident">DOT_BLAS_CUTOFF</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">32</span>;
-<span class="doccomment">/// side of matrix before we use blas</span>
+<span class="doccomment">/// side of matrix before we use blas</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;blas&quot;</span>)]</span>
 <span class="kw">const</span> <span class="ident">GEMM_BLAS_CUTOFF</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">7</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;blas&quot;</span>)]</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">non_camel_case_types</span>)]</span>
-<span class="kw">type</span> <span class="ident">blas_index</span> <span class="op">=</span> <span class="ident">c_int</span>; <span class="comment">// blas index type</span>
+<span class="kw">type</span> <span class="ident">blas_index</span> <span class="op">=</span> <span class="ident">c_int</span>; <span class="comment">// blas index type</span>
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span><span class="op">&gt;</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
 {
-    <span class="doccomment">/// Perform dot product or matrix multiplication of arrays `self` and `rhs`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// `Rhs` may be either a one-dimensional or a two-dimensional array.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If `Rhs` is one-dimensional, then the operation is a vector dot</span>
-    <span class="doccomment">/// product, which is the sum of the elementwise products (no conjugation</span>
-    <span class="doccomment">/// of complex operands, and thus not their inner product). In this case,</span>
-    <span class="doccomment">/// `self` and `rhs` must be the same length.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If `Rhs` is two-dimensional, then the operation is matrix</span>
-    <span class="doccomment">/// multiplication, where `self` is treated as a row vector. In this case,</span>
-    <span class="doccomment">/// if `self` is shape *M*, then `rhs` is shape *M* × *N* and the result is</span>
-    <span class="doccomment">/// shape *N*.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if the array shapes are incompatible.&lt;br&gt;</span>
-    <span class="doccomment">/// *Note:* If enabled, uses blas `dot` for elements of `f32, f64` when memory</span>
-    <span class="doccomment">/// layout allows.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dot</span><span class="op">&lt;</span><span class="ident">Rhs</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">Rhs</span>) <span class="op">-&gt;</span> <span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">Dot</span><span class="op">&lt;</span><span class="ident">Rhs</span><span class="op">&gt;&gt;</span>::<span class="ident">Output</span>
+    <span class="doccomment">/// Perform dot product or matrix multiplication of arrays `self` and `rhs`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// `Rhs` may be either a one-dimensional or a two-dimensional array.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If `Rhs` is one-dimensional, then the operation is a vector dot</span>
+    <span class="doccomment">/// product, which is the sum of the elementwise products (no conjugation</span>
+    <span class="doccomment">/// of complex operands, and thus not their inner product). In this case,</span>
+    <span class="doccomment">/// `self` and `rhs` must be the same length.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If `Rhs` is two-dimensional, then the operation is matrix</span>
+    <span class="doccomment">/// multiplication, where `self` is treated as a row vector. In this case,</span>
+    <span class="doccomment">/// if `self` is shape *M*, then `rhs` is shape *M* × *N* and the result is</span>
+    <span class="doccomment">/// shape *N*.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if the array shapes are incompatible.&lt;br&gt;</span>
+    <span class="doccomment">/// *Note:* If enabled, uses blas `dot` for elements of `f32, f64` when memory</span>
+    <span class="doccomment">/// layout allows.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dot</span><span class="op">&lt;</span><span class="ident">Rhs</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">Rhs</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">Dot</span><span class="op">&lt;</span><span class="ident">Rhs</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">Output</span>
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">Dot</span><span class="op">&lt;</span><span class="ident">Rhs</span><span class="op">&gt;</span>,
     {
         <span class="ident">Dot</span>::<span class="ident">dot</span>(<span class="self">self</span>, <span class="ident">rhs</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">dot_generic</span><span class="op">&lt;</span><span class="ident">S2</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">A</span>
+    <span class="kw">fn</span> <span class="ident">dot_generic</span><span class="op">&lt;</span><span class="ident">S2</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">A</span>
     <span class="kw">where</span>
         <span class="ident">S2</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
         <span class="ident">A</span>: <span class="ident">LinalgScalar</span>,
     {
         <span class="macro">debug_assert_eq</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">len</span>(), <span class="ident">rhs</span>.<span class="ident">len</span>());
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="ident">rhs</span>.<span class="ident">len</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">rhs</span>.<span class="ident">len</span>());
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">self_s</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">as_slice</span>() {
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">rhs_s</span>) <span class="op">=</span> <span class="ident">rhs</span>.<span class="ident">as_slice</span>() {
                 <span class="kw">return</span> <span class="ident">numeric_util</span>::<span class="ident">unrolled_dot</span>(<span class="ident">self_s</span>, <span class="ident">rhs_s</span>);
@@ -912,7 +912,7 @@
     }
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;blas&quot;</span>))]</span>
-    <span class="kw">fn</span> <span class="ident">dot_impl</span><span class="op">&lt;</span><span class="ident">S2</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">A</span>
+    <span class="kw">fn</span> <span class="ident">dot_impl</span><span class="op">&lt;</span><span class="ident">S2</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">A</span>
     <span class="kw">where</span>
         <span class="ident">S2</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
         <span class="ident">A</span>: <span class="ident">LinalgScalar</span>,
@@ -921,17 +921,17 @@
     }
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;blas&quot;</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">dot_impl</span><span class="op">&lt;</span><span class="ident">S2</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">A</span>
+    <span class="kw">fn</span> <span class="ident">dot_impl</span><span class="op">&lt;</span><span class="ident">S2</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">A</span>
     <span class="kw">where</span>
         <span class="ident">S2</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
         <span class="ident">A</span>: <span class="ident">LinalgScalar</span>,
     {
-        <span class="comment">// Use only if the vector is large enough to be worth it</span>
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">len</span>() <span class="op">&gt;=</span> <span class="ident">DOT_BLAS_CUTOFF</span> {
+        <span class="comment">// Use only if the vector is large enough to be worth it</span>
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">len</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="ident">DOT_BLAS_CUTOFF</span> {
             <span class="macro">debug_assert_eq</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">len</span>(), <span class="ident">rhs</span>.<span class="ident">len</span>());
-            <span class="macro">assert</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="ident">rhs</span>.<span class="ident">len</span>());
+            <span class="macro">assert</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">rhs</span>.<span class="ident">len</span>());
             <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">dot</span> {
-                (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">func</span>:<span class="ident">ident</span>) <span class="op">=&gt;</span> {{
+                (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">func</span>:<span class="ident">ident</span>) <span class="op">=</span><span class="op">&gt;</span> {{
                     <span class="kw">if</span> <span class="ident">blas_compat_1d</span>::<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">&amp;&amp;</span> <span class="ident">blas_compat_1d</span>::<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="ident">rhs</span>) {
                         <span class="kw">unsafe</span> {
                             <span class="kw">let</span> (<span class="ident">lhs_ptr</span>, <span class="ident">n</span>, <span class="ident">incx</span>) <span class="op">=</span>
@@ -958,22 +958,22 @@
     }
 }
 
-<span class="doccomment">/// Return a pointer to the starting element in BLAS&#39;s view.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// BLAS wants a pointer to the element with lowest address,</span>
-<span class="doccomment">/// which agrees with our pointer for non-negative strides, but</span>
-<span class="doccomment">/// is at the opposite end for negative strides.</span>
+<span class="doccomment">/// Return a pointer to the starting element in BLAS&#39;s view.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// BLAS wants a pointer to the element with lowest address,</span>
+<span class="doccomment">/// which agrees with our pointer for non-negative strides, but</span>
+<span class="doccomment">/// is at the opposite end for negative strides.</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;blas&quot;</span>)]</span>
 <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">blas_1d_params</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(
     <span class="ident">ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">A</span>,
     <span class="ident">len</span>: <span class="ident">usize</span>,
     <span class="ident">stride</span>: <span class="ident">isize</span>,
-) <span class="op">-&gt;</span> (<span class="kw-2">*</span><span class="kw">const</span> <span class="ident">A</span>, <span class="ident">blas_index</span>, <span class="ident">blas_index</span>) {
-    <span class="comment">// [x x x x]</span>
-    <span class="comment">//        ^--ptr</span>
-    <span class="comment">//        stride = -1</span>
-    <span class="comment">//  ^--blas_ptr = ptr + (len - 1) * stride</span>
-    <span class="kw">if</span> <span class="ident">stride</span> <span class="op">&gt;=</span> <span class="number">0</span> <span class="op">||</span> <span class="ident">len</span> <span class="op">==</span> <span class="number">0</span> {
+) <span class="op">-</span><span class="op">&gt;</span> (<span class="kw-2">*</span><span class="kw">const</span> <span class="ident">A</span>, <span class="ident">blas_index</span>, <span class="ident">blas_index</span>) {
+    <span class="comment">// [x x x x]</span>
+    <span class="comment">//        ^--ptr</span>
+    <span class="comment">//        stride = -1</span>
+    <span class="comment">//  ^--blas_ptr = ptr + (len - 1) * stride</span>
+    <span class="kw">if</span> <span class="ident">stride</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">len</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
         (<span class="ident">ptr</span>, <span class="ident">len</span> <span class="kw">as</span> <span class="ident">blas_index</span>, <span class="ident">stride</span> <span class="kw">as</span> <span class="ident">blas_index</span>)
     } <span class="kw">else</span> {
         <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="ident">ptr</span>.<span class="ident">offset</span>((<span class="ident">len</span> <span class="op">-</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">isize</span> <span class="op">*</span> <span class="ident">stride</span>);
@@ -981,19 +981,19 @@
     }
 }
 
-<span class="doccomment">/// Matrix Multiplication</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// For two-dimensional arrays, the dot method computes the matrix</span>
-<span class="doccomment">/// multiplication.</span>
+<span class="doccomment">/// Matrix Multiplication</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// For two-dimensional arrays, the dot method computes the matrix</span>
+<span class="doccomment">/// multiplication.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Dot</span><span class="op">&lt;</span><span class="ident">Rhs</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// The result of the operation.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// For two-dimensional arrays: a rectangular array.</span>
+    <span class="doccomment">/// The result of the operation.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// For two-dimensional arrays: a rectangular array.</span>
     <span class="kw">type</span> <span class="ident">Output</span>;
-    <span class="kw">fn</span> <span class="ident">dot</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">Rhs</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
+    <span class="kw">fn</span> <span class="ident">dot</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">Rhs</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span>, <span class="ident">S2</span><span class="op">&gt;</span> <span class="ident">Dot</span><span class="op">&lt;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix1</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span>, <span class="ident">S2</span><span class="op">&gt;</span> <span class="ident">Dot</span><span class="op">&lt;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix1</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
     <span class="ident">S2</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
@@ -1001,20 +1001,20 @@
 {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">A</span>;
 
-    <span class="doccomment">/// Compute the dot product of one-dimensional arrays.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The dot product is a sum of the elementwise products (no conjugation</span>
-    <span class="doccomment">/// of complex operands, and thus not their inner product).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if the arrays are not of the same length.&lt;br&gt;</span>
-    <span class="doccomment">/// *Note:* If enabled, uses blas `dot` for elements of `f32, f64` when memory</span>
-    <span class="doccomment">/// layout allows.</span>
-    <span class="kw">fn</span> <span class="ident">dot</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">A</span> {
+    <span class="doccomment">/// Compute the dot product of one-dimensional arrays.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The dot product is a sum of the elementwise products (no conjugation</span>
+    <span class="doccomment">/// of complex operands, and thus not their inner product).</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if the arrays are not of the same length.&lt;br&gt;</span>
+    <span class="doccomment">/// *Note:* If enabled, uses blas `dot` for elements of `f32, f64` when memory</span>
+    <span class="doccomment">/// layout allows.</span>
+    <span class="kw">fn</span> <span class="ident">dot</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">A</span> {
         <span class="self">self</span>.<span class="ident">dot_impl</span>(<span class="ident">rhs</span>)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span>, <span class="ident">S2</span><span class="op">&gt;</span> <span class="ident">Dot</span><span class="op">&lt;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix2</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span>, <span class="ident">S2</span><span class="op">&gt;</span> <span class="ident">Dot</span><span class="op">&lt;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
     <span class="ident">S2</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
@@ -1022,16 +1022,16 @@
 {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>;
 
-    <span class="doccomment">/// Perform the matrix multiplication of the row vector `self` and</span>
-    <span class="doccomment">/// rectangular matrix `rhs`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The array shapes must agree in the way that</span>
-    <span class="doccomment">/// if `self` is *M*, then `rhs` is *M* × *N*.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Return a result array with shape *N*.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if shapes are incompatible.</span>
-    <span class="kw">fn</span> <span class="ident">dot</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix2</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">Ix1</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Perform the matrix multiplication of the row vector `self` and</span>
+    <span class="doccomment">/// rectangular matrix `rhs`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The array shapes must agree in the way that</span>
+    <span class="doccomment">/// if `self` is *M*, then `rhs` is *M* × *N*.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Return a result array with shape *N*.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if shapes are incompatible.</span>
+    <span class="kw">fn</span> <span class="ident">dot</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">Ix1</span><span class="op">&gt;</span> {
         <span class="ident">rhs</span>.<span class="ident">t</span>().<span class="ident">dot</span>(<span class="self">self</span>)
     }
 }
@@ -1040,36 +1040,36 @@
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
 {
-    <span class="doccomment">/// Perform matrix multiplication of rectangular arrays `self` and `rhs`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// `Rhs` may be either a one-dimensional or a two-dimensional array.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If Rhs is two-dimensional, they array shapes must agree in the way that</span>
-    <span class="doccomment">/// if `self` is *M* × *N*, then `rhs` is *N* × *K*.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Return a result array with shape *M* × *K*.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if shapes are incompatible or the number of elements in the</span>
-    <span class="doccomment">/// result would overflow `isize`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// *Note:* If enabled, uses blas `gemv/gemm` for elements of `f32, f64`</span>
-    <span class="doccomment">/// when memory layout allows. The default matrixmultiply backend</span>
-    <span class="doccomment">/// is otherwise used for `f32, f64` for all memory layouts.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use ndarray::arr2;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let a = arr2(&amp;[[1., 2.],</span>
-    <span class="doccomment">///                [0., 1.]]);</span>
-    <span class="doccomment">/// let b = arr2(&amp;[[1., 2.],</span>
-    <span class="doccomment">///                [2., 3.]]);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// assert!(</span>
-    <span class="doccomment">///     a.dot(&amp;b) == arr2(&amp;[[5., 8.],</span>
-    <span class="doccomment">///                         [2., 3.]])</span>
-    <span class="doccomment">/// );</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dot</span><span class="op">&lt;</span><span class="ident">Rhs</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">Rhs</span>) <span class="op">-&gt;</span> <span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">Dot</span><span class="op">&lt;</span><span class="ident">Rhs</span><span class="op">&gt;&gt;</span>::<span class="ident">Output</span>
+    <span class="doccomment">/// Perform matrix multiplication of rectangular arrays `self` and `rhs`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// `Rhs` may be either a one-dimensional or a two-dimensional array.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If Rhs is two-dimensional, they array shapes must agree in the way that</span>
+    <span class="doccomment">/// if `self` is *M* × *N*, then `rhs` is *N* × *K*.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Return a result array with shape *M* × *K*.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if shapes are incompatible or the number of elements in the</span>
+    <span class="doccomment">/// result would overflow `isize`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// *Note:* If enabled, uses blas `gemv/gemm` for elements of `f32, f64`</span>
+    <span class="doccomment">/// when memory layout allows. The default matrixmultiply backend</span>
+    <span class="doccomment">/// is otherwise used for `f32, f64` for all memory layouts.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// use ndarray::arr2;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// let a = arr2(&amp;[[1., 2.],</span>
+    <span class="doccomment">///                [0., 1.]]);</span>
+    <span class="doccomment">/// let b = arr2(&amp;[[1., 2.],</span>
+    <span class="doccomment">///                [2., 3.]]);</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// assert!(</span>
+    <span class="doccomment">///     a.dot(&amp;b) == arr2(&amp;[[5., 8.],</span>
+    <span class="doccomment">///                         [2., 3.]])</span>
+    <span class="doccomment">/// );</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dot</span><span class="op">&lt;</span><span class="ident">Rhs</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">Rhs</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">Dot</span><span class="op">&lt;</span><span class="ident">Rhs</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">Output</span>
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">Dot</span><span class="op">&lt;</span><span class="ident">Rhs</span><span class="op">&gt;</span>,
     {
@@ -1077,25 +1077,25 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span>, <span class="ident">S2</span><span class="op">&gt;</span> <span class="ident">Dot</span><span class="op">&lt;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix2</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix2</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span>, <span class="ident">S2</span><span class="op">&gt;</span> <span class="ident">Dot</span><span class="op">&lt;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix2</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix2</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
     <span class="ident">S2</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
     <span class="ident">A</span>: <span class="ident">LinalgScalar</span>,
 {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Array2</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">dot</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">b</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix2</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Array2</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">dot</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">b</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Array2</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">view</span>();
         <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">view</span>();
         <span class="kw">let</span> ((<span class="ident">m</span>, <span class="ident">k</span>), (<span class="ident">k2</span>, <span class="ident">n</span>)) <span class="op">=</span> (<span class="ident">a</span>.<span class="ident">dim</span>(), <span class="ident">b</span>.<span class="ident">dim</span>());
-        <span class="kw">if</span> <span class="ident">k</span> <span class="op">!=</span> <span class="ident">k2</span> <span class="op">||</span> <span class="ident">m</span>.<span class="ident">checked_mul</span>(<span class="ident">n</span>).<span class="ident">is_none</span>() {
+        <span class="kw">if</span> <span class="ident">k</span> <span class="op">!</span><span class="op">=</span> <span class="ident">k2</span> <span class="op">|</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">checked_mul</span>(<span class="ident">n</span>).<span class="ident">is_none</span>() {
             <span class="ident">dot_shape_error</span>(<span class="ident">m</span>, <span class="ident">k</span>, <span class="ident">k2</span>, <span class="ident">n</span>);
         }
 
         <span class="kw">let</span> <span class="ident">lhs_s0</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">strides</span>()[<span class="number">0</span>];
         <span class="kw">let</span> <span class="ident">rhs_s0</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">strides</span>()[<span class="number">0</span>];
-        <span class="kw">let</span> <span class="ident">column_major</span> <span class="op">=</span> <span class="ident">lhs_s0</span> <span class="op">==</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">rhs_s0</span> <span class="op">==</span> <span class="number">1</span>;
-        <span class="comment">// A is Copy so this is safe</span>
+        <span class="kw">let</span> <span class="ident">column_major</span> <span class="op">=</span> <span class="ident">lhs_s0</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">rhs_s0</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span>;
+        <span class="comment">// A is Copy so this is safe</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">m</span> <span class="op">*</span> <span class="ident">n</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c</span>;
         <span class="kw">unsafe</span> {
@@ -1107,13 +1107,13 @@
     }
 }
 
-<span class="doccomment">/// Assumes that `m` and `n` are ≤ `isize::MAX`.</span>
+<span class="doccomment">/// Assumes that `m` and `n` are ≤ `isize::MAX`.</span>
 <span class="attribute">#[<span class="ident">cold</span>]</span>
 <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">never</span>)]</span>
-<span class="kw">fn</span> <span class="ident">dot_shape_error</span>(<span class="ident">m</span>: <span class="ident">usize</span>, <span class="ident">k</span>: <span class="ident">usize</span>, <span class="ident">k2</span>: <span class="ident">usize</span>, <span class="ident">n</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="op">!</span> {
+<span class="kw">fn</span> <span class="ident">dot_shape_error</span>(<span class="ident">m</span>: <span class="ident">usize</span>, <span class="ident">k</span>: <span class="ident">usize</span>, <span class="ident">k2</span>: <span class="ident">usize</span>, <span class="ident">n</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="op">!</span> {
     <span class="kw">match</span> <span class="ident">m</span>.<span class="ident">checked_mul</span>(<span class="ident">n</span>) {
-        <span class="prelude-val">Some</span>(<span class="ident">len</span>) <span class="kw">if</span> <span class="ident">len</span> <span class="op">&lt;=</span> ::<span class="ident">std</span>::<span class="ident">isize</span>::<span class="ident">MAX</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">=&gt;</span> {}
-        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;ndarray: shape {} × {} overflows isize&quot;</span>, <span class="ident">m</span>, <span class="ident">n</span>),
+        <span class="prelude-val">Some</span>(<span class="ident">len</span>) <span class="kw">if</span> <span class="ident">len</span> <span class="op">&lt;</span><span class="op">=</span> ::<span class="ident">std</span>::<span class="ident">isize</span>::<span class="ident">MAX</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">=</span><span class="op">&gt;</span> {}
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;ndarray: shape {} × {} overflows isize&quot;</span>, <span class="ident">m</span>, <span class="ident">n</span>),
     }
     <span class="macro">panic</span><span class="macro">!</span>(
         <span class="string">&quot;ndarray: inputs {} × {} and {} × {} are not compatible for matrix multiplication&quot;</span>,
@@ -1123,34 +1123,34 @@
 
 <span class="attribute">#[<span class="ident">cold</span>]</span>
 <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">never</span>)]</span>
-<span class="kw">fn</span> <span class="ident">general_dot_shape_error</span>(<span class="ident">m</span>: <span class="ident">usize</span>, <span class="ident">k</span>: <span class="ident">usize</span>, <span class="ident">k2</span>: <span class="ident">usize</span>, <span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">c1</span>: <span class="ident">usize</span>, <span class="ident">c2</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="op">!</span> {
+<span class="kw">fn</span> <span class="ident">general_dot_shape_error</span>(<span class="ident">m</span>: <span class="ident">usize</span>, <span class="ident">k</span>: <span class="ident">usize</span>, <span class="ident">k2</span>: <span class="ident">usize</span>, <span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">c1</span>: <span class="ident">usize</span>, <span class="ident">c2</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="op">!</span> {
     <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;ndarray: inputs {} × {}, {} × {}, and output {} × {} are not compatible for matrix multiplication&quot;</span>,
            <span class="ident">m</span>, <span class="ident">k</span>, <span class="ident">k2</span>, <span class="ident">n</span>, <span class="ident">c1</span>, <span class="ident">c2</span>);
 }
 
-<span class="doccomment">/// Perform the matrix multiplication of the rectangular array `self` and</span>
-<span class="doccomment">/// column vector `rhs`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The array shapes must agree in the way that</span>
-<span class="doccomment">/// if `self` is *M* × *N*, then `rhs` is *N*.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Return a result array with shape *M*.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// **Panics** if shapes are incompatible.</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span>, <span class="ident">S2</span><span class="op">&gt;</span> <span class="ident">Dot</span><span class="op">&lt;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix1</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix2</span><span class="op">&gt;</span>
+<span class="doccomment">/// Perform the matrix multiplication of the rectangular array `self` and</span>
+<span class="doccomment">/// column vector `rhs`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The array shapes must agree in the way that</span>
+<span class="doccomment">/// if `self` is *M* × *N*, then `rhs` is *N*.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Return a result array with shape *M*.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// **Panics** if shapes are incompatible.</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span>, <span class="ident">S2</span><span class="op">&gt;</span> <span class="ident">Dot</span><span class="op">&lt;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix1</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix2</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
     <span class="ident">S2</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
     <span class="ident">A</span>: <span class="ident">LinalgScalar</span>,
 {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">dot</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">Ix1</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">dot</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">Ix1</span><span class="op">&gt;</span> {
         <span class="kw">let</span> ((<span class="ident">m</span>, <span class="ident">a</span>), <span class="ident">n</span>) <span class="op">=</span> (<span class="self">self</span>.<span class="ident">dim</span>(), <span class="ident">rhs</span>.<span class="ident">dim</span>());
-        <span class="kw">if</span> <span class="ident">a</span> <span class="op">!=</span> <span class="ident">n</span> {
+        <span class="kw">if</span> <span class="ident">a</span> <span class="op">!</span><span class="op">=</span> <span class="ident">n</span> {
             <span class="ident">dot_shape_error</span>(<span class="ident">m</span>, <span class="ident">a</span>, <span class="ident">n</span>, <span class="number">1</span>);
         }
 
-        <span class="comment">// Avoid initializing the memory in vec -- set it during iteration</span>
+        <span class="comment">// Avoid initializing the memory in vec -- set it during iteration</span>
         <span class="kw">unsafe</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c</span> <span class="op">=</span> <span class="ident">Array</span>::<span class="ident">uninitialized</span>(<span class="ident">m</span>);
             <span class="ident">general_mat_vec_mul</span>(<span class="ident">A</span>::<span class="ident">one</span>(), <span class="self">self</span>, <span class="ident">rhs</span>, <span class="ident">A</span>::<span class="ident">zero</span>(), <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">c</span>);
@@ -1164,13 +1164,13 @@
     <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="doccomment">/// Perform the operation `self += alpha * rhs` efficiently, where</span>
-    <span class="doccomment">/// `alpha` is a scalar and `rhs` is another array. This operation is</span>
-    <span class="doccomment">/// also known as `axpy` in BLAS.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If their shapes disagree, `rhs` is broadcast to the shape of `self`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if broadcasting isn’t possible.</span>
+    <span class="doccomment">/// Perform the operation `self += alpha * rhs` efficiently, where</span>
+    <span class="doccomment">/// `alpha` is a scalar and `rhs` is another array. This operation is</span>
+    <span class="doccomment">/// also known as `axpy` in BLAS.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If their shapes disagree, `rhs` is broadcast to the shape of `self`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if broadcasting isn’t possible.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">scaled_add</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">E</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">alpha</span>: <span class="ident">A</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">E</span><span class="op">&gt;</span>)
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">DataMut</span>,
@@ -1182,8 +1182,8 @@
     }
 }
 
-<span class="comment">// mat_mul_impl uses ArrayView arguments to send all array kinds into</span>
-<span class="comment">// the same instantiated implementation.</span>
+<span class="comment">// mat_mul_impl uses ArrayView arguments to send all array kinds into</span>
+<span class="comment">// the same instantiated implementation.</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;blas&quot;</span>))]</span>
 <span class="kw">use</span> <span class="self">self</span>::<span class="ident">mat_mul_general</span> <span class="kw">as</span> <span class="ident">mat_mul_impl</span>;
 
@@ -1197,79 +1197,79 @@
 ) <span class="kw">where</span>
     <span class="ident">A</span>: <span class="ident">LinalgScalar</span>,
 {
-    <span class="comment">// size cutoff for using BLAS</span>
+    <span class="comment">// size cutoff for using BLAS</span>
     <span class="kw">let</span> <span class="ident">cut</span> <span class="op">=</span> <span class="ident">GEMM_BLAS_CUTOFF</span>;
     <span class="kw">let</span> ((<span class="kw-2">mut</span> <span class="ident">m</span>, <span class="ident">a</span>), (<span class="kw">_</span>, <span class="kw-2">mut</span> <span class="ident">n</span>)) <span class="op">=</span> (<span class="ident">lhs</span>.<span class="ident">dim</span>(), <span class="ident">rhs</span>.<span class="ident">dim</span>());
-    <span class="kw">if</span> <span class="op">!</span>(<span class="ident">m</span> <span class="op">&gt;</span> <span class="ident">cut</span> <span class="op">||</span> <span class="ident">n</span> <span class="op">&gt;</span> <span class="ident">cut</span> <span class="op">||</span> <span class="ident">a</span> <span class="op">&gt;</span> <span class="ident">cut</span>) <span class="op">||</span> <span class="op">!</span>(<span class="ident">same_type</span>::<span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">f32</span><span class="op">&gt;</span>() <span class="op">||</span> <span class="ident">same_type</span>::<span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">f64</span><span class="op">&gt;</span>()) {
+    <span class="kw">if</span> <span class="op">!</span>(<span class="ident">m</span> <span class="op">&gt;</span> <span class="ident">cut</span> <span class="op">|</span><span class="op">|</span> <span class="ident">n</span> <span class="op">&gt;</span> <span class="ident">cut</span> <span class="op">|</span><span class="op">|</span> <span class="ident">a</span> <span class="op">&gt;</span> <span class="ident">cut</span>) <span class="op">|</span><span class="op">|</span> <span class="op">!</span>(<span class="ident">same_type</span>::<span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">f32</span><span class="op">&gt;</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">same_type</span>::<span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">f64</span><span class="op">&gt;</span>()) {
         <span class="kw">return</span> <span class="ident">mat_mul_general</span>(<span class="ident">alpha</span>, <span class="ident">lhs</span>, <span class="ident">rhs</span>, <span class="ident">beta</span>, <span class="ident">c</span>);
     }
     {
-        <span class="comment">// Use `c` for c-order and `f` for an f-order matrix</span>
-        <span class="comment">// We can handle c * c, f * f generally and</span>
-        <span class="comment">// c * f and f * c if the `f` matrix is square.</span>
+        <span class="comment">// Use `c` for c-order and `f` for an f-order matrix</span>
+        <span class="comment">// We can handle c * c, f * f generally and</span>
+        <span class="comment">// c * f and f * c if the `f` matrix is square.</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lhs_</span> <span class="op">=</span> <span class="ident">lhs</span>.<span class="ident">view</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rhs_</span> <span class="op">=</span> <span class="ident">rhs</span>.<span class="ident">view</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c_</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">view_mut</span>();
         <span class="kw">let</span> <span class="ident">lhs_s0</span> <span class="op">=</span> <span class="ident">lhs_</span>.<span class="ident">strides</span>()[<span class="number">0</span>];
         <span class="kw">let</span> <span class="ident">rhs_s0</span> <span class="op">=</span> <span class="ident">rhs_</span>.<span class="ident">strides</span>()[<span class="number">0</span>];
-        <span class="kw">let</span> <span class="ident">both_f</span> <span class="op">=</span> <span class="ident">lhs_s0</span> <span class="op">==</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">rhs_s0</span> <span class="op">==</span> <span class="number">1</span>;
+        <span class="kw">let</span> <span class="ident">both_f</span> <span class="op">=</span> <span class="ident">lhs_s0</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">rhs_s0</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">lhs_trans</span> <span class="op">=</span> <span class="ident">CblasNoTrans</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rhs_trans</span> <span class="op">=</span> <span class="ident">CblasNoTrans</span>;
         <span class="kw">if</span> <span class="ident">both_f</span> {
-            <span class="comment">// A^t B^t = C^t =&gt; B A = C</span>
+            <span class="comment">// A^t B^t = C^t =&gt; B A = C</span>
             <span class="kw">let</span> <span class="ident">lhs_t</span> <span class="op">=</span> <span class="ident">lhs_</span>.<span class="ident">reversed_axes</span>();
             <span class="ident">lhs_</span> <span class="op">=</span> <span class="ident">rhs_</span>.<span class="ident">reversed_axes</span>();
             <span class="ident">rhs_</span> <span class="op">=</span> <span class="ident">lhs_t</span>;
             <span class="ident">c_</span> <span class="op">=</span> <span class="ident">c_</span>.<span class="ident">reversed_axes</span>();
             <span class="ident">swap</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">m</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">n</span>);
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">lhs_s0</span> <span class="op">==</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">m</span> <span class="op">==</span> <span class="ident">a</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">lhs_s0</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">m</span> <span class="op">=</span><span class="op">=</span> <span class="ident">a</span> {
             <span class="ident">lhs_</span> <span class="op">=</span> <span class="ident">lhs_</span>.<span class="ident">reversed_axes</span>();
             <span class="ident">lhs_trans</span> <span class="op">=</span> <span class="ident">CblasTrans</span>;
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">rhs_s0</span> <span class="op">==</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">a</span> <span class="op">==</span> <span class="ident">n</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">rhs_s0</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">a</span> <span class="op">=</span><span class="op">=</span> <span class="ident">n</span> {
             <span class="ident">rhs_</span> <span class="op">=</span> <span class="ident">rhs_</span>.<span class="ident">reversed_axes</span>();
             <span class="ident">rhs_trans</span> <span class="op">=</span> <span class="ident">CblasTrans</span>;
         }
 
         <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">gemm</span> {
-            (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">gemm</span>:<span class="ident">ident</span>) <span class="op">=&gt;</span> {
+            (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">gemm</span>:<span class="ident">ident</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="ident">blas_row_major_2d</span>::<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">lhs_</span>)
                     <span class="op">&amp;&amp;</span> <span class="ident">blas_row_major_2d</span>::<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">rhs_</span>)
                     <span class="op">&amp;&amp;</span> <span class="ident">blas_row_major_2d</span>::<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">c_</span>)
                 {
                     <span class="kw">let</span> (<span class="ident">m</span>, <span class="ident">k</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">lhs_trans</span> {
-                        <span class="ident">CblasNoTrans</span> <span class="op">=&gt;</span> <span class="ident">lhs_</span>.<span class="ident">dim</span>(),
-                        <span class="kw">_</span> <span class="op">=&gt;</span> {
+                        <span class="ident">CblasNoTrans</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">lhs_</span>.<span class="ident">dim</span>(),
+                        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
                             <span class="kw">let</span> (<span class="ident">rows</span>, <span class="ident">cols</span>) <span class="op">=</span> <span class="ident">lhs_</span>.<span class="ident">dim</span>();
                             (<span class="ident">cols</span>, <span class="ident">rows</span>)
                         }
                     };
                     <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">rhs_trans</span> {
-                        <span class="ident">CblasNoTrans</span> <span class="op">=&gt;</span> <span class="ident">rhs_</span>.<span class="ident">raw_dim</span>()[<span class="number">1</span>],
-                        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">rhs_</span>.<span class="ident">raw_dim</span>()[<span class="number">0</span>],
+                        <span class="ident">CblasNoTrans</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">rhs_</span>.<span class="ident">raw_dim</span>()[<span class="number">1</span>],
+                        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">rhs_</span>.<span class="ident">raw_dim</span>()[<span class="number">0</span>],
                     };
-                    <span class="comment">// adjust strides, these may [1, 1] for column matrices</span>
+                    <span class="comment">// adjust strides, these may [1, 1] for column matrices</span>
                     <span class="kw">let</span> <span class="ident">lhs_stride</span> <span class="op">=</span> <span class="ident">cmp</span>::<span class="ident">max</span>(<span class="ident">lhs_</span>.<span class="ident">strides</span>()[<span class="number">0</span>] <span class="kw">as</span> <span class="ident">blas_index</span>, <span class="ident">k</span> <span class="kw">as</span> <span class="ident">blas_index</span>);
                     <span class="kw">let</span> <span class="ident">rhs_stride</span> <span class="op">=</span> <span class="ident">cmp</span>::<span class="ident">max</span>(<span class="ident">rhs_</span>.<span class="ident">strides</span>()[<span class="number">0</span>] <span class="kw">as</span> <span class="ident">blas_index</span>, <span class="ident">n</span> <span class="kw">as</span> <span class="ident">blas_index</span>);
                     <span class="kw">let</span> <span class="ident">c_stride</span> <span class="op">=</span> <span class="ident">cmp</span>::<span class="ident">max</span>(<span class="ident">c_</span>.<span class="ident">strides</span>()[<span class="number">0</span>] <span class="kw">as</span> <span class="ident">blas_index</span>, <span class="ident">n</span> <span class="kw">as</span> <span class="ident">blas_index</span>);
 
-                    <span class="comment">// gemm is C ← αA^Op B^Op + βC</span>
-                    <span class="comment">// Where Op is notrans/trans/conjtrans</span>
+                    <span class="comment">// gemm is C ← αA^Op B^Op + βC</span>
+                    <span class="comment">// Where Op is notrans/trans/conjtrans</span>
                     <span class="kw">unsafe</span> {
                         <span class="ident">blas_sys</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">gemm</span>(
                             <span class="ident">CblasRowMajor</span>,
                             <span class="ident">lhs_trans</span>,
                             <span class="ident">rhs_trans</span>,
-                            <span class="ident">m</span> <span class="kw">as</span> <span class="ident">blas_index</span>,               <span class="comment">// m, rows of Op(a)</span>
-                            <span class="ident">n</span> <span class="kw">as</span> <span class="ident">blas_index</span>,               <span class="comment">// n, cols of Op(b)</span>
-                            <span class="ident">k</span> <span class="kw">as</span> <span class="ident">blas_index</span>,               <span class="comment">// k, cols of Op(a)</span>
-                            <span class="ident">cast_as</span>(<span class="kw-2">&amp;</span><span class="ident">alpha</span>),               <span class="comment">// alpha</span>
-                            <span class="ident">lhs_</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>, <span class="comment">// a</span>
-                            <span class="ident">lhs_stride</span>,                    <span class="comment">// lda</span>
-                            <span class="ident">rhs_</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>, <span class="comment">// b</span>
-                            <span class="ident">rhs_stride</span>,                    <span class="comment">// ldb</span>
-                            <span class="ident">cast_as</span>(<span class="kw-2">&amp;</span><span class="ident">beta</span>),                <span class="comment">// beta</span>
-                            <span class="ident">c_</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span>,     <span class="comment">// c</span>
-                            <span class="ident">c_stride</span>,                      <span class="comment">// ldc</span>
+                            <span class="ident">m</span> <span class="kw">as</span> <span class="ident">blas_index</span>,               <span class="comment">// m, rows of Op(a)</span>
+                            <span class="ident">n</span> <span class="kw">as</span> <span class="ident">blas_index</span>,               <span class="comment">// n, cols of Op(b)</span>
+                            <span class="ident">k</span> <span class="kw">as</span> <span class="ident">blas_index</span>,               <span class="comment">// k, cols of Op(a)</span>
+                            <span class="ident">cast_as</span>(<span class="kw-2">&amp;</span><span class="ident">alpha</span>),               <span class="comment">// alpha</span>
+                            <span class="ident">lhs_</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>, <span class="comment">// a</span>
+                            <span class="ident">lhs_stride</span>,                    <span class="comment">// lda</span>
+                            <span class="ident">rhs_</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>, <span class="comment">// b</span>
+                            <span class="ident">rhs_stride</span>,                    <span class="comment">// ldb</span>
+                            <span class="ident">cast_as</span>(<span class="kw-2">&amp;</span><span class="ident">beta</span>),                <span class="comment">// beta</span>
+                            <span class="ident">c_</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span>,     <span class="comment">// c</span>
+                            <span class="ident">c_stride</span>,                      <span class="comment">// ldc</span>
                         );
                     }
                     <span class="kw">return</span>;
@@ -1282,7 +1282,7 @@
     <span class="ident">mat_mul_general</span>(<span class="ident">alpha</span>, <span class="ident">lhs</span>, <span class="ident">rhs</span>, <span class="ident">beta</span>, <span class="ident">c</span>)
 }
 
-<span class="doccomment">/// C ← α A B + β C</span>
+<span class="doccomment">/// C ← α A B + β C</span>
 <span class="kw">fn</span> <span class="ident">mat_mul_general</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(
     <span class="ident">alpha</span>: <span class="ident">A</span>,
     <span class="ident">lhs</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayView2</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">A</span><span class="op">&gt;</span>,
@@ -1294,7 +1294,7 @@
 {
     <span class="kw">let</span> ((<span class="ident">m</span>, <span class="ident">k</span>), (<span class="kw">_</span>, <span class="ident">n</span>)) <span class="op">=</span> (<span class="ident">lhs</span>.<span class="ident">dim</span>(), <span class="ident">rhs</span>.<span class="ident">dim</span>());
 
-    <span class="comment">// common parameters for gemm</span>
+    <span class="comment">// common parameters for gemm</span>
     <span class="kw">let</span> <span class="ident">ap</span> <span class="op">=</span> <span class="ident">lhs</span>.<span class="ident">as_ptr</span>();
     <span class="kw">let</span> <span class="ident">bp</span> <span class="op">=</span> <span class="ident">rhs</span>.<span class="ident">as_ptr</span>();
     <span class="kw">let</span> <span class="ident">cp</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">as_mut_ptr</span>();
@@ -1338,12 +1338,12 @@
             );
         }
     } <span class="kw">else</span> {
-        <span class="comment">// It&#39;s a no-op if `c` has zero length.</span>
+        <span class="comment">// It&#39;s a no-op if `c` has zero length.</span>
         <span class="kw">if</span> <span class="ident">c</span>.<span class="ident">is_empty</span>() {
             <span class="kw">return</span>;
         }
 
-        <span class="comment">// initialize memory if beta is zero</span>
+        <span class="comment">// initialize memory if beta is zero</span>
         <span class="kw">if</span> <span class="ident">beta</span>.<span class="ident">is_zero</span>() {
             <span class="ident">c</span>.<span class="ident">fill</span>(<span class="ident">beta</span>);
         }
@@ -1359,11 +1359,11 @@
                             <span class="ident">s</span> <span class="op">+</span> <span class="kw-2">*</span><span class="ident">lhs</span>.<span class="ident">uget</span>((<span class="ident">i</span>, <span class="ident">x</span>)) <span class="op">*</span> <span class="kw-2">*</span><span class="ident">rhs</span>.<span class="ident">uget</span>((<span class="ident">x</span>, <span class="ident">j</span>))
                         });
             }
-            <span class="ident">j</span> <span class="op">+=</span> <span class="number">1</span>;
-            <span class="kw">if</span> <span class="ident">j</span> <span class="op">==</span> <span class="ident">n</span> {
+            <span class="ident">j</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+            <span class="kw">if</span> <span class="ident">j</span> <span class="op">=</span><span class="op">=</span> <span class="ident">n</span> {
                 <span class="ident">j</span> <span class="op">=</span> <span class="number">0</span>;
-                <span class="ident">i</span> <span class="op">+=</span> <span class="number">1</span>;
-                <span class="kw">if</span> <span class="ident">i</span> <span class="op">==</span> <span class="ident">m</span> {
+                <span class="ident">i</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+                <span class="kw">if</span> <span class="ident">i</span> <span class="op">=</span><span class="op">=</span> <span class="ident">m</span> {
                     <span class="kw">break</span>;
                 }
             }
@@ -1371,17 +1371,17 @@
     }
 }
 
-<span class="doccomment">/// General matrix-matrix multiplication.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Compute C ← α A B + β C</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The array shapes must agree in the way that</span>
-<span class="doccomment">/// if `a` is *M* × *N*, then `b` is *N* × *K* and `c` is *M* × *K*.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ***Panics*** if array shapes are not compatible&lt;br&gt;</span>
-<span class="doccomment">/// *Note:* If enabled, uses blas `gemm` for elements of `f32, f64` when memory</span>
-<span class="doccomment">/// layout allows.  The default matrixmultiply backend is otherwise used for</span>
-<span class="doccomment">/// `f32, f64` for all memory layouts.</span>
+<span class="doccomment">/// General matrix-matrix multiplication.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Compute C ← α A B + β C</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The array shapes must agree in the way that</span>
+<span class="doccomment">/// if `a` is *M* × *N*, then `b` is *N* × *K* and `c` is *M* × *K*.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ***Panics*** if array shapes are not compatible&lt;br&gt;</span>
+<span class="doccomment">/// *Note:* If enabled, uses blas `gemm` for elements of `f32, f64` when memory</span>
+<span class="doccomment">/// layout allows.  The default matrixmultiply backend is otherwise used for</span>
+<span class="doccomment">/// `f32, f64` for all memory layouts.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">general_mat_mul</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S1</span>, <span class="ident">S2</span>, <span class="ident">S3</span><span class="op">&gt;</span>(
     <span class="ident">alpha</span>: <span class="ident">A</span>,
     <span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S1</span>, <span class="ident">Ix2</span><span class="op">&gt;</span>,
@@ -1396,23 +1396,23 @@
 {
     <span class="kw">let</span> ((<span class="ident">m</span>, <span class="ident">k</span>), (<span class="ident">k2</span>, <span class="ident">n</span>)) <span class="op">=</span> (<span class="ident">a</span>.<span class="ident">dim</span>(), <span class="ident">b</span>.<span class="ident">dim</span>());
     <span class="kw">let</span> (<span class="ident">m2</span>, <span class="ident">n2</span>) <span class="op">=</span> <span class="ident">c</span>.<span class="ident">dim</span>();
-    <span class="kw">if</span> <span class="ident">k</span> <span class="op">!=</span> <span class="ident">k2</span> <span class="op">||</span> <span class="ident">m</span> <span class="op">!=</span> <span class="ident">m2</span> <span class="op">||</span> <span class="ident">n</span> <span class="op">!=</span> <span class="ident">n2</span> {
+    <span class="kw">if</span> <span class="ident">k</span> <span class="op">!</span><span class="op">=</span> <span class="ident">k2</span> <span class="op">|</span><span class="op">|</span> <span class="ident">m</span> <span class="op">!</span><span class="op">=</span> <span class="ident">m2</span> <span class="op">|</span><span class="op">|</span> <span class="ident">n</span> <span class="op">!</span><span class="op">=</span> <span class="ident">n2</span> {
         <span class="ident">general_dot_shape_error</span>(<span class="ident">m</span>, <span class="ident">k</span>, <span class="ident">k2</span>, <span class="ident">n</span>, <span class="ident">m2</span>, <span class="ident">n2</span>);
     } <span class="kw">else</span> {
         <span class="ident">mat_mul_impl</span>(<span class="ident">alpha</span>, <span class="kw-2">&amp;</span><span class="ident">a</span>.<span class="ident">view</span>(), <span class="kw-2">&amp;</span><span class="ident">b</span>.<span class="ident">view</span>(), <span class="ident">beta</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">c</span>.<span class="ident">view_mut</span>());
     }
 }
 
-<span class="doccomment">/// General matrix-vector multiplication.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Compute y ← α A x + β y</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// where A is a *M* × *N* matrix and x is an *N*-element column vector and</span>
-<span class="doccomment">/// y an *M*-element column vector (one dimensional arrays).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ***Panics*** if array shapes are not compatible&lt;br&gt;</span>
-<span class="doccomment">/// *Note:* If enabled, uses blas `gemv` for elements of `f32, f64` when memory</span>
-<span class="doccomment">/// layout allows.</span>
+<span class="doccomment">/// General matrix-vector multiplication.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Compute y ← α A x + β y</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// where A is a *M* × *N* matrix and x is an *N*-element column vector and</span>
+<span class="doccomment">/// y an *M*-element column vector (one dimensional arrays).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ***Panics*** if array shapes are not compatible&lt;br&gt;</span>
+<span class="doccomment">/// *Note:* If enabled, uses blas `gemv` for elements of `f32, f64` when memory</span>
+<span class="doccomment">/// layout allows.</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">collapsible_if</span>)]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">general_mat_vec_mul</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S1</span>, <span class="ident">S2</span>, <span class="ident">S3</span><span class="op">&gt;</span>(
     <span class="ident">alpha</span>: <span class="ident">A</span>,
@@ -1428,24 +1428,24 @@
 {
     <span class="kw">let</span> ((<span class="ident">m</span>, <span class="ident">k</span>), <span class="ident">k2</span>) <span class="op">=</span> (<span class="ident">a</span>.<span class="ident">dim</span>(), <span class="ident">x</span>.<span class="ident">dim</span>());
     <span class="kw">let</span> <span class="ident">m2</span> <span class="op">=</span> <span class="ident">y</span>.<span class="ident">dim</span>();
-    <span class="kw">if</span> <span class="ident">k</span> <span class="op">!=</span> <span class="ident">k2</span> <span class="op">||</span> <span class="ident">m</span> <span class="op">!=</span> <span class="ident">m2</span> {
+    <span class="kw">if</span> <span class="ident">k</span> <span class="op">!</span><span class="op">=</span> <span class="ident">k2</span> <span class="op">|</span><span class="op">|</span> <span class="ident">m</span> <span class="op">!</span><span class="op">=</span> <span class="ident">m2</span> {
         <span class="ident">general_dot_shape_error</span>(<span class="ident">m</span>, <span class="ident">k</span>, <span class="ident">k2</span>, <span class="number">1</span>, <span class="ident">m2</span>, <span class="number">1</span>);
     } <span class="kw">else</span> {
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;blas&quot;</span>)]</span>
         <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">gemv</span> {
-            (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">gemv</span>:<span class="ident">ident</span>) <span class="op">=&gt;</span> {
+            (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">gemv</span>:<span class="ident">ident</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">layout</span>) <span class="op">=</span> <span class="ident">blas_layout</span>::<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">a</span>) {
                     <span class="kw">if</span> <span class="ident">blas_compat_1d</span>::<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">x</span>) <span class="op">&amp;&amp;</span> <span class="ident">blas_compat_1d</span>::<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>, <span class="kw">_</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">y</span>) {
-                        <span class="comment">// Determine stride between rows or columns. Note that the stride is</span>
-                        <span class="comment">// adjusted to at least `k` or `m` to handle the case of a matrix with a</span>
-                        <span class="comment">// trivial (length 1) dimension, since the stride for the trivial dimension</span>
-                        <span class="comment">// may be arbitrary.</span>
+                        <span class="comment">// Determine stride between rows or columns. Note that the stride is</span>
+                        <span class="comment">// adjusted to at least `k` or `m` to handle the case of a matrix with a</span>
+                        <span class="comment">// trivial (length 1) dimension, since the stride for the trivial dimension</span>
+                        <span class="comment">// may be arbitrary.</span>
                         <span class="kw">let</span> <span class="ident">a_trans</span> <span class="op">=</span> <span class="ident">CblasNoTrans</span>;
                         <span class="kw">let</span> <span class="ident">a_stride</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">layout</span> {
-                            <span class="ident">CBLAS_LAYOUT</span>::<span class="ident">CblasRowMajor</span> <span class="op">=&gt;</span> {
+                            <span class="ident">CBLAS_LAYOUT</span>::<span class="ident">CblasRowMajor</span> <span class="op">=</span><span class="op">&gt;</span> {
                                 <span class="ident">a</span>.<span class="ident">strides</span>()[<span class="number">0</span>].<span class="ident">max</span>(<span class="ident">k</span> <span class="kw">as</span> <span class="ident">isize</span>) <span class="kw">as</span> <span class="ident">blas_index</span>
                             }
-                            <span class="ident">CBLAS_LAYOUT</span>::<span class="ident">CblasColMajor</span> <span class="op">=&gt;</span> {
+                            <span class="ident">CBLAS_LAYOUT</span>::<span class="ident">CblasColMajor</span> <span class="op">=</span><span class="op">&gt;</span> {
                                 <span class="ident">a</span>.<span class="ident">strides</span>()[<span class="number">1</span>].<span class="ident">max</span>(<span class="ident">m</span> <span class="kw">as</span> <span class="ident">isize</span>) <span class="kw">as</span> <span class="ident">blas_index</span>
                             }
                         };
@@ -1457,15 +1457,15 @@
                             <span class="ident">blas_sys</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">gemv</span>(
                                 <span class="ident">layout</span>,
                                 <span class="ident">a_trans</span>,
-                                <span class="ident">m</span> <span class="kw">as</span> <span class="ident">blas_index</span>,            <span class="comment">// m, rows of Op(a)</span>
-                                <span class="ident">k</span> <span class="kw">as</span> <span class="ident">blas_index</span>,            <span class="comment">// n, cols of Op(a)</span>
-                                <span class="ident">cast_as</span>(<span class="kw-2">&amp;</span><span class="ident">alpha</span>),            <span class="comment">// alpha</span>
-                                <span class="ident">a</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>, <span class="comment">// a</span>
-                                <span class="ident">a_stride</span>,                   <span class="comment">// lda</span>
-                                <span class="ident">x</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>, <span class="comment">// x</span>
+                                <span class="ident">m</span> <span class="kw">as</span> <span class="ident">blas_index</span>,            <span class="comment">// m, rows of Op(a)</span>
+                                <span class="ident">k</span> <span class="kw">as</span> <span class="ident">blas_index</span>,            <span class="comment">// n, cols of Op(a)</span>
+                                <span class="ident">cast_as</span>(<span class="kw-2">&amp;</span><span class="ident">alpha</span>),            <span class="comment">// alpha</span>
+                                <span class="ident">a</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>, <span class="comment">// a</span>
+                                <span class="ident">a_stride</span>,                   <span class="comment">// lda</span>
+                                <span class="ident">x</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span>, <span class="comment">// x</span>
                                 <span class="ident">x_stride</span>,
-                                <span class="ident">cast_as</span>(<span class="kw-2">&amp;</span><span class="ident">beta</span>),           <span class="comment">// beta</span>
-                                <span class="ident">y</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span>, <span class="comment">// x</span>
+                                <span class="ident">cast_as</span>(<span class="kw-2">&amp;</span><span class="ident">beta</span>),           <span class="comment">// beta</span>
+                                <span class="ident">y</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span>, <span class="comment">// x</span>
                                 <span class="ident">y_stride</span>,
                             );
                         }
@@ -1494,21 +1494,21 @@
 }
 
 <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-<span class="doccomment">/// Return `true` if `A` and `B` are the same type</span>
-<span class="kw">fn</span> <span class="ident">same_type</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="lifetime">&#39;static</span>, <span class="ident">B</span>: <span class="lifetime">&#39;static</span><span class="op">&gt;</span>() <span class="op">-&gt;</span> <span class="ident">bool</span> {
-    <span class="ident">TypeId</span>::<span class="ident">of</span>::<span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>() <span class="op">==</span> <span class="ident">TypeId</span>::<span class="ident">of</span>::<span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>()
+<span class="doccomment">/// Return `true` if `A` and `B` are the same type</span>
+<span class="kw">fn</span> <span class="ident">same_type</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="lifetime">&#39;static</span>, <span class="ident">B</span>: <span class="lifetime">&#39;static</span><span class="op">&gt;</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="ident">TypeId</span>::<span class="ident">of</span>::<span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">TypeId</span>::<span class="ident">of</span>::<span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>()
 }
 
-<span class="comment">// Read pointer to type `A` as type `B`.</span>
-<span class="comment">//</span>
-<span class="comment">// **Panics** if `A` and `B` are not the same type</span>
-<span class="kw">fn</span> <span class="ident">cast_as</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">Copy</span>, <span class="ident">B</span>: <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">Copy</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">A</span>) <span class="op">-&gt;</span> <span class="ident">B</span> {
+<span class="comment">// Read pointer to type `A` as type `B`.</span>
+<span class="comment">//</span>
+<span class="comment">// **Panics** if `A` and `B` are not the same type</span>
+<span class="kw">fn</span> <span class="ident">cast_as</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">Copy</span>, <span class="ident">B</span>: <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">Copy</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">B</span> {
     <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">same_type</span>::<span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>());
     <span class="kw">unsafe</span> { ::<span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">read</span>(<span class="ident">a</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="kw">_</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">B</span>) }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;blas&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">blas_compat_1d</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span>
+<span class="kw">fn</span> <span class="ident">blas_compat_1d</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Data</span>,
     <span class="ident">A</span>: <span class="lifetime">&#39;static</span>,
@@ -1521,7 +1521,7 @@
         <span class="kw">return</span> <span class="bool-val">false</span>;
     }
     <span class="kw">let</span> <span class="ident">stride</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">strides</span>()[<span class="number">0</span>];
-    <span class="kw">if</span> <span class="ident">stride</span> <span class="op">&gt;</span> <span class="ident">blas_index</span>::<span class="ident">max_value</span>() <span class="kw">as</span> <span class="ident">isize</span> <span class="op">||</span> <span class="ident">stride</span> <span class="op">&lt;</span> <span class="ident">blas_index</span>::<span class="ident">min_value</span>() <span class="kw">as</span> <span class="ident">isize</span> {
+    <span class="kw">if</span> <span class="ident">stride</span> <span class="op">&gt;</span> <span class="ident">blas_index</span>::<span class="ident">max_value</span>() <span class="kw">as</span> <span class="ident">isize</span> <span class="op">|</span><span class="op">|</span> <span class="ident">stride</span> <span class="op">&lt;</span> <span class="ident">blas_index</span>::<span class="ident">min_value</span>() <span class="kw">as</span> <span class="ident">isize</span> {
         <span class="kw">return</span> <span class="bool-val">false</span>;
     }
     <span class="bool-val">true</span>
@@ -1534,7 +1534,7 @@
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;blas&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">blas_row_major_2d</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix2</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span>
+<span class="kw">fn</span> <span class="ident">blas_row_major_2d</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Data</span>,
     <span class="ident">A</span>: <span class="lifetime">&#39;static</span>,
@@ -1547,7 +1547,7 @@
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;blas&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">blas_column_major_2d</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix2</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span>
+<span class="kw">fn</span> <span class="ident">blas_column_major_2d</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Data</span>,
     <span class="ident">A</span>: <span class="lifetime">&#39;static</span>,
@@ -1560,33 +1560,33 @@
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;blas&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">is_blas_2d</span>(<span class="ident">dim</span>: <span class="kw-2">&amp;</span><span class="ident">Ix2</span>, <span class="ident">stride</span>: <span class="kw-2">&amp;</span><span class="ident">Ix2</span>, <span class="ident">order</span>: <span class="ident">MemoryOrder</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+<span class="kw">fn</span> <span class="ident">is_blas_2d</span>(<span class="ident">dim</span>: <span class="kw-2">&amp;</span><span class="ident">Ix2</span>, <span class="ident">stride</span>: <span class="kw-2">&amp;</span><span class="ident">Ix2</span>, <span class="ident">order</span>: <span class="ident">MemoryOrder</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
     <span class="kw">let</span> (<span class="ident">m</span>, <span class="ident">n</span>) <span class="op">=</span> <span class="ident">dim</span>.<span class="ident">into_pattern</span>();
     <span class="kw">let</span> <span class="ident">s0</span> <span class="op">=</span> <span class="ident">stride</span>[<span class="number">0</span>] <span class="kw">as</span> <span class="ident">isize</span>;
     <span class="kw">let</span> <span class="ident">s1</span> <span class="op">=</span> <span class="ident">stride</span>[<span class="number">1</span>] <span class="kw">as</span> <span class="ident">isize</span>;
     <span class="kw">let</span> (<span class="ident">inner_stride</span>, <span class="ident">outer_dim</span>) <span class="op">=</span> <span class="kw">match</span> <span class="ident">order</span> {
-        <span class="ident">MemoryOrder</span>::<span class="ident">C</span> <span class="op">=&gt;</span> (<span class="ident">s1</span>, <span class="ident">n</span>),
-        <span class="ident">MemoryOrder</span>::<span class="ident">F</span> <span class="op">=&gt;</span> (<span class="ident">s0</span>, <span class="ident">m</span>),
+        <span class="ident">MemoryOrder</span>::<span class="ident">C</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">s1</span>, <span class="ident">n</span>),
+        <span class="ident">MemoryOrder</span>::<span class="ident">F</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">s0</span>, <span class="ident">m</span>),
     };
-    <span class="kw">if</span> <span class="op">!</span>(<span class="ident">inner_stride</span> <span class="op">==</span> <span class="number">1</span> <span class="op">||</span> <span class="ident">outer_dim</span> <span class="op">==</span> <span class="number">1</span>) {
+    <span class="kw">if</span> <span class="op">!</span>(<span class="ident">inner_stride</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span> <span class="op">|</span><span class="op">|</span> <span class="ident">outer_dim</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span>) {
         <span class="kw">return</span> <span class="bool-val">false</span>;
     }
-    <span class="kw">if</span> <span class="ident">s0</span> <span class="op">&lt;</span> <span class="number">1</span> <span class="op">||</span> <span class="ident">s1</span> <span class="op">&lt;</span> <span class="number">1</span> {
+    <span class="kw">if</span> <span class="ident">s0</span> <span class="op">&lt;</span> <span class="number">1</span> <span class="op">|</span><span class="op">|</span> <span class="ident">s1</span> <span class="op">&lt;</span> <span class="number">1</span> {
         <span class="kw">return</span> <span class="bool-val">false</span>;
     }
-    <span class="kw">if</span> (<span class="ident">s0</span> <span class="op">&gt;</span> <span class="ident">blas_index</span>::<span class="ident">max_value</span>() <span class="kw">as</span> <span class="ident">isize</span> <span class="op">||</span> <span class="ident">s0</span> <span class="op">&lt;</span> <span class="ident">blas_index</span>::<span class="ident">min_value</span>() <span class="kw">as</span> <span class="ident">isize</span>)
-        <span class="op">||</span> (<span class="ident">s1</span> <span class="op">&gt;</span> <span class="ident">blas_index</span>::<span class="ident">max_value</span>() <span class="kw">as</span> <span class="ident">isize</span> <span class="op">||</span> <span class="ident">s1</span> <span class="op">&lt;</span> <span class="ident">blas_index</span>::<span class="ident">min_value</span>() <span class="kw">as</span> <span class="ident">isize</span>)
+    <span class="kw">if</span> (<span class="ident">s0</span> <span class="op">&gt;</span> <span class="ident">blas_index</span>::<span class="ident">max_value</span>() <span class="kw">as</span> <span class="ident">isize</span> <span class="op">|</span><span class="op">|</span> <span class="ident">s0</span> <span class="op">&lt;</span> <span class="ident">blas_index</span>::<span class="ident">min_value</span>() <span class="kw">as</span> <span class="ident">isize</span>)
+        <span class="op">|</span><span class="op">|</span> (<span class="ident">s1</span> <span class="op">&gt;</span> <span class="ident">blas_index</span>::<span class="ident">max_value</span>() <span class="kw">as</span> <span class="ident">isize</span> <span class="op">|</span><span class="op">|</span> <span class="ident">s1</span> <span class="op">&lt;</span> <span class="ident">blas_index</span>::<span class="ident">min_value</span>() <span class="kw">as</span> <span class="ident">isize</span>)
     {
         <span class="kw">return</span> <span class="bool-val">false</span>;
     }
-    <span class="kw">if</span> <span class="ident">m</span> <span class="op">&gt;</span> <span class="ident">blas_index</span>::<span class="ident">max_value</span>() <span class="kw">as</span> <span class="ident">usize</span> <span class="op">||</span> <span class="ident">n</span> <span class="op">&gt;</span> <span class="ident">blas_index</span>::<span class="ident">max_value</span>() <span class="kw">as</span> <span class="ident">usize</span> {
+    <span class="kw">if</span> <span class="ident">m</span> <span class="op">&gt;</span> <span class="ident">blas_index</span>::<span class="ident">max_value</span>() <span class="kw">as</span> <span class="ident">usize</span> <span class="op">|</span><span class="op">|</span> <span class="ident">n</span> <span class="op">&gt;</span> <span class="ident">blas_index</span>::<span class="ident">max_value</span>() <span class="kw">as</span> <span class="ident">usize</span> {
         <span class="kw">return</span> <span class="bool-val">false</span>;
     }
     <span class="bool-val">true</span>
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;blas&quot;</span>)]</span>
-<span class="kw">fn</span> <span class="ident">blas_layout</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix2</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CBLAS_LAYOUT</span><span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">blas_layout</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CBLAS_LAYOUT</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Data</span>,
     <span class="ident">A</span>: <span class="lifetime">&#39;static</span>,

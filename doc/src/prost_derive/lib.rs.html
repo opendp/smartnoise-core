@@ -497,18 +497,18 @@
 <span class="kw">mod</span> <span class="ident">field</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">field</span>::<span class="ident">Field</span>;
 
-<span class="kw">fn</span> <span class="ident">try_message</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">TokenStream</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">try_message</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">TokenStream</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">input</span>: <span class="ident">DeriveInput</span> <span class="op">=</span> <span class="ident">syn</span>::<span class="ident">parse</span>(<span class="ident">input</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">ident</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">ident</span>;
 
     <span class="kw">let</span> <span class="ident">variant_data</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">input</span>.<span class="ident">data</span> {
-        <span class="ident">Data</span>::<span class="ident">Struct</span>(<span class="ident">variant_data</span>) <span class="op">=&gt;</span> <span class="ident">variant_data</span>,
-        <span class="ident">Data</span>::<span class="ident">Enum</span>(..) <span class="op">=&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Message can not be derived for an enum&quot;</span>),
-        <span class="ident">Data</span>::<span class="ident">Union</span>(..) <span class="op">=&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Message can not be derived for a union&quot;</span>),
+        <span class="ident">Data</span>::<span class="ident">Struct</span>(<span class="ident">variant_data</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">variant_data</span>,
+        <span class="ident">Data</span>::<span class="ident">Enum</span>(..) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Message can not be derived for an enum&quot;</span>),
+        <span class="ident">Data</span>::<span class="ident">Union</span>(..) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Message can not be derived for a union&quot;</span>),
     };
 
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">input</span>.<span class="ident">generics</span>.<span class="ident">params</span>.<span class="ident">is_empty</span>() <span class="op">||</span> <span class="ident">input</span>.<span class="ident">generics</span>.<span class="ident">where_clause</span>.<span class="ident">is_some</span>() {
+    <span class="kw">if</span> <span class="op">!</span><span class="ident">input</span>.<span class="ident">generics</span>.<span class="ident">params</span>.<span class="ident">is_empty</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">input</span>.<span class="ident">generics</span>.<span class="ident">where_clause</span>.<span class="ident">is_some</span>() {
         <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Message may not be derived for generic type&quot;</span>);
     }
 
@@ -523,11 +523,11 @@
                     <span class="ident">unnamed</span>: <span class="ident">fields</span>, ..
                 }),
             ..
-        } <span class="op">=&gt;</span> <span class="ident">fields</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>(),
+        } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">fields</span>.<span class="ident">into_iter</span>().<span class="ident">collect</span>(),
         <span class="ident">DataStruct</span> {
             <span class="ident">fields</span>: <span class="ident">Fields</span>::<span class="ident">Unit</span>,
             ..
-        } <span class="op">=&gt;</span> <span class="ident">Vec</span>::<span class="ident">new</span>(),
+        } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Vec</span>::<span class="ident">new</span>(),
     };
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">next_tag</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span>;
@@ -537,19 +537,19 @@
         .<span class="ident">flat_map</span>(<span class="op">|</span>(<span class="ident">idx</span>, <span class="ident">field</span>)<span class="op">|</span> {
             <span class="kw">let</span> <span class="ident">field_ident</span> <span class="op">=</span> <span class="ident">field</span>
                 .<span class="ident">ident</span>
-                .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="ident">Ident</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">idx</span>.<span class="ident">to_string</span>(), <span class="ident">Span</span>::<span class="ident">call_site</span>()));
+                .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Ident</span>::<span class="ident">new</span>(<span class="kw-2">&amp;</span><span class="ident">idx</span>.<span class="ident">to_string</span>(), <span class="ident">Span</span>::<span class="ident">call_site</span>()));
             <span class="kw">match</span> <span class="ident">Field</span>::<span class="ident">new</span>(<span class="ident">field</span>.<span class="ident">attrs</span>, <span class="prelude-val">Some</span>(<span class="ident">next_tag</span>)) {
-                <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">field</span>)) <span class="op">=&gt;</span> {
+                <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">field</span>)) <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="ident">next_tag</span> <span class="op">=</span> <span class="ident">field</span>.<span class="ident">tags</span>().<span class="ident">iter</span>().<span class="ident">max</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span> <span class="op">+</span> <span class="number">1</span>).<span class="ident">unwrap_or</span>(<span class="ident">next_tag</span>);
                     <span class="prelude-val">Some</span>(<span class="prelude-val">Ok</span>((<span class="ident">field_ident</span>, <span class="ident">field</span>)))
                 }
-                <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
-                <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(
+                <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="prelude-val">Err</span>(
                     <span class="ident">err</span>.<span class="ident">context</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;invalid message field {}.{}&quot;</span>, <span class="ident">ident</span>, <span class="ident">field_ident</span>))
                 )),
             }
         })
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;&gt;</span>()<span class="question-mark">?</span>;
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span>, <span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
 
     <span class="comment">// We want Debug to be in declaration order</span>
     <span class="kw">let</span> <span class="ident">unsorted_fields</span> <span class="op">=</span> <span class="ident">fields</span>.<span class="ident">clone</span>();
@@ -564,11 +564,11 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tags</span> <span class="op">=</span> <span class="ident">fields</span>
         .<span class="ident">iter</span>()
         .<span class="ident">flat_map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="kw">_</span>, <span class="kw-2">ref</span> <span class="ident">field</span>)<span class="op">|</span> <span class="ident">field</span>.<span class="ident">tags</span>())
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>();
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
     <span class="kw">let</span> <span class="ident">num_tags</span> <span class="op">=</span> <span class="ident">tags</span>.<span class="ident">len</span>();
     <span class="ident">tags</span>.<span class="ident">sort</span>();
     <span class="ident">tags</span>.<span class="ident">dedup</span>();
-    <span class="kw">if</span> <span class="ident">tags</span>.<span class="ident">len</span>() <span class="op">!=</span> <span class="ident">num_tags</span> {
+    <span class="kw">if</span> <span class="ident">tags</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">num_tags</span> {
         <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;message {} has fields with duplicate tags&quot;</span>, <span class="ident">ident</span>);
     }
 
@@ -588,7 +588,7 @@
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">tag</span><span class="op">|</span> <span class="macro">quote</span><span class="macro">!</span>(#<span class="ident">tag</span>))
             .<span class="ident">intersperse</span>(<span class="macro">quote</span><span class="macro">!</span>(<span class="op">|</span>));
         <span class="macro">quote</span><span class="macro">!</span> {
-            #(#<span class="ident">tags</span>)<span class="op">*</span> <span class="op">=&gt;</span> {
+            #(#<span class="ident">tags</span>)<span class="op">*</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">value</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.#<span class="ident">field_ident</span>;
                 #<span class="ident">merge</span>.<span class="ident">map_err</span>(<span class="op">|</span><span class="kw-2">mut</span> <span class="ident">error</span><span class="op">|</span> {
                     <span class="ident">error</span>.<span class="ident">push</span>(<span class="ident">STRUCT_NAME</span>, <span class="macro">stringify</span><span class="macro">!</span>(#<span class="ident">field_ident</span>));
@@ -621,7 +621,7 @@
     <span class="kw">let</span> <span class="ident">methods</span> <span class="op">=</span> <span class="ident">fields</span>
         .<span class="ident">iter</span>()
         .<span class="ident">flat_map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="kw-2">ref</span> <span class="ident">field_ident</span>, <span class="kw-2">ref</span> <span class="ident">field</span>)<span class="op">|</span> <span class="ident">field</span>.<span class="ident">methods</span>(<span class="ident">field_ident</span>))
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>();
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
     <span class="kw">let</span> <span class="ident">methods</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">methods</span>.<span class="ident">is_empty</span>() {
         <span class="macro">quote</span><span class="macro">!</span>()
     } <span class="kw">else</span> {
@@ -667,17 +667,17 @@
                 <span class="ident">wire_type</span>: ::<span class="ident">prost</span>::<span class="ident">encoding</span>::<span class="ident">WireType</span>,
                 <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">B</span>,
                 <span class="ident">ctx</span>: ::<span class="ident">prost</span>::<span class="ident">encoding</span>::<span class="ident">DecodeContext</span>,
-            ) <span class="op">-&gt;</span> ::<span class="ident">std</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>(), ::<span class="ident">prost</span>::<span class="ident">DecodeError</span><span class="op">&gt;</span>
+            ) <span class="op">-</span><span class="op">&gt;</span> ::<span class="ident">std</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>(), ::<span class="ident">prost</span>::<span class="ident">DecodeError</span><span class="op">&gt;</span>
             <span class="kw">where</span> <span class="ident">B</span>: ::<span class="ident">prost</span>::<span class="ident">bytes</span>::<span class="ident">Buf</span> {
                 #<span class="ident">struct_name</span>
                 <span class="kw">match</span> <span class="ident">tag</span> {
                     #(#<span class="ident">merge</span>)<span class="op">*</span>
-                    <span class="kw">_</span> <span class="op">=&gt;</span> ::<span class="ident">prost</span>::<span class="ident">encoding</span>::<span class="ident">skip_field</span>(<span class="ident">wire_type</span>, <span class="ident">tag</span>, <span class="ident">buf</span>, <span class="ident">ctx</span>),
+                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> ::<span class="ident">prost</span>::<span class="ident">encoding</span>::<span class="ident">skip_field</span>(<span class="ident">wire_type</span>, <span class="ident">tag</span>, <span class="ident">buf</span>, <span class="ident">ctx</span>),
                 }
             }
 
             <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">fn</span> <span class="ident">encoded_len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+            <span class="kw">fn</span> <span class="ident">encoded_len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
                 <span class="number">0</span> #(<span class="op">+</span> #<span class="ident">encoded_len</span>)<span class="op">*</span>
             }
 
@@ -687,7 +687,7 @@
         }
 
         <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> #<span class="ident">ident</span> {
-            <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> #<span class="ident">ident</span> {
+            <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> #<span class="ident">ident</span> {
                 #<span class="ident">ident</span> {
                     #(#<span class="ident">default</span>)<span class="op">*</span>
                 }
@@ -695,7 +695,7 @@
         }
 
         <span class="kw">impl</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> #<span class="ident">ident</span> {
-            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder</span> <span class="op">=</span> #<span class="ident">debug_builder</span>;
                 #(#<span class="ident">debugs</span>;)<span class="op">*</span>
                 <span class="ident">builder</span>.<span class="ident">finish</span>()
@@ -709,22 +709,22 @@
 }
 
 <span class="attribute">#[<span class="ident">proc_macro_derive</span>(<span class="ident">Message</span>, <span class="ident">attributes</span>(<span class="ident">prost</span>))]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">message</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) <span class="op">-&gt;</span> <span class="ident">TokenStream</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">message</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TokenStream</span> {
     <span class="ident">try_message</span>(<span class="ident">input</span>).<span class="ident">unwrap</span>()
 }
 
-<span class="kw">fn</span> <span class="ident">try_enumeration</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">TokenStream</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">try_enumeration</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">TokenStream</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">input</span>: <span class="ident">DeriveInput</span> <span class="op">=</span> <span class="ident">syn</span>::<span class="ident">parse</span>(<span class="ident">input</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">ident</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">ident</span>;
 
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">input</span>.<span class="ident">generics</span>.<span class="ident">params</span>.<span class="ident">is_empty</span>() <span class="op">||</span> <span class="ident">input</span>.<span class="ident">generics</span>.<span class="ident">where_clause</span>.<span class="ident">is_some</span>() {
+    <span class="kw">if</span> <span class="op">!</span><span class="ident">input</span>.<span class="ident">generics</span>.<span class="ident">params</span>.<span class="ident">is_empty</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">input</span>.<span class="ident">generics</span>.<span class="ident">where_clause</span>.<span class="ident">is_some</span>() {
         <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Message may not be derived for generic type&quot;</span>);
     }
 
     <span class="kw">let</span> <span class="ident">punctuated_variants</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">input</span>.<span class="ident">data</span> {
-        <span class="ident">Data</span>::<span class="ident">Enum</span>(<span class="ident">DataEnum</span> { <span class="ident">variants</span>, .. }) <span class="op">=&gt;</span> <span class="ident">variants</span>,
-        <span class="ident">Data</span>::<span class="ident">Struct</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Enumeration can not be derived for a struct&quot;</span>),
-        <span class="ident">Data</span>::<span class="ident">Union</span>(..) <span class="op">=&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Enumeration can not be derived for a union&quot;</span>),
+        <span class="ident">Data</span>::<span class="ident">Enum</span>(<span class="ident">DataEnum</span> { <span class="ident">variants</span>, .. }) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">variants</span>,
+        <span class="ident">Data</span>::<span class="ident">Struct</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Enumeration can not be derived for a struct&quot;</span>),
+        <span class="ident">Data</span>::<span class="ident">Union</span>(..) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Enumeration can not be derived for a union&quot;</span>),
     };
 
     <span class="comment">// Map the variants into &#39;fields&#39;.</span>
@@ -737,15 +737,15 @@
     } <span class="kw">in</span> <span class="ident">punctuated_variants</span>
     {
         <span class="kw">match</span> <span class="ident">fields</span> {
-            <span class="ident">Fields</span>::<span class="ident">Unit</span> <span class="op">=&gt;</span> (),
-            <span class="ident">Fields</span>::<span class="ident">Named</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Fields</span>::<span class="ident">Unnamed</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> {
+            <span class="ident">Fields</span>::<span class="ident">Unit</span> <span class="op">=</span><span class="op">&gt;</span> (),
+            <span class="ident">Fields</span>::<span class="ident">Named</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Fields</span>::<span class="ident">Unnamed</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Enumeration variants may not have fields&quot;</span>)
             }
         }
 
         <span class="kw">match</span> <span class="ident">discriminant</span> {
-            <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="ident">expr</span>)) <span class="op">=&gt;</span> <span class="ident">variants</span>.<span class="ident">push</span>((<span class="ident">ident</span>, <span class="ident">expr</span>)),
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Enumeration variants must have a disriminant&quot;</span>),
+            <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="ident">expr</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">variants</span>.<span class="ident">push</span>((<span class="ident">ident</span>, <span class="ident">expr</span>)),
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Enumeration variants must have a disriminant&quot;</span>),
         }
     }
 
@@ -757,9 +757,9 @@
 
     <span class="kw">let</span> <span class="ident">is_valid</span> <span class="op">=</span> <span class="ident">variants</span>
         .<span class="ident">iter</span>()
-        .<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="kw">_</span>, <span class="kw-2">ref</span> <span class="ident">value</span>)<span class="op">|</span> <span class="macro">quote</span><span class="macro">!</span>(#<span class="ident">value</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>));
+        .<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="kw">_</span>, <span class="kw-2">ref</span> <span class="ident">value</span>)<span class="op">|</span> <span class="macro">quote</span><span class="macro">!</span>(#<span class="ident">value</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>));
     <span class="kw">let</span> <span class="ident">from</span> <span class="op">=</span> <span class="ident">variants</span>.<span class="ident">iter</span>().<span class="ident">map</span>(
-        <span class="op">|</span><span class="kw-2">&amp;</span>(<span class="kw-2">ref</span> <span class="ident">variant</span>, <span class="kw-2">ref</span> <span class="ident">value</span>)<span class="op">|</span> <span class="macro">quote</span><span class="macro">!</span>(#<span class="ident">value</span> <span class="op">=&gt;</span> ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span>::<span class="prelude-val">Some</span>(#<span class="ident">ident</span>::#<span class="ident">variant</span>)),
+        <span class="op">|</span><span class="kw-2">&amp;</span>(<span class="kw-2">ref</span> <span class="ident">variant</span>, <span class="kw-2">ref</span> <span class="ident">value</span>)<span class="op">|</span> <span class="macro">quote</span><span class="macro">!</span>(#<span class="ident">value</span> <span class="op">=</span><span class="op">&gt;</span> ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span>::<span class="prelude-val">Some</span>(#<span class="ident">ident</span>::#<span class="ident">variant</span>)),
     );
 
     <span class="kw">let</span> <span class="ident">is_valid_doc</span> <span class="op">=</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Returns `true` if `value` is a variant of `{}`.&quot;</span>, <span class="ident">ident</span>);
@@ -771,30 +771,30 @@
     <span class="kw">let</span> <span class="ident">expanded</span> <span class="op">=</span> <span class="macro">quote</span><span class="macro">!</span> {
         <span class="kw">impl</span> #<span class="ident">ident</span> {
             <span class="attribute">#[<span class="ident">doc</span><span class="op">=</span>#<span class="ident">is_valid_doc</span>]</span>
-            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_valid</span>(<span class="ident">value</span>: <span class="ident">i32</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_valid</span>(<span class="ident">value</span>: <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
                 <span class="kw">match</span> <span class="ident">value</span> {
                     #(#<span class="ident">is_valid</span>,)<span class="op">*</span>
-                    <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
+                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
                 }
             }
 
             <span class="attribute">#[<span class="ident">doc</span><span class="op">=</span>#<span class="ident">from_i32_doc</span>]</span>
-            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_i32</span>(<span class="ident">value</span>: <span class="ident">i32</span>) <span class="op">-&gt;</span> ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span><span class="op">&lt;</span>#<span class="ident">ident</span><span class="op">&gt;</span> {
+            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_i32</span>(<span class="ident">value</span>: <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span><span class="op">&lt;</span>#<span class="ident">ident</span><span class="op">&gt;</span> {
                 <span class="kw">match</span> <span class="ident">value</span> {
                     #(#<span class="ident">from</span>,)<span class="op">*</span>
-                    <span class="kw">_</span> <span class="op">=&gt;</span> ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
+                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span>::<span class="prelude-val">None</span>,
                 }
             }
         }
 
         <span class="kw">impl</span> ::<span class="ident">std</span>::<span class="ident">default</span>::<span class="ident">Default</span> <span class="kw">for</span> #<span class="ident">ident</span> {
-            <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> #<span class="ident">ident</span> {
+            <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> #<span class="ident">ident</span> {
                 #<span class="ident">ident</span>::#<span class="ident">default</span>
             }
         }
 
         <span class="kw">impl</span> ::<span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">From</span><span class="op">&lt;</span>#<span class="ident">ident</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">i32</span> {
-            <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">value</span>: #<span class="ident">ident</span>) <span class="op">-&gt;</span> <span class="ident">i32</span> {
+            <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">value</span>: #<span class="ident">ident</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i32</span> {
                 <span class="ident">value</span> <span class="kw">as</span> <span class="ident">i32</span>
             }
         }
@@ -804,22 +804,22 @@
 }
 
 <span class="attribute">#[<span class="ident">proc_macro_derive</span>(<span class="ident">Enumeration</span>, <span class="ident">attributes</span>(<span class="ident">prost</span>))]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enumeration</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) <span class="op">-&gt;</span> <span class="ident">TokenStream</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">enumeration</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TokenStream</span> {
     <span class="ident">try_enumeration</span>(<span class="ident">input</span>).<span class="ident">unwrap</span>()
 }
 
-<span class="kw">fn</span> <span class="ident">try_oneof</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">TokenStream</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">try_oneof</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">TokenStream</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">input</span>: <span class="ident">DeriveInput</span> <span class="op">=</span> <span class="ident">syn</span>::<span class="ident">parse</span>(<span class="ident">input</span>)<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="ident">ident</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">ident</span>;
 
     <span class="kw">let</span> <span class="ident">variants</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">input</span>.<span class="ident">data</span> {
-        <span class="ident">Data</span>::<span class="ident">Enum</span>(<span class="ident">DataEnum</span> { <span class="ident">variants</span>, .. }) <span class="op">=&gt;</span> <span class="ident">variants</span>,
-        <span class="ident">Data</span>::<span class="ident">Struct</span>(..) <span class="op">=&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Oneof can not be derived for a struct&quot;</span>),
-        <span class="ident">Data</span>::<span class="ident">Union</span>(..) <span class="op">=&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Oneof can not be derived for a union&quot;</span>),
+        <span class="ident">Data</span>::<span class="ident">Enum</span>(<span class="ident">DataEnum</span> { <span class="ident">variants</span>, .. }) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">variants</span>,
+        <span class="ident">Data</span>::<span class="ident">Struct</span>(..) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Oneof can not be derived for a struct&quot;</span>),
+        <span class="ident">Data</span>::<span class="ident">Union</span>(..) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Oneof can not be derived for a union&quot;</span>),
     };
 
-    <span class="kw">if</span> <span class="op">!</span><span class="ident">input</span>.<span class="ident">generics</span>.<span class="ident">params</span>.<span class="ident">is_empty</span>() <span class="op">||</span> <span class="ident">input</span>.<span class="ident">generics</span>.<span class="ident">where_clause</span>.<span class="ident">is_some</span>() {
+    <span class="kw">if</span> <span class="op">!</span><span class="ident">input</span>.<span class="ident">generics</span>.<span class="ident">params</span>.<span class="ident">is_empty</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">input</span>.<span class="ident">generics</span>.<span class="ident">where_clause</span>.<span class="ident">is_some</span>() {
         <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Message may not be derived for generic type&quot;</span>);
     }
 
@@ -833,24 +833,24 @@
     } <span class="kw">in</span> <span class="ident">variants</span>
     {
         <span class="kw">let</span> <span class="ident">variant_fields</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">variant_fields</span> {
-            <span class="ident">Fields</span>::<span class="ident">Unit</span> <span class="op">=&gt;</span> <span class="ident">Punctuated</span>::<span class="ident">new</span>(),
+            <span class="ident">Fields</span>::<span class="ident">Unit</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Punctuated</span>::<span class="ident">new</span>(),
             <span class="ident">Fields</span>::<span class="ident">Named</span>(<span class="ident">FieldsNamed</span> { <span class="ident">named</span>: <span class="ident">fields</span>, .. })
             <span class="op">|</span> <span class="ident">Fields</span>::<span class="ident">Unnamed</span>(<span class="ident">FieldsUnnamed</span> {
                 <span class="ident">unnamed</span>: <span class="ident">fields</span>, ..
-            }) <span class="op">=&gt;</span> <span class="ident">fields</span>,
+            }) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">fields</span>,
         };
-        <span class="kw">if</span> <span class="ident">variant_fields</span>.<span class="ident">len</span>() <span class="op">!=</span> <span class="number">1</span> {
+        <span class="kw">if</span> <span class="ident">variant_fields</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="number">1</span> {
             <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;Oneof enum variants must have a single field&quot;</span>);
         }
         <span class="kw">match</span> <span class="ident">Field</span>::<span class="ident">new_oneof</span>(<span class="ident">attrs</span>)<span class="question-mark">?</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">field</span>) <span class="op">=&gt;</span> <span class="ident">fields</span>.<span class="ident">push</span>((<span class="ident">variant_ident</span>, <span class="ident">field</span>)),
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;invalid oneof variant: oneof variants may not be ignored&quot;</span>),
+            <span class="prelude-val">Some</span>(<span class="ident">field</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">fields</span>.<span class="ident">push</span>((<span class="ident">variant_ident</span>, <span class="ident">field</span>)),
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">bail</span><span class="macro">!</span>(<span class="string">&quot;invalid oneof variant: oneof variants may not be ignored&quot;</span>),
         }
     }
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tags</span> <span class="op">=</span> <span class="ident">fields</span>
         .<span class="ident">iter</span>()
-        .<span class="ident">flat_map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="kw-2">ref</span> <span class="ident">variant_ident</span>, <span class="kw-2">ref</span> <span class="ident">field</span>)<span class="op">|</span> <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+        .<span class="ident">flat_map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="kw-2">ref</span> <span class="ident">variant_ident</span>, <span class="kw-2">ref</span> <span class="ident">field</span>)<span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
             <span class="kw">if</span> <span class="ident">field</span>.<span class="ident">tags</span>().<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">1</span> {
                 <span class="macro">bail</span><span class="macro">!</span>(
                     <span class="string">&quot;invalid oneof variant {}::{}: oneof variants may only have a single tag&quot;</span>,
@@ -860,28 +860,28 @@
             }
             <span class="prelude-val">Ok</span>(<span class="ident">field</span>.<span class="ident">tags</span>()[<span class="number">0</span>])
         })
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>();
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
     <span class="ident">tags</span>.<span class="ident">sort</span>();
     <span class="ident">tags</span>.<span class="ident">dedup</span>();
-    <span class="kw">if</span> <span class="ident">tags</span>.<span class="ident">len</span>() <span class="op">!=</span> <span class="ident">fields</span>.<span class="ident">len</span>() {
+    <span class="kw">if</span> <span class="ident">tags</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">fields</span>.<span class="ident">len</span>() {
         <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;invalid oneof {}: variants have duplicate tags&quot;</span>, <span class="ident">ident</span>);
     }
 
     <span class="kw">let</span> <span class="ident">encode</span> <span class="op">=</span> <span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="kw-2">ref</span> <span class="ident">variant_ident</span>, <span class="kw-2">ref</span> <span class="ident">field</span>)<span class="op">|</span> {
         <span class="kw">let</span> <span class="ident">encode</span> <span class="op">=</span> <span class="ident">field</span>.<span class="ident">encode</span>(<span class="macro">quote</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">value</span>));
-        <span class="macro">quote</span><span class="macro">!</span>(#<span class="ident">ident</span>::#<span class="ident">variant_ident</span>(<span class="kw-2">ref</span> <span class="ident">value</span>) <span class="op">=&gt;</span> { #<span class="ident">encode</span> })
+        <span class="macro">quote</span><span class="macro">!</span>(#<span class="ident">ident</span>::#<span class="ident">variant_ident</span>(<span class="kw-2">ref</span> <span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> { #<span class="ident">encode</span> })
     });
 
     <span class="kw">let</span> <span class="ident">merge</span> <span class="op">=</span> <span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="kw-2">ref</span> <span class="ident">variant_ident</span>, <span class="kw-2">ref</span> <span class="ident">field</span>)<span class="op">|</span> {
         <span class="kw">let</span> <span class="ident">tag</span> <span class="op">=</span> <span class="ident">field</span>.<span class="ident">tags</span>()[<span class="number">0</span>];
         <span class="kw">let</span> <span class="ident">merge</span> <span class="op">=</span> <span class="ident">field</span>.<span class="ident">merge</span>(<span class="macro">quote</span><span class="macro">!</span>(<span class="ident">value</span>));
         <span class="macro">quote</span><span class="macro">!</span> {
-            #<span class="ident">tag</span> <span class="op">=&gt;</span> {
+            #<span class="ident">tag</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">match</span> <span class="ident">field</span> {
-                    ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span>::<span class="prelude-val">Some</span>(#<span class="ident">ident</span>::#<span class="ident">variant_ident</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">value</span>)) <span class="op">=&gt;</span> {
+                    ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span>::<span class="prelude-val">Some</span>(#<span class="ident">ident</span>::#<span class="ident">variant_ident</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">value</span>)) <span class="op">=</span><span class="op">&gt;</span> {
                         #<span class="ident">merge</span>
                     },
-                    <span class="kw">_</span> <span class="op">=&gt;</span> {
+                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
                         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">owned_value</span> <span class="op">=</span> ::<span class="ident">std</span>::<span class="ident">default</span>::<span class="ident">Default</span>::<span class="ident">default</span>();
                         <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">owned_value</span>;
                         #<span class="ident">merge</span>.<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">field</span> <span class="op">=</span> ::<span class="ident">std</span>::<span class="ident">option</span>::<span class="prelude-ty">Option</span>::<span class="prelude-val">Some</span>(#<span class="ident">ident</span>::#<span class="ident">variant_ident</span>(<span class="ident">owned_value</span>)))
@@ -893,12 +893,12 @@
 
     <span class="kw">let</span> <span class="ident">encoded_len</span> <span class="op">=</span> <span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="kw-2">ref</span> <span class="ident">variant_ident</span>, <span class="kw-2">ref</span> <span class="ident">field</span>)<span class="op">|</span> {
         <span class="kw">let</span> <span class="ident">encoded_len</span> <span class="op">=</span> <span class="ident">field</span>.<span class="ident">encoded_len</span>(<span class="macro">quote</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">value</span>));
-        <span class="macro">quote</span><span class="macro">!</span>(#<span class="ident">ident</span>::#<span class="ident">variant_ident</span>(<span class="kw-2">ref</span> <span class="ident">value</span>) <span class="op">=&gt;</span> #<span class="ident">encoded_len</span>)
+        <span class="macro">quote</span><span class="macro">!</span>(#<span class="ident">ident</span>::#<span class="ident">variant_ident</span>(<span class="kw-2">ref</span> <span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> #<span class="ident">encoded_len</span>)
     });
 
     <span class="kw">let</span> <span class="ident">debug</span> <span class="op">=</span> <span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="kw-2">ref</span> <span class="ident">variant_ident</span>, <span class="kw-2">ref</span> <span class="ident">field</span>)<span class="op">|</span> {
         <span class="kw">let</span> <span class="ident">wrapper</span> <span class="op">=</span> <span class="ident">field</span>.<span class="ident">debug</span>(<span class="macro">quote</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">value</span>));
-        <span class="macro">quote</span><span class="macro">!</span>(#<span class="ident">ident</span>::#<span class="ident">variant_ident</span>(<span class="kw-2">ref</span> <span class="ident">value</span>) <span class="op">=&gt;</span> {
+        <span class="macro">quote</span><span class="macro">!</span>(#<span class="ident">ident</span>::#<span class="ident">variant_ident</span>(<span class="kw-2">ref</span> <span class="ident">value</span>) <span class="op">=</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">wrapper</span> <span class="op">=</span> #<span class="ident">wrapper</span>;
             <span class="ident">f</span>.<span class="ident">debug_tuple</span>(<span class="macro">stringify</span><span class="macro">!</span>(#<span class="ident">variant_ident</span>))
                 .<span class="ident">field</span>(<span class="kw-2">&amp;</span><span class="ident">wrapper</span>)
@@ -920,16 +920,16 @@
                 <span class="ident">wire_type</span>: ::<span class="ident">prost</span>::<span class="ident">encoding</span>::<span class="ident">WireType</span>,
                 <span class="ident">buf</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">B</span>,
                 <span class="ident">ctx</span>: ::<span class="ident">prost</span>::<span class="ident">encoding</span>::<span class="ident">DecodeContext</span>,
-            ) <span class="op">-&gt;</span> ::<span class="ident">std</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>(), ::<span class="ident">prost</span>::<span class="ident">DecodeError</span><span class="op">&gt;</span>
+            ) <span class="op">-</span><span class="op">&gt;</span> ::<span class="ident">std</span>::<span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>(), ::<span class="ident">prost</span>::<span class="ident">DecodeError</span><span class="op">&gt;</span>
             <span class="kw">where</span> <span class="ident">B</span>: ::<span class="ident">prost</span>::<span class="ident">bytes</span>::<span class="ident">Buf</span> {
                 <span class="kw">match</span> <span class="ident">tag</span> {
                     #(#<span class="ident">merge</span>,)<span class="op">*</span>
-                    <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(<span class="macro">concat</span><span class="macro">!</span>(<span class="string">&quot;invalid &quot;</span>, <span class="macro">stringify</span><span class="macro">!</span>(#<span class="ident">ident</span>), <span class="string">&quot; tag: {}&quot;</span>), <span class="ident">tag</span>),
+                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(<span class="macro">concat</span><span class="macro">!</span>(<span class="string">&quot;invalid &quot;</span>, <span class="macro">stringify</span><span class="macro">!</span>(#<span class="ident">ident</span>), <span class="string">&quot; tag: {}&quot;</span>), <span class="ident">tag</span>),
                 }
             }
 
             <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">encoded_len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+            <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">encoded_len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
                 <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
                     #(#<span class="ident">encoded_len</span>,)<span class="op">*</span>
                 }
@@ -937,7 +937,7 @@
         }
 
         <span class="kw">impl</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> #<span class="ident">ident</span> {
-            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
                 <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
                     #(#<span class="ident">debug</span>,)<span class="op">*</span>
                 }
@@ -949,7 +949,7 @@
 }
 
 <span class="attribute">#[<span class="ident">proc_macro_derive</span>(<span class="ident">Oneof</span>, <span class="ident">attributes</span>(<span class="ident">prost</span>))]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">oneof</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) <span class="op">-&gt;</span> <span class="ident">TokenStream</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">oneof</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TokenStream</span> {
     <span class="ident">try_oneof</span>(<span class="ident">input</span>).<span class="ident">unwrap</span>()
 }
 </pre></div>

@@ -632,7 +632,7 @@
     <span class="doccomment">/// result = Categorical::new(&amp;[0.0, -1.0, 2.0]);</span>
     <span class="doccomment">/// assert!(result.is_err());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">prob_mass</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Categorical</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">prob_mass</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Categorical</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="op">!</span><span class="kw">super</span>::<span class="ident">internal</span>::<span class="ident">is_valid_multinomial</span>(<span class="ident">prob_mass</span>, <span class="bool-val">true</span>) {
             <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">BadParams</span>)
         } <span class="kw">else</span> {
@@ -654,13 +654,13 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">cdf_max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">cdf_max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw-2">*</span><span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">cdf</span>.<span class="ident">get_unchecked</span>(<span class="self">self</span>.<span class="ident">cdf</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>) }
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Distribution</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Categorical</span> {
-    <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="ident">sample_unchecked</span>(<span class="ident">r</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cdf</span>)
     }
 }
@@ -676,10 +676,10 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `p_j` is the probability mass for the `j`th category</span>
-    <span class="kw">fn</span> <span class="ident">cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;</span> <span class="number">0.0</span> {
             <span class="number">0.0</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">&gt;=</span> <span class="self">self</span>.<span class="ident">cdf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">f64</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">&gt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">cdf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">f64</span> {
             <span class="number">1.0</span>
         } <span class="kw">else</span> {
             <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">cdf</span>.<span class="ident">get_unchecked</span>(<span class="ident">x</span> <span class="kw">as</span> <span class="ident">usize</span>) <span class="op">/</span> <span class="self">self</span>.<span class="ident">cdf_max</span>() }
@@ -705,7 +705,7 @@
     <span class="doccomment">/// where `i` is the first index such that `x &lt; f(i)`</span>
     <span class="doccomment">/// and `f(x)` is defined as `p_x + f(x - 1)` and `f(0) = p_0` where</span>
     <span class="doccomment">/// `p_x` is the `x`th probability mass</span>
-    <span class="kw">fn</span> <span class="ident">inverse_cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">inverse_cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">checked_inverse_cdf</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>()
     }
 }
@@ -728,8 +728,8 @@
     <span class="doccomment">/// where `i` is the first index such that `x &lt; f(i)`</span>
     <span class="doccomment">/// and `f(x)` is defined as `p_x + f(x - 1)` and `f(0) = p_0` where</span>
     <span class="doccomment">/// `p_x` is the `x`th probability mass</span>
-    <span class="kw">fn</span> <span class="ident">checked_inverse_cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;=</span> <span class="number">0.0</span> <span class="op">||</span> <span class="ident">x</span> <span class="op">&gt;=</span> <span class="number">1.0</span> {
+    <span class="kw">fn</span> <span class="ident">checked_inverse_cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">x</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">1.0</span> {
             <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ArgIntervalExcl</span>(<span class="string">&quot;x&quot;</span>, <span class="number">0.0</span>, <span class="number">1.0</span>))
         } <span class="kw">else</span> {
             <span class="kw">let</span> <span class="ident">denorm_prob</span> <span class="op">=</span> <span class="ident">x</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">cdf_max</span>();
@@ -748,7 +748,7 @@
     <span class="doccomment">/// ```ignore</span>
     <span class="doccomment">/// 0</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">min</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">fn</span> <span class="ident">min</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
         <span class="number">0</span>
     }
 }
@@ -763,7 +763,7 @@
     <span class="doccomment">/// ```ignore</span>
     <span class="doccomment">/// n</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">fn</span> <span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">cdf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u64</span> <span class="op">-</span> <span class="number">1</span>
     }
 }
@@ -780,7 +780,7 @@
     <span class="doccomment">/// where `p_j` is the `j`th probability mass,</span>
     <span class="doccomment">/// `Σ` is the sum from `0` to `k - 1`,</span>
     <span class="doccomment">/// and `k` is the number of categories</span>
-    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">norm_pmf</span>
             .<span class="ident">iter</span>()
             .<span class="ident">enumerate</span>()
@@ -800,7 +800,7 @@
     <span class="doccomment">/// where `p_j` is the `j`th probability mass, `μ` is the mean,</span>
     <span class="doccomment">/// `Σ` is the sum from `0` to `k - 1`,</span>
     <span class="doccomment">/// and `k` is the number of categories</span>
-    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">let</span> <span class="ident">mu</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">mean</span>();
         <span class="self">self</span>.<span class="ident">norm_pmf</span>
             .<span class="ident">iter</span>()
@@ -822,7 +822,7 @@
     <span class="doccomment">/// where `p_j` is the `j`th probability mass, `μ` is the mean,</span>
     <span class="doccomment">/// `Σ` is the sum from `0` to `k - 1`,</span>
     <span class="doccomment">/// and `k` is the number of categories</span>
-    <span class="kw">fn</span> <span class="ident">std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">variance</span>().<span class="ident">sqrt</span>()
     }
 }
@@ -839,7 +839,7 @@
     <span class="doccomment">/// where `p_j` is the `j`th probability mass,</span>
     <span class="doccomment">/// `Σ` is the sum from `0` to `k - 1`,</span>
     <span class="doccomment">/// and `k` is the number of categories</span>
-    <span class="kw">fn</span> <span class="ident">entropy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">entropy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="op">-</span><span class="self">self</span>
             .<span class="ident">norm_pmf</span>
             .<span class="ident">iter</span>()
@@ -857,7 +857,7 @@
     <span class="doccomment">/// ```ignore</span>
     <span class="doccomment">/// CDF^-1(0.5)</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">inverse_cdf</span>(<span class="number">0.5</span>)
     }
 }
@@ -871,8 +871,8 @@
     <span class="doccomment">/// ```ignore</span>
     <span class="doccomment">/// p_x</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
-        <span class="kw">if</span> <span class="ident">x</span> <span class="op">&gt;=</span> <span class="self">self</span>.<span class="ident">norm_pmf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u64</span> {
+    <span class="kw">fn</span> <span class="ident">pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+        <span class="kw">if</span> <span class="ident">x</span> <span class="op">&gt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">norm_pmf</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">u64</span> {
             <span class="number">0.0</span>
         } <span class="kw">else</span> {
             <span class="kw">unsafe</span> { <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">norm_pmf</span>.<span class="ident">get_unchecked</span>(<span class="ident">x</span> <span class="kw">as</span> <span class="ident">usize</span>) }
@@ -881,30 +881,30 @@
 
     <span class="doccomment">/// Calculates the log probability mass function for the categorical</span>
     <span class="doccomment">/// distribution at `x`</span>
-    <span class="kw">fn</span> <span class="ident">ln_pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">ln_pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">pmf</span>(<span class="ident">x</span>).<span class="ident">ln</span>()
     }
 }
 
 <span class="doccomment">/// Draws a sample from the categorical distribution described by `cdf`</span>
 <span class="doccomment">/// without doing any bounds checking</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_unchecked</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>, <span class="ident">cdf</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>]) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_unchecked</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>, <span class="ident">cdf</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="kw">let</span> <span class="ident">draw</span> <span class="op">=</span> <span class="ident">r</span>.<span class="ident">gen</span>::<span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>() <span class="op">*</span> <span class="kw">unsafe</span> { <span class="ident">cdf</span>.<span class="ident">get_unchecked</span>(<span class="ident">cdf</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>) };
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">idx</span> <span class="op">=</span> <span class="number">0</span>;
 
-    <span class="kw">if</span> <span class="ident">draw</span> <span class="op">==</span> <span class="number">0.0</span> {
+    <span class="kw">if</span> <span class="ident">draw</span> <span class="op">=</span><span class="op">=</span> <span class="number">0.0</span> {
         <span class="comment">// skip zero-probability categories</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">el</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">cdf</span>.<span class="ident">get_unchecked</span>(<span class="ident">idx</span>) };
-        <span class="kw">while</span> <span class="kw-2">*</span><span class="ident">el</span> <span class="op">==</span> <span class="number">0.0</span> {
+        <span class="kw">while</span> <span class="kw-2">*</span><span class="ident">el</span> <span class="op">=</span><span class="op">=</span> <span class="number">0.0</span> {
             <span class="comment">// don&#39;t need bounds checking because we do not allow</span>
             <span class="comment">// creating Categorical distributions with all 0.0 probs</span>
-            <span class="ident">idx</span> <span class="op">+=</span> <span class="number">1</span>;
+            <span class="ident">idx</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
             <span class="ident">el</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">cdf</span>.<span class="ident">get_unchecked</span>(<span class="ident">idx</span>) }
         }
     }
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">el</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">cdf</span>.<span class="ident">get_unchecked</span>(<span class="ident">idx</span>) };
     <span class="kw">while</span> <span class="ident">draw</span> <span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">el</span> {
-        <span class="ident">idx</span> <span class="op">+=</span> <span class="number">1</span>;
+        <span class="ident">idx</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
         <span class="ident">el</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">cdf</span>.<span class="ident">get_unchecked</span>(<span class="ident">idx</span>) };
     }
     <span class="ident">idx</span> <span class="kw">as</span> <span class="ident">f64</span>
@@ -912,7 +912,7 @@
 
 <span class="doccomment">/// Computes the cdf from the given probability masses. Performs</span>
 <span class="doccomment">/// no parameter or bounds checking.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">prob_mass_to_cdf</span>(<span class="ident">prob_mass</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>]) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">prob_mass_to_cdf</span>(<span class="ident">prob_mass</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cdf</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0.0</span>; <span class="ident">prob_mass</span>.<span class="ident">len</span>()];
     <span class="ident">cdf</span>[<span class="number">0</span>] <span class="op">=</span> <span class="ident">prob_mass</span>[<span class="number">0</span>];
     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">1</span>..<span class="ident">prob_mass</span>.<span class="ident">len</span>() {
@@ -930,12 +930,12 @@
 <span class="comment">// the length of the array (N). If val is less than all elements, it would</span>
 <span class="comment">// return 0. Otherwise val returns the index of the first element larger than</span>
 <span class="comment">// it within the search array.</span>
-<span class="kw">fn</span> <span class="ident">binary_index</span>(<span class="ident">search</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">val</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+<span class="kw">fn</span> <span class="ident">binary_index</span>(<span class="ident">search</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">val</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>;
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">low</span> <span class="op">=</span> <span class="number">0</span> <span class="kw">as</span> <span class="ident">isize</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">high</span> <span class="op">=</span> <span class="ident">search</span>.<span class="ident">len</span>() <span class="kw">as</span> <span class="ident">isize</span> <span class="op">-</span> <span class="number">1</span>;
-    <span class="kw">while</span> <span class="ident">low</span> <span class="op">&lt;=</span> <span class="ident">high</span> {
+    <span class="kw">while</span> <span class="ident">low</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">high</span> {
         <span class="kw">let</span> <span class="ident">mid</span> <span class="op">=</span> <span class="ident">low</span> <span class="op">+</span> ((<span class="ident">high</span> <span class="op">-</span> <span class="ident">low</span>) <span class="op">/</span> <span class="number">2</span>);
         <span class="kw">let</span> <span class="ident">el</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">unsafe</span> { <span class="ident">search</span>.<span class="ident">get_unchecked</span>(<span class="ident">mid</span> <span class="kw">as</span> <span class="ident">usize</span>) };
         <span class="kw">if</span> <span class="ident">el</span> <span class="op">&gt;</span> <span class="ident">val</span> {
@@ -974,7 +974,7 @@
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">distribution</span>::{<span class="ident">Categorical</span>, <span class="ident">CheckedInverseCDF</span>, <span class="ident">Discrete</span>, <span class="ident">InverseCDF</span>, <span class="ident">Univariate</span>};
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">distribution</span>::<span class="ident">internal</span>::<span class="kw-2">*</span>;
 
-    <span class="kw">fn</span> <span class="ident">try_create</span>(<span class="ident">prob_mass</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>]) <span class="op">-&gt;</span> <span class="ident">Categorical</span> {
+    <span class="kw">fn</span> <span class="ident">try_create</span>(<span class="ident">prob_mass</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Categorical</span> {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">Categorical</span>::<span class="ident">new</span>(<span class="ident">prob_mass</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">n</span>.<span class="ident">is_ok</span>());
         <span class="ident">n</span>.<span class="ident">unwrap</span>()
@@ -989,9 +989,9 @@
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">n</span>.<span class="ident">is_err</span>());
     }
 
-    <span class="kw">fn</span> <span class="ident">get_value</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">prob_mass</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">eval</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="ident">T</span>
+    <span class="kw">fn</span> <span class="ident">get_value</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">prob_mass</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">eval</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>
         <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">PartialEq</span> <span class="op">+</span> <span class="ident">Debug</span>,
-              <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Categorical</span>) <span class="op">-&gt;</span> <span class="ident">T</span>
+              <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Categorical</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>
     {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">try_create</span>(<span class="ident">prob_mass</span>);
         <span class="ident">eval</span>(<span class="ident">n</span>)
@@ -999,14 +999,14 @@
 
     <span class="kw">fn</span> <span class="ident">test_case</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">prob_mass</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">expected</span>: <span class="ident">T</span>, <span class="ident">eval</span>: <span class="ident">F</span>)
         <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">PartialEq</span> <span class="op">+</span> <span class="ident">Debug</span>,
-              <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Categorical</span>) <span class="op">-&gt;</span> <span class="ident">T</span>
+              <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Categorical</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>
     {
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">get_value</span>(<span class="ident">prob_mass</span>, <span class="ident">eval</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected</span>, <span class="ident">x</span>);
     }
 
     <span class="kw">fn</span> <span class="ident">test_almost</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">prob_mass</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">expected</span>: <span class="ident">f64</span>, <span class="ident">acc</span>: <span class="ident">f64</span>, <span class="ident">eval</span>: <span class="ident">F</span>)
-        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Categorical</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>
+        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Categorical</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>
     {
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">get_value</span>(<span class="ident">prob_mass</span>, <span class="ident">eval</span>);
         <span class="macro">assert_almost_eq</span><span class="macro">!</span>(<span class="ident">expected</span>, <span class="ident">x</span>, <span class="ident">acc</span>);

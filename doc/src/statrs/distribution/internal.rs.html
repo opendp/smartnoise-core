@@ -152,20 +152,20 @@
 <span class="doccomment">/// Returns true if there are no elements in `x` in `arr`</span>
 <span class="doccomment">/// such that `x &lt;= 0.0` or `x` is `f64::NAN` and `sum(arr) &gt; 0.0`.</span>
 <span class="doccomment">/// IF `incl_zero` is true, it tests for `x &lt; 0.0` instead of `x &lt;= 0.0`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_valid_multinomial</span>(<span class="ident">arr</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">incl_zero</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_valid_multinomial</span>(<span class="ident">arr</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">incl_zero</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sum</span> <span class="op">=</span> <span class="number">0.0</span>;
     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">arr</span>.<span class="ident">len</span>() {
         <span class="kw">let</span> <span class="ident">el</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw">unsafe</span> { <span class="ident">arr</span>.<span class="ident">get_unchecked</span>(<span class="ident">i</span>) };
         <span class="kw">if</span> <span class="ident">incl_zero</span> <span class="op">&amp;&amp;</span> <span class="ident">el</span> <span class="op">&lt;</span> <span class="number">0.0</span> {
             <span class="kw">return</span> <span class="bool-val">false</span>;
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">incl_zero</span> <span class="op">&amp;&amp;</span> <span class="ident">el</span> <span class="op">&lt;=</span> <span class="number">0.0</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">incl_zero</span> <span class="op">&amp;&amp;</span> <span class="ident">el</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
             <span class="kw">return</span> <span class="bool-val">false</span>;
         } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">el</span>.<span class="ident">is_nan</span>() {
             <span class="kw">return</span> <span class="bool-val">false</span>;
         }
-        <span class="ident">sum</span> <span class="op">+=</span> <span class="ident">el</span>;
+        <span class="ident">sum</span> <span class="op">+</span><span class="op">=</span> <span class="ident">el</span>;
     }
-    <span class="ident">sum</span> <span class="op">!=</span> <span class="number">0.0</span>
+    <span class="ident">sum</span> <span class="op">!</span><span class="op">=</span> <span class="number">0.0</span>
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
@@ -175,7 +175,7 @@
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">f64</span>;
 
     <span class="doccomment">/// cdf should be the integral of the pdf</span>
-    <span class="kw">fn</span> <span class="ident">check_integrate_pdf_is_cdf</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Univariate</span><span class="op">&lt;</span><span class="ident">f64</span>, <span class="ident">f64</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Continuous</span><span class="op">&lt;</span><span class="ident">f64</span>, <span class="ident">f64</span><span class="op">&gt;&gt;</span>(
+    <span class="kw">fn</span> <span class="ident">check_integrate_pdf_is_cdf</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Univariate</span><span class="op">&lt;</span><span class="ident">f64</span>, <span class="ident">f64</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Continuous</span><span class="op">&lt;</span><span class="ident">f64</span>, <span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span>(
         <span class="ident">dist</span>: <span class="kw-2">&amp;</span><span class="ident">D</span>,
         <span class="ident">x_min</span>: <span class="ident">f64</span>,
         <span class="ident">x_max</span>: <span class="ident">f64</span>,
@@ -189,14 +189,14 @@
             <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">prev_x</span> <span class="op">+</span> <span class="ident">step</span>;
             <span class="kw">let</span> <span class="ident">density</span> <span class="op">=</span> <span class="ident">dist</span>.<span class="ident">pdf</span>(<span class="ident">x</span>);
 
-            <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">density</span> <span class="op">&gt;=</span> <span class="number">0.0</span>);
+            <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">density</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0.0</span>);
 
             <span class="kw">let</span> <span class="ident">ln_density</span> <span class="op">=</span> <span class="ident">dist</span>.<span class="ident">ln_pdf</span>(<span class="ident">x</span>);
 
             <span class="macro">assert_almost_eq</span><span class="macro">!</span>(<span class="ident">density</span>.<span class="ident">ln</span>(), <span class="ident">ln_density</span>, <span class="number">1e-10</span>);
 
             <span class="comment">// triangle rule</span>
-            <span class="ident">sum</span> <span class="op">+=</span> (<span class="ident">prev_density</span> <span class="op">+</span> <span class="ident">density</span>) <span class="op">*</span> <span class="ident">step</span> <span class="op">/</span> <span class="number">2.0</span>;
+            <span class="ident">sum</span> <span class="op">+</span><span class="op">=</span> (<span class="ident">prev_density</span> <span class="op">+</span> <span class="ident">density</span>) <span class="op">*</span> <span class="ident">step</span> <span class="op">/</span> <span class="number">2.0</span>;
 
             <span class="kw">let</span> <span class="ident">cdf</span> <span class="op">=</span> <span class="ident">dist</span>.<span class="ident">cdf</span>(<span class="ident">x</span>);
             <span class="kw">if</span> (<span class="ident">sum</span> <span class="op">-</span> <span class="ident">cdf</span>).<span class="ident">abs</span>() <span class="op">&gt;</span> <span class="number">1e-3</span> {
@@ -206,7 +206,7 @@
                 <span class="macro">assert</span><span class="macro">!</span>(<span class="bool-val">false</span>);
             }
 
-            <span class="kw">if</span> <span class="ident">x</span> <span class="op">&gt;=</span> <span class="ident">x_max</span> {
+            <span class="kw">if</span> <span class="ident">x</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">x_max</span> {
                 <span class="kw">break</span>;
             } <span class="kw">else</span> {
                 <span class="ident">prev_x</span> <span class="op">=</span> <span class="ident">x</span>;
@@ -215,23 +215,23 @@
         }
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">sum</span> <span class="op">&gt;</span> <span class="number">0.99</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">sum</span> <span class="op">&lt;=</span> <span class="number">1.001</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">sum</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1.001</span>);
     }
 
     <span class="doccomment">/// cdf should be the sum of the pmf</span>
-    <span class="kw">fn</span> <span class="ident">check_sum_pmf_is_cdf</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Univariate</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">f64</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Discrete</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">f64</span><span class="op">&gt;&gt;</span>(<span class="ident">dist</span>: <span class="kw-2">&amp;</span><span class="ident">D</span>, <span class="ident">x_max</span>: <span class="ident">u64</span>) {
+    <span class="kw">fn</span> <span class="ident">check_sum_pmf_is_cdf</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Univariate</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">f64</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Discrete</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">dist</span>: <span class="kw-2">&amp;</span><span class="ident">D</span>, <span class="ident">x_max</span>: <span class="ident">u64</span>) {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sum</span> <span class="op">=</span> <span class="number">0.0</span>;
 
         <span class="comment">// go slightly beyond x_max to test for off-by-one errors</span>
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">x_max</span> <span class="op">+</span> <span class="number">3</span> {
             <span class="kw">let</span> <span class="ident">prob</span> <span class="op">=</span> <span class="ident">dist</span>.<span class="ident">pmf</span>(<span class="ident">i</span>);
 
-            <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">prob</span> <span class="op">&gt;=</span> <span class="number">0.0</span>);
-            <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">prob</span> <span class="op">&lt;=</span> <span class="number">1.0</span>);
+            <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">prob</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0.0</span>);
+            <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">prob</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1.0</span>);
 
-            <span class="ident">sum</span> <span class="op">+=</span> <span class="ident">prob</span>;
+            <span class="ident">sum</span> <span class="op">+</span><span class="op">=</span> <span class="ident">prob</span>;
 
-            <span class="kw">if</span> <span class="ident">i</span> <span class="op">==</span> <span class="ident">x_max</span> {
+            <span class="kw">if</span> <span class="ident">i</span> <span class="op">=</span><span class="op">=</span> <span class="ident">x_max</span> {
                 <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">sum</span> <span class="op">&gt;</span> <span class="number">0.99</span>);
             }
 
@@ -242,12 +242,12 @@
         }
 
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">sum</span> <span class="op">&gt;</span> <span class="number">0.99</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">sum</span> <span class="op">&lt;=</span> <span class="number">1.0</span> <span class="op">+</span> <span class="number">1e-10</span>);
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">sum</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1.0</span> <span class="op">+</span> <span class="number">1e-10</span>);
     }
 
     <span class="doccomment">/// Does a series of checks that all continuous distributions must obey.</span>
     <span class="doccomment">/// 99% of the probability mass should be between x_min and x_max.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_continuous_distribution</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Univariate</span><span class="op">&lt;</span><span class="ident">f64</span>, <span class="ident">f64</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Continuous</span><span class="op">&lt;</span><span class="ident">f64</span>, <span class="ident">f64</span><span class="op">&gt;&gt;</span>(
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_continuous_distribution</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Univariate</span><span class="op">&lt;</span><span class="ident">f64</span>, <span class="ident">f64</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Continuous</span><span class="op">&lt;</span><span class="ident">f64</span>, <span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span>(
         <span class="ident">dist</span>: <span class="kw-2">&amp;</span><span class="ident">D</span>,
         <span class="ident">x_min</span>: <span class="ident">f64</span>,
         <span class="ident">x_max</span>: <span class="ident">f64</span>,
@@ -265,7 +265,7 @@
     <span class="doccomment">/// Does a series of checks that all positive discrete distributions must</span>
     <span class="doccomment">/// obey.</span>
     <span class="doccomment">/// 99% of the probability mass should be between 0 and x_max (inclusive).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_discrete_distribution</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Univariate</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">f64</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Discrete</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">f64</span><span class="op">&gt;&gt;</span>(
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check_discrete_distribution</span><span class="op">&lt;</span><span class="ident">D</span>: <span class="ident">Univariate</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">f64</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Discrete</span><span class="op">&lt;</span><span class="ident">u64</span>, <span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span>(
         <span class="ident">dist</span>: <span class="kw-2">&amp;</span><span class="ident">D</span>,
         <span class="ident">x_max</span>: <span class="ident">u64</span>,
     ) {

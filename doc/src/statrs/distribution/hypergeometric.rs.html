@@ -701,8 +701,8 @@
     <span class="doccomment">/// result = Hypergeometric::new(2, 3, 2);</span>
     <span class="doccomment">/// assert!(result.is_err());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">population</span>: <span class="ident">u64</span>, <span class="ident">successes</span>: <span class="ident">u64</span>, <span class="ident">draws</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Hypergeometric</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">successes</span> <span class="op">&gt;</span> <span class="ident">population</span> <span class="op">||</span> <span class="ident">draws</span> <span class="op">&gt;</span> <span class="ident">population</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">population</span>: <span class="ident">u64</span>, <span class="ident">successes</span>: <span class="ident">u64</span>, <span class="ident">draws</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Hypergeometric</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="ident">successes</span> <span class="op">&gt;</span> <span class="ident">population</span> <span class="op">|</span><span class="op">|</span> <span class="ident">draws</span> <span class="op">&gt;</span> <span class="ident">population</span> {
             <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">BadParams</span>)
         } <span class="kw">else</span> {
             <span class="prelude-val">Ok</span>(<span class="ident">Hypergeometric</span> {
@@ -724,7 +724,7 @@
     <span class="doccomment">/// let n = Hypergeometric::new(10, 5, 3).unwrap();</span>
     <span class="doccomment">/// assert_eq!(n.population(), 10);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">population</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">population</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">population</span>
     }
 
@@ -739,7 +739,7 @@
     <span class="doccomment">/// let n = Hypergeometric::new(10, 5, 3).unwrap();</span>
     <span class="doccomment">/// assert_eq!(n.successes(), 5);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">successes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">successes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">successes</span>
     }
 
@@ -754,13 +754,13 @@
     <span class="doccomment">/// let n = Hypergeometric::new(10, 5, 3).unwrap();</span>
     <span class="doccomment">/// assert_eq!(n.draws(), 3);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">draws</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">draws</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">draws</span>
     }
 
     <span class="doccomment">/// Returns population, successes, and draws in that order</span>
     <span class="doccomment">/// as a tuple of doubles</span>
-    <span class="kw">fn</span> <span class="ident">values_f64</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">f64</span>, <span class="ident">f64</span>, <span class="ident">f64</span>) {
+    <span class="kw">fn</span> <span class="ident">values_f64</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">f64</span>, <span class="ident">f64</span>, <span class="ident">f64</span>) {
         (
             <span class="self">self</span>.<span class="ident">population</span> <span class="kw">as</span> <span class="ident">f64</span>,
             <span class="self">self</span>.<span class="ident">successes</span> <span class="kw">as</span> <span class="ident">f64</span>,
@@ -770,7 +770,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Distribution</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Hypergeometric</span> {
-    <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">population</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">population</span> <span class="kw">as</span> <span class="ident">f64</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">successes</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">successes</span> <span class="kw">as</span> <span class="ident">f64</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">draws</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">draws</span>;
@@ -779,12 +779,12 @@
             <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">successes</span> <span class="op">/</span> <span class="ident">population</span>;
             <span class="kw">let</span> <span class="ident">next</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">r</span>.<span class="ident">gen</span>();
             <span class="kw">if</span> <span class="ident">next</span> <span class="op">&lt;</span> <span class="ident">p</span> {
-                <span class="ident">x</span> <span class="op">+=</span> <span class="number">1.0</span>;
-                <span class="ident">successes</span> <span class="op">-=</span> <span class="number">1.0</span>;
+                <span class="ident">x</span> <span class="op">+</span><span class="op">=</span> <span class="number">1.0</span>;
+                <span class="ident">successes</span> <span class="op">-</span><span class="op">=</span> <span class="number">1.0</span>;
             }
-            <span class="ident">population</span> <span class="op">-=</span> <span class="number">1.0</span>;
-            <span class="ident">draws</span> <span class="op">-=</span> <span class="number">1</span>;
-            <span class="kw">if</span> <span class="ident">draws</span> <span class="op">==</span> <span class="number">0</span> {
+            <span class="ident">population</span> <span class="op">-</span><span class="op">=</span> <span class="number">1.0</span>;
+            <span class="ident">draws</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
+            <span class="kw">if</span> <span class="ident">draws</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
                 <span class="kw">break</span>;
             }
         }
@@ -807,10 +807,10 @@
     <span class="doccomment">/// and `p_F_q` is the [generalized hypergeometric</span>
     <span class="doccomment">/// function](https://en.wikipedia.</span>
     <span class="doccomment">/// org/wiki/Generalized_hypergeometric_function)</span>
-    <span class="kw">fn</span> <span class="ident">cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">min</span>() <span class="kw">as</span> <span class="ident">f64</span> {
             <span class="number">0.0</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">&gt;=</span> <span class="self">self</span>.<span class="ident">max</span>() <span class="kw">as</span> <span class="ident">f64</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">&gt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">max</span>() <span class="kw">as</span> <span class="ident">f64</span> {
             <span class="number">1.0</span>
         } <span class="kw">else</span> {
             <span class="kw">let</span> <span class="ident">k</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">floor</span>() <span class="kw">as</span> <span class="ident">u64</span>;
@@ -837,7 +837,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `N` is population, `K` is successes, and `n` is draws</span>
-    <span class="kw">fn</span> <span class="ident">min</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">fn</span> <span class="ident">min</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
         (<span class="self">self</span>.<span class="ident">draws</span> <span class="op">+</span> <span class="self">self</span>.<span class="ident">successes</span>).<span class="ident">saturating_sub</span>(<span class="self">self</span>.<span class="ident">population</span>)
     }
 }
@@ -854,7 +854,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `K` is successes and `n` is draws</span>
-    <span class="kw">fn</span> <span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">fn</span> <span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
         <span class="ident">cmp</span>::<span class="ident">min</span>(<span class="self">self</span>.<span class="ident">successes</span>, <span class="self">self</span>.<span class="ident">draws</span>)
     }
 }
@@ -873,7 +873,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `N` is population, `K` is successes, and `n` is draws</span>
-    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">checked_mean</span>().<span class="ident">unwrap</span>()
     }
 }
@@ -892,8 +892,8 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `N` is population, `K` is successes, and `n` is draws</span>
-    <span class="kw">fn</span> <span class="ident">checked_mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">population</span> <span class="op">==</span> <span class="number">0</span> {
+    <span class="kw">fn</span> <span class="ident">checked_mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">population</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ArgGt</span>(<span class="string">&quot;population&quot;</span>, <span class="number">0.0</span>))
         } <span class="kw">else</span> {
             <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">successes</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">draws</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">/</span> <span class="self">self</span>.<span class="ident">population</span> <span class="kw">as</span> <span class="ident">f64</span>)
@@ -915,7 +915,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `N` is population, `K` is successes, and `n` is draws</span>
-    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">checked_variance</span>().<span class="ident">unwrap</span>()
     }
 
@@ -932,7 +932,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `N` is population, `K` is successes, and `n` is draws</span>
-    <span class="kw">fn</span> <span class="ident">std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">checked_std_dev</span>().<span class="ident">unwrap</span>()
     }
 }
@@ -951,8 +951,8 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `N` is population, `K` is successes, and `n` is draws</span>
-    <span class="kw">fn</span> <span class="ident">checked_variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">population</span> <span class="op">&lt;=</span> <span class="number">1</span> {
+    <span class="kw">fn</span> <span class="ident">checked_variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">population</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1</span> {
             <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ArgGt</span>(<span class="string">&quot;population&quot;</span>, <span class="number">1.0</span>))
         } <span class="kw">else</span> {
             <span class="kw">let</span> (<span class="ident">population</span>, <span class="ident">successes</span>, <span class="ident">draws</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">values_f64</span>();
@@ -975,7 +975,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `N` is population, `K` is successes, and `n` is draws</span>
-    <span class="kw">fn</span> <span class="ident">checked_std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">checked_std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">checked_variance</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">sqrt</span>())
     }
 }
@@ -995,7 +995,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `N` is population, `K` is successes, and `n` is draws</span>
-    <span class="kw">fn</span> <span class="ident">skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">checked_skewness</span>().<span class="ident">unwrap</span>()
     }
 }
@@ -1015,8 +1015,8 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `N` is population, `K` is successes, and `n` is draws</span>
-    <span class="kw">fn</span> <span class="ident">checked_skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">population</span> <span class="op">&lt;=</span> <span class="number">2</span> {
+    <span class="kw">fn</span> <span class="ident">checked_skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">population</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">2</span> {
             <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ArgGt</span>(<span class="string">&quot;population&quot;</span>, <span class="number">2.0</span>))
         } <span class="kw">else</span> {
             <span class="kw">let</span> (<span class="ident">population</span>, <span class="ident">successes</span>, <span class="ident">draws</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">values_f64</span>();
@@ -1040,7 +1040,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `N` is population, `K` is successes, and `n` is draws</span>
-    <span class="kw">fn</span> <span class="ident">mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">fn</span> <span class="ident">mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
         ((<span class="self">self</span>.<span class="ident">draws</span> <span class="op">+</span> <span class="number">1</span>) <span class="op">*</span> (<span class="self">self</span>.<span class="ident">successes</span> <span class="op">+</span> <span class="number">1</span>) <span class="op">/</span> (<span class="self">self</span>.<span class="ident">population</span> <span class="op">+</span> <span class="number">2</span>)) <span class="kw">as</span> <span class="ident">u64</span>
     }
 }
@@ -1056,7 +1056,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `N` is population, `K` is successes, and `n` is draws</span>
-    <span class="kw">fn</span> <span class="ident">pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">if</span> <span class="ident">x</span> <span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">draws</span> {
             <span class="number">0.0</span>
         } <span class="kw">else</span> {
@@ -1076,7 +1076,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `N` is population, `K` is successes, and `n` is draws</span>
-    <span class="kw">fn</span> <span class="ident">ln_pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">ln_pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="ident">factorial</span>::<span class="ident">ln_binomial</span>(<span class="self">self</span>.<span class="ident">successes</span>, <span class="ident">x</span>)
             <span class="op">+</span> <span class="ident">factorial</span>::<span class="ident">ln_binomial</span>(<span class="self">self</span>.<span class="ident">population</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">successes</span>, <span class="self">self</span>.<span class="ident">draws</span> <span class="op">-</span> <span class="ident">x</span>)
             <span class="op">-</span> <span class="ident">factorial</span>::<span class="ident">ln_binomial</span>(<span class="self">self</span>.<span class="ident">population</span>, <span class="self">self</span>.<span class="ident">draws</span>)
@@ -1092,7 +1092,7 @@
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">distribution</span>::{<span class="ident">Univariate</span>, <span class="ident">Discrete</span>, <span class="ident">Hypergeometric</span>};
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">distribution</span>::<span class="ident">internal</span>::<span class="kw-2">*</span>;
 
-    <span class="kw">fn</span> <span class="ident">try_create</span>(<span class="ident">population</span>: <span class="ident">u64</span>, <span class="ident">successes</span>: <span class="ident">u64</span>, <span class="ident">draws</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">Hypergeometric</span> {
+    <span class="kw">fn</span> <span class="ident">try_create</span>(<span class="ident">population</span>: <span class="ident">u64</span>, <span class="ident">successes</span>: <span class="ident">u64</span>, <span class="ident">draws</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Hypergeometric</span> {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">Hypergeometric</span>::<span class="ident">new</span>(<span class="ident">population</span>, <span class="ident">successes</span>, <span class="ident">draws</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">n</span>.<span class="ident">is_ok</span>());
         <span class="ident">n</span>.<span class="ident">unwrap</span>()
@@ -1110,9 +1110,9 @@
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">n</span>.<span class="ident">is_err</span>());
     }
 
-    <span class="kw">fn</span> <span class="ident">get_value</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">population</span>: <span class="ident">u64</span>, <span class="ident">successes</span>: <span class="ident">u64</span>, <span class="ident">draws</span>: <span class="ident">u64</span>, <span class="ident">eval</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="ident">T</span>
+    <span class="kw">fn</span> <span class="ident">get_value</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">population</span>: <span class="ident">u64</span>, <span class="ident">successes</span>: <span class="ident">u64</span>, <span class="ident">draws</span>: <span class="ident">u64</span>, <span class="ident">eval</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>
         <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">PartialEq</span> <span class="op">+</span> <span class="ident">Debug</span>,
-              <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Hypergeometric</span>) <span class="op">-&gt;</span> <span class="ident">T</span>
+              <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Hypergeometric</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>
     {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">try_create</span>(<span class="ident">population</span>, <span class="ident">successes</span>, <span class="ident">draws</span>);
         <span class="ident">eval</span>(<span class="ident">n</span>)
@@ -1120,14 +1120,14 @@
 
     <span class="kw">fn</span> <span class="ident">test_case</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">population</span>: <span class="ident">u64</span>, <span class="ident">successes</span>: <span class="ident">u64</span>, <span class="ident">draws</span>: <span class="ident">u64</span>, <span class="ident">expected</span>: <span class="ident">T</span>, <span class="ident">eval</span>: <span class="ident">F</span>)
         <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">PartialEq</span> <span class="op">+</span> <span class="ident">Debug</span>,
-              <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Hypergeometric</span>) <span class="op">-&gt;</span> <span class="ident">T</span>
+              <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Hypergeometric</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>
     {
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">get_value</span>(<span class="ident">population</span>, <span class="ident">successes</span>, <span class="ident">draws</span>, <span class="ident">eval</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected</span>, <span class="ident">x</span>);
     }
 
     <span class="kw">fn</span> <span class="ident">test_almost</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">population</span>: <span class="ident">u64</span>, <span class="ident">successes</span>: <span class="ident">u64</span>, <span class="ident">draws</span>: <span class="ident">u64</span>, <span class="ident">expected</span>: <span class="ident">f64</span>, <span class="ident">acc</span>: <span class="ident">f64</span>, <span class="ident">eval</span>: <span class="ident">F</span>)
-        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Hypergeometric</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>
+        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Hypergeometric</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>
     {
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">get_value</span>(<span class="ident">population</span>, <span class="ident">successes</span>, <span class="ident">draws</span>, <span class="ident">eval</span>);
         <span class="macro">assert_almost_eq</span><span class="macro">!</span>(<span class="ident">expected</span>, <span class="ident">x</span>, <span class="ident">acc</span>);

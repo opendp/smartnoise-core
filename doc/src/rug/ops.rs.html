@@ -2141,7 +2141,7 @@ assert_eq!(u.pow(2_u16), 25);
     <span class="doccomment">/// assert_eq!(power, 100_000);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">pow</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
+    <span class="kw">fn</span> <span class="ident">pow</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
 }
 
 <span class="doccomment">/**
@@ -2265,7 +2265,7 @@ assert_eq!(dir, Ordering::Equal);
     <span class="doccomment">/// assert_eq!(dir, Ordering::Greater);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">assign_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">src</span>: <span class="ident">Src</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
+    <span class="kw">fn</span> <span class="ident">assign_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">src</span>: <span class="ident">Src</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
 }
 
 <span class="doccomment">/**
@@ -2317,7 +2317,7 @@ assert_eq!(dir, Ordering::Equal);
     <span class="doccomment">/// assert_eq!(dir, Ordering::Greater);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">add_assign_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
+    <span class="kw">fn</span> <span class="ident">add_assign_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
 }
 
 <span class="doccomment">/**
@@ -2374,7 +2374,7 @@ assert_eq!(dir, Ordering::Equal);
     <span class="doccomment">/// assert_eq!(dir, Ordering::Greater);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">add_from_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">lhs</span>: <span class="ident">Lhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
+    <span class="kw">fn</span> <span class="ident">add_from_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">lhs</span>: <span class="ident">Lhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
 }
 
 <span class="doccomment">/**
@@ -2427,7 +2427,7 @@ assert_eq!(dir, Ordering::Equal);
     <span class="doccomment">/// assert_eq!(dir, Ordering::Greater);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">sub_assign_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
+    <span class="kw">fn</span> <span class="ident">sub_assign_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
 }
 
 <span class="doccomment">/**
@@ -2484,7 +2484,7 @@ assert_eq!(dir, Ordering::Equal);
     <span class="doccomment">/// assert_eq!(dir, Ordering::Greater);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">sub_from_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">lhs</span>: <span class="ident">Lhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
+    <span class="kw">fn</span> <span class="ident">sub_from_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">lhs</span>: <span class="ident">Lhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
 }
 
 <span class="doccomment">/**
@@ -2537,7 +2537,7 @@ assert_eq!(dir, Ordering::Equal);
     <span class="doccomment">/// assert_eq!(dir, Ordering::Less);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">mul_assign_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
+    <span class="kw">fn</span> <span class="ident">mul_assign_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
 }
 
 <span class="doccomment">/**
@@ -2594,7 +2594,7 @@ assert_eq!(dir, Ordering::Equal);
     <span class="doccomment">/// assert_eq!(dir, Ordering::Less);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">mul_from_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">lhs</span>: <span class="ident">Lhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
+    <span class="kw">fn</span> <span class="ident">mul_from_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">lhs</span>: <span class="ident">Lhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
 }
 
 <span class="doccomment">/**
@@ -2646,7 +2646,7 @@ assert_eq!(dir, Ordering::Equal);
     <span class="doccomment">/// assert_eq!(dir, Ordering::Less);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">div_assign_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
+    <span class="kw">fn</span> <span class="ident">div_assign_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
 }
 
 <span class="doccomment">/**
@@ -2703,7 +2703,7 @@ assert_eq!(dir, Ordering::Equal);
     <span class="doccomment">/// assert_eq!(dir, Ordering::Less);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">div_from_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">lhs</span>: <span class="ident">Lhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
+    <span class="kw">fn</span> <span class="ident">div_from_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">lhs</span>: <span class="ident">Lhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
 }
 
 <span class="doccomment">/**
@@ -2756,7 +2756,7 @@ assert_eq!(dir, Ordering::Equal);
     <span class="doccomment">/// assert_eq!(dir, Ordering::Greater);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">rem_assign_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
+    <span class="kw">fn</span> <span class="ident">rem_assign_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
 }
 
 <span class="doccomment">/**
@@ -2813,7 +2813,7 @@ assert_eq!(dir, Ordering::Equal);
     <span class="doccomment">/// assert_eq!(dir, Ordering::Less);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">rem_from_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">lhs</span>: <span class="ident">Lhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
+    <span class="kw">fn</span> <span class="ident">rem_from_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">lhs</span>: <span class="ident">Lhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
 }
 
 <span class="doccomment">/**
@@ -2866,7 +2866,7 @@ assert_eq!(dir, Ordering::Equal);
     <span class="doccomment">/// assert_eq!(dir, Ordering::Greater);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">pow_assign_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
+    <span class="kw">fn</span> <span class="ident">pow_assign_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
 }
 
 <span class="doccomment">/**
@@ -2923,7 +2923,7 @@ assert_eq!(dir, Ordering::Equal);
     <span class="doccomment">/// assert_eq!(dir, Ordering::Greater);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">pow_from_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">lhs</span>: <span class="ident">Lhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
+    <span class="kw">fn</span> <span class="ident">pow_from_round</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">lhs</span>: <span class="ident">Lhs</span>, <span class="ident">round</span>: <span class="self">Self</span>::<span class="ident">Round</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Ordering</span>;
 }
 
 <span class="doccomment">/**
@@ -2980,14 +2980,14 @@ assert_eq!(I(-10).div_euc(-3), 4);
     <span class="doccomment">/// The resulting type from the division operation.</span>
     <span class="kw">type</span> <span class="ident">Output</span>;
     <span class="doccomment">/// Performs division, rounding the quotient towards zero.</span>
-    <span class="kw">fn</span> <span class="ident">div_trunc</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
+    <span class="kw">fn</span> <span class="ident">div_trunc</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
     <span class="doccomment">/// Performs division, rounding the quotient up.</span>
-    <span class="kw">fn</span> <span class="ident">div_ceil</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
+    <span class="kw">fn</span> <span class="ident">div_ceil</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
     <span class="doccomment">/// Performs division, rounding the quotient down.</span>
-    <span class="kw">fn</span> <span class="ident">div_floor</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
+    <span class="kw">fn</span> <span class="ident">div_floor</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
     <span class="doccomment">/// Performs Euclidean division, rounding the quotient so that the</span>
     <span class="doccomment">/// remainder cannot be negative.</span>
-    <span class="kw">fn</span> <span class="ident">div_euc</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
+    <span class="kw">fn</span> <span class="ident">div_euc</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
 }
 
 <span class="doccomment">/**
@@ -3149,13 +3149,13 @@ assert_eq!(I(-10).rem_euc(-3), 2);
     <span class="doccomment">/// The resulting type from the remainder operation.</span>
     <span class="kw">type</span> <span class="ident">Output</span>;
     <span class="doccomment">/// Finds the remainder when the quotient is rounded towards zero.</span>
-    <span class="kw">fn</span> <span class="ident">rem_trunc</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
+    <span class="kw">fn</span> <span class="ident">rem_trunc</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
     <span class="doccomment">/// Finds the remainder when the quotient is rounded up.</span>
-    <span class="kw">fn</span> <span class="ident">rem_ceil</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
+    <span class="kw">fn</span> <span class="ident">rem_ceil</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
     <span class="doccomment">/// Finds the remainder when the quotient is rounded down.</span>
-    <span class="kw">fn</span> <span class="ident">rem_floor</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
+    <span class="kw">fn</span> <span class="ident">rem_floor</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
     <span class="doccomment">/// Finds the positive remainder from Euclidean division.</span>
-    <span class="kw">fn</span> <span class="ident">rem_euc</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
+    <span class="kw">fn</span> <span class="ident">rem_euc</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="ident">Rhs</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
 }
 
 <span class="doccomment">/**

@@ -22,10 +22,10 @@ static assertion that <code>Sync</code> is implemented for that type.</p>
 <span class="kw">use</span> <span class="ident">syn</span>::<span class="ident">spanned</span>::<span class="ident">Spanned</span>;
 
 <span class="attribute">#[<span class="ident">proc_macro_derive</span>(<span class="ident">MyMacro</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">my_macro</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) <span class="op">-&gt;</span> <span class="ident">TokenStream</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">my_macro</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TokenStream</span> {
     <span class="comment">/* ... */</span>
 
-    <span class="kw">let</span> <span class="ident">assert_sync</span> <span class="op">=</span> <span class="macro">quote_spanned</span><span class="macro">!</span> {<span class="ident">ty</span>.<span class="ident">span</span>()<span class="op">=&gt;</span>
+    <span class="kw">let</span> <span class="ident">assert_sync</span> <span class="op">=</span> <span class="macro">quote_spanned</span><span class="macro">!</span> {<span class="ident">ty</span>.<span class="ident">span</span>()<span class="op">=</span><span class="op">&gt;</span>
         <span class="kw">struct</span> <span class="ident">_AssertSync</span> <span class="kw">where</span> #<span class="ident">ty</span>: <span class="ident">Sync</span>;
     };
 
@@ -44,7 +44,7 @@ our macro, the user's code will fail to compile if <code>ty</code> does not impl
 error appear in the correct place underlining the right type.</p>
 <br>
 <h1 id="limitations" class="section-header"><a href="#limitations">Limitations</a></h1>
-<p>The underlying <a href="https://doc.rust-lang.org/nightly/proc_macro/struct.Span.html#method.join" title="`proc_macro::Span::join`"><code>proc_macro::Span::join</code></a> method is nightly-only. When
+<p>The underlying <a href="https://doc.rust-lang.org/nightly/proc_macro/struct.Span.html#method.join" title="proc_macro::Span::join"><code>proc_macro::Span::join</code></a> method is nightly-only. When
 called from within a procedural macro in a nightly compiler, <code>Spanned</code> will
 use <code>join</code> to produce the intended span. When not using a nightly compiler,
 only the span of the <em>first token</em> of the syntax tree node is returned.</p>

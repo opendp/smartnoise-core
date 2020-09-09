@@ -25,27 +25,27 @@
 <span id="24">24</span>
 <span id="25">25</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="doccomment">//! The public parts of this private module are used to create traits</span>
-<span class="doccomment">//! that cannot be implemented outside of our own crate.  This way we</span>
-<span class="doccomment">//! can feel free to extend those traits without worrying about it</span>
-<span class="doccomment">//! being a breaking change for other implementations.</span>
+<span class="doccomment">//! The public parts of this private module are used to create traits</span>
+<span class="doccomment">//! that cannot be implemented outside of our own crate.  This way we</span>
+<span class="doccomment">//! can feel free to extend those traits without worrying about it</span>
+<span class="doccomment">//! being a breaking change for other implementations.</span>
 
-<span class="doccomment">/// If this type is pub but not publicly reachable, third parties</span>
-<span class="doccomment">/// can&#39;t name it and can&#39;t implement traits using it.</span>
+<span class="doccomment">/// If this type is pub but not publicly reachable, third parties</span>
+<span class="doccomment">/// can&#39;t name it and can&#39;t implement traits using it.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PrivateMarker</span>;
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">private_decl</span> {
-    () <span class="op">=&gt;</span> {
-        <span class="doccomment">/// This trait is private to implement; this method exists to make it</span>
-        <span class="doccomment">/// impossible to implement outside the crate.</span>
-        <span class="kw">fn</span> <span class="ident">__private__</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw">crate</span>::<span class="ident">private</span>::<span class="ident">PrivateMarker</span>;
+    () <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="doccomment">/// This trait is private to implement; this method exists to make it</span>
+        <span class="doccomment">/// impossible to implement outside the crate.</span>
+        <span class="kw">fn</span> <span class="ident">__private__</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">private</span>::<span class="ident">PrivateMarker</span>;
     }
 }
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">private_impl</span> {
-    () <span class="op">=&gt;</span> {
+    () <span class="op">=</span><span class="op">&gt;</span> {
         <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-        <span class="kw">fn</span> <span class="ident">__private__</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw">crate</span>::<span class="ident">private</span>::<span class="ident">PrivateMarker</span> {
+        <span class="kw">fn</span> <span class="ident">__private__</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">crate</span>::<span class="ident">private</span>::<span class="ident">PrivateMarker</span> {
             <span class="kw">crate</span>::<span class="ident">private</span>::<span class="ident">PrivateMarker</span>
         }
     }

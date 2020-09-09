@@ -659,7 +659,7 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span><span class="op">=</span><span class="string">&quot;use-mpfr&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">ThreadRandGen</span> <span class="kw">for</span> <span class="ident">GeneratorOpenSSL</span> {
-    <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">4</span>];
         <span class="ident">utilities</span>::<span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>);
         <span class="ident">u32</span>::<span class="ident">from_ne_bytes</span>(<span class="ident">buffer</span>)
@@ -676,7 +676,7 @@
 <span class="doccomment">/// only inside of the sample_bit_prob function. The major difference is that this function does not </span>
 <span class="doccomment">/// call sample_bit_prob itself (whereas sample_geometric_censored does), so having this more specialized</span>
 <span class="doccomment">/// version allows us to avoid an infinite dependence loop.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">censored_specific_geom</span>(<span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">i16</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">censored_specific_geom</span>(<span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i16</span> {
 
     <span class="kw">if</span> <span class="ident">enforce_constant_time</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>(<span class="number">0_u8</span>; <span class="number">128</span>);
@@ -737,10 +737,10 @@
 <span class="doccomment">/// let n = sample_bit_prob(-0.3, false);</span>
 <span class="doccomment">/// # n.unwrap();</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_bit_prob</span>(<span class="ident">prob</span>: <span class="ident">f64</span>, <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_bit_prob</span>(<span class="ident">prob</span>: <span class="ident">f64</span>, <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span><span class="op">&gt;</span> {
 
     <span class="comment">// ensure that prob is a valid probability</span>
-    <span class="kw">if</span> <span class="ident">prob</span> <span class="op">&lt;</span> <span class="number">0.0</span> <span class="op">||</span> <span class="ident">prob</span> <span class="op">&gt;</span> <span class="number">1.0</span> {<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;probability is not within [0, 1]&quot;</span>.<span class="ident">into</span>())}
+    <span class="kw">if</span> <span class="ident">prob</span> <span class="op">&lt;</span> <span class="number">0.0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">prob</span> <span class="op">&gt;</span> <span class="number">1.0</span> {<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;probability is not within [0, 1]&quot;</span>.<span class="ident">into</span>())}
 
     <span class="comment">// decompose probability into mantissa and exponent integers to quickly identify the value in the first_heads_index</span>
     <span class="kw">let</span> (<span class="ident">_sign</span>, <span class="ident">exponent</span>, <span class="ident">mantissa</span>) <span class="op">=</span> <span class="ident">prob</span>.<span class="ident">decompose_raw</span>();
@@ -749,7 +749,7 @@
     <span class="kw">let</span> <span class="ident">first_heads_index</span> <span class="op">=</span> <span class="ident">censored_specific_geom</span>(<span class="ident">enforce_constant_time</span>);
 
     <span class="comment">// if prob == 1., return after retrieving censored_specific_geom, to protect constant time</span>
-    <span class="kw">if</span> <span class="ident">exponent</span> <span class="op">==</span> <span class="number">1023</span> { <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>) }
+    <span class="kw">if</span> <span class="ident">exponent</span> <span class="op">=</span><span class="op">=</span> <span class="number">1023</span> { <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="bool-val">true</span>) }
 
     <span class="comment">// number of leading zeros in binary representation of prob</span>
     <span class="comment">//    cast is non-saturating because exponent only uses first 11 bits</span>
@@ -760,13 +760,13 @@
     <span class="comment">// 52 is the least significant/rightmost</span>
     <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">first_heads_index</span> <span class="op">-</span> <span class="ident">num_leading_zeros</span> {
         <span class="comment">// index into the leading zeros of the binary representation</span>
-        <span class="ident">i</span> <span class="kw">if</span> <span class="ident">i</span> <span class="op">&lt;</span> <span class="number">0</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
+        <span class="ident">i</span> <span class="kw">if</span> <span class="ident">i</span> <span class="op">&lt;</span> <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
         <span class="comment">// bit index 0 is implicitly set in ieee-754 when the exponent is nonzero</span>
-        <span class="ident">i</span> <span class="kw">if</span> <span class="ident">i</span> <span class="op">==</span> <span class="number">0</span> <span class="op">=&gt;</span> <span class="ident">exponent</span> <span class="op">!=</span> <span class="number">0</span>,
+        <span class="ident">i</span> <span class="kw">if</span> <span class="ident">i</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">exponent</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>,
         <span class="comment">// all other digits out-of-bounds are not float-approximated/are-implicitly-zero</span>
-        <span class="ident">i</span> <span class="kw">if</span> <span class="ident">i</span> <span class="op">&gt;</span> <span class="number">52</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
+        <span class="ident">i</span> <span class="kw">if</span> <span class="ident">i</span> <span class="op">&gt;</span> <span class="number">52</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
         <span class="comment">// retrieve the bit at `i` slots shifted from the left</span>
-        <span class="ident">i</span> <span class="op">=&gt;</span> <span class="ident">mantissa</span> <span class="op">&amp;</span> (<span class="number">1_u64</span> <span class="op">&lt;&lt;</span> (<span class="number">52</span> <span class="op">-</span> <span class="ident">i</span> <span class="kw">as</span> <span class="ident">usize</span>)) <span class="op">!=</span> <span class="number">0</span>
+        <span class="ident">i</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">mantissa</span> <span class="op">&amp;</span> (<span class="number">1_u64</span> <span class="op">&lt;</span><span class="op">&lt;</span> (<span class="number">52</span> <span class="op">-</span> <span class="ident">i</span> <span class="kw">as</span> <span class="ident">usize</span>)) <span class="op">!</span><span class="op">=</span> <span class="number">0</span>
     })
 }
 
@@ -785,14 +785,14 @@
         <span class="kw">let</span> <span class="ident">to_str</span> <span class="op">=</span> <span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="kw">if</span> <span class="ident">v</span> {<span class="string">&quot;1&quot;</span>} <span class="kw">else</span> {<span class="string">&quot;0&quot;</span>};
 
         <span class="kw">let</span> <span class="ident">vec_bits</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">mantissa_string</span>.<span class="ident">len</span>())
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">idx</span><span class="op">|</span> <span class="ident">mantissa_vec</span>[<span class="ident">idx</span>] <span class="op">!=</span> <span class="number">0</span>)
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">idx</span><span class="op">|</span> <span class="ident">mantissa_vec</span>[<span class="ident">idx</span>] <span class="op">!</span><span class="op">=</span> <span class="number">0</span>)
             .<span class="ident">map</span>(<span class="ident">to_str</span>).<span class="ident">join</span>(<span class="string">&quot;&quot;</span>);
 
         <span class="comment">// set the implicit 1</span>
-        <span class="ident">mantissa</span> <span class="op">|=</span> <span class="number">1u64</span> <span class="op">&lt;&lt;</span> <span class="number">52</span>;
+        <span class="ident">mantissa</span> <span class="op">|</span><span class="op">=</span> <span class="number">1u64</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">52</span>;
 
         <span class="kw">let</span> <span class="ident">log_bits</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">mantissa_string</span>.<span class="ident">len</span>())
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">idx</span><span class="op">|</span> <span class="ident">mantissa</span> <span class="op">&amp;</span> (<span class="number">1u64</span> <span class="op">&lt;&lt;</span> (<span class="number">52</span> <span class="op">-</span> <span class="ident">idx</span>)) <span class="op">!=</span> <span class="number">0u64</span>)
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">idx</span><span class="op">|</span> <span class="ident">mantissa</span> <span class="op">&amp;</span> (<span class="number">1u64</span> <span class="op">&lt;</span><span class="op">&lt;</span> (<span class="number">52</span> <span class="op">-</span> <span class="ident">idx</span>)) <span class="op">!</span><span class="op">=</span> <span class="number">0u64</span>)
             .<span class="ident">map</span>(<span class="ident">to_str</span>).<span class="ident">join</span>(<span class="string">&quot;&quot;</span>);
 
         <span class="comment">// println!(&quot;vec_bits: {:?}&quot;, vec_bits);</span>
@@ -840,10 +840,10 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_bit</span>() <span class="op">-&gt;</span> <span class="ident">bool</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_bit</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">1</span>];
     <span class="ident">utilities</span>::<span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>);
-    <span class="ident">buffer</span>[<span class="number">0</span>] <span class="op">&amp;</span> <span class="number">1</span> <span class="op">==</span> <span class="number">1</span>
+    <span class="ident">buffer</span>[<span class="number">0</span>] <span class="op">&amp;</span> <span class="number">1</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span>
 }
 
 
@@ -883,7 +883,7 @@
 <span class="doccomment">/// let n = sample_uniform_int(2, 0);</span>
 <span class="doccomment">/// # n.unwrap();</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_uniform_int</span>(<span class="ident">min</span>: <span class="ident">Integer</span>, <span class="ident">max</span>: <span class="ident">Integer</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Integer</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_uniform_int</span>(<span class="ident">min</span>: <span class="ident">Integer</span>, <span class="ident">max</span>: <span class="ident">Integer</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Integer</span><span class="op">&gt;</span> {
 
     <span class="kw">if</span> <span class="ident">min</span> <span class="op">&gt;</span> <span class="ident">max</span> {<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;min may not be greater than max&quot;</span>.<span class="ident">into</span>());}
 
@@ -958,7 +958,7 @@
 <span class="doccomment">/// let unif = sample_uniform(2.0, 0.0, false);</span>
 <span class="doccomment">/// # unif.unwrap();</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_uniform</span>(<span class="ident">min</span>: <span class="ident">f64</span>, <span class="ident">max</span>: <span class="ident">f64</span>, <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_uniform</span>(<span class="ident">min</span>: <span class="ident">f64</span>, <span class="ident">max</span>: <span class="ident">f64</span>, <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
 
     <span class="kw">if</span> <span class="ident">min</span> <span class="op">&gt;</span> <span class="ident">max</span> {<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;min may not be greater than max&quot;</span>.<span class="ident">into</span>());}
 
@@ -967,7 +967,7 @@
     <span class="comment">// mantissa bit index zero is implicit</span>
     <span class="ident">utilities</span>::<span class="ident">fill_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">mantissa_buffer</span>[<span class="number">1</span>..]);
     <span class="comment">// limit the buffer to 52 bits</span>
-    <span class="ident">mantissa_buffer</span>[<span class="number">1</span>] <span class="op">%=</span> <span class="number">16</span>;
+    <span class="ident">mantissa_buffer</span>[<span class="number">1</span>] <span class="op">%</span><span class="op">=</span> <span class="number">16</span>;
 
     <span class="comment">// convert mantissa to integer</span>
     <span class="kw">let</span> <span class="ident">mantissa_int</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from_be_bytes</span>(<span class="ident">mantissa_buffer</span>);
@@ -994,7 +994,7 @@
         <span class="kw">let</span> <span class="ident">max</span> <span class="op">=</span> <span class="number">1.</span>;
         <span class="kw">if</span> <span class="op">!</span>(<span class="number">0</span>..<span class="number">1000</span>).<span class="ident">all</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
             <span class="kw">let</span> <span class="ident">sample</span> <span class="op">=</span> <span class="ident">sample_uniform</span>(<span class="ident">min</span>, <span class="ident">max</span>, <span class="bool-val">false</span>).<span class="ident">unwrap</span>();
-            <span class="kw">let</span> <span class="ident">within</span> <span class="op">=</span> <span class="ident">min</span> <span class="op">&lt;=</span> <span class="ident">sample</span> <span class="op">&amp;&amp;</span> <span class="ident">max</span> <span class="op">&gt;=</span> <span class="ident">sample</span>;
+            <span class="kw">let</span> <span class="ident">within</span> <span class="op">=</span> <span class="ident">min</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">sample</span> <span class="op">&amp;&amp;</span> <span class="ident">max</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">sample</span>;
             <span class="kw">if</span> <span class="op">!</span><span class="ident">within</span> {
                 <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;value outside of range: {:?}&quot;</span>, <span class="ident">sample</span>);
             }
@@ -1016,7 +1016,7 @@
 
         <span class="kw">let</span> <span class="ident">new_buffer</span> <span class="op">=</span> <span class="ident">buffer</span>.<span class="ident">iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:08b}&quot;</span>, <span class="ident">v</span>))
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;&gt;</span>();
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>();
         <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">new_buffer</span>);
         <span class="kw">let</span> <span class="ident">new_mantissa</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from_str_radix</span>(<span class="kw-2">&amp;</span><span class="ident">new_buffer</span>.<span class="ident">concat</span>(), <span class="number">2</span>).<span class="ident">unwrap</span>();
         <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{:?} {:?}&quot;</span>, <span class="ident">old_mantissa</span>, <span class="ident">new_mantissa</span>);
@@ -1046,7 +1046,7 @@
 <span class="doccomment">/// # unif.unwrap();</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;use-mpfr&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_uniform_mpfr</span>(<span class="ident">min</span>: <span class="ident">f64</span>, <span class="ident">max</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">rug</span>::<span class="ident">Float</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_uniform_mpfr</span>(<span class="ident">min</span>: <span class="ident">f64</span>, <span class="ident">max</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">rug</span>::<span class="ident">Float</span><span class="op">&gt;</span> {
     <span class="comment">// initialize 64-bit floats within mpfr/rug</span>
     <span class="kw">let</span> <span class="ident">mpfr_min</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">53</span>, <span class="ident">min</span>);
     <span class="kw">let</span> <span class="ident">mpfr_max</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">53</span>, <span class="ident">max</span>);
@@ -1083,7 +1083,7 @@
 <span class="doccomment">/// let gaussian = sample_gaussian_mpfr(0.0, 1.0);</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;use-mpfr&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_gaussian_mpfr</span>(<span class="ident">shift</span>: <span class="ident">f64</span>, <span class="ident">scale</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">rug</span>::<span class="ident">Float</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_gaussian_mpfr</span>(<span class="ident">shift</span>: <span class="ident">f64</span>, <span class="ident">scale</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">rug</span>::<span class="ident">Float</span> {
     <span class="comment">// initialize 64-bit floats within mpfr/rug</span>
     <span class="comment">// NOTE: We square the scale here because we ask for the standard deviation as the function input, but</span>
     <span class="comment">//       the mpfr library wants the variance. We ask for std. dev. to be consistent with the rest of the library.</span>
@@ -1114,7 +1114,7 @@
 <span class="doccomment">/// use whitenoise_runtime::utilities::noise::sample_laplace;</span>
 <span class="doccomment">/// let n = sample_laplace(0.0, 2.0, false);</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_laplace</span>(<span class="ident">shift</span>: <span class="ident">f64</span>, <span class="ident">scale</span>: <span class="ident">f64</span>, <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_laplace</span>(<span class="ident">shift</span>: <span class="ident">f64</span>, <span class="ident">scale</span>: <span class="ident">f64</span>, <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="comment">// nothing in sample_uniform can throw an error</span>
     <span class="kw">let</span> <span class="ident">probability</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">sample_uniform</span>(<span class="number">0.</span>, <span class="number">1.</span>, <span class="ident">enforce_constant_time</span>).<span class="ident">unwrap</span>();
     <span class="ident">Laplace</span>::<span class="ident">new</span>(<span class="ident">shift</span>, <span class="ident">scale</span>).<span class="ident">inverse</span>(<span class="ident">probability</span>)
@@ -1136,13 +1136,13 @@
 <span class="doccomment">/// let n = sample_gaussian(0.0, 2.0, false);</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;use-mpfr&quot;</span>))]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_gaussian</span>(<span class="ident">shift</span>: <span class="ident">f64</span>, <span class="ident">scale</span>: <span class="ident">f64</span>, <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_gaussian</span>(<span class="ident">shift</span>: <span class="ident">f64</span>, <span class="ident">scale</span>: <span class="ident">f64</span>, <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="kw">let</span> <span class="ident">probability</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">sample_uniform</span>(<span class="number">0.</span>, <span class="number">1.</span>, <span class="ident">enforce_constant_time</span>).<span class="ident">unwrap</span>();
     <span class="ident">Gaussian</span>::<span class="ident">new</span>(<span class="ident">shift</span>, <span class="ident">scale</span>).<span class="ident">inverse</span>(<span class="ident">probability</span>)
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;use-mpfr&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_gaussian</span>(<span class="ident">shift</span>: <span class="ident">f64</span>, <span class="ident">scale</span>: <span class="ident">f64</span>, <span class="ident">_enforce_constant_time</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_gaussian</span>(<span class="ident">shift</span>: <span class="ident">f64</span>, <span class="ident">scale</span>: <span class="ident">f64</span>, <span class="ident">_enforce_constant_time</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="ident">sample_gaussian_mpfr</span>(<span class="ident">shift</span>, <span class="ident">scale</span>).<span class="ident">to_f64</span>()
 }
 
@@ -1171,14 +1171,14 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_gaussian_truncated</span>(
     <span class="ident">min</span>: <span class="ident">f64</span>, <span class="ident">max</span>: <span class="ident">f64</span>, <span class="ident">shift</span>: <span class="ident">f64</span>, <span class="ident">scale</span>: <span class="ident">f64</span>,
     <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>
-) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
     <span class="kw">if</span> <span class="ident">min</span> <span class="op">&gt;</span> <span class="ident">max</span> {<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;lower may not be greater than upper&quot;</span>.<span class="ident">into</span>());}
-    <span class="kw">if</span> <span class="ident">scale</span> <span class="op">&lt;=</span> <span class="number">0.0</span> {<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;scale must be greater than zero&quot;</span>.<span class="ident">into</span>());}
+    <span class="kw">if</span> <span class="ident">scale</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;scale must be greater than zero&quot;</span>.<span class="ident">into</span>());}
 
     <span class="comment">// return draw from distribution only if it is in correct range</span>
     <span class="kw">loop</span> {
         <span class="kw">let</span> <span class="ident">trunc_gauss</span> <span class="op">=</span> <span class="ident">sample_gaussian</span>(<span class="ident">shift</span>, <span class="ident">scale</span>, <span class="ident">enforce_constant_time</span>);
-        <span class="kw">if</span> <span class="ident">trunc_gauss</span> <span class="op">&gt;=</span> <span class="ident">min</span> <span class="op">&amp;&amp;</span> <span class="ident">trunc_gauss</span> <span class="op">&lt;=</span> <span class="ident">max</span> {
+        <span class="kw">if</span> <span class="ident">trunc_gauss</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">min</span> <span class="op">&amp;&amp;</span> <span class="ident">trunc_gauss</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">max</span> {
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">trunc_gauss</span>)
         }
     }
@@ -1202,10 +1202,10 @@
 <span class="doccomment">/// let geom = sample_geometric_censored(0.1, 20, false);</span>
 <span class="doccomment">/// # geom.unwrap();</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_geometric_censored</span>(<span class="ident">prob</span>: <span class="ident">f64</span>, <span class="ident">max_trials</span>: <span class="ident">i64</span>, <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_geometric_censored</span>(<span class="ident">prob</span>: <span class="ident">f64</span>, <span class="ident">max_trials</span>: <span class="ident">i64</span>, <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> {
 
     <span class="comment">// ensure that prob is a valid probability</span>
-    <span class="kw">if</span> <span class="ident">prob</span> <span class="op">&lt;</span> <span class="number">0.0</span> <span class="op">||</span> <span class="ident">prob</span> <span class="op">&gt;</span> <span class="number">1.0</span> {<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;probability is not within [0, 1]&quot;</span>.<span class="ident">into</span>())}
+    <span class="kw">if</span> <span class="ident">prob</span> <span class="op">&lt;</span> <span class="number">0.0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">prob</span> <span class="op">&gt;</span> <span class="number">1.0</span> {<span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;probability is not within [0, 1]&quot;</span>.<span class="ident">into</span>())}
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bit</span>: <span class="ident">bool</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">n_trials</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">0</span>;
@@ -1216,10 +1216,10 @@
     <span class="comment">// continues after the 1 is found and just stores the first location of a 1 bit.</span>
     <span class="kw">while</span> <span class="ident">n_trials</span> <span class="op">&lt;</span> <span class="ident">max_trials</span> {
         <span class="ident">bit</span> <span class="op">=</span> <span class="ident">sample_bit_prob</span>(<span class="ident">prob</span>, <span class="ident">enforce_constant_time</span>)<span class="question-mark">?</span>;
-        <span class="ident">n_trials</span> <span class="op">+=</span> <span class="number">1</span>;
+        <span class="ident">n_trials</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
 
         <span class="comment">// If we haven&#39;t seen a 1 yet, set the return to the current number of trials</span>
-        <span class="kw">if</span> <span class="ident">bit</span> <span class="op">&amp;&amp;</span> <span class="ident">geom_return</span> <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="ident">bit</span> <span class="op">&amp;&amp;</span> <span class="ident">geom_return</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="ident">geom_return</span> <span class="op">=</span> <span class="ident">n_trials</span>;
             <span class="kw">if</span> <span class="op">!</span><span class="ident">enforce_constant_time</span> {
                 <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">geom_return</span>);
@@ -1228,7 +1228,7 @@
     }
 
     <span class="comment">// set geom_return to max if we never saw a bit equaling 1</span>
-    <span class="kw">if</span> <span class="ident">geom_return</span> <span class="op">==</span> <span class="number">0</span> {
+    <span class="kw">if</span> <span class="ident">geom_return</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
         <span class="ident">geom_return</span> <span class="op">=</span> <span class="ident">max_trials</span>; <span class="comment">// could also set this equal to n_trials - 1.</span>
     }
 
@@ -1259,7 +1259,7 @@
 <span class="doccomment">/// use whitenoise_runtime::utilities::noise::sample_simple_geometric_mechanism;</span>
 <span class="doccomment">/// let geom_noise = sample_simple_geometric_mechanism(1., 0, 100, false);</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_simple_geometric_mechanism</span>(<span class="ident">scale</span>: <span class="ident">f64</span>, <span class="ident">min</span>: <span class="ident">i64</span>, <span class="ident">max</span>: <span class="ident">i64</span>, <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">i64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_simple_geometric_mechanism</span>(<span class="ident">scale</span>: <span class="ident">f64</span>, <span class="ident">min</span>: <span class="ident">i64</span>, <span class="ident">max</span>: <span class="ident">i64</span>, <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i64</span> {
 
     <span class="kw">let</span> <span class="ident">alpha</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">consts</span>::<span class="ident">E</span>.<span class="ident">powf</span>(<span class="op">-</span><span class="number">1.</span> <span class="op">/</span> <span class="ident">scale</span>);
     <span class="kw">let</span> <span class="ident">max_trials</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="ident">max</span> <span class="op">-</span> <span class="ident">min</span>;

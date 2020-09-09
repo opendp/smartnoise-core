@@ -6743,29 +6743,29 @@
 
 <span class="comment">// Values for `SectionHeader*::sh_flags`.</span>
 <span class="doccomment">/// Section is writable.</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_WRITE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_WRITE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
 <span class="doccomment">/// Section occupies memory during execution.</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_ALLOC</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_ALLOC</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1</span>;
 <span class="doccomment">/// Section is executable.</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_EXECINSTR</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_EXECINSTR</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">2</span>;
 <span class="doccomment">/// Section may be be merged to eliminate duplication.</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_MERGE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">4</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_MERGE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">4</span>;
 <span class="doccomment">/// Section contains nul-terminated strings.</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_STRINGS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">5</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_STRINGS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">5</span>;
 <span class="doccomment">/// The `sh_info` field contains a section header table index.</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_INFO_LINK</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">6</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_INFO_LINK</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>;
 <span class="doccomment">/// Section has special ordering requirements when combining sections.</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_LINK_ORDER</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">7</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_LINK_ORDER</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">7</span>;
 <span class="doccomment">/// Section requires special OS-specific handling.</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_OS_NONCONFORMING</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">8</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_OS_NONCONFORMING</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">8</span>;
 <span class="doccomment">/// Section is a member of a group.</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_GROUP</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">9</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_GROUP</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">9</span>;
 <span class="doccomment">/// Section holds thread-local storage.</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_TLS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">10</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_TLS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">10</span>;
 <span class="doccomment">/// Section is compressed.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Compressed sections begin with one of the `CompressionHeader*` headers.</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_COMPRESSED</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">11</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_COMPRESSED</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">11</span>;
 <span class="doccomment">/// OS-specific section flags.</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">SHF_MASKOS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0ff0_0000</span>;
 <span class="doccomment">/// Processor-specific section flags.</span>
@@ -6849,25 +6849,25 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endian</span><span class="op">&gt;</span> <span class="ident">Sym32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Get the `st_bind` component of the `st_info` field.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">st_bind</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u8</span> {
-        <span class="self">self</span>.<span class="ident">st_info</span> <span class="op">&gt;&gt;</span> <span class="number">4</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">st_bind</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span> {
+        <span class="self">self</span>.<span class="ident">st_info</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">4</span>
     }
 
     <span class="doccomment">/// Get the `st_type` component of the `st_info` field.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">st_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u8</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">st_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span> {
         <span class="self">self</span>.<span class="ident">st_info</span> <span class="op">&amp;</span> <span class="number">0xf</span>
     }
 
     <span class="doccomment">/// Set the `st_info` field given the `st_bind` and `st_type` components.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_st_info</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">st_bind</span>: <span class="ident">u8</span>, <span class="ident">st_type</span>: <span class="ident">u8</span>) {
-        <span class="self">self</span>.<span class="ident">st_info</span> <span class="op">=</span> (<span class="ident">st_bind</span> <span class="op">&lt;&lt;</span> <span class="number">4</span>) <span class="op">+</span> (<span class="ident">st_type</span> <span class="op">&amp;</span> <span class="number">0xf</span>);
+        <span class="self">self</span>.<span class="ident">st_info</span> <span class="op">=</span> (<span class="ident">st_bind</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">4</span>) <span class="op">+</span> (<span class="ident">st_type</span> <span class="op">&amp;</span> <span class="number">0xf</span>);
     }
 
     <span class="doccomment">/// Get the `st_visibility` component of the `st_info` field.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">st_visibility</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u8</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">st_visibility</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span> {
         <span class="self">self</span>.<span class="ident">st_other</span> <span class="op">&amp;</span> <span class="number">0x3</span>
     }
 }
@@ -6899,25 +6899,25 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endian</span><span class="op">&gt;</span> <span class="ident">Sym64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Get the `st_bind` component of the `st_info` field.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">st_bind</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u8</span> {
-        <span class="self">self</span>.<span class="ident">st_info</span> <span class="op">&gt;&gt;</span> <span class="number">4</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">st_bind</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span> {
+        <span class="self">self</span>.<span class="ident">st_info</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">4</span>
     }
 
     <span class="doccomment">/// Get the `st_type` component of the `st_info` field.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">st_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u8</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">st_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span> {
         <span class="self">self</span>.<span class="ident">st_info</span> <span class="op">&amp;</span> <span class="number">0xf</span>
     }
 
     <span class="doccomment">/// Set the `st_info` field given the `st_bind` and `st_type` components.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_st_info</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">st_bind</span>: <span class="ident">u8</span>, <span class="ident">st_type</span>: <span class="ident">u8</span>) {
-        <span class="self">self</span>.<span class="ident">st_info</span> <span class="op">=</span> (<span class="ident">st_bind</span> <span class="op">&lt;&lt;</span> <span class="number">4</span>) <span class="op">+</span> (<span class="ident">st_type</span> <span class="op">&amp;</span> <span class="number">0xf</span>);
+        <span class="self">self</span>.<span class="ident">st_info</span> <span class="op">=</span> (<span class="ident">st_bind</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">4</span>) <span class="op">+</span> (<span class="ident">st_type</span> <span class="op">&amp;</span> <span class="number">0xf</span>);
     }
 
     <span class="doccomment">/// Get the `st_visibility` component of the `st_info` field.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">st_visibility</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u8</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">st_visibility</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span> {
         <span class="self">self</span>.<span class="ident">st_other</span> <span class="op">&amp;</span> <span class="number">0x3</span>
     }
 }
@@ -7035,19 +7035,19 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endian</span><span class="op">&gt;</span> <span class="ident">Rel32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Get the `r_sym` component of the `r_info` field.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_sym</span>(<span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
-        <span class="self">self</span>.<span class="ident">r_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>) <span class="op">&gt;&gt;</span> <span class="number">8</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_sym</span>(<span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
+        <span class="self">self</span>.<span class="ident">r_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>) <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">8</span>
     }
 
     <span class="doccomment">/// Get the `r_type` component of the `r_info` field.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_type</span>(<span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">u8</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_type</span>(<span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span> {
         (<span class="self">self</span>.<span class="ident">r_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>) <span class="op">&amp;</span> <span class="number">0xff</span>) <span class="kw">as</span> <span class="ident">u8</span>
     }
 
     <span class="doccomment">/// Calculate the `r_info` field given the `r_sym` and `r_type` components.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_info</span>(<span class="ident">endian</span>: <span class="ident">E</span>, <span class="ident">r_sym</span>: <span class="ident">u32</span>, <span class="ident">r_type</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">U32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
-        <span class="ident">U32</span>::<span class="ident">new</span>(<span class="ident">endian</span>, (<span class="ident">r_sym</span> <span class="op">&lt;&lt;</span> <span class="number">8</span>) <span class="op">|</span> <span class="ident">u32</span>::<span class="ident">from</span>(<span class="ident">r_type</span>))
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_info</span>(<span class="ident">endian</span>: <span class="ident">E</span>, <span class="ident">r_sym</span>: <span class="ident">u32</span>, <span class="ident">r_type</span>: <span class="ident">u8</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">U32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
+        <span class="ident">U32</span>::<span class="ident">new</span>(<span class="ident">endian</span>, (<span class="ident">r_sym</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">8</span>) <span class="op">|</span> <span class="ident">u32</span>::<span class="ident">from</span>(<span class="ident">r_type</span>))
     }
 
     <span class="doccomment">/// Set the `r_info` field given the `r_sym` and `r_type` components.</span>
@@ -7071,19 +7071,19 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endian</span><span class="op">&gt;</span> <span class="ident">Rela32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Get the `r_sym` component of the `r_info` field.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_sym</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
-        <span class="self">self</span>.<span class="ident">r_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>) <span class="op">&gt;&gt;</span> <span class="number">8</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_sym</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
+        <span class="self">self</span>.<span class="ident">r_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>) <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">8</span>
     }
 
     <span class="doccomment">/// Get the `r_type` component of the `r_info` field.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="ident">r_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>) <span class="op">&amp;</span> <span class="number">0xff</span>
     }
 
     <span class="doccomment">/// Calculate the `r_info` field given the `r_sym` and `r_type` components.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_info</span>(<span class="ident">endian</span>: <span class="ident">E</span>, <span class="ident">r_sym</span>: <span class="ident">u32</span>, <span class="ident">r_type</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="ident">U32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
-        <span class="ident">U32</span>::<span class="ident">new</span>(<span class="ident">endian</span>, (<span class="ident">r_sym</span> <span class="op">&lt;&lt;</span> <span class="number">8</span>) <span class="op">|</span> <span class="ident">u32</span>::<span class="ident">from</span>(<span class="ident">r_type</span>))
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_info</span>(<span class="ident">endian</span>: <span class="ident">E</span>, <span class="ident">r_sym</span>: <span class="ident">u32</span>, <span class="ident">r_type</span>: <span class="ident">u8</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">U32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
+        <span class="ident">U32</span>::<span class="ident">new</span>(<span class="ident">endian</span>, (<span class="ident">r_sym</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">8</span>) <span class="op">|</span> <span class="ident">u32</span>::<span class="ident">from</span>(<span class="ident">r_type</span>))
     }
 
     <span class="doccomment">/// Set the `r_info` field given the `r_sym` and `r_type` components.</span>
@@ -7092,8 +7092,8 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endian</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Rel32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">Rela32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">rel</span>: <span class="ident">Rel32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endian</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Rel32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Rela32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">rel</span>: <span class="ident">Rel32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">Rela32</span> {
             <span class="ident">r_offset</span>: <span class="ident">rel</span>.<span class="ident">r_offset</span>,
             <span class="ident">r_info</span>: <span class="ident">rel</span>.<span class="ident">r_info</span>,
@@ -7115,19 +7115,19 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endian</span><span class="op">&gt;</span> <span class="ident">Rel64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Get the `r_sym` component of the `r_info` field.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_sym</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
-        (<span class="self">self</span>.<span class="ident">r_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>) <span class="op">&gt;&gt;</span> <span class="number">32</span>) <span class="kw">as</span> <span class="ident">u32</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_sym</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
+        (<span class="self">self</span>.<span class="ident">r_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>) <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">32</span>) <span class="kw">as</span> <span class="ident">u32</span>
     }
 
     <span class="doccomment">/// Get the `r_type` component of the `r_info` field.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         (<span class="self">self</span>.<span class="ident">r_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>) <span class="op">&amp;</span> <span class="number">0xffff_ffff</span>) <span class="kw">as</span> <span class="ident">u32</span>
     }
 
     <span class="doccomment">/// Calculate the `r_info` field given the `r_sym` and `r_type` components.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_info</span>(<span class="ident">endian</span>: <span class="ident">E</span>, <span class="ident">r_sym</span>: <span class="ident">u32</span>, <span class="ident">r_type</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">U64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
-        <span class="ident">U64</span>::<span class="ident">new</span>(<span class="ident">endian</span>, (<span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">r_sym</span>) <span class="op">&lt;&lt;</span> <span class="number">32</span>) <span class="op">|</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">r_type</span>))
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_info</span>(<span class="ident">endian</span>: <span class="ident">E</span>, <span class="ident">r_sym</span>: <span class="ident">u32</span>, <span class="ident">r_type</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">U64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
+        <span class="ident">U64</span>::<span class="ident">new</span>(<span class="ident">endian</span>, (<span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">r_sym</span>) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">32</span>) <span class="op">|</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">r_type</span>))
     }
 
     <span class="doccomment">/// Set the `r_info` field given the `r_sym` and `r_type` components.</span>
@@ -7136,8 +7136,8 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endian</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Rel64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">Rela64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">rel</span>: <span class="ident">Rel64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endian</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Rel64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Rela64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">rel</span>: <span class="ident">Rel64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">Rela64</span> {
             <span class="ident">r_offset</span>: <span class="ident">rel</span>.<span class="ident">r_offset</span>,
             <span class="ident">r_info</span>: <span class="ident">rel</span>.<span class="ident">r_info</span>,
@@ -7161,19 +7161,19 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endian</span><span class="op">&gt;</span> <span class="ident">Rela64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Get the `r_sym` component of the `r_info` field.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_sym</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
-        (<span class="self">self</span>.<span class="ident">r_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>) <span class="op">&gt;&gt;</span> <span class="number">32</span>) <span class="kw">as</span> <span class="ident">u32</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_sym</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
+        (<span class="self">self</span>.<span class="ident">r_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>) <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">32</span>) <span class="kw">as</span> <span class="ident">u32</span>
     }
 
     <span class="doccomment">/// Get the `r_type` component of the `r_info` field.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         (<span class="self">self</span>.<span class="ident">r_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>) <span class="op">&amp;</span> <span class="number">0xffff_ffff</span>) <span class="kw">as</span> <span class="ident">u32</span>
     }
 
     <span class="doccomment">/// Calculate the `r_info` field given the `r_sym` and `r_type` components.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_info</span>(<span class="ident">endian</span>: <span class="ident">E</span>, <span class="ident">r_sym</span>: <span class="ident">u32</span>, <span class="ident">r_type</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">U64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
-        <span class="ident">U64</span>::<span class="ident">new</span>(<span class="ident">endian</span>, (<span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">r_sym</span>) <span class="op">&lt;&lt;</span> <span class="number">32</span>) <span class="op">|</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">r_type</span>))
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_info</span>(<span class="ident">endian</span>: <span class="ident">E</span>, <span class="ident">r_sym</span>: <span class="ident">u32</span>, <span class="ident">r_type</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">U64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
+        <span class="ident">U64</span>::<span class="ident">new</span>(<span class="ident">endian</span>, (<span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">r_sym</span>) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">32</span>) <span class="op">|</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">r_type</span>))
     }
 
     <span class="doccomment">/// Set the `r_info` field given the `r_sym` and `r_type` components.</span>
@@ -7266,11 +7266,11 @@
 
 <span class="comment">// Values for `ProgramHeader*::p_flags`.</span>
 <span class="doccomment">/// Segment is executable.</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PF_X</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PF_X</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
 <span class="doccomment">/// Segment is writable.</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PF_W</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PF_W</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1</span>;
 <span class="doccomment">/// Segment is readable.</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PF_R</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PF_R</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">2</span>;
 <span class="doccomment">/// OS-specific segment flags.</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PF_MASKOS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0x0ff0_0000</span>;
 <span class="doccomment">/// Processor-specific segment flags.</span>
@@ -8665,35 +8665,35 @@
 <span class="doccomment">/// No flags</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_NONE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0</span>;
 <span class="doccomment">/// Use quickstart</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_QUICKSTART</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_QUICKSTART</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
 <span class="doccomment">/// Hash size not power of 2</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_NOTPOT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_NOTPOT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1</span>;
 <span class="doccomment">/// Ignore LD_LIBRARY_PATH</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_NO_LIBRARY_REPLACEMENT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_NO_LIBRARY_REPLACEMENT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">2</span>;
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_NO_MOVE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_NO_MOVE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>;
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_SGI_ONLY</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">4</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_SGI_ONLY</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">4</span>;
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_GUARANTEE_INIT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">5</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_GUARANTEE_INIT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">5</span>;
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_DELTA_C_PLUS_PLUS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">6</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_DELTA_C_PLUS_PLUS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>;
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_GUARANTEE_START_INIT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">7</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_GUARANTEE_START_INIT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">7</span>;
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_PIXIE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">8</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_PIXIE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">8</span>;
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_DEFAULT_DELAY_LOAD</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">9</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_DEFAULT_DELAY_LOAD</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">9</span>;
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_REQUICKSTART</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">10</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_REQUICKSTART</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">10</span>;
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_REQUICKSTARTED</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">11</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_REQUICKSTARTED</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">11</span>;
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_CORD</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">12</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_CORD</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">12</span>;
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_NO_UNRES_UNDEF</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">13</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_NO_UNRES_UNDEF</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">13</span>;
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_RLD_ORDER_SAFE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">14</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">RHF_RLD_ORDER_SAFE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">14</span>;
 
 <span class="comment">// Entries found in sections of type `SHT_MIPS_LIBLIST`.</span>
 
@@ -8704,17 +8704,17 @@
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LL_NONE</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0</span>;
 <span class="doccomment">/// Require exact match</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LL_EXACT_MATCH</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">0</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LL_EXACT_MATCH</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">0</span>;
 <span class="doccomment">/// Ignore interface version</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LL_IGNORE_INT_VER</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">1</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LL_IGNORE_INT_VER</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1</span>;
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LL_REQUIRE_MINOR</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">2</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LL_REQUIRE_MINOR</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">2</span>;
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LL_EXPORTS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">3</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LL_EXPORTS</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">3</span>;
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LL_DELAY_LOAD</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">4</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LL_DELAY_LOAD</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">4</span>;
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LL_DELTA</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">5</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">LL_DELTA</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">5</span>;
 
 <span class="comment">// TODO: MIPS ABI flags</span>
 
@@ -9683,7 +9683,7 @@
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">STO_PPC64_LOCAL_BIT</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">5</span>;
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">STO_PPC64_LOCAL_MASK</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">7</span> <span class="op">&lt;&lt;</span> <span class="ident">STO_PPC64_LOCAL_BIT</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">STO_PPC64_LOCAL_MASK</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">7</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">STO_PPC64_LOCAL_BIT</span>;
 
 <span class="comment">// ARM specific declarations.</span>
 

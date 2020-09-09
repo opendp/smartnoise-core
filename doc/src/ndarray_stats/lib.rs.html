@@ -156,16 +156,16 @@
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">mod</span> <span class="ident">multi_input_error_macros</span> {
     <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">return_err_if_empty</span> {
-        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arr</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> {
-            <span class="kw">if</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">arr</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> {
+        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arr</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="kw">if</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">arr</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MultiInputError</span>::<span class="ident">EmptyInput</span>);
             }
         };
     }
     <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">return_err_unless_same_shape</span> {
-        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arr_a</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">arr_b</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> {
+        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">arr_a</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">arr_b</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
             <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::{<span class="ident">MultiInputError</span>, <span class="ident">ShapeMismatch</span>};
-            <span class="kw">if</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">arr_a</span>.<span class="ident">shape</span>() <span class="op">!=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">arr_b</span>.<span class="ident">shape</span>() {
+            <span class="kw">if</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">arr_a</span>.<span class="ident">shape</span>() <span class="op">!</span><span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">arr_b</span>.<span class="ident">shape</span>() {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">MultiInputError</span>::<span class="ident">ShapeMismatch</span>(<span class="ident">ShapeMismatch</span> {
                     <span class="ident">first_shape</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">arr_a</span>.<span class="ident">shape</span>().<span class="ident">to_vec</span>(),
                     <span class="ident">second_shape</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">arr_b</span>.<span class="ident">shape</span>().<span class="ident">to_vec</span>(),
@@ -186,7 +186,7 @@
     <span class="doccomment">/// crates to implement. This makes it possible to add new associated</span>
     <span class="doccomment">/// types/functions/consts/etc. to the trait without breaking changes.</span>
     <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">private_decl</span> {
-        () <span class="op">=&gt;</span> {
+        () <span class="op">=</span><span class="op">&gt;</span> {
             <span class="doccomment">/// This method makes this trait impossible to implement outside of</span>
             <span class="doccomment">/// `ndarray-stats` so that we can freely add new methods, etc., to</span>
             <span class="doccomment">/// this trait without breaking changes.</span>
@@ -203,7 +203,7 @@
 
     <span class="doccomment">/// Implements the associated function defined by `private_decl!`.</span>
     <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">private_impl</span> {
-        () <span class="op">=&gt;</span> {
+        () <span class="op">=</span><span class="op">&gt;</span> {
             <span class="kw">fn</span> <span class="ident">__private__</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="kw">crate</span>::<span class="ident">private</span>::<span class="ident">PrivateMarker</span>) {}
         };
     }

@@ -117,18 +117,18 @@
 <span id="116">116</span>
 <span id="117">117</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. This file may not be copied, modified, or distributed</span>
-<span class="comment">// except according to those terms.</span>
+<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 <span class="kw">use</span> <span class="ident">num_traits</span>::<span class="ident">Float</span>;
 
-<span class="doccomment">/// An iterator of a sequence of evenly spaced floats.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Iterator element type is `F`.</span>
+<span class="doccomment">/// An iterator of a sequence of evenly spaced floats.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Iterator element type is `F`.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Linspace</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
     <span class="ident">start</span>: <span class="ident">F</span>,
     <span class="ident">step</span>: <span class="ident">F</span>,
@@ -143,19 +143,19 @@
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">F</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">index</span> <span class="op">&gt;=</span> <span class="self">self</span>.<span class="ident">len</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">len</span> {
             <span class="prelude-val">None</span>
         } <span class="kw">else</span> {
-            <span class="comment">// Calculate the value just like numpy.linspace does</span>
+            <span class="comment">// Calculate the value just like numpy.linspace does</span>
             <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">index</span>;
-            <span class="self">self</span>.<span class="ident">index</span> <span class="op">+=</span> <span class="number">1</span>;
+            <span class="self">self</span>.<span class="ident">index</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
             <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">start</span> <span class="op">+</span> <span class="self">self</span>.<span class="ident">step</span> <span class="op">*</span> <span class="ident">F</span>::<span class="ident">from</span>(<span class="ident">i</span>).<span class="ident">unwrap</span>())
         }
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">len</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">index</span>;
         (<span class="ident">n</span>, <span class="prelude-val">Some</span>(<span class="ident">n</span>))
     }
@@ -166,12 +166,12 @@
     <span class="ident">F</span>: <span class="ident">Float</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">next_back</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">index</span> <span class="op">&gt;=</span> <span class="self">self</span>.<span class="ident">len</span> {
+    <span class="kw">fn</span> <span class="ident">next_back</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">index</span> <span class="op">&gt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">len</span> {
             <span class="prelude-val">None</span>
         } <span class="kw">else</span> {
-            <span class="comment">// Calculate the value just like numpy.linspace does</span>
-            <span class="self">self</span>.<span class="ident">len</span> <span class="op">-=</span> <span class="number">1</span>;
+            <span class="comment">// Calculate the value just like numpy.linspace does</span>
+            <span class="self">self</span>.<span class="ident">len</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
             <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">len</span>;
             <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">start</span> <span class="op">+</span> <span class="self">self</span>.<span class="ident">step</span> <span class="op">*</span> <span class="ident">F</span>::<span class="ident">from</span>(<span class="ident">i</span>).<span class="ident">unwrap</span>())
         }
@@ -180,16 +180,16 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> <span class="ident">ExactSizeIterator</span> <span class="kw">for</span> <span class="ident">Linspace</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">Linspace</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>: <span class="ident">Iterator</span> {}
 
-<span class="doccomment">/// Return an iterator of evenly spaced floats.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The `Linspace` has `n` elements from `a` to `b` (inclusive).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The iterator element type is `F`, where `F` must implement `Float`, e.g.</span>
-<span class="doccomment">/// `f32` or `f64`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// **Panics** if converting `n - 1` to type `F` fails.</span>
+<span class="doccomment">/// Return an iterator of evenly spaced floats.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The `Linspace` has `n` elements from `a` to `b` (inclusive).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The iterator element type is `F`, where `F` must implement `Float`, e.g.</span>
+<span class="doccomment">/// `f32` or `f64`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// **Panics** if converting `n - 1` to type `F` fails.</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">linspace</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="ident">F</span>, <span class="ident">b</span>: <span class="ident">F</span>, <span class="ident">n</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">Linspace</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">linspace</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="ident">F</span>, <span class="ident">b</span>: <span class="ident">F</span>, <span class="ident">n</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Linspace</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">F</span>: <span class="ident">Float</span>,
 {
@@ -207,17 +207,17 @@
     }
 }
 
-<span class="doccomment">/// Return an iterator of floats from `start` to `end` (exclusive),</span>
-<span class="doccomment">/// incrementing by `step`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Numerical reasons can result in `b` being included in the result.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The iterator element type is `F`, where `F` must implement `Float`, e.g.</span>
-<span class="doccomment">/// `f32` or `f64`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// **Panics** if converting `((b - a) / step).ceil()` to type `F` fails.</span>
+<span class="doccomment">/// Return an iterator of floats from `start` to `end` (exclusive),</span>
+<span class="doccomment">/// incrementing by `step`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Numerical reasons can result in `b` being included in the result.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The iterator element type is `F`, where `F` must implement `Float`, e.g.</span>
+<span class="doccomment">/// `f32` or `f64`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// **Panics** if converting `((b - a) / step).ceil()` to type `F` fails.</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="ident">F</span>, <span class="ident">b</span>: <span class="ident">F</span>, <span class="ident">step</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="ident">Linspace</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="ident">F</span>, <span class="ident">b</span>: <span class="ident">F</span>, <span class="ident">step</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Linspace</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">F</span>: <span class="ident">Float</span>,
 {

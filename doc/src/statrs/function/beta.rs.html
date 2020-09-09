@@ -427,7 +427,7 @@
 <span class="doccomment">/// # Panics</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// if `a &lt;= 0.0` or `b &lt;= 0.0`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ln_beta</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ln_beta</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="ident">checked_ln_beta</span>(<span class="ident">a</span>, <span class="ident">b</span>).<span class="ident">unwrap</span>()
 }
 
@@ -440,10 +440,10 @@
 <span class="doccomment">/// # Errors</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// if `a &lt;= 0.0` or `b &lt;= 0.0`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">checked_ln_beta</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">a</span> <span class="op">&lt;=</span> <span class="number">0.0</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">checked_ln_beta</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+    <span class="kw">if</span> <span class="ident">a</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
         <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ArgMustBePositive</span>(<span class="string">&quot;a&quot;</span>))
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">b</span> <span class="op">&lt;=</span> <span class="number">0.0</span> {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">b</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
         <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ArgMustBePositive</span>(<span class="string">&quot;b&quot;</span>))
     } <span class="kw">else</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">gamma</span>::<span class="ident">ln_gamma</span>(<span class="ident">a</span>) <span class="op">+</span> <span class="ident">gamma</span>::<span class="ident">ln_gamma</span>(<span class="ident">b</span>) <span class="op">-</span> <span class="ident">gamma</span>::<span class="ident">ln_gamma</span>(<span class="ident">a</span> <span class="op">+</span> <span class="ident">b</span>))
@@ -458,7 +458,7 @@
 <span class="doccomment">/// # Panics</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// if `a &lt;= 0.0` or `b &lt;= 0.0`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">beta</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">beta</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="ident">checked_beta</span>(<span class="ident">a</span>, <span class="ident">b</span>).<span class="ident">unwrap</span>()
 }
 
@@ -470,7 +470,7 @@
 <span class="doccomment">/// # Errors</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// if `a &lt;= 0.0` or `b &lt;= 0.0`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">checked_beta</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">checked_beta</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
     <span class="ident">checked_ln_beta</span>(<span class="ident">a</span>, <span class="ident">b</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">exp</span>())
 }
 
@@ -482,7 +482,7 @@
 <span class="doccomment">/// # Panics</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// If `a &lt;= 0.0`, `b &lt;= 0.0`, `x &lt; 0.0`, or `x &gt; 1.0`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">beta_inc</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">beta_inc</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="ident">checked_beta_inc</span>(<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">x</span>).<span class="ident">unwrap</span>()
 }
 
@@ -494,7 +494,7 @@
 <span class="doccomment">/// # Errors</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// If `a &lt;= 0.0`, `b &lt;= 0.0`, `x &lt; 0.0`, or `x &gt; 1.0`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">checked_beta_inc</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">checked_beta_inc</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
     <span class="ident">checked_beta_reg</span>(<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">x</span>).<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">checked_beta</span>(<span class="ident">a</span>, <span class="ident">b</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">y</span><span class="op">|</span> <span class="ident">x</span> <span class="op">*</span> <span class="ident">y</span>))
 }
 
@@ -507,7 +507,7 @@
 <span class="doccomment">/// # Panics</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// if `a &lt;= 0.0`, `b &lt;= 0.0`, `x &lt; 0.0`, or `x &gt; 1.0`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">beta_reg</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">beta_reg</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="ident">checked_beta_reg</span>(<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">x</span>).<span class="ident">unwrap</span>()
 }
 
@@ -520,15 +520,15 @@
 <span class="doccomment">/// # Errors</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// if `a &lt;= 0.0`, `b &lt;= 0.0`, `x &lt; 0.0`, or `x &gt; 1.0`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">checked_beta_reg</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">a</span> <span class="op">&lt;=</span> <span class="number">0.0</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">checked_beta_reg</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+    <span class="kw">if</span> <span class="ident">a</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
         <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ArgMustBePositive</span>(<span class="string">&quot;a&quot;</span>))
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">b</span> <span class="op">&lt;=</span> <span class="number">0.0</span> {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">b</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
         <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ArgMustBePositive</span>(<span class="string">&quot;b&quot;</span>))
-    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;</span> <span class="number">0.0</span> <span class="op">||</span> <span class="ident">x</span> <span class="op">&gt;</span> <span class="number">1.0</span> {
+    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;</span> <span class="number">0.0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">x</span> <span class="op">&gt;</span> <span class="number">1.0</span> {
         <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ArgIntervalIncl</span>(<span class="string">&quot;x&quot;</span>, <span class="number">0.0</span>, <span class="number">1.0</span>))
     } <span class="kw">else</span> {
-        <span class="kw">let</span> <span class="ident">bt</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">==</span> <span class="number">0.0</span> <span class="op">||</span> <span class="ident">x</span> <span class="op">==</span> <span class="number">1.0</span> {
+        <span class="kw">let</span> <span class="ident">bt</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="number">0.0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="number">1.0</span> {
             <span class="number">0.0</span>
         } <span class="kw">else</span> {
             (<span class="ident">gamma</span>::<span class="ident">ln_gamma</span>(<span class="ident">a</span> <span class="op">+</span> <span class="ident">b</span>) <span class="op">-</span> <span class="ident">gamma</span>::<span class="ident">ln_gamma</span>(<span class="ident">a</span>) <span class="op">-</span> <span class="ident">gamma</span>::<span class="ident">ln_gamma</span>(<span class="ident">b</span>)
@@ -536,7 +536,7 @@
                 <span class="op">+</span> <span class="ident">b</span> <span class="op">*</span> (<span class="number">1.0</span> <span class="op">-</span> <span class="ident">x</span>).<span class="ident">ln</span>())
             .<span class="ident">exp</span>()
         };
-        <span class="kw">let</span> <span class="ident">symm_transform</span> <span class="op">=</span> <span class="ident">x</span> <span class="op">&gt;=</span> (<span class="ident">a</span> <span class="op">+</span> <span class="number">1.0</span>) <span class="op">/</span> (<span class="ident">a</span> <span class="op">+</span> <span class="ident">b</span> <span class="op">+</span> <span class="number">2.0</span>);
+        <span class="kw">let</span> <span class="ident">symm_transform</span> <span class="op">=</span> <span class="ident">x</span> <span class="op">&gt;</span><span class="op">=</span> (<span class="ident">a</span> <span class="op">+</span> <span class="number">1.0</span>) <span class="op">/</span> (<span class="ident">a</span> <span class="op">+</span> <span class="ident">b</span> <span class="op">+</span> <span class="number">2.0</span>);
         <span class="kw">let</span> <span class="ident">eps</span> <span class="op">=</span> <span class="ident">prec</span>::<span class="ident">F64_PREC</span>;
         <span class="kw">let</span> <span class="ident">fpmin</span> <span class="op">=</span> <span class="ident">f64</span>::<span class="ident">MIN_POSITIVE</span> <span class="op">/</span> <span class="ident">eps</span>;
 
@@ -594,9 +594,9 @@
 
             <span class="ident">d</span> <span class="op">=</span> <span class="number">1.0</span> <span class="op">/</span> <span class="ident">d</span>;
             <span class="kw">let</span> <span class="ident">del</span> <span class="op">=</span> <span class="ident">d</span> <span class="op">*</span> <span class="ident">c</span>;
-            <span class="ident">h</span> <span class="op">*=</span> <span class="ident">del</span>;
+            <span class="ident">h</span> <span class="kw-2">*</span><span class="op">=</span> <span class="ident">del</span>;
 
-            <span class="kw">if</span> (<span class="ident">del</span> <span class="op">-</span> <span class="number">1.0</span>).<span class="ident">abs</span>() <span class="op">&lt;=</span> <span class="ident">eps</span> {
+            <span class="kw">if</span> (<span class="ident">del</span> <span class="op">-</span> <span class="number">1.0</span>).<span class="ident">abs</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="ident">eps</span> {
                 <span class="kw">return</span> <span class="kw">if</span> <span class="ident">symm_transform</span> {
                     <span class="prelude-val">Ok</span>(<span class="number">1.0</span> <span class="op">-</span> <span class="ident">bt</span> <span class="op">*</span> <span class="ident">h</span> <span class="op">/</span> <span class="ident">a</span>)
                 } <span class="kw">else</span> {

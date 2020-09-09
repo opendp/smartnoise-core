@@ -276,7 +276,7 @@
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_u128</span>(<span class="ident">rop</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Integer</span>, <span class="ident">u</span>: <span class="ident">u128</span>) {
-    <span class="kw">if</span> <span class="ident">u</span> <span class="op">&lt;=</span> <span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">u64</span>::<span class="ident">MAX</span>) {
+    <span class="kw">if</span> <span class="ident">u</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">u64</span>::<span class="ident">MAX</span>) {
         <span class="ident">set_u64</span>(<span class="ident">rop</span>, <span class="ident">u</span>.<span class="ident">wrapping_cast</span>());
     } <span class="kw">else</span> {
         <span class="kw">if</span> <span class="ident">rop</span>.<span class="ident">inner</span>().<span class="ident">alloc</span> <span class="op">&lt;</span> <span class="number">2</span> {
@@ -285,7 +285,7 @@
         <span class="kw">unsafe</span> {
             <span class="ident">rop</span>.<span class="ident">inner_mut</span>().<span class="ident">size</span> <span class="op">=</span> <span class="number">2</span>;
             <span class="kw-2">*</span><span class="ident">limb_mut</span>(<span class="ident">rop</span>, <span class="number">0</span>) <span class="op">=</span> <span class="ident">u</span>.<span class="ident">wrapping_cast</span>();
-            <span class="kw-2">*</span><span class="ident">limb_mut</span>(<span class="ident">rop</span>, <span class="number">1</span>) <span class="op">=</span> (<span class="ident">u</span> <span class="op">&gt;&gt;</span> <span class="number">64</span>).<span class="ident">wrapping_cast</span>();
+            <span class="kw-2">*</span><span class="ident">limb_mut</span>(<span class="ident">rop</span>, <span class="number">1</span>) <span class="op">=</span> (<span class="ident">u</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">64</span>).<span class="ident">wrapping_cast</span>();
         }
     }
 }
@@ -302,20 +302,20 @@
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">init_set_u128</span>(<span class="ident">rop</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Integer</span>, <span class="ident">u</span>: <span class="ident">u128</span>) {
-    <span class="kw">if</span> <span class="ident">u</span> <span class="op">&lt;=</span> <span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">u64</span>::<span class="ident">MAX</span>) {
+    <span class="kw">if</span> <span class="ident">u</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">u64</span>::<span class="ident">MAX</span>) {
         <span class="ident">init_set_u64</span>(<span class="ident">rop</span>, <span class="ident">u</span>.<span class="ident">wrapping_cast</span>());
     } <span class="kw">else</span> {
         <span class="ident">gmp</span>::<span class="ident">mpz_init2</span>(<span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">rop</span>, <span class="ident">mpz_t</span>), <span class="number">128</span>);
         <span class="kw">let</span> <span class="ident">rop</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">rop</span>;
         <span class="ident">rop</span>.<span class="ident">inner_mut</span>().<span class="ident">size</span> <span class="op">=</span> <span class="number">2</span>;
         <span class="kw-2">*</span><span class="ident">limb_mut</span>(<span class="ident">rop</span>, <span class="number">0</span>) <span class="op">=</span> <span class="ident">u</span>.<span class="ident">wrapping_cast</span>();
-        <span class="kw-2">*</span><span class="ident">limb_mut</span>(<span class="ident">rop</span>, <span class="number">1</span>) <span class="op">=</span> (<span class="ident">u</span> <span class="op">&gt;&gt;</span> <span class="number">64</span>).<span class="ident">wrapping_cast</span>();
+        <span class="kw-2">*</span><span class="ident">limb_mut</span>(<span class="ident">rop</span>, <span class="number">1</span>) <span class="op">=</span> (<span class="ident">u</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">64</span>).<span class="ident">wrapping_cast</span>();
     }
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">init_set_u64</span>(<span class="ident">rop</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Integer</span>, <span class="ident">u</span>: <span class="ident">u64</span>) {
-    <span class="kw">if</span> <span class="ident">u</span> <span class="op">==</span> <span class="number">0</span> {
+    <span class="kw">if</span> <span class="ident">u</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
         <span class="ident">gmp</span>::<span class="ident">mpz_init</span>(<span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">rop</span>, <span class="ident">mpz_t</span>));
     } <span class="kw">else</span> {
         <span class="ident">gmp</span>::<span class="ident">mpz_init2</span>(<span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">rop</span>, <span class="ident">mpz_t</span>), <span class="number">64</span>);
@@ -331,28 +331,28 @@
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_abs_u128</span>(<span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>) <span class="op">-&gt;</span> <span class="ident">u128</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_abs_u128</span>(<span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u128</span> {
     <span class="kw">unsafe</span> {
         <span class="kw">match</span> <span class="ident">op</span>.<span class="ident">inner</span>().<span class="ident">size</span> {
-            <span class="number">0</span> <span class="op">=&gt;</span> <span class="number">0</span>,
-            <span class="op">-</span><span class="number">1</span> <span class="op">|</span> <span class="number">1</span> <span class="op">=&gt;</span> <span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>)),
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">1</span>)) <span class="op">&lt;&lt;</span> <span class="number">64</span> <span class="op">|</span> <span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>)),
+            <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
+            <span class="op">-</span><span class="number">1</span> <span class="op">|</span> <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>)),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">1</span>)) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">64</span> <span class="op">|</span> <span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>)),
         }
     }
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_abs_u64</span>(<span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_abs_u64</span>(<span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
     <span class="kw">unsafe</span> {
         <span class="kw">match</span> <span class="ident">op</span>.<span class="ident">inner</span>().<span class="ident">size</span> {
-            <span class="number">0</span> <span class="op">=&gt;</span> <span class="number">0</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>),
+            <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>),
         }
     }
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cmp_u128</span>(<span class="ident">op1</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>, <span class="ident">op2</span>: <span class="ident">u128</span>) <span class="op">-&gt;</span> <span class="ident">Ordering</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cmp_u128</span>(<span class="ident">op1</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>, <span class="ident">op2</span>: <span class="ident">u128</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ordering</span> {
     <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">op1</span>.<span class="ident">inner</span>().<span class="ident">size</span>;
     <span class="kw">if</span> <span class="ident">size</span> <span class="op">&gt;</span> <span class="number">2</span> {
         <span class="ident">Ordering</span>::<span class="ident">Greater</span>
@@ -364,7 +364,7 @@
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cmp_i128</span>(<span class="ident">op1</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>, <span class="ident">op2</span>: <span class="ident">i128</span>) <span class="op">-&gt;</span> <span class="ident">Ordering</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cmp_i128</span>(<span class="ident">op1</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>, <span class="ident">op2</span>: <span class="ident">i128</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ordering</span> {
     <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">op1</span>.<span class="ident">inner</span>().<span class="ident">size</span>;
     <span class="kw">if</span> <span class="ident">size</span> <span class="op">&gt;</span> <span class="number">2</span> {
         <span class="ident">Ordering</span>::<span class="ident">Greater</span>
@@ -375,16 +375,16 @@
         <span class="kw">let</span> <span class="ident">abs1</span> <span class="op">=</span> <span class="ident">get_abs_u128</span>(<span class="ident">op1</span>);
         <span class="kw">let</span> (<span class="ident">neg2</span>, <span class="ident">abs2</span>) <span class="op">=</span> <span class="ident">op2</span>.<span class="ident">neg_abs</span>();
         <span class="kw">match</span> (<span class="ident">neg1</span>, <span class="ident">neg2</span>) {
-            (<span class="bool-val">false</span>, <span class="bool-val">false</span>) <span class="op">=&gt;</span> <span class="ident">abs1</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">abs2</span>),
-            (<span class="bool-val">false</span>, <span class="bool-val">true</span>) <span class="op">=&gt;</span> <span class="ident">Ordering</span>::<span class="ident">Greater</span>,
-            (<span class="bool-val">true</span>, <span class="bool-val">false</span>) <span class="op">=&gt;</span> <span class="ident">Ordering</span>::<span class="ident">Less</span>,
-            (<span class="bool-val">true</span>, <span class="bool-val">true</span>) <span class="op">=&gt;</span> <span class="ident">abs2</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">abs1</span>),
+            (<span class="bool-val">false</span>, <span class="bool-val">false</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">abs1</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">abs2</span>),
+            (<span class="bool-val">false</span>, <span class="bool-val">true</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Ordering</span>::<span class="ident">Greater</span>,
+            (<span class="bool-val">true</span>, <span class="bool-val">false</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Ordering</span>::<span class="ident">Less</span>,
+            (<span class="bool-val">true</span>, <span class="bool-val">true</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">abs2</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">abs1</span>),
         }
     }
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cmp_u64</span>(<span class="ident">op1</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>, <span class="ident">op2</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">Ordering</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cmp_u64</span>(<span class="ident">op1</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>, <span class="ident">op2</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ordering</span> {
     <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">op1</span>.<span class="ident">inner</span>().<span class="ident">size</span>;
     <span class="kw">if</span> <span class="ident">size</span> <span class="op">&gt;</span> <span class="number">1</span> {
         <span class="ident">Ordering</span>::<span class="ident">Greater</span>
@@ -396,7 +396,7 @@
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cmp_i64</span>(<span class="ident">op1</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>, <span class="ident">op2</span>: <span class="ident">i64</span>) <span class="op">-&gt;</span> <span class="ident">Ordering</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cmp_i64</span>(<span class="ident">op1</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>, <span class="ident">op2</span>: <span class="ident">i64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ordering</span> {
     <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">op1</span>.<span class="ident">inner</span>().<span class="ident">size</span>;
     <span class="kw">if</span> <span class="ident">size</span> <span class="op">&gt;</span> <span class="number">1</span> {
         <span class="ident">Ordering</span>::<span class="ident">Greater</span>
@@ -407,16 +407,16 @@
         <span class="kw">let</span> <span class="ident">abs1</span> <span class="op">=</span> <span class="ident">get_abs_u64</span>(<span class="ident">op1</span>);
         <span class="kw">let</span> (<span class="ident">neg2</span>, <span class="ident">abs2</span>) <span class="op">=</span> <span class="ident">op2</span>.<span class="ident">neg_abs</span>();
         <span class="kw">match</span> (<span class="ident">neg1</span>, <span class="ident">neg2</span>) {
-            (<span class="bool-val">false</span>, <span class="bool-val">false</span>) <span class="op">=&gt;</span> <span class="ident">abs1</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">abs2</span>),
-            (<span class="bool-val">false</span>, <span class="bool-val">true</span>) <span class="op">=&gt;</span> <span class="ident">Ordering</span>::<span class="ident">Greater</span>,
-            (<span class="bool-val">true</span>, <span class="bool-val">false</span>) <span class="op">=&gt;</span> <span class="ident">Ordering</span>::<span class="ident">Less</span>,
-            (<span class="bool-val">true</span>, <span class="bool-val">true</span>) <span class="op">=&gt;</span> <span class="ident">abs2</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">abs1</span>),
+            (<span class="bool-val">false</span>, <span class="bool-val">false</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">abs1</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">abs2</span>),
+            (<span class="bool-val">false</span>, <span class="bool-val">true</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Ordering</span>::<span class="ident">Greater</span>,
+            (<span class="bool-val">true</span>, <span class="bool-val">false</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Ordering</span>::<span class="ident">Less</span>,
+            (<span class="bool-val">true</span>, <span class="bool-val">true</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">abs2</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">abs1</span>),
         }
     }
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cmp_u32</span>(<span class="ident">op1</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>, <span class="ident">op2</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">Ordering</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cmp_u32</span>(<span class="ident">op1</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>, <span class="ident">op2</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ordering</span> {
     <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">op1</span>.<span class="ident">inner</span>().<span class="ident">size</span>;
     <span class="kw">if</span> <span class="ident">size</span> <span class="op">&gt;</span> <span class="number">1</span> {
         <span class="ident">Ordering</span>::<span class="ident">Greater</span>
@@ -428,7 +428,7 @@
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cmp_i32</span>(<span class="ident">op1</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>, <span class="ident">op2</span>: <span class="ident">i32</span>) <span class="op">-&gt;</span> <span class="ident">Ordering</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cmp_i32</span>(<span class="ident">op1</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>, <span class="ident">op2</span>: <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ordering</span> {
     <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="ident">op1</span>.<span class="ident">inner</span>().<span class="ident">size</span>;
     <span class="kw">if</span> <span class="ident">size</span> <span class="op">&gt;</span> <span class="number">1</span> {
         <span class="ident">Ordering</span>::<span class="ident">Greater</span>
@@ -440,70 +440,70 @@
         <span class="kw">let</span> (<span class="ident">neg2</span>, <span class="ident">abs2</span>) <span class="op">=</span> <span class="ident">op2</span>.<span class="ident">neg_abs</span>();
         <span class="kw">let</span> <span class="ident">abs2</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">abs2</span>);
         <span class="kw">match</span> (<span class="ident">neg1</span>, <span class="ident">neg2</span>) {
-            (<span class="bool-val">false</span>, <span class="bool-val">false</span>) <span class="op">=&gt;</span> <span class="ident">abs1</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">abs2</span>),
-            (<span class="bool-val">false</span>, <span class="bool-val">true</span>) <span class="op">=&gt;</span> <span class="ident">Ordering</span>::<span class="ident">Greater</span>,
-            (<span class="bool-val">true</span>, <span class="bool-val">false</span>) <span class="op">=&gt;</span> <span class="ident">Ordering</span>::<span class="ident">Less</span>,
-            (<span class="bool-val">true</span>, <span class="bool-val">true</span>) <span class="op">=&gt;</span> <span class="ident">abs2</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">abs1</span>),
+            (<span class="bool-val">false</span>, <span class="bool-val">false</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">abs1</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">abs2</span>),
+            (<span class="bool-val">false</span>, <span class="bool-val">true</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Ordering</span>::<span class="ident">Greater</span>,
+            (<span class="bool-val">true</span>, <span class="bool-val">false</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Ordering</span>::<span class="ident">Less</span>,
+            (<span class="bool-val">true</span>, <span class="bool-val">true</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">abs2</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">abs1</span>),
         }
     }
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fits_u32</span>(<span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fits_u32</span>(<span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
     <span class="kw">match</span> <span class="ident">op</span>.<span class="ident">inner</span>().<span class="ident">size</span> {
-        <span class="number">0</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-        <span class="number">1</span> <span class="op">=&gt;</span> (<span class="kw">unsafe</span> { <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>) }) <span class="op">&lt;=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">u32</span>::<span class="ident">MAX</span>),
-        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
+        <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
+        <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="kw">unsafe</span> { <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>) }) <span class="op">&lt;</span><span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">u32</span>::<span class="ident">MAX</span>),
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
     }
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fits_i32</span>(<span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fits_i32</span>(<span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
     <span class="kw">match</span> <span class="ident">op</span>.<span class="ident">inner</span>().<span class="ident">size</span> {
-        <span class="number">0</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-        <span class="number">1</span> <span class="op">=&gt;</span> (<span class="kw">unsafe</span> { <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>) }) <span class="op">&lt;=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">i32</span>::<span class="ident">MAX</span>.<span class="ident">wrapping_as</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>()),
-        <span class="op">-</span><span class="number">1</span> <span class="op">=&gt;</span> (<span class="kw">unsafe</span> { <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>) }) <span class="op">&lt;=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">i32</span>::<span class="ident">MIN</span>.<span class="ident">wrapping_as</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>()),
-        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
+        <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
+        <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="kw">unsafe</span> { <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>) }) <span class="op">&lt;</span><span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">i32</span>::<span class="ident">MAX</span>.<span class="ident">wrapping_as</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>()),
+        <span class="op">-</span><span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="kw">unsafe</span> { <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>) }) <span class="op">&lt;</span><span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">i32</span>::<span class="ident">MIN</span>.<span class="ident">wrapping_as</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>()),
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
     }
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fits_u64</span>(<span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fits_u64</span>(<span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
     <span class="kw">match</span> <span class="ident">op</span>.<span class="ident">inner</span>().<span class="ident">size</span> {
-        <span class="number">0</span> <span class="op">|</span> <span class="number">1</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
+        <span class="number">0</span> <span class="op">|</span> <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
     }
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fits_i64</span>(<span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fits_i64</span>(<span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
     <span class="kw">match</span> <span class="ident">op</span>.<span class="ident">inner</span>().<span class="ident">size</span> {
-        <span class="number">0</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-        <span class="number">1</span> <span class="op">=&gt;</span> (<span class="kw">unsafe</span> { <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>) }) <span class="op">&lt;=</span> <span class="ident">i64</span>::<span class="ident">MAX</span>.<span class="ident">wrapping_as</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>(),
-        <span class="op">-</span><span class="number">1</span> <span class="op">=&gt;</span> (<span class="kw">unsafe</span> { <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>) }) <span class="op">&lt;=</span> <span class="ident">i64</span>::<span class="ident">MIN</span>.<span class="ident">wrapping_as</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>(),
-        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
+        <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
+        <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="kw">unsafe</span> { <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>) }) <span class="op">&lt;</span><span class="op">=</span> <span class="ident">i64</span>::<span class="ident">MAX</span>.<span class="ident">wrapping_as</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>(),
+        <span class="op">-</span><span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="kw">unsafe</span> { <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>) }) <span class="op">&lt;</span><span class="op">=</span> <span class="ident">i64</span>::<span class="ident">MIN</span>.<span class="ident">wrapping_as</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>(),
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
     }
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fits_u128</span>(<span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fits_u128</span>(<span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
     <span class="kw">match</span> <span class="ident">op</span>.<span class="ident">inner</span>().<span class="ident">size</span> {
-        <span class="number">0</span> <span class="op">|</span> <span class="number">1</span> <span class="op">|</span> <span class="number">2</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
+        <span class="number">0</span> <span class="op">|</span> <span class="number">1</span> <span class="op">|</span> <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
     }
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fits_i128</span>(<span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fits_i128</span>(<span class="ident">op</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
     <span class="kw">match</span> <span class="ident">op</span>.<span class="ident">inner</span>().<span class="ident">size</span> {
-        <span class="number">0</span> <span class="op">|</span> <span class="number">1</span> <span class="op">|</span> <span class="op">-</span><span class="number">1</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-        <span class="number">2</span> <span class="op">=&gt;</span> (<span class="kw">unsafe</span> { <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">1</span>) }) <span class="op">&lt;=</span> <span class="ident">i64</span>::<span class="ident">MAX</span>.<span class="ident">wrapping_as</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>(),
-        <span class="op">-</span><span class="number">2</span> <span class="op">=&gt;</span> {
+        <span class="number">0</span> <span class="op">|</span> <span class="number">1</span> <span class="op">|</span> <span class="op">-</span><span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
+        <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="kw">unsafe</span> { <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">1</span>) }) <span class="op">&lt;</span><span class="op">=</span> <span class="ident">i64</span>::<span class="ident">MAX</span>.<span class="ident">wrapping_as</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>(),
+        <span class="op">-</span><span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> {
             (<span class="kw">unsafe</span> { <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">1</span>) }) <span class="op">&lt;</span> <span class="ident">i64</span>::<span class="ident">MIN</span>.<span class="ident">wrapping_as</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>()
-                <span class="op">||</span> ((<span class="kw">unsafe</span> { <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">1</span>) }) <span class="op">==</span> <span class="ident">i64</span>::<span class="ident">MIN</span>.<span class="ident">wrapping_as</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>()
-                    <span class="op">&amp;&amp;</span> (<span class="kw">unsafe</span> { <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>) }) <span class="op">==</span> <span class="number">0</span>)
+                <span class="op">|</span><span class="op">|</span> ((<span class="kw">unsafe</span> { <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">1</span>) }) <span class="op">=</span><span class="op">=</span> <span class="ident">i64</span>::<span class="ident">MIN</span>.<span class="ident">wrapping_as</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>()
+                    <span class="op">&amp;&amp;</span> (<span class="kw">unsafe</span> { <span class="ident">limb</span>(<span class="ident">op</span>, <span class="number">0</span>) }) <span class="op">=</span><span class="op">=</span> <span class="number">0</span>)
         }
-        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
     }
 }
 </pre></div>

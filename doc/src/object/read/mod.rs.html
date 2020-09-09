@@ -468,7 +468,7 @@
 
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">Error</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="self">self</span>.<span class="number">0</span>)
     }
 }
@@ -480,17 +480,17 @@
 <span class="kw">pub</span> <span class="kw">type</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Error</span><span class="op">&gt;</span>;
 
 <span class="kw">trait</span> <span class="ident">ReadError</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">read_error</span>(<span class="self">self</span>, <span class="ident">error</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">read_error</span>(<span class="self">self</span>, <span class="ident">error</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">ReadError</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">result</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, ()<span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">read_error</span>(<span class="self">self</span>, <span class="ident">error</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">read_error</span>(<span class="self">self</span>, <span class="ident">error</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">map_err</span>(<span class="op">|</span>()<span class="op">|</span> <span class="ident">Error</span>(<span class="ident">error</span>))
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">ReadError</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">read_error</span>(<span class="self">self</span>, <span class="ident">error</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">read_error</span>(<span class="self">self</span>, <span class="ident">error</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">ok_or</span>(<span class="ident">Error</span>(<span class="ident">error</span>))
     }
 }
@@ -563,7 +563,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// May return `None` if the symbol is not defined in a section.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SectionIndex</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SectionIndex</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">SymbolSection</span>::<span class="ident">Section</span>(<span class="ident">index</span>) <span class="op">=</span> <span class="self">self</span> {
             <span class="prelude-val">Some</span>(<span class="ident">index</span>)
         } <span class="kw">else</span> {
@@ -588,13 +588,13 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span> <span class="ident">Symbol</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Return the kind of this symbol.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">kind</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">SymbolKind</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">kind</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SymbolKind</span> {
         <span class="self">self</span>.<span class="ident">kind</span>
     }
 
     <span class="doccomment">/// Returns the section where the symbol is defined.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">section</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">SymbolSection</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">section</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SymbolSection</span> {
         <span class="self">self</span>.<span class="ident">section</span>
     }
 
@@ -602,27 +602,27 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// May return `None` if the symbol is not defined in a section.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">section_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SectionIndex</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">section_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SectionIndex</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">section</span>.<span class="ident">index</span>()
     }
 
     <span class="doccomment">/// Return true if the symbol is undefined.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_undefined</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">section</span> <span class="op">==</span> <span class="ident">SymbolSection</span>::<span class="ident">Undefined</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_undefined</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">section</span> <span class="op">=</span><span class="op">=</span> <span class="ident">SymbolSection</span>::<span class="ident">Undefined</span>
     }
 
     <span class="doccomment">/// Return true if the symbol is common data.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Note: does not check for `SymbolSection::Section` with `SectionKind::Common`.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">is_common</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">section</span> <span class="op">==</span> <span class="ident">SymbolSection</span>::<span class="ident">Common</span>
+    <span class="kw">fn</span> <span class="ident">is_common</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">section</span> <span class="op">=</span><span class="op">=</span> <span class="ident">SymbolSection</span>::<span class="ident">Common</span>
     }
 
     <span class="doccomment">/// Return true if the symbol is weak.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_weak</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_weak</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">weak</span>
     }
 
@@ -630,43 +630,43 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// This treats `SymbolScope::Unknown` as global.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_global</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_global</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="op">!</span><span class="self">self</span>.<span class="ident">is_local</span>()
     }
 
     <span class="doccomment">/// Return true if the symbol is only visible within the compilation unit.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_local</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">scope</span> <span class="op">==</span> <span class="ident">SymbolScope</span>::<span class="ident">Compilation</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_local</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="ident">scope</span> <span class="op">=</span><span class="op">=</span> <span class="ident">SymbolScope</span>::<span class="ident">Compilation</span>
     }
 
     <span class="doccomment">/// Returns the symbol scope.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">scope</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">SymbolScope</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">scope</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SymbolScope</span> {
         <span class="self">self</span>.<span class="ident">scope</span>
     }
 
     <span class="doccomment">/// Symbol flags that are specific to each file format.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">flags</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">SymbolFlags</span><span class="op">&lt;</span><span class="ident">SectionIndex</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">flags</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SymbolFlags</span><span class="op">&lt;</span><span class="ident">SectionIndex</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">flags</span>
     }
 
     <span class="doccomment">/// The name of the symbol.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">str</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">name</span>
     }
 
     <span class="doccomment">/// The address of the symbol. May be zero if the address is unknown.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">address</span>
     }
 
     <span class="doccomment">/// The size of the symbol. May be zero if the size is unknown.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">size</span>
     }
 }
@@ -674,12 +674,12 @@
 <span class="doccomment">/// A map from addresses to symbols.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SymbolMap</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span> {
-    <span class="ident">symbols</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;&gt;</span>,
+    <span class="ident">symbols</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span> <span class="ident">SymbolMap</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Get the symbol containing the given address.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">address</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">address</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">symbols</span>
             .<span class="ident">binary_search_by</span>(<span class="op">|</span><span class="ident">symbol</span><span class="op">|</span> {
                 <span class="kw">if</span> <span class="ident">address</span> <span class="op">&lt;</span> <span class="ident">symbol</span>.<span class="ident">address</span> {
@@ -696,19 +696,19 @@
 
     <span class="doccomment">/// Get all symbols in the map.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">symbols</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">Symbol</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>] {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">symbols</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">Symbol</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>] {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">symbols</span>
     }
 
     <span class="doccomment">/// Return true for symbols that should be included in the map.</span>
-    <span class="kw">fn</span> <span class="ident">filter</span>(<span class="ident">symbol</span>: <span class="kw-2">&amp;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">filter</span>(<span class="ident">symbol</span>: <span class="kw-2">&amp;</span><span class="ident">Symbol</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="ident">symbol</span>.<span class="ident">kind</span>() {
-            <span class="ident">SymbolKind</span>::<span class="ident">Unknown</span> <span class="op">|</span> <span class="ident">SymbolKind</span>::<span class="ident">Text</span> <span class="op">|</span> <span class="ident">SymbolKind</span>::<span class="ident">Data</span> <span class="op">=&gt;</span> {}
+            <span class="ident">SymbolKind</span>::<span class="ident">Unknown</span> <span class="op">|</span> <span class="ident">SymbolKind</span>::<span class="ident">Text</span> <span class="op">|</span> <span class="ident">SymbolKind</span>::<span class="ident">Data</span> <span class="op">=</span><span class="op">&gt;</span> {}
             <span class="ident">SymbolKind</span>::<span class="ident">Null</span>
             <span class="op">|</span> <span class="ident">SymbolKind</span>::<span class="ident">Section</span>
             <span class="op">|</span> <span class="ident">SymbolKind</span>::<span class="ident">File</span>
             <span class="op">|</span> <span class="ident">SymbolKind</span>::<span class="ident">Label</span>
-            <span class="op">|</span> <span class="ident">SymbolKind</span>::<span class="ident">Tls</span> <span class="op">=&gt;</span> {
+            <span class="op">|</span> <span class="ident">SymbolKind</span>::<span class="ident">Tls</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">return</span> <span class="bool-val">false</span>;
             }
         }
@@ -739,13 +739,13 @@
 <span class="kw">impl</span> <span class="ident">Relocation</span> {
     <span class="doccomment">/// The operation used to calculate the result of the relocation.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">kind</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">RelocationKind</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">kind</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RelocationKind</span> {
         <span class="self">self</span>.<span class="ident">kind</span>
     }
 
     <span class="doccomment">/// Information about how the result of the relocation operation is encoded in the place.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">encoding</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">RelocationEncoding</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">encoding</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RelocationEncoding</span> {
         <span class="self">self</span>.<span class="ident">encoding</span>
     }
 
@@ -753,19 +753,19 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// If 0, then the size is determined by the relocation kind.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u8</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span> {
         <span class="self">self</span>.<span class="ident">size</span>
     }
 
     <span class="doccomment">/// The target of the relocation.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">target</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">RelocationTarget</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">target</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RelocationTarget</span> {
         <span class="self">self</span>.<span class="ident">target</span>
     }
 
     <span class="doccomment">/// The addend to use in the relocation calculation.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">addend</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">i64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">addend</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i64</span> {
         <span class="self">self</span>.<span class="ident">addend</span>
     }
 
@@ -778,12 +778,12 @@
     <span class="doccomment">/// Returns true if there is an implicit addend stored in the data at the offset</span>
     <span class="doccomment">/// to be relocated.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">has_implicit_addend</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">has_implicit_addend</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">implicit_addend</span>
     }
 }
 
-<span class="kw">fn</span> <span class="ident">data_range</span>(<span class="ident">data</span>: <span class="ident">Bytes</span>, <span class="ident">data_address</span>: <span class="ident">u64</span>, <span class="ident">range_address</span>: <span class="ident">u64</span>, <span class="ident">size</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">data_range</span>(<span class="ident">data</span>: <span class="ident">Bytes</span>, <span class="ident">data_address</span>: <span class="ident">u64</span>, <span class="ident">range_address</span>: <span class="ident">u64</span>, <span class="ident">size</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="ident">range_address</span>.<span class="ident">checked_sub</span>(<span class="ident">data_address</span>)<span class="question-mark">?</span>;
     <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">read_bytes_at</span>(<span class="ident">offset</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="ident">size</span> <span class="kw">as</span> <span class="ident">usize</span>).<span class="ident">ok</span>()<span class="question-mark">?</span>;
     <span class="prelude-val">Some</span>(<span class="ident">data</span>.<span class="number">0</span>)
@@ -816,7 +816,7 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span> <span class="ident">CompressedData</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Data that is uncompressed.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">none</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> [<span class="ident">u8</span>]) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">none</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> [<span class="ident">u8</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">CompressedData</span> {
             <span class="ident">format</span>: <span class="ident">CompressionFormat</span>::<span class="prelude-val">None</span>,
             <span class="ident">data</span>,
@@ -829,11 +829,11 @@
     <span class="doccomment">/// Returns an error for invalid data or unsupported compression.</span>
     <span class="doccomment">/// This includes if the data is compressed but the `compression` feature</span>
     <span class="doccomment">/// for this crate is disabled.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">decompress</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, [<span class="ident">u8</span>]<span class="op">&gt;&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">decompress</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, [<span class="ident">u8</span>]<span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">format</span> {
-            <span class="ident">CompressionFormat</span>::<span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Cow</span>::<span class="ident">Borrowed</span>(<span class="self">self</span>.<span class="ident">data</span>)),
+            <span class="ident">CompressionFormat</span>::<span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">Cow</span>::<span class="ident">Borrowed</span>(<span class="self">self</span>.<span class="ident">data</span>)),
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;compression&quot;</span>)]</span>
-            <span class="ident">CompressionFormat</span>::<span class="ident">Zlib</span> <span class="op">=&gt;</span> {
+            <span class="ident">CompressionFormat</span>::<span class="ident">Zlib</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">decompressed</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="self">self</span>.<span class="ident">uncompressed_size</span>);
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">decompress</span> <span class="op">=</span> <span class="ident">flate2</span>::<span class="ident">Decompress</span>::<span class="ident">new</span>(<span class="bool-val">true</span>);
                 <span class="ident">decompress</span>
@@ -846,7 +846,7 @@
                     .<span class="ident">read_error</span>(<span class="string">&quot;Invalid zlib compressed data&quot;</span>)<span class="question-mark">?</span>;
                 <span class="prelude-val">Ok</span>(<span class="ident">Cow</span>::<span class="ident">Owned</span>(<span class="ident">decompressed</span>))
             }
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>(<span class="string">&quot;Unsupported compressed data.&quot;</span>)),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>(<span class="string">&quot;Unsupported compressed data.&quot;</span>)),
         }
     }
 }

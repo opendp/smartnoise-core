@@ -40,11 +40,11 @@
 <span class="doccomment">/// If `a` or `b` are infinite, returns `true` only if both are</span>
 <span class="doccomment">/// infinite and similarly signed. Always returns `false` if</span>
 <span class="doccomment">/// either number is a `NAN`.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">almost_eq</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>, <span class="ident">acc</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">almost_eq</span>(<span class="ident">a</span>: <span class="ident">f64</span>, <span class="ident">b</span>: <span class="ident">f64</span>, <span class="ident">acc</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
     <span class="comment">// only true if a and b are infinite with same</span>
     <span class="comment">// sign</span>
-    <span class="kw">if</span> <span class="ident">a</span>.<span class="ident">is_infinite</span>() <span class="op">||</span> <span class="ident">b</span>.<span class="ident">is_infinite</span>() {
-        <span class="kw">return</span> <span class="ident">a</span> <span class="op">==</span> <span class="ident">b</span>;
+    <span class="kw">if</span> <span class="ident">a</span>.<span class="ident">is_infinite</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">b</span>.<span class="ident">is_infinite</span>() {
+        <span class="kw">return</span> <span class="ident">a</span> <span class="op">=</span><span class="op">=</span> <span class="ident">b</span>;
     }
 
     <span class="comment">// NANs are never equal</span>

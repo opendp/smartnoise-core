@@ -644,7 +644,7 @@
         <span class="ident">public_arguments</span>: <span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span>, <span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="ident">NodeProperties</span>,
         <span class="ident">_node_id</span>: <span class="ident">u32</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Warnable</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;&gt;</span>;
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Warnable</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// Expandable Component trait</span>
@@ -674,7 +674,7 @@
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
         <span class="ident">component_id</span>: <span class="ident">u32</span>,
         <span class="ident">maximum_id</span>: <span class="ident">u32</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span>;
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// Mechanism component trait</span>
@@ -699,9 +699,9 @@
     <span class="kw">fn</span> <span class="ident">get_privacy_usage</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
-        <span class="ident">release_usage</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;&gt;</span>,
+        <span class="ident">release_usage</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>;
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// Sensitivity component trait</span>
@@ -728,7 +728,7 @@
         <span class="ident">privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
         <span class="ident">sensitivity_type</span>: <span class="kw-2">&amp;</span><span class="ident">SensitivitySpace</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>;
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// Accuracy component trait</span>
@@ -740,14 +740,14 @@
         <span class="ident">privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
         <span class="ident">accuracies</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Accuracies</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>;
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
     <span class="kw">fn</span> <span class="ident">privacy_usage_to_accuracy</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
         <span class="ident">alpha</span>: <span class="ident">f64</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">Accuracy</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>;
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">Accuracy</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// Report component trait</span>
@@ -762,8 +762,8 @@
         <span class="ident">public_arguments</span>: <span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span>, <span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="ident">NodeProperties</span>,
         <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>,
-        <span class="ident">variable_names</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span><span class="op">&gt;&gt;</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">JSONRelease</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>;
+        <span class="ident">variable_names</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">JSONRelease</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// Named component trait</span>
@@ -775,9 +775,9 @@
     <span class="kw">fn</span> <span class="ident">get_names</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">public_arguments</span>: <span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span>, <span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>,
-        <span class="ident">argument_variables</span>: <span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;&gt;</span>,
+        <span class="ident">argument_variables</span>: <span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span><span class="op">&gt;</span>,
         <span class="ident">release</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;&gt;</span>;
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 }
 
 
@@ -791,17 +791,17 @@
         <span class="ident">public_arguments</span>: <span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span>, <span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="ident">NodeProperties</span>,
         <span class="ident">node_id</span>: <span class="ident">u32</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Warnable</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Warnable</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">variant</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">variant</span>.<span class="ident">as_ref</span>()
-            .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;variant: must be defined&quot;</span>)<span class="question-mark">?</span>;
+            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;variant: must be defined&quot;</span>)<span class="question-mark">?</span>;
 
         <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">propagate_property</span> {
-            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
+            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 {
                     $(
                        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="ident">variant</span> {
                             <span class="kw">return</span> <span class="ident">x</span>.<span class="ident">propagate_property</span>(<span class="ident">privacy_definition</span>, <span class="ident">public_arguments</span>, <span class="ident">properties</span>, <span class="ident">node_id</span>)
-                                .<span class="ident">chain_err</span>(<span class="op">||</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification {:?}:&quot;</span>, <span class="ident">variant</span>))
+                                .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification {:?}:&quot;</span>, <span class="ident">variant</span>))
                        }
                     )<span class="op">*</span>
                 }
@@ -836,19 +836,19 @@
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
         <span class="ident">component_id</span>: <span class="ident">u32</span>,
         <span class="ident">maximum_id</span>: <span class="ident">u32</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">variant</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">variant</span>.<span class="ident">as_ref</span>()
-            .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;variant: must be defined&quot;</span>)<span class="question-mark">?</span>;
+            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;variant: must be defined&quot;</span>)<span class="question-mark">?</span>;
 
         <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">expand_component</span> {
-            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
+            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 {
                     $(
                        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="ident">variant</span> {
                             <span class="kw">let</span> <span class="ident">expansion</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">expand_component</span>(
                                 <span class="ident">privacy_definition</span>, <span class="ident">component</span>, <span class="ident">public_arguments</span>,
                                 <span class="ident">properties</span>, <span class="ident">component_id</span>, <span class="ident">maximum_id</span>)
-                                .<span class="ident">chain_err</span>(<span class="op">||</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification {:?}:&quot;</span>, <span class="ident">variant</span>))<span class="question-mark">?</span>;
+                                .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification {:?}:&quot;</span>, <span class="ident">variant</span>))<span class="question-mark">?</span>;
 
                             <span class="ident">expansion</span>.<span class="ident">is_valid</span>(<span class="ident">component_id</span>)<span class="question-mark">?</span>;
                             <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">expansion</span>)
@@ -905,19 +905,19 @@
     <span class="kw">fn</span> <span class="ident">get_privacy_usage</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
-        <span class="ident">release_usage</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;&gt;</span>,
+        <span class="ident">release_usage</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">variant</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">variant</span>.<span class="ident">as_ref</span>()
-            .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;variant: must be defined&quot;</span>)<span class="question-mark">?</span>;
+            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;variant: must be defined&quot;</span>)<span class="question-mark">?</span>;
 
         <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">get_privacy_usage</span> {
-            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
+            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 {
                     $(
                        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="ident">variant</span> {
                             <span class="kw">return</span> <span class="ident">x</span>.<span class="ident">get_privacy_usage</span>(<span class="ident">privacy_definition</span>, <span class="ident">release_usage</span>, <span class="ident">properties</span>)
-                                .<span class="ident">chain_err</span>(<span class="op">||</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification {:?}:&quot;</span>, <span class="ident">variant</span>))
+                                .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification {:?}:&quot;</span>, <span class="ident">variant</span>))
                        }
                     )<span class="op">*</span>
                 }
@@ -943,14 +943,14 @@
         <span class="ident">privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
         <span class="ident">sensitivity_type</span>: <span class="kw-2">&amp;</span><span class="ident">SensitivitySpace</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span> {
         <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">compute_sensitivity</span> {
-            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
+            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 {
                     $(
                        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="self">self</span> {
                             <span class="kw">return</span> <span class="ident">x</span>.<span class="ident">compute_sensitivity</span>(<span class="ident">privacy_definition</span>, <span class="ident">properties</span>, <span class="ident">sensitivity_type</span>)
-                                .<span class="ident">chain_err</span>(<span class="op">||</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification {:?}:&quot;</span>, <span class="self">self</span>))
+                                .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification {:?}:&quot;</span>, <span class="self">self</span>))
                        }
                     )<span class="op">*</span>
                 }
@@ -975,17 +975,17 @@
         <span class="ident">privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
         <span class="ident">accuracy</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Accuracies</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">variant</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">variant</span>.<span class="ident">as_ref</span>()
-            .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;variant: must be defined&quot;</span>)<span class="question-mark">?</span>;
+            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;variant: must be defined&quot;</span>)<span class="question-mark">?</span>;
 
         <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">accuracy_to_privacy_usage</span> {
-            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
+            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 {
                     $(
                        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="ident">variant</span> {
                             <span class="kw">return</span> <span class="ident">x</span>.<span class="ident">accuracy_to_privacy_usage</span>(<span class="ident">privacy_definition</span>, <span class="ident">properties</span>, <span class="ident">accuracy</span>)
-                                .<span class="ident">chain_err</span>(<span class="op">||</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification {:?}:&quot;</span>, <span class="ident">variant</span>))
+                                .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification {:?}:&quot;</span>, <span class="ident">variant</span>))
                        }
                     )<span class="op">*</span>
                 }
@@ -1009,17 +1009,17 @@
         <span class="ident">privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
         <span class="ident">alpha</span>: <span class="ident">f64</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">Accuracy</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">Accuracy</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">variant</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">variant</span>.<span class="ident">as_ref</span>()
-            .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;variant: must be defined&quot;</span>)<span class="question-mark">?</span>;
+            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;variant: must be defined&quot;</span>)<span class="question-mark">?</span>;
 
         <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">privacy_usage_to_accuracy</span> {
-            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
+            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 {
                     $(
                        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="ident">variant</span> {
                             <span class="kw">return</span> <span class="ident">x</span>.<span class="ident">privacy_usage_to_accuracy</span>(<span class="ident">privacy_definition</span>, <span class="ident">properties</span>, <span class="ident">alpha</span>)
-                                .<span class="ident">chain_err</span>(<span class="op">||</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification {:?}:&quot;</span>, <span class="ident">variant</span>))
+                                .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification {:?}:&quot;</span>, <span class="ident">variant</span>))
                        }
                     )<span class="op">*</span>
                 }
@@ -1047,19 +1047,19 @@
         <span class="ident">public_arguments</span>: <span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span>, <span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="ident">NodeProperties</span>,
         <span class="ident">release</span>: <span class="kw-2">&amp;</span><span class="ident">Value</span>,
-        <span class="ident">variable_names</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span><span class="op">&gt;&gt;</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">JSONRelease</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span> {
+        <span class="ident">variable_names</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">JSONRelease</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">variant</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">variant</span>.<span class="ident">as_ref</span>()
-            .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;variant: must be defined&quot;</span>)<span class="question-mark">?</span>;
+            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;variant: must be defined&quot;</span>)<span class="question-mark">?</span>;
 
         <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">summarize</span> {
-            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
+            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 {
                     $(
                        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="ident">variant</span> {
                             <span class="kw">return</span> <span class="ident">x</span>.<span class="ident">summarize</span>(<span class="ident">node_id</span>, <span class="ident">component</span>, <span class="ident">public_arguments</span>,
                                  <span class="ident">properties</span>, <span class="ident">release</span>, <span class="ident">variable_names</span>)
-                                .<span class="ident">chain_err</span>(<span class="op">||</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification: {:?}:&quot;</span>, <span class="ident">variant</span>))
+                                .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification: {:?}:&quot;</span>, <span class="ident">variant</span>))
                        }
                     )<span class="op">*</span>
                 }
@@ -1083,19 +1083,19 @@
     <span class="kw">fn</span> <span class="ident">get_names</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">public_arguments</span>: <span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span>, <span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>,
-        <span class="ident">argument_variables</span>: <span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;&gt;</span>,
+        <span class="ident">argument_variables</span>: <span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span><span class="op">&gt;</span>,
         <span class="ident">release</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">variant</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">variant</span>.<span class="ident">as_ref</span>()
-            .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;variant: must be defined&quot;</span>)<span class="question-mark">?</span>;
+            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;variant: must be defined&quot;</span>)<span class="question-mark">?</span>;
 
         <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">get_names</span> {
-            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
+            ($( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span> ),<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 {
                     $(
                        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>(<span class="ident">x</span>) <span class="op">=</span> <span class="ident">variant</span> {
                             <span class="kw">return</span> <span class="ident">x</span>.<span class="ident">get_names</span>(<span class="ident">public_arguments</span>, <span class="ident">argument_variables</span>, <span class="ident">release</span>)
-                                .<span class="ident">chain_err</span>(<span class="op">||</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification {:?}:&quot;</span>, <span class="ident">variant</span>))
+                                .<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;node specification {:?}:&quot;</span>, <span class="ident">variant</span>))
                        }
                     )<span class="op">*</span>
                 }
@@ -1111,9 +1111,9 @@
         <span class="comment">// default implementation</span>
         <span class="kw">match</span> <span class="ident">argument_variables</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">IndexKey</span>::<span class="ident">from</span>(<span class="string">&quot;data&quot;</span>)) {
             <span class="comment">// by convention, names pass through the &quot;data&quot; argument unchanged</span>
-            <span class="prelude-val">Some</span>(<span class="ident">variable_names</span>) <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">variable_names</span>.<span class="ident">clone</span>()),
+            <span class="prelude-val">Some</span>(<span class="ident">variable_names</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">variable_names</span>.<span class="ident">clone</span>()),
             <span class="comment">// otherwise if the component is non-standard, throw an error</span>
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;names are not implemented for proto component {:?}&quot;</span>, <span class="ident">variant</span>).<span class="ident">into</span>())
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;names are not implemented for proto component {:?}&quot;</span>, <span class="ident">variant</span>).<span class="ident">into</span>())
         }
     }
 }

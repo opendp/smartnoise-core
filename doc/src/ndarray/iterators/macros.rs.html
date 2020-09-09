@@ -181,12 +181,12 @@
 <span id="180">180</span>
 <span id="181">181</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">// Send and Sync</span>
-<span class="comment">// All the iterators are thread safe the same way the slice&#39;s iterator are</span>
+<span class="comment">// Send and Sync</span>
+<span class="comment">// All the iterators are thread safe the same way the slice&#39;s iterator are</span>
 
-<span class="comment">// read-only iterators use Sync =&gt; Send rules, same as `std::slice::Iter`.</span>
+<span class="comment">// read-only iterators use Sync =&gt; Send rules, same as `std::slice::Iter`.</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">send_sync_read_only</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span>) <span class="op">=&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
         <span class="kw">where</span>
             <span class="ident">A</span>: <span class="ident">Sync</span>,
@@ -202,9 +202,9 @@
     };
 }
 
-<span class="comment">// read-write iterators use Send =&gt; Send rules, same as `std::slice::IterMut`.</span>
+<span class="comment">// read-write iterators use Send =&gt; Send rules, same as `std::slice::IterMut`.</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">send_sync_read_write</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span>) <span class="op">=&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
         <span class="kw">where</span>
             <span class="ident">A</span>: <span class="ident">Send</span>,
@@ -223,7 +223,7 @@
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_ndproducer</span> {
     (
     [$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">typarm</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>]
-    [<span class="ident">Clone</span> <span class="op">=&gt;</span> $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">cloneparm</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>]
+    [<span class="ident">Clone</span> <span class="op">=</span><span class="op">&gt;</span> $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">cloneparm</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>]
      <span class="macro-nonterminal">$</span><span class="macro-nonterminal">typename</span>:<span class="ident">ident</span> {
          <span class="macro-nonterminal">$</span><span class="macro-nonterminal">base</span>:<span class="ident">ident</span>,
          $(
@@ -238,7 +238,7 @@
         <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">item</span>(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">self_</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ptr</span>:<span class="ident">pat</span>) {
             <span class="macro-nonterminal">$</span><span class="macro-nonterminal">refexpr</span>:<span class="ident">expr</span>
         }
-    }) <span class="op">=&gt;</span> {
+    }) <span class="op">=</span><span class="op">&gt;</span> {
 <span class="kw">impl</span><span class="op">&lt;</span>$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">typarm</span>)<span class="kw-2">*</span><span class="op">&gt;</span> <span class="ident">NdProducer</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">fulltype</span> {
     $(
         <span class="kw">type</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">atyn</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">atyv</span>;
@@ -247,42 +247,42 @@
     <span class="kw">type</span> <span class="ident">Stride</span> <span class="op">=</span> <span class="ident">isize</span>;
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">raw_dim</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">D</span> {
+    <span class="kw">fn</span> <span class="ident">raw_dim</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">D</span> {
         <span class="self">self</span>.<span class="macro-nonterminal">$</span><span class="macro-nonterminal">base</span>.<span class="ident">raw_dim</span>()
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">layout</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Layout</span> {
+    <span class="kw">fn</span> <span class="ident">layout</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Layout</span> {
         <span class="self">self</span>.<span class="macro-nonterminal">$</span><span class="macro-nonterminal">base</span>.<span class="ident">layout</span>()
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">A</span> {
+    <span class="kw">fn</span> <span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">A</span> {
         <span class="self">self</span>.<span class="macro-nonterminal">$</span><span class="macro-nonterminal">base</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw">_</span>
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">contiguous_stride</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">isize</span> {
+    <span class="kw">fn</span> <span class="ident">contiguous_stride</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">isize</span> {
         <span class="self">self</span>.<span class="macro-nonterminal">$</span><span class="macro-nonterminal">base</span>.<span class="ident">contiguous_stride</span>()
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">as_ref</span>(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">self_</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ptr</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">A</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Item</span> {
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">as_ref</span>(<span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">self_</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ptr</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Item</span> {
         <span class="macro-nonterminal">$</span><span class="macro-nonterminal">refexpr</span>
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">uget_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Dim</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">A</span> {
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">uget_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Dim</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">A</span> {
         <span class="self">self</span>.<span class="macro-nonterminal">$</span><span class="macro-nonterminal">base</span>.<span class="ident">uget_ptr</span>(<span class="ident">i</span>)
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">stride_of</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>) <span class="op">-&gt;</span> <span class="ident">isize</span> {
+    <span class="kw">fn</span> <span class="ident">stride_of</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">isize</span> {
         <span class="self">self</span>.<span class="macro-nonterminal">$</span><span class="macro-nonterminal">base</span>.<span class="ident">stride_of</span>(<span class="ident">axis</span>)
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">split_at</span>(<span class="self">self</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> (<span class="self">Self</span>, <span class="self">Self</span>) {
+    <span class="kw">fn</span> <span class="ident">split_at</span>(<span class="self">self</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="self">Self</span>, <span class="self">Self</span>) {
         <span class="kw">let</span> (<span class="ident">a</span>, <span class="ident">b</span>) <span class="op">=</span> <span class="self">self</span>.<span class="macro-nonterminal">$</span><span class="macro-nonterminal">base</span>.<span class="ident">split_at</span>(<span class="ident">axis</span>, <span class="ident">index</span>);
         (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">typename</span> {
             <span class="macro-nonterminal">$</span><span class="macro-nonterminal">base</span>: <span class="ident">a</span>,
@@ -302,7 +302,7 @@
 
 <span class="macro">expand_if</span><span class="macro">!</span>(@<span class="ident">nonempty</span> [$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">cloneparm</span>)<span class="kw-2">*</span>]
     <span class="kw">impl</span><span class="op">&lt;</span>$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">cloneparm</span>)<span class="kw-2">*</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">fulltype</span> {
-        <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+        <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
             <span class="macro-nonterminal">$</span><span class="macro-nonterminal">typename</span> {
                 <span class="macro-nonterminal">$</span><span class="macro-nonterminal">base</span>: <span class="self">self</span>.<span class="ident">base</span>.<span class="ident">clone</span>(),
                 $(
@@ -319,7 +319,7 @@
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_iterator</span> {
     (
     [$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">typarm</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>]
-    [<span class="ident">Clone</span> <span class="op">=&gt;</span> $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">cloneparm</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>]
+    [<span class="ident">Clone</span> <span class="op">=</span><span class="op">&gt;</span> $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">cloneparm</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>]
      <span class="macro-nonterminal">$</span><span class="macro-nonterminal">typename</span>:<span class="ident">ident</span> {
          <span class="macro-nonterminal">$</span><span class="macro-nonterminal">base</span>:<span class="ident">ident</span>,
          $(
@@ -332,11 +332,11 @@
         <span class="kw">fn</span> <span class="ident">item</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">self_</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">elt</span>:<span class="ident">pat</span>) {
             <span class="macro-nonterminal">$</span><span class="macro-nonterminal">refexpr</span>:<span class="ident">expr</span>
         }
-    }) <span class="op">=&gt;</span> {
+    }) <span class="op">=</span><span class="op">&gt;</span> {
          <span class="macro">expand_if</span><span class="macro">!</span>(@<span class="ident">nonempty</span> [$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">cloneparm</span>)<span class="kw-2">*</span>]
 
             <span class="kw">impl</span><span class="op">&lt;</span>$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">cloneparm</span>)<span class="kw-2">*</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">fulltype</span> {
-                <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+                <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
                     <span class="macro-nonterminal">$</span><span class="macro-nonterminal">typename</span> {
                         <span class="macro-nonterminal">$</span><span class="macro-nonterminal">base</span>: <span class="self">self</span>.<span class="macro-nonterminal">$</span><span class="macro-nonterminal">base</span>.<span class="ident">clone</span>(),
                         $(
@@ -350,13 +350,13 @@
         <span class="kw">impl</span><span class="op">&lt;</span>$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">typarm</span>)<span class="kw-2">*</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">fulltype</span> {
             <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ity</span>;
 
-            <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">self_</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
+            <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">self_</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
                 <span class="macro-nonterminal">$</span><span class="macro-nonterminal">self_</span>.<span class="macro-nonterminal">$</span><span class="macro-nonterminal">base</span>.<span class="ident">next</span>().<span class="ident">map</span>(<span class="op">|</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">elt</span><span class="op">|</span> {
                     <span class="macro-nonterminal">$</span><span class="macro-nonterminal">refexpr</span>
                 })
             }
 
-            <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+            <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
                 <span class="self">self</span>.<span class="macro-nonterminal">$</span><span class="macro-nonterminal">base</span>.<span class="ident">size_hint</span>()
             }
         }

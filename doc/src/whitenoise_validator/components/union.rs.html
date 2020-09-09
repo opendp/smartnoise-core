@@ -108,6 +108,7 @@
 <span id="107">107</span>
 <span id="108">108</span>
 <span id="109">109</span>
+<span id="110">110</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -131,21 +132,21 @@
         <span class="ident">_public_arguments</span>: <span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span>, <span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="ident">base</span>::<span class="ident">NodeProperties</span>,
         <span class="ident">node_id</span>: <span class="ident">u32</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Warnable</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Warnable</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;</span><span class="op">&gt;</span> {
 
         <span class="prelude-val">Ok</span>(<span class="ident">Warnable</span>::<span class="ident">new</span>(<span class="kw">if</span> <span class="self">self</span>.<span class="ident">flatten</span> {
             <span class="comment">// all partitions must be arrays</span>
             <span class="kw">let</span> <span class="ident">array_props</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">values</span>()
-                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">array</span>()).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ArrayProperties</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
+                .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">array</span>()).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">ArrayProperties</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
 
             <span class="kw">let</span> <span class="ident">num_columns</span> <span class="op">=</span> <span class="ident">get_common_value</span>(<span class="kw-2">&amp;</span><span class="ident">array_props</span>.<span class="ident">iter</span>()
                 .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>.<span class="ident">num_columns</span>)).<span class="ident">collect</span>())
-                .<span class="ident">unwrap_or</span>(<span class="prelude-val">None</span>).<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;num_columns must be known when unioning&quot;</span>)<span class="question-mark">?</span>;
+                .<span class="ident">unwrap_or</span>(<span class="prelude-val">None</span>).<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;num_columns must be known when unioning&quot;</span>)<span class="question-mark">?</span>;
 
             <span class="kw">let</span> <span class="ident">num_records</span> <span class="op">=</span> <span class="ident">array_props</span>.<span class="ident">iter</span>().<span class="ident">try_fold</span>(<span class="number">0</span>, <span class="op">|</span><span class="ident">sum</span>, <span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">num_records</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">sum</span> <span class="op">+</span> <span class="ident">v</span>));
 
             <span class="kw">let</span> <span class="ident">releasable</span> <span class="op">=</span> <span class="ident">get_common_value</span>(<span class="kw-2">&amp;</span><span class="ident">array_props</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">releasable</span>).<span class="ident">collect</span>())
-                .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;arguments must all be releasable, or all be private&quot;</span>))<span class="question-mark">?</span>;
+                .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;arguments must all be releasable, or all be private&quot;</span>))<span class="question-mark">?</span>;
 
             <span class="kw">let</span> <span class="ident">c_stab_mult</span> <span class="op">=</span> <span class="ident">get_c_stability_multiplier</span>(
                 <span class="ident">array_props</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">prop</span><span class="op">|</span> <span class="ident">prop</span>.<span class="ident">group_id</span>.<span class="ident">clone</span>()).<span class="ident">collect</span>())<span class="question-mark">?</span>;
@@ -157,8 +158,8 @@
                     .<span class="ident">unwrap_or</span>(<span class="bool-val">true</span>),
                 <span class="ident">releasable</span>,
                 <span class="ident">c_stability</span>: <span class="ident">array_props</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">c_stability</span>.<span class="ident">clone</span>())
-                    .<span class="ident">fold1</span>(<span class="op">|</span><span class="ident">l</span>, <span class="ident">r</span><span class="op">|</span> <span class="ident">l</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">r</span>).<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">l</span>, <span class="ident">r</span>)<span class="op">|</span> <span class="ident">l</span>.<span class="ident">max</span>(<span class="ident">r</span>) <span class="op">*</span> <span class="ident">c_stab_mult</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;&gt;</span>())
-                    .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;must have at least one partition when unioning&quot;</span>)<span class="question-mark">?</span>,
+                    .<span class="ident">fold1</span>(<span class="op">|</span><span class="ident">l</span>, <span class="ident">r</span><span class="op">|</span> <span class="ident">l</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">r</span>).<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">l</span>, <span class="ident">r</span>)<span class="op">|</span> <span class="ident">l</span>.<span class="ident">max</span>(<span class="ident">r</span>) <span class="op">*</span> <span class="ident">c_stab_mult</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span><span class="op">&gt;</span>())
+                    .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;must have at least one partition when unioning&quot;</span>)<span class="question-mark">?</span>,
                 <span class="ident">aggregator</span>: <span class="kw">if</span> <span class="ident">releasable</span> { <span class="prelude-val">None</span> } <span class="kw">else</span> {
                     <span class="prelude-val">Some</span>(<span class="ident">AggregatorProperties</span> {
                         <span class="ident">component</span>: <span class="ident">proto</span>::<span class="ident">component</span>::<span class="ident">Variant</span>::<span class="ident">Union</span>(<span class="self">self</span>.<span class="ident">clone</span>()),
@@ -166,22 +167,23 @@
                         <span class="ident">lipschitz_constants</span>: <span class="ident">stack</span>(
                             <span class="ident">Axis</span>(<span class="number">0</span>),
                             <span class="kw-2">&amp;</span><span class="ident">array_props</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">prop</span><span class="op">|</span> <span class="ident">prop</span>.<span class="ident">aggregator</span>.<span class="ident">clone</span>())
-                                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AggregatorProperties</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>()
-                                .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;all arguments to union must be aggregated&quot;</span>))<span class="question-mark">?</span>
+                                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">AggregatorProperties</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+                                .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;all arguments to union must be aggregated&quot;</span>))<span class="question-mark">?</span>
                                 .<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="ident">v</span>.<span class="ident">lipschitz_constants</span>.<span class="ident">ref_array</span>()<span class="question-mark">?</span>.<span class="ident">ref_float</span>()<span class="question-mark">?</span>.<span class="ident">view</span>()))
-                                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ArrayViewD</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;&gt;</span><span class="op">&gt;&gt;</span>()<span class="question-mark">?</span>)<span class="question-mark">?</span>.<span class="ident">into</span>(),
+                                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ArrayViewD</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>)<span class="question-mark">?</span>.<span class="ident">into</span>(),
                     })
                 },
                 <span class="comment">// TODO: merge natures</span>
                 <span class="ident">nature</span>: <span class="prelude-val">None</span>,
                 <span class="ident">data_type</span>: <span class="ident">get_common_value</span>(<span class="kw-2">&amp;</span><span class="ident">array_props</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">data_type</span>.<span class="ident">clone</span>()).<span class="ident">collect</span>())
-                    .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;data_types must be equivalent when merging&quot;</span>)<span class="question-mark">?</span>,
+                    .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;data_types must be equivalent when merging&quot;</span>)<span class="question-mark">?</span>,
                 <span class="ident">dataset_id</span>: <span class="prelude-val">Some</span>(<span class="ident">node_id</span> <span class="kw">as</span> <span class="ident">i64</span>),
                 <span class="ident">is_not_empty</span>: <span class="ident">array_props</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">is_not_empty</span>),
                 <span class="ident">dimensionality</span>: <span class="prelude-val">Some</span>(<span class="number">2</span>),
                 <span class="ident">group_id</span>: <span class="ident">get_group_id_path</span>(<span class="ident">array_props</span>.<span class="ident">iter</span>()
                     .<span class="ident">map</span>(<span class="op">|</span><span class="ident">prop</span><span class="op">|</span> <span class="ident">prop</span>.<span class="ident">group_id</span>.<span class="ident">clone</span>())
-                    .<span class="ident">collect</span>())<span class="question-mark">?</span>
+                    .<span class="ident">collect</span>())<span class="question-mark">?</span>,
+                <span class="ident">naturally_ordered</span>: <span class="bool-val">false</span>
             })
         } <span class="kw">else</span> {
             <span class="ident">ValueProperties</span>::<span class="ident">Partitions</span>(<span class="ident">PartitionsProperties</span> { <span class="ident">children</span>: <span class="ident">properties</span> })
@@ -195,26 +197,26 @@
         <span class="ident">privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
         <span class="ident">sensitivity_type</span>: <span class="kw-2">&amp;</span><span class="ident">SensitivitySpace</span>
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span> {
 
         <span class="kw">let</span> <span class="ident">partition_sensitivities</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">values</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> {
                 <span class="kw">let</span> <span class="ident">aggregator</span>: <span class="kw-2">&amp;</span><span class="ident">AggregatorProperties</span> <span class="op">=</span> <span class="ident">v</span>.<span class="ident">array</span>()<span class="question-mark">?</span>
-                    .<span class="ident">aggregator</span>.<span class="ident">as_ref</span>().<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="string">&quot;partitions must be aggregated to have sensitivity&quot;</span>)<span class="question-mark">?</span>;
+                    .<span class="ident">aggregator</span>.<span class="ident">as_ref</span>().<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;partitions must be aggregated to have sensitivity&quot;</span>)<span class="question-mark">?</span>;
 
                 <span class="ident">aggregator</span>.<span class="ident">component</span>
                     .<span class="ident">compute_sensitivity</span>(<span class="ident">privacy_definition</span>, <span class="kw-2">&amp;</span><span class="ident">aggregator</span>.<span class="ident">properties</span>, <span class="ident">sensitivity_type</span>)
             })
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
 
         <span class="prelude-val">Ok</span>(<span class="kw">if</span> <span class="self">self</span>.<span class="ident">flatten</span> {
             <span class="ident">stack</span>(<span class="ident">Axis</span>(<span class="number">0</span>), <span class="kw-2">&amp;</span><span class="ident">partition_sensitivities</span>.<span class="ident">iter</span>()
                 .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="prelude-val">Ok</span>(<span class="ident">v</span>.<span class="ident">ref_array</span>()<span class="question-mark">?</span>.<span class="ident">ref_float</span>()<span class="question-mark">?</span>.<span class="ident">view</span>()))
-                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ArrayViewD</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;&gt;</span><span class="op">&gt;&gt;</span>()<span class="question-mark">?</span>)<span class="question-mark">?</span>.<span class="ident">into</span>()
+                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ArrayViewD</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>)<span class="question-mark">?</span>.<span class="ident">into</span>()
         } <span class="kw">else</span> {
             <span class="ident">Value</span>::<span class="ident">Partitions</span>(<span class="ident">properties</span>.<span class="ident">keys</span>()
                 .<span class="ident">cloned</span>().<span class="ident">zip</span>(<span class="ident">partition_sensitivities</span>)
-                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">IndexKey</span>, <span class="ident">Value</span><span class="op">&gt;&gt;</span>())
+                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">IndexKey</span>, <span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span>())
         })
     }
 }</pre></div>

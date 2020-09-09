@@ -478,7 +478,7 @@
         <span class="ident">public_arguments</span>: <span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span>, <span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="ident">base</span>::<span class="ident">NodeProperties</span>,
         <span class="ident">_node_id</span>: <span class="ident">u32</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Warnable</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Warnable</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;</span><span class="op">&gt;</span> {
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;data&quot;</span>.<span class="ident">into</span>())
             .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()
@@ -504,7 +504,7 @@
             }
             <span class="ident">data_property</span>.<span class="ident">num_columns</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>);
             <span class="ident">data_property</span>.<span class="ident">nature</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-            <span class="ident">data_property</span>.<span class="ident">c_stability</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">num_columns</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="number">1.</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;&gt;</span>();
+            <span class="ident">data_property</span>.<span class="ident">c_stability</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">num_columns</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="number">1.</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span><span class="op">&gt;</span>();
             <span class="ident">data_property</span>.<span class="ident">dimensionality</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="number">2</span>);
         }
 
@@ -527,7 +527,7 @@
         }
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">categories</span>) <span class="op">=</span> <span class="ident">public_arguments</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;categories&quot;</span>.<span class="ident">into</span>()) {
-            <span class="kw">if</span> <span class="ident">data_property</span>.<span class="ident">data_type</span> <span class="op">!=</span> <span class="ident">categories</span>.<span class="ident">ref_jagged</span>()<span class="question-mark">?</span>.<span class="ident">data_type</span>() {
+            <span class="kw">if</span> <span class="ident">data_property</span>.<span class="ident">data_type</span> <span class="op">!</span><span class="op">=</span> <span class="ident">categories</span>.<span class="ident">ref_jagged</span>()<span class="question-mark">?</span>.<span class="ident">data_type</span>() {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;data&#39;s data_type must match categories&#39; data_type&quot;</span>.<span class="ident">into</span>());
             }
             <span class="comment">// TODO: propagation of categories through imputation and resize</span>
@@ -538,36 +538,36 @@
         <span class="kw">let</span> <span class="ident">num_columns</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">num_columns</span>()<span class="question-mark">?</span>;
 
         <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">data_type</span> {
-            <span class="ident">DataType</span>::<span class="ident">Float</span> <span class="op">=&gt;</span> {
+            <span class="ident">DataType</span>::<span class="ident">Float</span> <span class="op">=</span><span class="op">&gt;</span> {
 
                 <span class="comment">// 1. check public arguments (constant n)</span>
                 <span class="kw">let</span> <span class="ident">impute_lower</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">public_arguments</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;lower&quot;</span>.<span class="ident">into</span>()) {
-                    <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=&gt;</span> <span class="ident">lower</span>.<span class="ident">ref_array</span>()<span class="question-mark">?</span>.<span class="ident">clone</span>().<span class="ident">vec_float</span>(<span class="prelude-val">Some</span>(<span class="ident">num_columns</span>))
+                    <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">lower</span>.<span class="ident">ref_array</span>()<span class="question-mark">?</span>.<span class="ident">clone</span>().<span class="ident">vec_float</span>(<span class="prelude-val">Some</span>(<span class="ident">num_columns</span>))
                         .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;lower:&quot;</span>))<span class="question-mark">?</span>,
 
                     <span class="comment">// 2. then private arguments (for example from another clamped column)</span>
-                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;lower&quot;</span>.<span class="ident">into</span>()) {
-                        <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=&gt;</span> <span class="ident">lower</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">lower_float</span>()
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;lower&quot;</span>.<span class="ident">into</span>()) {
+                        <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">lower</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">lower_float</span>()
                             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;lower:&quot;</span>))<span class="question-mark">?</span>,
 
                         <span class="comment">// 3. then data properties (propagated from prior clamping/min/max)</span>
-                        <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">data_property</span>
+                        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_property</span>
                             .<span class="ident">lower_float</span>().<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;min:&quot;</span>))<span class="question-mark">?</span>
                     }
                 };
 
                 <span class="comment">// 1. check public arguments (constant n)</span>
                 <span class="kw">let</span> <span class="ident">impute_upper</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">public_arguments</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;upper&quot;</span>.<span class="ident">into</span>()) {
-                    <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=&gt;</span> <span class="ident">upper</span>.<span class="ident">ref_array</span>()<span class="question-mark">?</span>.<span class="ident">clone</span>().<span class="ident">vec_float</span>(<span class="prelude-val">Some</span>(<span class="ident">num_columns</span>))
+                    <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">upper</span>.<span class="ident">ref_array</span>()<span class="question-mark">?</span>.<span class="ident">clone</span>().<span class="ident">vec_float</span>(<span class="prelude-val">Some</span>(<span class="ident">num_columns</span>))
                         .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;upper:&quot;</span>))<span class="question-mark">?</span>,
 
                     <span class="comment">// 2. then private arguments (for example from another clamped column)</span>
-                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;upper&quot;</span>.<span class="ident">into</span>()) {
-                        <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=&gt;</span> <span class="ident">upper</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">upper_float</span>()
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;upper&quot;</span>.<span class="ident">into</span>()) {
+                        <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">upper</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">upper_float</span>()
                             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;upper:&quot;</span>))<span class="question-mark">?</span>,
 
                         <span class="comment">// 3. then data properties (propagated from prior clamping/min/max)</span>
-                        <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">data_property</span>
+                        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_property</span>
                             .<span class="ident">upper_float</span>().<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;upper:&quot;</span>))<span class="question-mark">?</span>
                     }
                 };
@@ -578,23 +578,23 @@
 
                 <span class="comment">// the actual data bound (if it exists) may be wider than the imputation parameters</span>
                 <span class="kw">let</span> <span class="ident">impute_lower</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">lower_float_option</span>() {
-                    <span class="prelude-val">Ok</span>(<span class="ident">data_lower</span>) <span class="op">=&gt;</span> <span class="ident">impute_lower</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">data_lower</span>)
+                    <span class="prelude-val">Ok</span>(<span class="ident">data_lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">impute_lower</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">data_lower</span>)
                         .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">impute_lower</span>, <span class="ident">optional_data_lower</span>)<span class="op">|</span> <span class="kw">match</span> <span class="ident">optional_data_lower</span> {
-                            <span class="prelude-val">Some</span>(<span class="ident">data_lower</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">impute_lower</span>.<span class="ident">min</span>(<span class="ident">data_lower</span>)),
+                            <span class="prelude-val">Some</span>(<span class="ident">data_lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">impute_lower</span>.<span class="ident">min</span>(<span class="ident">data_lower</span>)),
                             <span class="comment">// since there was no prior bound, nothing is known about the min</span>
-                            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>
+                            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
                         }).<span class="ident">collect</span>(),
-                    <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> (<span class="number">0</span>..<span class="ident">num_columns</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="prelude-val">None</span>).<span class="ident">collect</span>()
+                    <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="number">0</span>..<span class="ident">num_columns</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="prelude-val">None</span>).<span class="ident">collect</span>()
                 };
 
                 <span class="kw">let</span> <span class="ident">impute_upper</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">upper_float_option</span>() {
-                    <span class="prelude-val">Ok</span>(<span class="ident">data_upper</span>) <span class="op">=&gt;</span> <span class="ident">impute_upper</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">data_upper</span>)
+                    <span class="prelude-val">Ok</span>(<span class="ident">data_upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">impute_upper</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">data_upper</span>)
                         .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">impute_upper</span>, <span class="ident">optional_data_upper</span>)<span class="op">|</span> <span class="kw">match</span> <span class="ident">optional_data_upper</span> {
-                            <span class="prelude-val">Some</span>(<span class="ident">data_upper</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">impute_upper</span>.<span class="ident">max</span>(<span class="ident">data_upper</span>)),
+                            <span class="prelude-val">Some</span>(<span class="ident">data_upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">impute_upper</span>.<span class="ident">max</span>(<span class="ident">data_upper</span>)),
                             <span class="comment">// since there was no prior bound, nothing is known about the max</span>
-                            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>
+                            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
                         }).<span class="ident">collect</span>(),
-                    <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> (<span class="number">0</span>..<span class="ident">num_columns</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="prelude-val">None</span>).<span class="ident">collect</span>()
+                    <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="number">0</span>..<span class="ident">num_columns</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="prelude-val">None</span>).<span class="ident">collect</span>()
                 };
 
                 <span class="comment">// impute may only ever widen prior existing bounds</span>
@@ -604,36 +604,36 @@
                 }));
             }
 
-            <span class="ident">DataType</span>::<span class="ident">Int</span> <span class="op">=&gt;</span> {
+            <span class="ident">DataType</span>::<span class="ident">Int</span> <span class="op">=</span><span class="op">&gt;</span> {
 
                 <span class="comment">// 1. check public arguments (constant n)</span>
                 <span class="kw">let</span> <span class="ident">impute_lower</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">public_arguments</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;lower&quot;</span>.<span class="ident">into</span>()) {
-                    <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=&gt;</span> <span class="ident">lower</span>.<span class="ident">ref_array</span>()<span class="question-mark">?</span>.<span class="ident">clone</span>().<span class="ident">vec_int</span>(<span class="prelude-val">Some</span>(<span class="ident">num_columns</span>))
+                    <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">lower</span>.<span class="ident">ref_array</span>()<span class="question-mark">?</span>.<span class="ident">clone</span>().<span class="ident">vec_int</span>(<span class="prelude-val">Some</span>(<span class="ident">num_columns</span>))
                         .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;lower:&quot;</span>))<span class="question-mark">?</span>,
 
                     <span class="comment">// 2. then private arguments (for example from another clamped column)</span>
-                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;lower&quot;</span>.<span class="ident">into</span>()) {
-                        <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=&gt;</span> <span class="ident">lower</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">lower_int</span>()
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;lower&quot;</span>.<span class="ident">into</span>()) {
+                        <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">lower</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">lower_int</span>()
                             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;lower:&quot;</span>))<span class="question-mark">?</span>,
 
                         <span class="comment">// 3. then data properties (propagated from prior clamping/lower/upper)</span>
-                        <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">data_property</span>
+                        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_property</span>
                             .<span class="ident">lower_int</span>().<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;lower:&quot;</span>))<span class="question-mark">?</span>
                     }
                 };
 
                 <span class="comment">// 1. check public arguments (constant n)</span>
                 <span class="kw">let</span> <span class="ident">impute_upper</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">public_arguments</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;upper&quot;</span>.<span class="ident">into</span>()) {
-                    <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=&gt;</span> <span class="ident">upper</span>.<span class="ident">ref_array</span>()<span class="question-mark">?</span>.<span class="ident">clone</span>().<span class="ident">vec_int</span>(<span class="prelude-val">Some</span>(<span class="ident">num_columns</span>))
+                    <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">upper</span>.<span class="ident">ref_array</span>()<span class="question-mark">?</span>.<span class="ident">clone</span>().<span class="ident">vec_int</span>(<span class="prelude-val">Some</span>(<span class="ident">num_columns</span>))
                         .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;upper:&quot;</span>))<span class="question-mark">?</span>,
 
                     <span class="comment">// 2. then private arguments (for example from another clamped column)</span>
-                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;upper&quot;</span>.<span class="ident">into</span>()) {
-                        <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=&gt;</span> <span class="ident">upper</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">upper_int</span>()
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">properties</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;upper&quot;</span>.<span class="ident">into</span>()) {
+                        <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">upper</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">upper_int</span>()
                             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;upper:&quot;</span>))<span class="question-mark">?</span>,
 
                         <span class="comment">// 3. then data properties (propagated from prior clamping/lower/upper)</span>
-                        <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">data_property</span>
+                        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_property</span>
                             .<span class="ident">upper_int</span>().<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;upper:&quot;</span>))<span class="question-mark">?</span>
                     }
                 };
@@ -644,23 +644,23 @@
 
                 <span class="comment">// the actual data bound (if it exists) may be wider than the imputation parameters</span>
                 <span class="kw">let</span> <span class="ident">impute_lower</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">lower_int_option</span>() {
-                    <span class="prelude-val">Ok</span>(<span class="ident">data_lower</span>) <span class="op">=&gt;</span> <span class="ident">impute_lower</span>.<span class="ident">into_iter</span>().<span class="ident">zip</span>(<span class="ident">data_lower</span>.<span class="ident">into_iter</span>())
+                    <span class="prelude-val">Ok</span>(<span class="ident">data_lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">impute_lower</span>.<span class="ident">into_iter</span>().<span class="ident">zip</span>(<span class="ident">data_lower</span>.<span class="ident">into_iter</span>())
                         .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">impute_lower</span>, <span class="ident">optional_data_lower</span>)<span class="op">|</span> <span class="kw">match</span> <span class="ident">optional_data_lower</span> {
-                            <span class="prelude-val">Some</span>(<span class="ident">data_lower</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">impute_lower</span>.<span class="ident">min</span>(<span class="ident">data_lower</span>)),
+                            <span class="prelude-val">Some</span>(<span class="ident">data_lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">impute_lower</span>.<span class="ident">min</span>(<span class="ident">data_lower</span>)),
                             <span class="comment">// since there was no prior bound, nothing is known about the min</span>
-                            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>
+                            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
                         }).<span class="ident">collect</span>(),
-                    <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> (<span class="number">0</span>..<span class="ident">num_columns</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="prelude-val">None</span>).<span class="ident">collect</span>()
+                    <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="number">0</span>..<span class="ident">num_columns</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="prelude-val">None</span>).<span class="ident">collect</span>()
                 };
 
                 <span class="kw">let</span> <span class="ident">impute_upper</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_property</span>.<span class="ident">upper_int_option</span>() {
-                    <span class="prelude-val">Ok</span>(<span class="ident">data_upper</span>) <span class="op">=&gt;</span> <span class="ident">impute_upper</span>.<span class="ident">into_iter</span>().<span class="ident">zip</span>(<span class="ident">data_upper</span>.<span class="ident">into_iter</span>())
+                    <span class="prelude-val">Ok</span>(<span class="ident">data_upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">impute_upper</span>.<span class="ident">into_iter</span>().<span class="ident">zip</span>(<span class="ident">data_upper</span>.<span class="ident">into_iter</span>())
                         .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">impute_upper</span>, <span class="ident">optional_data_upper</span>)<span class="op">|</span> <span class="kw">match</span> <span class="ident">optional_data_upper</span> {
-                            <span class="prelude-val">Some</span>(<span class="ident">data_upper</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">impute_upper</span>.<span class="ident">max</span>(<span class="ident">data_upper</span>)),
+                            <span class="prelude-val">Some</span>(<span class="ident">data_upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">impute_upper</span>.<span class="ident">max</span>(<span class="ident">data_upper</span>)),
                             <span class="comment">// since there was no prior bound, nothing is known about the max</span>
-                            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>
+                            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>
                         }).<span class="ident">collect</span>(),
-                    <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> (<span class="number">0</span>..<span class="ident">num_columns</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="prelude-val">None</span>).<span class="ident">collect</span>()
+                    <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="number">0</span>..<span class="ident">num_columns</span>).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="prelude-val">None</span>).<span class="ident">collect</span>()
                 };
 
                 <span class="comment">// impute may only ever widen prior existing bounds</span>
@@ -669,7 +669,7 @@
                     <span class="ident">upper</span>: <span class="ident">Vector1DNull</span>::<span class="ident">Int</span>(<span class="ident">impute_upper</span>),
                 }));
             }
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;bounds for imputation must be numeric&quot;</span>.<span class="ident">into</span>())
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;bounds for imputation must be numeric&quot;</span>.<span class="ident">into</span>())
         }
 
         <span class="prelude-val">Ok</span>(<span class="ident">ValueProperties</span>::<span class="ident">Array</span>(<span class="ident">data_property</span>).<span class="ident">into</span>())
@@ -685,7 +685,7 @@
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">base</span>::<span class="ident">NodeProperties</span>,
         <span class="ident">component_id</span>: <span class="ident">u32</span>,
         <span class="kw-2">mut</span> <span class="ident">maximum_id</span>: <span class="ident">u32</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">expansion</span> <span class="op">=</span> <span class="ident">base</span>::<span class="ident">ComponentExpansion</span>::<span class="ident">default</span>();
 
@@ -697,7 +697,7 @@
 
         <span class="kw">if</span> <span class="op">!</span><span class="ident">properties</span>.<span class="ident">contains_key</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;categories&quot;</span>.<span class="ident">into</span>()) {
             <span class="kw">if</span> <span class="op">!</span><span class="ident">properties</span>.<span class="ident">contains_key</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;lower&quot;</span>.<span class="ident">into</span>()) {
-                <span class="ident">maximum_id</span> <span class="op">+=</span> <span class="number">1</span>;
+                <span class="ident">maximum_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                 <span class="kw">let</span> <span class="ident">id_lower</span> <span class="op">=</span> <span class="ident">maximum_id</span>;
                 <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">Value</span>::<span class="ident">Array</span>(<span class="ident">Array</span>::<span class="ident">Float</span>(
                     <span class="ident">ndarray</span>::<span class="ident">Array</span>::<span class="ident">from</span>(<span class="ident">data_property</span>.<span class="ident">lower_float</span>()<span class="question-mark">?</span>).<span class="ident">into_dyn</span>()));
@@ -709,7 +709,7 @@
             }
 
             <span class="kw">if</span> <span class="op">!</span><span class="ident">properties</span>.<span class="ident">contains_key</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;upper&quot;</span>.<span class="ident">into</span>()) {
-                <span class="ident">maximum_id</span> <span class="op">+=</span> <span class="number">1</span>;
+                <span class="ident">maximum_id</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                 <span class="kw">let</span> <span class="ident">id_upper</span> <span class="op">=</span> <span class="ident">maximum_id</span>;
                 <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">Value</span>::<span class="ident">Array</span>(<span class="ident">Array</span>::<span class="ident">Float</span>(
                     <span class="ident">ndarray</span>::<span class="ident">Array</span>::<span class="ident">from</span>(<span class="ident">data_property</span>.<span class="ident">upper_float</span>()<span class="question-mark">?</span>).<span class="ident">into_dyn</span>()));
@@ -738,16 +738,16 @@
         <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">bindings</span>::<span class="ident">Analysis</span>;
         <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::<span class="ident">Value</span>;
 
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_f64_cont</span>(<span class="ident">value</span>: <span class="ident">Value</span>, <span class="ident">number_rows</span>: <span class="ident">Value</span>, <span class="ident">lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>, <span class="ident">upper</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_f64_cont</span>(<span class="ident">value</span>: <span class="ident">Value</span>, <span class="ident">number_rows</span>: <span class="ident">Value</span>, <span class="ident">lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>, <span class="ident">upper</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
 
             <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">analysis</span>, <span class="ident">imputed</span>) <span class="op">=</span> <span class="ident">test_impute</span>::<span class="ident">utilities</span>::<span class="ident">analysis_f64_cont</span>(
                 <span class="ident">value</span>,  <span class="prelude-val">None</span>, <span class="prelude-val">None</span>);
 
             <span class="kw">let</span> <span class="ident">lower</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">literal</span>().<span class="ident">value</span>(<span class="kw">match</span> <span class="ident">lower</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=&gt;</span> <span class="ident">lower</span>, <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="number">0.0</span>.<span class="ident">into</span>()
+                <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">lower</span>, <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0.0</span>.<span class="ident">into</span>()
             }).<span class="ident">value_public</span>(<span class="bool-val">true</span>).<span class="ident">build</span>();
             <span class="kw">let</span> <span class="ident">upper</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">literal</span>().<span class="ident">value</span>(<span class="kw">match</span> <span class="ident">upper</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=&gt;</span> <span class="ident">upper</span>, <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="number">10.0</span>.<span class="ident">into</span>()
+                <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">upper</span>, <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">10.0</span>.<span class="ident">into</span>()
             }).<span class="ident">value_public</span>(<span class="bool-val">true</span>).<span class="ident">build</span>();
             <span class="kw">let</span> <span class="ident">number_rows</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">literal</span>()
                 .<span class="ident">value</span>(<span class="ident">number_rows</span>).<span class="ident">value_public</span>(<span class="bool-val">true</span>)
@@ -760,15 +760,15 @@
             (<span class="ident">analysis</span>, <span class="ident">resized</span>)
         }
 
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_i64_cont</span>(<span class="ident">value</span>: <span class="ident">Value</span>, <span class="ident">number_rows</span>: <span class="ident">Value</span>, <span class="ident">lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>, <span class="ident">upper</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_i64_cont</span>(<span class="ident">value</span>: <span class="ident">Value</span>, <span class="ident">number_rows</span>: <span class="ident">Value</span>, <span class="ident">lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>, <span class="ident">upper</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
             <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">analysis</span>, <span class="ident">imputed</span>) <span class="op">=</span> <span class="ident">test_impute</span>::<span class="ident">utilities</span>::<span class="ident">analysis_i64_cont</span>(
                 <span class="ident">value</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>);
 
             <span class="kw">let</span> <span class="ident">lower</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">literal</span>().<span class="ident">value</span>(<span class="kw">match</span> <span class="ident">lower</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=&gt;</span> <span class="ident">lower</span>, <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="number">0</span>.<span class="ident">into</span>()
+                <span class="prelude-val">Some</span>(<span class="ident">lower</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">lower</span>, <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>.<span class="ident">into</span>()
             }).<span class="ident">value_public</span>(<span class="bool-val">true</span>).<span class="ident">build</span>();
             <span class="kw">let</span> <span class="ident">upper</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">literal</span>().<span class="ident">value</span>(<span class="kw">match</span> <span class="ident">upper</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=&gt;</span> <span class="ident">upper</span>, <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="number">10</span>.<span class="ident">into</span>()
+                <span class="prelude-val">Some</span>(<span class="ident">upper</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">upper</span>, <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">10</span>.<span class="ident">into</span>()
             }).<span class="ident">value_public</span>(<span class="bool-val">true</span>).<span class="ident">build</span>();
             <span class="kw">let</span> <span class="ident">number_rows</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">literal</span>()
                 .<span class="ident">value</span>(<span class="ident">number_rows</span>).<span class="ident">value_public</span>(<span class="bool-val">true</span>)
@@ -781,7 +781,7 @@
             (<span class="ident">analysis</span>, <span class="ident">resized</span>)
         }
 
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_i64_cat</span>(<span class="ident">value</span>: <span class="ident">Value</span>, <span class="ident">number_rows</span>: <span class="ident">Value</span>, <span class="ident">categories</span>: <span class="ident">Value</span>) <span class="op">-&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_i64_cat</span>(<span class="ident">value</span>: <span class="ident">Value</span>, <span class="ident">number_rows</span>: <span class="ident">Value</span>, <span class="ident">categories</span>: <span class="ident">Value</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
             <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">analysis</span>, <span class="ident">imputed</span>) <span class="op">=</span> <span class="ident">test_impute</span>::<span class="ident">utilities</span>::<span class="ident">analysis_i64_cat</span>(
                 <span class="ident">value</span>, <span class="ident">categories</span>.<span class="ident">clone</span>(), <span class="prelude-val">None</span>);
 
@@ -800,13 +800,13 @@
             (<span class="ident">analysis</span>, <span class="ident">resized</span>)
         }
 
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_string_cat</span>(<span class="ident">value</span>: <span class="ident">Value</span>, <span class="ident">number_rows</span>: <span class="ident">Value</span>, <span class="ident">categories</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_string_cat</span>(<span class="ident">value</span>: <span class="ident">Value</span>, <span class="ident">number_rows</span>: <span class="ident">Value</span>, <span class="ident">categories</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
             <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">analysis</span>, <span class="ident">imputed</span>) <span class="op">=</span> <span class="ident">test_impute</span>::<span class="ident">utilities</span>::<span class="ident">analysis_string_cat</span>(
                 <span class="ident">value</span>, <span class="prelude-val">None</span>, <span class="prelude-val">None</span>);
 
             <span class="kw">let</span> <span class="ident">categories</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">literal</span>().<span class="ident">value</span>(<span class="kw">match</span> <span class="ident">categories</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">categories</span>) <span class="op">=&gt;</span> <span class="ident">categories</span>,
-                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">Value</span>::<span class="ident">Jagged</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="macro">vec</span><span class="macro">!</span>[<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;c&quot;</span>, <span class="string">&quot;d&quot;</span>].<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="ident">String</span>::<span class="ident">from</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;&gt;</span>()].<span class="ident">into</span>())
+                <span class="prelude-val">Some</span>(<span class="ident">categories</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">categories</span>,
+                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Value</span>::<span class="ident">Jagged</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="macro">vec</span><span class="macro">!</span>[<span class="string">&quot;a&quot;</span>, <span class="string">&quot;b&quot;</span>, <span class="string">&quot;c&quot;</span>, <span class="string">&quot;d&quot;</span>].<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="ident">String</span>::<span class="ident">from</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>()].<span class="ident">into</span>())
             }).<span class="ident">value_public</span>(<span class="bool-val">true</span>).<span class="ident">build</span>();
             <span class="kw">let</span> <span class="ident">number_rows</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">literal</span>()
                 .<span class="ident">value</span>(<span class="ident">number_rows</span>).<span class="ident">value_public</span>(<span class="bool-val">true</span>)
@@ -819,7 +819,7 @@
             (<span class="ident">analysis</span>, <span class="ident">resized</span>)
         }
 
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_bool_cat</span>(<span class="ident">value</span>: <span class="ident">Value</span>, <span class="ident">number_rows</span>: <span class="ident">Value</span>) <span class="op">-&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">analysis_bool_cat</span>(<span class="ident">value</span>: <span class="ident">Value</span>, <span class="ident">number_rows</span>: <span class="ident">Value</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Analysis</span>, <span class="ident">u32</span>) {
             <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">analysis</span>, <span class="ident">imputed</span>) <span class="op">=</span> <span class="ident">test_impute</span>::<span class="ident">utilities</span>::<span class="ident">analysis_bool_cat</span>(<span class="ident">value</span>);
             <span class="kw">let</span> <span class="ident">categories</span> <span class="op">=</span> <span class="ident">analysis</span>.<span class="ident">literal</span>()
                 .<span class="ident">value</span>(<span class="ident">Value</span>::<span class="ident">Jagged</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="macro">vec</span><span class="macro">!</span>[<span class="bool-val">false</span>, <span class="bool-val">true</span>]].<span class="ident">into</span>()))
@@ -837,7 +837,7 @@
     }
 
     <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">test_f64</span> {
-        ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">number_rows</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">lower</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">upper</span>:<span class="ident">expr</span>, )<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
+        ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">number_rows</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">lower</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">upper</span>:<span class="ident">expr</span>, )<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
             $(
                 <span class="attribute">#[<span class="ident">test</span>]</span>
                 <span class="kw">fn</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>() {
@@ -855,7 +855,7 @@
     );
 
     <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">test_i64</span> {
-        ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">number_rows</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">lower</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">upper</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">categories</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">null_values</span>:<span class="ident">expr</span>, )<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
+        ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">number_rows</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">lower</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">upper</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">categories</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">null_values</span>:<span class="ident">expr</span>, )<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
             $(
                 <span class="attribute">#[<span class="ident">test</span>]</span>
                 <span class="kw">fn</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>() {
@@ -876,11 +876,11 @@
 
     <span class="macro">test_i64</span><span class="macro">!</span>(
         <span class="ident">array1d_i64_0</span>; <span class="number">10</span>.<span class="ident">into</span>(); <span class="prelude-val">None</span>; <span class="prelude-val">None</span>; <span class="ident">Value</span>::<span class="ident">Jagged</span>(<span class="macro">vec</span><span class="macro">!</span>[<span class="macro">vec</span><span class="macro">!</span>[<span class="number">1</span>]].<span class="ident">into</span>()); <span class="prelude-val">None</span>,
-        <span class="ident">array1d_i64_10_uniform</span>; <span class="number">10</span>.<span class="ident">into</span>(); <span class="prelude-val">Some</span>(<span class="number">0</span>.<span class="ident">into</span>()); <span class="prelude-val">Some</span>(<span class="number">10</span>.<span class="ident">into</span>()); <span class="ident">Value</span>::<span class="ident">Jagged</span>(<span class="macro">vec</span><span class="macro">!</span>[(<span class="number">0</span>..<span class="number">10</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;&gt;</span>()].<span class="ident">into</span>()); <span class="prelude-val">Some</span>((<span class="op">-</span><span class="number">1</span>).<span class="ident">into</span>()),
+        <span class="ident">array1d_i64_10_uniform</span>; <span class="number">10</span>.<span class="ident">into</span>(); <span class="prelude-val">Some</span>(<span class="number">0</span>.<span class="ident">into</span>()); <span class="prelude-val">Some</span>(<span class="number">10</span>.<span class="ident">into</span>()); <span class="ident">Value</span>::<span class="ident">Jagged</span>(<span class="macro">vec</span><span class="macro">!</span>[(<span class="number">0</span>..<span class="number">10</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span><span class="op">&gt;</span>()].<span class="ident">into</span>()); <span class="prelude-val">Some</span>((<span class="op">-</span><span class="number">1</span>).<span class="ident">into</span>()),
     );
 
     <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">test_string</span> {
-        ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">number_rows</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">categories</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">null_values</span>:<span class="ident">expr</span>, )<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
+        ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">number_rows</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">categories</span>:<span class="ident">expr</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">null_values</span>:<span class="ident">expr</span>, )<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
             $(
                 <span class="attribute">#[<span class="ident">test</span>]</span>
                 <span class="kw">fn</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>() {
@@ -899,7 +899,7 @@
     );
 
     <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">test_bool</span> {
-        ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">number_rows</span>:<span class="ident">expr</span>, )<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
+        ( $( <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span>; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">number_rows</span>:<span class="ident">expr</span>, )<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
             $(
                 <span class="attribute">#[<span class="ident">test</span>]</span>
                 <span class="kw">fn</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>() {

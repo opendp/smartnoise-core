@@ -3,8 +3,8 @@
 </div></div><div class='docblock'><p>Convert a null-terminated C string to a rust <code>str</code>. This does not take ownership of the string,
 and you should be careful about the lifetime of the resulting string. Note that strings
 containing invalid UTF-8 are replaced with the empty string (for many cases, you will want to
-use <a href="../ffi_support/fn.rust_string_from_c.html" title="`rust_string_from_c`"><code>rust_string_from_c</code></a> instead, which will do a lossy conversion).</p>
-<p>If you actually need an owned rust <code>String</code>, you're encouraged to use <a href="../ffi_support/fn.rust_string_from_c.html" title="`rust_string_from_c`"><code>rust_string_from_c</code></a>,
+use <a href="../ffi_support/fn.rust_string_from_c.html" title="rust_string_from_c"><code>rust_string_from_c</code></a> instead, which will do a lossy conversion).</p>
+<p>If you actually need an owned rust <code>String</code>, you're encouraged to use <a href="../ffi_support/fn.rust_string_from_c.html" title="rust_string_from_c"><code>rust_string_from_c</code></a>,
 which, as mentioned, also behaves better in the face of invalid UTF-8.</p>
 <h2 id="safety" class="section-header"><a href="#safety">Safety</a></h2>
 <p>This is unsafe because we read from a raw pointer, which may or may not be valid.</p>
@@ -12,8 +12,8 @@ which, as mentioned, also behaves better in the face of invalid UTF-8.</p>
 actually true. If it's not, we'll read arbitrary memory from the heap until we see a '\0', which
 can result in a enormous number of problems.</p>
 <h2 id="panics" class="section-header"><a href="#panics">Panics</a></h2>
-<p>Panics if it's argument is null, see <a href="../ffi_support/fn.opt_rust_str_from_c.html" title="`opt_rust_str_from_c`"><code>opt_rust_str_from_c</code></a> for a variant that returns None in
+<p>Panics if it's argument is null, see <a href="../ffi_support/fn.opt_rust_str_from_c.html" title="opt_rust_str_from_c"><code>opt_rust_str_from_c</code></a> for a variant that returns None in
 this case instead.</p>
 <p>Note: This means it's forbidden to call this outside of a <code>call_with_result</code> (or something else
-that uses <a href="https://doc.rust-lang.org/nightly/std/panic/fn.catch_unwind.html" title="`std::panic::catch_unwind`"><code>std::panic::catch_unwind</code></a>), as it is UB to panic across the FFI boundary.</p>
+that uses <a href="https://doc.rust-lang.org/nightly/std/panic/fn.catch_unwind.html" title="std::panic::catch_unwind"><code>std::panic::catch_unwind</code></a>), as it is UB to panic across the FFI boundary.</p>
 </div></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../";window.currentCrate = "ffi_support";</script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>

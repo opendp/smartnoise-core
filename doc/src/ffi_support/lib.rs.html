@@ -808,9 +808,9 @@
 <span class="doccomment">///     })</span>
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">call_with_result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">out_error</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ExternError</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="ident">R</span>::<span class="ident">Value</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">call_with_result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">out_error</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ExternError</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>::<span class="ident">Value</span>
 <span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">panic</span>::<span class="ident">UnwindSafe</span> <span class="op">+</span> <span class="ident">FnOnce</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>,
+    <span class="ident">F</span>: <span class="ident">panic</span>::<span class="ident">UnwindSafe</span> <span class="op">+</span> <span class="ident">FnOnce</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>,
     <span class="ident">E</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">ExternError</span><span class="op">&gt;</span>,
     <span class="ident">R</span>: <span class="ident">IntoFfi</span>,
 {
@@ -829,36 +829,36 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// This (or [`call_with_result`]) should be in the majority of the FFI functions, see</span>
 <span class="doccomment">/// the crate top-level docs for more info.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">call_with_output</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">out_error</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ExternError</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="ident">R</span>::<span class="ident">Value</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">call_with_output</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">out_error</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ExternError</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>::<span class="ident">Value</span>
 <span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">panic</span>::<span class="ident">UnwindSafe</span> <span class="op">+</span> <span class="ident">FnOnce</span>() <span class="op">-&gt;</span> <span class="ident">R</span>,
+    <span class="ident">F</span>: <span class="ident">panic</span>::<span class="ident">UnwindSafe</span> <span class="op">+</span> <span class="ident">FnOnce</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>,
     <span class="ident">R</span>: <span class="ident">IntoFfi</span>,
 {
     <span class="comment">// We need something that&#39;s `Into&lt;ExternError&gt;`, even though we never return it, so just use</span>
     <span class="comment">// `ExternError` itself.</span>
-    <span class="ident">call_with_result</span>(<span class="ident">out_error</span>, <span class="op">||</span> <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">ExternError</span><span class="op">&gt;</span> { <span class="prelude-val">Ok</span>(<span class="ident">callback</span>()) })
+    <span class="ident">call_with_result</span>(<span class="ident">out_error</span>, <span class="op">|</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">ExternError</span><span class="op">&gt;</span> { <span class="prelude-val">Ok</span>(<span class="ident">callback</span>()) })
 }
 
-<span class="kw">fn</span> <span class="ident">call_with_result_impl</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">out_error</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ExternError</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="ident">R</span>::<span class="ident">Value</span>
+<span class="kw">fn</span> <span class="ident">call_with_result_impl</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">out_error</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ExternError</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>::<span class="ident">Value</span>
 <span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">panic</span>::<span class="ident">UnwindSafe</span> <span class="op">+</span> <span class="ident">FnOnce</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>,
+    <span class="ident">F</span>: <span class="ident">panic</span>::<span class="ident">UnwindSafe</span> <span class="op">+</span> <span class="ident">FnOnce</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>,
     <span class="ident">E</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">ExternError</span><span class="op">&gt;</span>,
     <span class="ident">R</span>: <span class="ident">IntoFfi</span>,
 {
     <span class="kw-2">*</span><span class="ident">out_error</span> <span class="op">=</span> <span class="ident">ExternError</span>::<span class="ident">success</span>();
-    <span class="kw">let</span> <span class="ident">res</span>: <span class="ident">thread</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExternError</span>, <span class="ident">R</span>::<span class="ident">Value</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">panic</span>::<span class="ident">catch_unwind</span>(<span class="op">||</span> {
+    <span class="kw">let</span> <span class="ident">res</span>: <span class="ident">thread</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">ExternError</span>, <span class="ident">R</span>::<span class="ident">Value</span>)<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">panic</span>::<span class="ident">catch_unwind</span>(<span class="op">|</span><span class="op">|</span> {
         <span class="ident">init_panic_handling_once</span>();
         <span class="kw">match</span> <span class="ident">callback</span>() {
-            <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> (<span class="ident">ExternError</span>::<span class="ident">default</span>(), <span class="ident">v</span>.<span class="ident">into_ffi_value</span>()),
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> (<span class="ident">e</span>.<span class="ident">into</span>(), <span class="ident">R</span>::<span class="ident">ffi_default</span>()),
+            <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">ExternError</span>::<span class="ident">default</span>(), <span class="ident">v</span>.<span class="ident">into_ffi_value</span>()),
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">e</span>.<span class="ident">into</span>(), <span class="ident">R</span>::<span class="ident">ffi_default</span>()),
         }
     });
     <span class="kw">match</span> <span class="ident">res</span> {
-        <span class="prelude-val">Ok</span>((<span class="ident">err</span>, <span class="ident">o</span>)) <span class="op">=&gt;</span> {
+        <span class="prelude-val">Ok</span>((<span class="ident">err</span>, <span class="ident">o</span>)) <span class="op">=</span><span class="op">&gt;</span> {
             <span class="kw-2">*</span><span class="ident">out_error</span> <span class="op">=</span> <span class="ident">err</span>;
             <span class="ident">o</span>
         }
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> {
+        <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
             <span class="kw-2">*</span><span class="ident">out_error</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">into</span>();
             <span class="ident">R</span>::<span class="ident">ffi_default</span>()
         }
@@ -885,9 +885,9 @@
     <span class="doccomment">/// but aren&#39;t in a position where you&#39;d like to return an FFI-compatible</span>
     <span class="doccomment">/// type.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_abort_on_panic</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="ident">R</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_abort_on_panic</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>() <span class="op">-&gt;</span> <span class="ident">R</span>,
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>,
     {
         <span class="kw">let</span> <span class="ident">aborter</span> <span class="op">=</span> <span class="ident">AbortOnDrop</span>;
         <span class="kw">let</span> <span class="ident">res</span> <span class="op">=</span> <span class="ident">callback</span>();
@@ -897,18 +897,18 @@
 
     <span class="doccomment">/// Same as the root `call_with_result`, but aborts on panic instead of unwinding. See the</span>
     <span class="doccomment">/// `call_with_result` documentation for more.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">call_with_result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">out_error</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ExternError</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="ident">R</span>::<span class="ident">Value</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">call_with_result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">out_error</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">ExternError</span>, <span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>::<span class="ident">Value</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>,
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">E</span><span class="op">&gt;</span>,
         <span class="ident">E</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">ExternError</span><span class="op">&gt;</span>,
         <span class="ident">R</span>: <span class="ident">IntoFfi</span>,
     {
-        <span class="ident">with_abort_on_panic</span>(<span class="op">||</span> <span class="kw">match</span> <span class="ident">callback</span>() {
-            <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=&gt;</span> {
+        <span class="ident">with_abort_on_panic</span>(<span class="op">|</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">callback</span>() {
+            <span class="prelude-val">Ok</span>(<span class="ident">v</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw-2">*</span><span class="ident">out_error</span> <span class="op">=</span> <span class="ident">ExternError</span>::<span class="ident">default</span>();
                 <span class="ident">v</span>.<span class="ident">into_ffi_value</span>()
             }
-            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> {
+            <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw-2">*</span><span class="ident">out_error</span> <span class="op">=</span> <span class="ident">e</span>.<span class="ident">into</span>();
                 <span class="ident">R</span>::<span class="ident">ffi_default</span>()
             }
@@ -918,9 +918,9 @@
     <span class="doccomment">/// Same as the root `call_with_output`, but aborts on panic instead of unwinding. As a result,</span>
     <span class="doccomment">/// it doesn&#39;t require a [`ExternError`] out argument. See the `call_with_output` documentation</span>
     <span class="doccomment">/// for more info.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">call_with_output</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="ident">R</span>::<span class="ident">Value</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">call_with_output</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">callback</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>::<span class="ident">Value</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>() <span class="op">-&gt;</span> <span class="ident">R</span>,
+        <span class="ident">F</span>: <span class="ident">FnOnce</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>,
         <span class="ident">R</span>: <span class="ident">IntoFfi</span>,
     {
         <span class="ident">with_abort_on_panic</span>(<span class="ident">callback</span>).<span class="ident">into_ffi_value</span>()
@@ -931,7 +931,7 @@
 <span class="kw">fn</span> <span class="ident">init_panic_handling_once</span>() {
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">Once</span>;
     <span class="kw">static</span> <span class="ident">INIT_BACKTRACES</span>: <span class="ident">Once</span> <span class="op">=</span> <span class="ident">Once</span>::<span class="ident">new</span>();
-    <span class="ident">INIT_BACKTRACES</span>.<span class="ident">call_once</span>(<span class="kw">move</span> <span class="op">||</span> {
+    <span class="ident">INIT_BACKTRACES</span>.<span class="ident">call_once</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;log_backtraces&quot;</span>, <span class="ident">not</span>(<span class="ident">target_os</span> <span class="op">=</span> <span class="string">&quot;android&quot;</span>)))]</span>
         {
             <span class="ident">std</span>::<span class="ident">env</span>::<span class="ident">set_var</span>(<span class="string">&quot;RUST_BACKTRACE&quot;</span>, <span class="string">&quot;1&quot;</span>);
@@ -1045,9 +1045,9 @@
     <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">u8</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">ByteBuffer</span> {
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ByteBuffer</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">bytes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">bytes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span>::<span class="ident">from_vec</span>(<span class="ident">bytes</span>)
     }
 }
@@ -1062,7 +1062,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// This will panic if the buffer length (`usize`) cannot fit into a `i64`.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_with_size</span>(<span class="ident">size</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_with_size</span>(<span class="ident">size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="comment">// Note: `Vec` requires this internally on 64 bit platforms (and has a</span>
         <span class="comment">// stricter requirement on 32 bit ones), so this is just to be explicit.</span>
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">size</span> <span class="op">&lt;</span> <span class="ident">i64</span>::<span class="ident">MAX</span> <span class="kw">as</span> <span class="ident">usize</span>);
@@ -1081,7 +1081,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// This will panic if the buffer length (`usize`) cannot fit into a `i64`.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_vec</span>(<span class="ident">bytes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_vec</span>(<span class="ident">bytes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryFrom</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> <span class="ident">bytes</span>.<span class="ident">into_boxed_slice</span>();
         <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">as_mut_ptr</span>();
@@ -1093,7 +1093,7 @@
     <span class="doccomment">/// View the data inside this `ByteBuffer` as a `&amp;[u8]`.</span>
     <span class="comment">// TODO: Is it worth implementing `Deref`? Patches welcome if you need this.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_slice</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_slice</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">is_null</span>() {
             <span class="kw-2">&amp;</span>[]
         } <span class="kw">else</span> {
@@ -1102,7 +1102,7 @@
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryInto</span>;
         <span class="self">self</span>.<span class="ident">len</span>
             .<span class="ident">try_into</span>()
@@ -1112,7 +1112,7 @@
     <span class="doccomment">/// View the data inside this `ByteBuffer` as a `&amp;mut [u8]`.</span>
     <span class="comment">// TODO: Is it worth implementing `DerefMut`? Patches welcome if you need this.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_mut_slice</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>] {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_mut_slice</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>] {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">is_null</span>() {
             <span class="kw-2">&amp;</span><span class="kw-2">mut</span> []
         } <span class="kw">else</span> {
@@ -1123,7 +1123,7 @@
     <span class="doccomment">/// Deprecated alias for [`ByteBuffer::destroy_into_vec`].</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="attribute">#[<span class="ident">deprecated</span> <span class="op">=</span> <span class="string">&quot;Name is confusing, please use `destroy_into_vec` instead&quot;</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_vec</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_vec</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">destroy_into_vec</span>()
     }
 
@@ -1153,7 +1153,7 @@
     <span class="doccomment">/// to you via an `extern &quot;C&quot;` function that you expose, as opposed to being</span>
     <span class="doccomment">/// created locally.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">destroy_into_vec</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">destroy_into_vec</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">is_null</span>() {
             <span class="macro">vec</span><span class="macro">!</span>[]
         } <span class="kw">else</span> {
@@ -1196,7 +1196,7 @@
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">ByteBuffer</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span> {
             <span class="ident">len</span>: <span class="number">0</span> <span class="kw">as</span> <span class="ident">i64</span>,
             <span class="ident">data</span>: <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>(),

@@ -42,21 +42,21 @@ would be nice), is so that types provided by that crate may implement the traits
 this crate (this is because Rust does not allow crate <code>C</code> to implement a trait defined in crate
 <code>A</code> for a type defined in crate <code>B</code>).</p>
 <p>In general, examples should be provided for the most important types and functions
-(<a href="../ffi_support/fn.call_with_result.html" title="`call_with_result`"><code>call_with_result</code></a>, <a href="../ffi_support/trait.IntoFfi.html" title="`IntoFfi`"><code>IntoFfi</code></a>,
-<a href="../ffi_support/struct.ExternError.html" title="`ExternError`"><code>ExternError</code></a>, etc), but you should also look at the code of
+(<a href="../ffi_support/fn.call_with_result.html" title="call_with_result"><code>call_with_result</code></a>, <a href="../ffi_support/trait.IntoFfi.html" title="IntoFfi"><code>IntoFfi</code></a>,
+<a href="../ffi_support/struct.ExternError.html" title="ExternError"><code>ExternError</code></a>, etc), but you should also look at the code of
 consumers of this library.</p>
 <h3 id="usage-in-the-rust-component" class="section-header"><a href="#usage-in-the-rust-component">Usage in the Rust Component</a></h3>
 <p>Inside the Rust component, you will implement:</p>
 <ol>
 <li>
-<p><a href="../ffi_support/trait.IntoFfi.html" title="`IntoFfi`"><code>IntoFfi</code></a> for all types defined in that crate that you want to return
-over the FFI. For most common cases, the <a href="../ffi_support/macro.implement_into_ffi_by_json.html" title="`implement_into_ffi_by_json!`"><code>implement_into_ffi_by_json!</code></a> and
-<a href="../ffi_support/macro.implement_into_ffi_by_protobuf.html" title="`implement_into_ffi_by_protobuf!`"><code>implement_into_ffi_by_protobuf!</code></a> macros will do the job here, however you
+<p><a href="../ffi_support/trait.IntoFfi.html" title="IntoFfi"><code>IntoFfi</code></a> for all types defined in that crate that you want to return
+over the FFI. For most common cases, the <a href="../ffi_support/macro.implement_into_ffi_by_json.html" title="implement_into_ffi_by_json!"><code>implement_into_ffi_by_json!</code></a> and
+<a href="../ffi_support/macro.implement_into_ffi_by_protobuf.html" title="implement_into_ffi_by_protobuf!"><code>implement_into_ffi_by_protobuf!</code></a> macros will do the job here, however you
 can see that trait's documentation for discussion and examples of
 implementing it manually.</p>
 </li>
 <li>
-<p>Conversion to <a href="../ffi_support/struct.ExternError.html" title="`ExternError`"><code>ExternError</code></a> for the error type(s) exposed by that
+<p>Conversion to <a href="../ffi_support/struct.ExternError.html" title="ExternError"><code>ExternError</code></a> for the error type(s) exposed by that
 rust component, that is, <code>impl From&lt;MyError&gt; for ExternError</code>.</p>
 </li>
 </ol>
@@ -64,29 +64,29 @@ rust component, that is, <code>impl From&lt;MyError&gt; for ExternError</code>.<
 <p>Inside the FFI component, you will use this library in a few ways:</p>
 <ol>
 <li>
-<p>Destructors will be exposed for each types that had <a href="../ffi_support/macro.implement_into_ffi_by_pointer.html" title="`implement_into_ffi_by_pointer!`"><code>implement_into_ffi_by_pointer!</code></a> called
-on it (using <a href="../ffi_support/macro.define_box_destructor.html" title="`define_box_destructor!`"><code>define_box_destructor!</code></a>), and a destructor for strings should be exposed as
-well, using <a href="../ffi_support/macro.define_string_destructor.html" title="`define_string_destructor`"><code>define_string_destructor</code></a></p>
+<p>Destructors will be exposed for each types that had <a href="../ffi_support/macro.implement_into_ffi_by_pointer.html" title="implement_into_ffi_by_pointer!"><code>implement_into_ffi_by_pointer!</code></a> called
+on it (using <a href="../ffi_support/macro.define_box_destructor.html" title="define_box_destructor!"><code>define_box_destructor!</code></a>), and a destructor for strings should be exposed as
+well, using <a href="../ffi_support/macro.define_string_destructor.html" title="define_string_destructor"><code>define_string_destructor</code></a></p>
 </li>
 <li>
 <p>The body of every / nearly every FFI function will be wrapped in either a
-<a href="../ffi_support/fn.call_with_result.html" title="`call_with_result`"><code>call_with_result</code></a> or <a href="../ffi_support/fn.call_with_output.html" title="`call_with_output`"><code>call_with_output</code></a>.</p>
+<a href="../ffi_support/fn.call_with_result.html" title="call_with_result"><code>call_with_result</code></a> or <a href="../ffi_support/fn.call_with_output.html" title="call_with_output"><code>call_with_output</code></a>.</p>
 <p>This is required because if we <code>panic!</code> (e.g. from an <code>assert!</code>, <code>unwrap()</code>, <code>expect()</code>, from
 indexing past the end of an array, etc) across the FFI boundary, the behavior is undefined
 and in practice very weird things tend to happen (we aren't caught by the caller, since they
 don't have the same exception behavior as us).</p>
 <p>If you don't think your program (or possibly just certain calls) can handle panics, you may
-also use the versions of these functions in the <a href="../ffi_support/abort_on_panic/index.html" title="`abort_on_panic`"><code>abort_on_panic</code></a> module, which
+also use the versions of these functions in the <a href="../ffi_support/abort_on_panic/index.html" title="abort_on_panic"><code>abort_on_panic</code></a> module, which
 do as their name suggest.</p>
 </li>
 </ol>
-<p>Additionally, c strings that are passed in as arguments may be represented using <a href="../ffi_support/struct.FfiStr.html" title="`FfiStr`"><code>FfiStr</code></a>,
+<p>Additionally, c strings that are passed in as arguments may be represented using <a href="../ffi_support/struct.FfiStr.html" title="FfiStr"><code>FfiStr</code></a>,
 which contains several helpful inherent methods for extracting their data.</p>
 </div><h2 id='reexports' class='section-header'><a href="#reexports">Re-exports</a></h2>
 <table><tr><td><code>pub use crate::handle_map::<a class="struct" href="../ffi_support/handle_map/struct.ConcurrentHandleMap.html" title="struct ffi_support::handle_map::ConcurrentHandleMap">ConcurrentHandleMap</a>;</code></td></tr><tr><td><code>pub use crate::handle_map::<a class="struct" href="../ffi_support/handle_map/struct.Handle.html" title="struct ffi_support::handle_map::Handle">Handle</a>;</code></td></tr><tr><td><code>pub use crate::handle_map::<a class="enum" href="../ffi_support/handle_map/enum.HandleError.html" title="enum ffi_support::handle_map::HandleError">HandleError</a>;</code></td></tr><tr><td><code>pub use crate::handle_map::<a class="struct" href="../ffi_support/handle_map/struct.HandleMap.html" title="struct ffi_support::handle_map::HandleMap">HandleMap</a>;</code></td></tr></table><h2 id='modules' class='section-header'><a href="#modules">Modules</a></h2>
-<table><tr class='module-item'><td><a class="mod" href="abort_on_panic/index.html" title='ffi_support::abort_on_panic mod'>abort_on_panic</a></td><td class='docblock-short'><p>This module exists just to expose a variant of <a href="../ffi_support/fn.call_with_result.html" title="`call_with_result`"><code>call_with_result</code></a> and <a href="../ffi_support/fn.call_with_output.html" title="`call_with_output`"><code>call_with_output</code></a>
+<table><tr class='module-item'><td><a class="mod" href="abort_on_panic/index.html" title='ffi_support::abort_on_panic mod'>abort_on_panic</a></td><td class='docblock-short'><p>This module exists just to expose a variant of <a href="../ffi_support/fn.call_with_result.html" title="call_with_result"><code>call_with_result</code></a> and <a href="../ffi_support/fn.call_with_output.html" title="call_with_output"><code>call_with_output</code></a>
 that aborts, instead of unwinding, on panic.</p>
-</td></tr><tr class='module-item'><td><a class="mod" href="handle_map/index.html" title='ffi_support::handle_map mod'>handle_map</a></td><td class='docblock-short'><p>This module provides a <a href="../ffi_support/handle_map/struct.Handle.html" title="`Handle`"><code>Handle</code></a> type, which you can think of something
+</td></tr><tr class='module-item'><td><a class="mod" href="handle_map/index.html" title='ffi_support::handle_map mod'>handle_map</a></td><td class='docblock-short'><p>This module provides a <a href="../ffi_support/handle_map/struct.Handle.html" title="Handle"><code>Handle</code></a> type, which you can think of something
 like a dynamically checked, type erased reference/pointer type. Depending on
 the usage pattern a handle can behave as either a borrowed reference, or an
 owned pointer.</p>
@@ -124,7 +124,7 @@ other things.</p>
 that may be used by the caller.</p>
 </td></tr><tr class='module-item'><td><a class="struct" href="struct.FfiStr.html" title='ffi_support::FfiStr struct'>FfiStr</a></td><td class='docblock-short'><p><code>FfiStr&lt;'a&gt;</code> is a safe (<code>#[repr(transparent)]</code>) wrapper around a
 nul-terminated <code>*const c_char</code> (e.g. a C string). Conceptually, it is
-similar to <a href="https://doc.rust-lang.org/nightly/std/ffi/c_str/struct.CStr.html" title="`std::ffi::CStr`"><code>std::ffi::CStr</code></a>, except that it may be used in the signatures
+similar to <a href="https://doc.rust-lang.org/nightly/std/ffi/c_str/struct.CStr.html" title="std::ffi::CStr"><code>std::ffi::CStr</code></a>, except that it may be used in the signatures
 of extern &quot;C&quot; functions.</p>
 </td></tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
 <table><tr class='module-item'><td><a class="trait" href="trait.IntoFfi.html" title='ffi_support::IntoFfi trait'>IntoFfi</a></td><td class='docblock-short'><p>This trait is used to return types over the FFI. It essentially is a mapping between a type and
@@ -132,15 +132,15 @@ version of that type we can pass back to C (<code>IntoFfi::Value</code>).</p>
 </td></tr></table><h2 id='functions' class='section-header'><a href="#functions">Functions</a></h2>
 <table><tr class='module-item'><td><a class="fn" href="fn.call_with_output.html" title='ffi_support::call_with_output fn'>call_with_output</a></td><td class='docblock-short'><p>Call a callback that returns a <code>T</code> while:</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.call_with_result.html" title='ffi_support::call_with_result fn'>call_with_result</a></td><td class='docblock-short'><p>Call a callback that returns a <code>Result&lt;T, E&gt;</code> while:</p>
-</td></tr><tr class='module-item'><td><a class="fn" href="fn.destroy_c_string.html" title='ffi_support::destroy_c_string fn'>destroy_c_string</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td><td class='docblock-short'><p>Free the memory of a string created by <a href="../ffi_support/fn.rust_string_to_c.html" title="`rust_string_to_c`"><code>rust_string_to_c</code></a> on the rust heap. If <code>c_string</code> is
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.destroy_c_string.html" title='ffi_support::destroy_c_string fn'>destroy_c_string</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td><td class='docblock-short'><p>Free the memory of a string created by <a href="../ffi_support/fn.rust_string_to_c.html" title="rust_string_to_c"><code>rust_string_to_c</code></a> on the rust heap. If <code>c_string</code> is
 null, this is a no-op.</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.opt_rust_str_from_c.html" title='ffi_support::opt_rust_str_from_c fn'>opt_rust_str_from_c</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td><td class='docblock-short'><span class="stab deprecated" title="">Deprecated</span><p>Same as <code>rust_string_from_c</code>, but returns None if <code>c_string</code> is null instead of asserting.</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.opt_rust_string_from_c.html" title='ffi_support::opt_rust_string_from_c fn'>opt_rust_string_from_c</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td><td class='docblock-short'><span class="stab deprecated" title="">Deprecated</span><p>Same as <code>rust_string_from_c</code>, but returns None if <code>c_string</code> is null instead of asserting.</p>
-</td></tr><tr class='module-item'><td><a class="fn" href="fn.opt_rust_string_to_c.html" title='ffi_support::opt_rust_string_to_c fn'>opt_rust_string_to_c</a></td><td class='docblock-short'><p>Variant of <a href="../ffi_support/fn.rust_string_to_c.html" title="`rust_string_to_c`"><code>rust_string_to_c</code></a> which takes an Option, and returns null for None.</p>
+</td></tr><tr class='module-item'><td><a class="fn" href="fn.opt_rust_string_to_c.html" title='ffi_support::opt_rust_string_to_c fn'>opt_rust_string_to_c</a></td><td class='docblock-short'><p>Variant of <a href="../ffi_support/fn.rust_string_to_c.html" title="rust_string_to_c"><code>rust_string_to_c</code></a> which takes an Option, and returns null for None.</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.rust_str_from_c.html" title='ffi_support::rust_str_from_c fn'>rust_str_from_c</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td><td class='docblock-short'><span class="stab deprecated" title="">Deprecated</span><p>Convert a null-terminated C string to a rust <code>str</code>. This does not take ownership of the string,
 and you should be careful about the lifetime of the resulting string. Note that strings
 containing invalid UTF-8 are replaced with the empty string (for many cases, you will want to
-use <a href="../ffi_support/fn.rust_string_from_c.html" title="`rust_string_from_c`"><code>rust_string_from_c</code></a> instead, which will do a lossy conversion).</p>
+use <a href="../ffi_support/fn.rust_string_from_c.html" title="rust_string_from_c"><code>rust_string_from_c</code></a> instead, which will do a lossy conversion).</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.rust_string_from_c.html" title='ffi_support::rust_string_from_c fn'>rust_string_from_c</a><a title='unsafe function' href='#'><sup>⚠</sup></a></td><td class='docblock-short'><span class="stab deprecated" title="">Deprecated</span><p>Convert a null-terminated C into an owned rust string, replacing invalid UTF-8 with the
 unicode replacement character.</p>
 </td></tr><tr class='module-item'><td><a class="fn" href="fn.rust_string_to_c.html" title='ffi_support::rust_string_to_c fn'>rust_string_to_c</a></td><td class='docblock-short'><p>Convert a rust string into a NUL-terminated utf-8 string suitable for passing to C, or to things

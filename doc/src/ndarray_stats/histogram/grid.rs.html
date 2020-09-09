@@ -260,10 +260,10 @@
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Eq</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Grid</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Ord</span><span class="op">&gt;</span> {
-    <span class="ident">projections</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;&gt;</span>,
+    <span class="ident">projections</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Ord</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Grid</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Ord</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Grid</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Get a `Grid` instance from a `Vec&lt;Bins&lt;A&gt;&gt;`.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The `i`-th element in `Vec&lt;Bins&lt;A&gt;&gt;` represents the 1-dimensional</span>
@@ -273,24 +273,24 @@
     <span class="doccomment">/// [`GridBuilder`].</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`GridBuilder`]: struct.GridBuilder.html</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">projections</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">projections</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">Grid</span> { <span class="ident">projections</span> }
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Ord</span><span class="op">&gt;</span> <span class="ident">Grid</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Returns `n`, the number of dimensions of the region partitioned by the grid.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ndim</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ndim</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">projections</span>.<span class="ident">len</span>()
     }
 
     <span class="doccomment">/// Returns the number of bins along each coordinate axis.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">shape</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">shape</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">projections</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">e</span>.<span class="ident">len</span>()).<span class="ident">collect</span>()
     }
 
     <span class="doccomment">/// Returns the grid projections on the coordinate axes as a slice of immutable references.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">projections</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>] {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">projections</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>] {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">projections</span>
     }
 
@@ -300,7 +300,7 @@
     <span class="doccomment">/// Returns `None` if the point is outside the grid.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// **Panics** if `point.len()` does not equal `self.ndim()`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index_of</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">point</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;&gt;</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index_of</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">point</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
     {
@@ -327,7 +327,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// **Panics** if at least one among `(i_0, ..., i_{n-1})` is out of bounds on the respective</span>
     <span class="doccomment">/// coordinate axis - i.e. if there exists `j` such that `i_j &gt;= self.projections[j].len()`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>]) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Range</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="kw-2">&amp;</span>[<span class="ident">usize</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Range</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
             <span class="ident">index</span>.<span class="ident">len</span>(),
             <span class="self">self</span>.<span class="ident">ndim</span>(),
@@ -366,14 +366,14 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`Grid`]: struct.Grid.html</span>
     <span class="doccomment">/// [`strategy`]: strategies/index.html</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_array</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">array</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix2</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_array</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">array</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix2</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
     {
         <span class="kw">let</span> <span class="ident">bin_builders</span> <span class="op">=</span> <span class="ident">array</span>
             .<span class="ident">axis_iter</span>(<span class="ident">Axis</span>(<span class="number">1</span>))
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">data</span><span class="op">|</span> <span class="ident">B</span>::<span class="ident">from_array</span>(<span class="kw-2">&amp;</span><span class="ident">data</span>))
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;&gt;</span>()<span class="question-mark">?</span>;
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">bin_builders</span> })
     }
 
@@ -383,7 +383,7 @@
     <span class="doccomment">/// [`Grid`]: struct.Grid.html</span>
     <span class="doccomment">/// [`strategy`]: strategies/index.html</span>
     <span class="doccomment">/// [`from_array`]: #method.from_array.html</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Grid</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Grid</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">projections</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">bin_builders</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">b</span><span class="op">|</span> <span class="ident">b</span>.<span class="ident">build</span>()).<span class="ident">collect</span>();
         <span class="ident">Grid</span>::<span class="ident">from</span>(<span class="ident">projections</span>)
     }

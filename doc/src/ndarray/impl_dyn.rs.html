@@ -58,58 +58,58 @@
 <span id="57">57</span>
 <span id="58">58</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">// Copyright 2018 bluss and ndarray developers.</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. This file may not be copied, modified, or distributed</span>
-<span class="comment">// except according to those terms.</span>
+<span class="comment">// Copyright 2018 bluss and ndarray developers.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
-<span class="doccomment">//! Methods for dynamic-dimensional arrays.</span>
+<span class="doccomment">//! Methods for dynamic-dimensional arrays.</span>
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">imp_prelude</span>::<span class="kw-2">*</span>;
 
-<span class="doccomment">/// # Methods for Dynamic-Dimensional Arrays</span>
+<span class="doccomment">/// # Methods for Dynamic-Dimensional Arrays</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span><span class="op">&gt;</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">IxDyn</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
 {
-    <span class="doccomment">/// Insert new array axis of length 1 at `axis`, modifying the shape and</span>
-    <span class="doccomment">/// strides in-place.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if the axis is out of bounds.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use ndarray::{Axis, arr2, arr3};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let mut a = arr2(&amp;[[1, 2, 3], [4, 5, 6]]).into_dyn();</span>
-    <span class="doccomment">/// assert_eq!(a.shape(), &amp;[2, 3]);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// a.insert_axis_inplace(Axis(1));</span>
-    <span class="doccomment">/// assert_eq!(a, arr3(&amp;[[[1, 2, 3]], [[4, 5, 6]]]).into_dyn());</span>
-    <span class="doccomment">/// assert_eq!(a.shape(), &amp;[2, 1, 3]);</span>
-    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// Insert new array axis of length 1 at `axis`, modifying the shape and</span>
+    <span class="doccomment">/// strides in-place.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if the axis is out of bounds.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// use ndarray::{Axis, arr2, arr3};</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// let mut a = arr2(&amp;[[1, 2, 3], [4, 5, 6]]).into_dyn();</span>
+    <span class="doccomment">/// assert_eq!(a.shape(), &amp;[2, 3]);</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// a.insert_axis_inplace(Axis(1));</span>
+    <span class="doccomment">/// assert_eq!(a, arr3(&amp;[[[1, 2, 3]], [[4, 5, 6]]]).into_dyn());</span>
+    <span class="doccomment">/// assert_eq!(a.shape(), &amp;[2, 1, 3]);</span>
+    <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">insert_axis_inplace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>) {
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">axis</span>.<span class="ident">index</span>() <span class="op">&lt;=</span> <span class="self">self</span>.<span class="ident">ndim</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">axis</span>.<span class="ident">index</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">ndim</span>());
         <span class="self">self</span>.<span class="ident">dim</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">dim</span>.<span class="ident">insert_axis</span>(<span class="ident">axis</span>);
         <span class="self">self</span>.<span class="ident">strides</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">strides</span>.<span class="ident">insert_axis</span>(<span class="ident">axis</span>);
     }
 
-    <span class="doccomment">/// Collapses the array to `index` along the axis and removes the axis,</span>
-    <span class="doccomment">/// modifying the shape and strides in-place.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if `axis` or `index` is out of bounds.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use ndarray::{Axis, arr1, arr2};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let mut a = arr2(&amp;[[1, 2, 3], [4, 5, 6]]).into_dyn();</span>
-    <span class="doccomment">/// assert_eq!(a.shape(), &amp;[2, 3]);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// a.index_axis_inplace(Axis(1), 1);</span>
-    <span class="doccomment">/// assert_eq!(a, arr1(&amp;[2, 5]).into_dyn());</span>
-    <span class="doccomment">/// assert_eq!(a.shape(), &amp;[2]);</span>
-    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// Collapses the array to `index` along the axis and removes the axis,</span>
+    <span class="doccomment">/// modifying the shape and strides in-place.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if `axis` or `index` is out of bounds.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// use ndarray::{Axis, arr1, arr2};</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// let mut a = arr2(&amp;[[1, 2, 3], [4, 5, 6]]).into_dyn();</span>
+    <span class="doccomment">/// assert_eq!(a.shape(), &amp;[2, 3]);</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// a.index_axis_inplace(Axis(1), 1);</span>
+    <span class="doccomment">/// assert_eq!(a, arr1(&amp;[2, 5]).into_dyn());</span>
+    <span class="doccomment">/// assert_eq!(a.shape(), &amp;[2]);</span>
+    <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index_axis_inplace</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>, <span class="ident">index</span>: <span class="ident">usize</span>) {
         <span class="self">self</span>.<span class="ident">collapse_axis</span>(<span class="ident">axis</span>, <span class="ident">index</span>);
         <span class="self">self</span>.<span class="ident">dim</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">dim</span>.<span class="ident">remove_axis</span>(<span class="ident">axis</span>);

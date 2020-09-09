@@ -36,9 +36,9 @@
 <span class="comment">// useful tutorial for proto over ffi here:</span>
 <span class="comment">// https://github.com/mozilla/application-services/blob/master/docs/howtos/passing-protobuf-data-over-ffi.md</span>
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">ptr_to_buffer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">data</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">len</span>: <span class="ident">i32</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>] {
-    <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">len</span> <span class="op">&gt;=</span> <span class="number">0</span>, <span class="string">&quot;Bad buffer len: {}&quot;</span>, <span class="ident">len</span>);
-    <span class="kw">if</span> <span class="ident">len</span> <span class="op">==</span> <span class="number">0</span> {
+<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">ptr_to_buffer</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="ident">data</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">len</span>: <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">u8</span>] {
+    <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">len</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0</span>, <span class="string">&quot;Bad buffer len: {}&quot;</span>, <span class="ident">len</span>);
+    <span class="kw">if</span> <span class="ident">len</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
         <span class="comment">// This will still fail, but as a bad protobuf format.</span>
         <span class="kw-2">&amp;</span>[]
     } <span class="kw">else</span> {
@@ -48,12 +48,12 @@
 }
 
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">buffer_to_ptr</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">buffer</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">buffer_to_ptr</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">buffer</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span>
     <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Message</span> {
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out_buffer</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
     <span class="kw">match</span> <span class="ident">buffer</span>.<span class="ident">encode</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">out_buffer</span>) {
-        <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span>::<span class="ident">from_vec</span>(<span class="ident">out_buffer</span>),
-        <span class="prelude-val">Err</span>(<span class="ident">error</span>) <span class="op">=&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span>::<span class="ident">from_vec</span>(<span class="ident">out_buffer</span>),
+        <span class="prelude-val">Err</span>(<span class="ident">error</span>) <span class="op">=</span><span class="op">&gt;</span> {
             <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Error encoding response protobuf.&quot;</span>);
             <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">error</span>);
             <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span>::<span class="ident">new_with_size</span>(<span class="number">0</span>)

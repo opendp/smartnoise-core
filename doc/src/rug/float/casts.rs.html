@@ -513,16 +513,16 @@
 <span class="kw">use</span> {<span class="kw">crate</span>::<span class="ident">Integer</span>, <span class="ident">az</span>::<span class="ident">CheckedCast</span>};
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">cast_int</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">nbits</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">unchecked_get</span>:<span class="ident">path</span>) <span class="op">=&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">nbits</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">unchecked_get</span>:<span class="ident">path</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">impl</span> <span class="ident">SaturatingCast</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Float</span> {
             <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span> {
+            <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span> {
                 (<span class="kw-2">&amp;</span><span class="self">self</span>).<span class="ident">saturating_cast</span>()
             }
         }
 
         <span class="kw">impl</span> <span class="ident">SaturatingCast</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="ident">Float</span> {
-            <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span> {
+            <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span> {
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_nan</span>() {
                     <span class="kw">unsafe</span> {
                         <span class="ident">mpfr</span>::<span class="ident">set_erangeflag</span>();
@@ -531,8 +531,8 @@
                 }
                 <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_infinite</span>() { <span class="prelude-val">None</span> } <span class="kw">else</span> { <span class="prelude-val">Some</span>(<span class="self">self</span>) };
                 <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">val</span> {
-                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
-                    <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=&gt;</span> {
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                    <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span><span class="op">&gt;</span> {
                         <span class="kw">const</span> <span class="ident">ZERO</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span> <span class="op">=</span> <span class="number">0</span>;
                         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">small</span> <span class="op">=</span> <span class="ident">SmallFloat</span>::<span class="ident">from</span>(<span class="ident">ZERO</span>);
                         <span class="comment">// Safety: assigning a value will not change the precision,</span>
@@ -546,15 +546,15 @@
                         <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">small</span>.<span class="ident">is_nan</span>());
                         <span class="kw">let</span> <span class="ident">cmp0</span> <span class="op">=</span> <span class="ident">xmpfr</span>::<span class="ident">sgn</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">small</span>);
                         <span class="kw">match</span> <span class="ident">cmp0</span> {
-                            <span class="ident">Ordering</span>::<span class="ident">Less</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">small</span>.<span class="ident">get_exp</span>() {
-                                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
-                                <span class="prelude-val">Some</span>(<span class="ident">exp</span>) <span class="kw">if</span> <span class="ident">exp</span> <span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">nbits</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
-                                <span class="prelude-val">Some</span>(<span class="ident">exp</span>) <span class="op">=&gt;</span> {
+                            <span class="ident">Ordering</span>::<span class="ident">Less</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">small</span>.<span class="ident">get_exp</span>() {
+                                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                                <span class="prelude-val">Some</span>(<span class="ident">exp</span>) <span class="kw">if</span> <span class="ident">exp</span> <span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">nbits</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                                <span class="prelude-val">Some</span>(<span class="ident">exp</span>) <span class="op">=</span><span class="op">&gt;</span> {
                                     <span class="comment">// Safety:</span>
                                     <span class="comment">//  1. small is normal, so we can get the number.</span>
                                     <span class="comment">//  2. Since it is a normal integer, exp &gt; 0</span>
                                     <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">is_normal</span>());
-                                    <span class="kw">let</span> <span class="ident">abs</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="macro-nonterminal">$</span><span class="macro-nonterminal">unchecked_get</span>(<span class="kw-2">&amp;</span><span class="ident">small</span>) <span class="op">&gt;&gt;</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">nbits</span> <span class="op">-</span> <span class="ident">exp</span>) };
+                                    <span class="kw">let</span> <span class="ident">abs</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="macro-nonterminal">$</span><span class="macro-nonterminal">unchecked_get</span>(<span class="kw-2">&amp;</span><span class="ident">small</span>) <span class="op">&gt;</span><span class="op">&gt;</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">nbits</span> <span class="op">-</span> <span class="ident">exp</span>) };
                                     <span class="kw">if</span> <span class="ident">abs</span> <span class="op">&gt;</span> <span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span><span class="op">&gt;</span>::<span class="ident">min_value</span>().<span class="ident">wrapping_as</span>::<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span><span class="op">&gt;</span>() {
                                         <span class="prelude-val">None</span>
                                     } <span class="kw">else</span> {
@@ -562,16 +562,16 @@
                                     }
                                 }
                             },
-                            <span class="ident">Ordering</span>::<span class="ident">Equal</span> <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="number">0</span>),
-                            <span class="ident">Ordering</span>::<span class="ident">Greater</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">small</span>.<span class="ident">get_exp</span>() {
-                                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
-                                <span class="prelude-val">Some</span>(<span class="ident">exp</span>) <span class="kw">if</span> <span class="ident">exp</span> <span class="op">&gt;=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">nbits</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
-                                <span class="prelude-val">Some</span>(<span class="ident">exp</span>) <span class="op">=&gt;</span> {
+                            <span class="ident">Ordering</span>::<span class="ident">Equal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="number">0</span>),
+                            <span class="ident">Ordering</span>::<span class="ident">Greater</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">small</span>.<span class="ident">get_exp</span>() {
+                                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                                <span class="prelude-val">Some</span>(<span class="ident">exp</span>) <span class="kw">if</span> <span class="ident">exp</span> <span class="op">&gt;</span><span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">nbits</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                                <span class="prelude-val">Some</span>(<span class="ident">exp</span>) <span class="op">=</span><span class="op">&gt;</span> {
                                     <span class="comment">// Safety:</span>
                                     <span class="comment">//  1. small is normal, so we can get the number.</span>
                                     <span class="comment">//  2. Since it is a normal integer, exp &gt; 0</span>
                                     <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">is_normal</span>());
-                                    <span class="kw">let</span> <span class="ident">abs</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="macro-nonterminal">$</span><span class="macro-nonterminal">unchecked_get</span>(<span class="kw-2">&amp;</span><span class="ident">small</span>) <span class="op">&gt;&gt;</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">nbits</span> <span class="op">-</span> <span class="ident">exp</span>) };
+                                    <span class="kw">let</span> <span class="ident">abs</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="macro-nonterminal">$</span><span class="macro-nonterminal">unchecked_get</span>(<span class="kw-2">&amp;</span><span class="ident">small</span>) <span class="op">&gt;</span><span class="op">&gt;</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">nbits</span> <span class="op">-</span> <span class="ident">exp</span>) };
                                     <span class="comment">// We have already checked that exp &lt; $nbits, so</span>
                                     <span class="comment">// the value fits.</span>
                                     <span class="prelude-val">Some</span>(<span class="ident">abs</span>.<span class="ident">wrapping_as</span>::<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span><span class="op">&gt;</span>())
@@ -581,8 +581,8 @@
                     }
                 };
                 <span class="kw">match</span> <span class="ident">val</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=&gt;</span> <span class="ident">val</span>,
-                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
+                    <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">val</span>,
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
                         <span class="kw">unsafe</span> {
                             <span class="ident">mpfr</span>::<span class="ident">set_erangeflag</span>();
                         }
@@ -599,16 +599,16 @@
 }
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">cast_uint</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">nbits</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">unchecked_get</span>:<span class="ident">path</span>) <span class="op">=&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">nbits</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">unchecked_get</span>:<span class="ident">path</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">impl</span> <span class="ident">SaturatingCast</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Float</span> {
             <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span> {
+            <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span> {
                 (<span class="kw-2">&amp;</span><span class="self">self</span>).<span class="ident">saturating_cast</span>()
             }
         }
 
         <span class="kw">impl</span> <span class="ident">SaturatingCast</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="ident">Float</span> {
-            <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span> {
+            <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span> {
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_nan</span>() {
                     <span class="kw">unsafe</span> {
                         <span class="ident">mpfr</span>::<span class="ident">set_erangeflag</span>();
@@ -617,8 +617,8 @@
                 }
                 <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_infinite</span>() { <span class="prelude-val">None</span> } <span class="kw">else</span> { <span class="prelude-val">Some</span>(<span class="self">self</span>) };
                 <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">val</span> {
-                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
-                    <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=&gt;</span> {
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                    <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span><span class="op">&gt;</span> {
                         <span class="kw">const</span> <span class="ident">ZERO</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Prim</span> <span class="op">=</span> <span class="number">0</span>;
                         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">small</span> <span class="op">=</span> <span class="ident">SmallFloat</span>::<span class="ident">from</span>(<span class="ident">ZERO</span>);
                         <span class="comment">// Safety: assigning a value will not change the precision,</span>
@@ -632,25 +632,25 @@
                         <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">small</span>.<span class="ident">is_nan</span>());
                         <span class="kw">let</span> <span class="ident">cmp0</span> <span class="op">=</span> <span class="ident">xmpfr</span>::<span class="ident">sgn</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">small</span>);
                         <span class="kw">match</span> <span class="ident">cmp0</span> {
-                            <span class="ident">Ordering</span>::<span class="ident">Less</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
-                            <span class="ident">Ordering</span>::<span class="ident">Equal</span> <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="number">0</span>),
-                            <span class="ident">Ordering</span>::<span class="ident">Greater</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">small</span>.<span class="ident">get_exp</span>() {
-                                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
-                                <span class="prelude-val">Some</span>(<span class="ident">exp</span>) <span class="kw">if</span> <span class="ident">exp</span> <span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">nbits</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
-                                <span class="prelude-val">Some</span>(<span class="ident">exp</span>) <span class="op">=&gt;</span> {
+                            <span class="ident">Ordering</span>::<span class="ident">Less</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                            <span class="ident">Ordering</span>::<span class="ident">Equal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="number">0</span>),
+                            <span class="ident">Ordering</span>::<span class="ident">Greater</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">small</span>.<span class="ident">get_exp</span>() {
+                                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                                <span class="prelude-val">Some</span>(<span class="ident">exp</span>) <span class="kw">if</span> <span class="ident">exp</span> <span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">nbits</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                                <span class="prelude-val">Some</span>(<span class="ident">exp</span>) <span class="op">=</span><span class="op">&gt;</span> {
                                     <span class="comment">// Safety:</span>
                                     <span class="comment">//  1. small is normal, so we can get the number.</span>
                                     <span class="comment">//  2. Since it is a normal integer, exp &gt; 0</span>
                                     <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">is_normal</span>());
-                                    <span class="prelude-val">Some</span>(<span class="kw">unsafe</span> { <span class="macro-nonterminal">$</span><span class="macro-nonterminal">unchecked_get</span>(<span class="kw-2">&amp;</span><span class="ident">small</span>) <span class="op">&gt;&gt;</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">nbits</span> <span class="op">-</span> <span class="ident">exp</span>) })
+                                    <span class="prelude-val">Some</span>(<span class="kw">unsafe</span> { <span class="macro-nonterminal">$</span><span class="macro-nonterminal">unchecked_get</span>(<span class="kw-2">&amp;</span><span class="ident">small</span>) <span class="op">&gt;</span><span class="op">&gt;</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">nbits</span> <span class="op">-</span> <span class="ident">exp</span>) })
                                 }
                             },
                         }
                     }
                 };
                 <span class="kw">match</span> <span class="ident">val</span> {
-                    <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=&gt;</span> <span class="ident">val</span>,
-                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
+                    <span class="prelude-val">Some</span>(<span class="ident">val</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">val</span>,
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
                         <span class="kw">unsafe</span> {
                             <span class="ident">mpfr</span>::<span class="ident">set_erangeflag</span>();
                         }
@@ -674,14 +674,14 @@
 
 <span class="kw">impl</span> <span class="ident">SaturatingCast</span><span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Float</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">isize</span> {
+    <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">isize</span> {
         (<span class="kw-2">&amp;</span><span class="self">self</span>).<span class="ident">saturating_cast</span>()
     }
 }
 
 <span class="kw">impl</span> <span class="ident">SaturatingCast</span><span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="ident">Float</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">isize</span> {
+    <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">isize</span> {
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>)]</span>
         {
             <span class="self">self</span>.<span class="ident">saturating_as</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>().<span class="ident">cast</span>()
@@ -701,14 +701,14 @@
 
 <span class="kw">impl</span> <span class="ident">SaturatingCast</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Float</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         (<span class="kw-2">&amp;</span><span class="self">self</span>).<span class="ident">saturating_cast</span>()
     }
 }
 
 <span class="kw">impl</span> <span class="ident">SaturatingCast</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="ident">Float</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>)]</span>
         {
             <span class="self">self</span>.<span class="ident">saturating_as</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>().<span class="ident">cast</span>()
@@ -722,28 +722,28 @@
 
 <span class="kw">impl</span> <span class="ident">Cast</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Float</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f32</span> {
+    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f32</span> {
         (<span class="kw-2">&amp;</span><span class="self">self</span>).<span class="ident">cast</span>()
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Cast</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="ident">Float</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f32</span> {
+    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f32</span> {
         <span class="self">self</span>.<span class="ident">to_f32_round</span>(<span class="ident">Round</span>::<span class="ident">Nearest</span>)
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Cast</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Float</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         (<span class="kw-2">&amp;</span><span class="self">self</span>).<span class="ident">cast</span>()
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Cast</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="ident">Float</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">to_f64_round</span>(<span class="ident">Round</span>::<span class="ident">Nearest</span>)
     }
 }
@@ -751,7 +751,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;integer&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">Cast</span><span class="op">&lt;</span><span class="ident">Integer</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Float</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Integer</span> {
+    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Integer</span> {
         (<span class="kw-2">&amp;</span><span class="self">self</span>).<span class="ident">cast</span>()
     }
 }
@@ -759,7 +759,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;integer&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">Cast</span><span class="op">&lt;</span><span class="ident">Integer</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="ident">Float</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Integer</span> {
+    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Integer</span> {
         <span class="self">self</span>.<span class="ident">checked_cast</span>().<span class="ident">expect</span>(<span class="string">&quot;not finite&quot;</span>)
     }
 }
@@ -767,7 +767,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;integer&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">CheckedCast</span><span class="op">&lt;</span><span class="ident">Integer</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Float</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">checked_cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Integer</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">checked_cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Integer</span><span class="op">&gt;</span> {
         (<span class="kw-2">&amp;</span><span class="self">self</span>).<span class="ident">checked_cast</span>()
     }
 }
@@ -775,7 +775,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;integer&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">CheckedCast</span><span class="op">&lt;</span><span class="ident">Integer</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="ident">Float</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">checked_cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Integer</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">checked_cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Integer</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">to_integer_round</span>(<span class="ident">Round</span>::<span class="ident">Nearest</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="number">0</span>)
     }
 }
@@ -783,7 +783,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rational&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">Cast</span><span class="op">&lt;</span><span class="ident">Rational</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Float</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Rational</span> {
+    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Rational</span> {
         (<span class="kw-2">&amp;</span><span class="self">self</span>).<span class="ident">cast</span>()
     }
 }
@@ -791,7 +791,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rational&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">Cast</span><span class="op">&lt;</span><span class="ident">Rational</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="ident">Float</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Rational</span> {
+    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Rational</span> {
         <span class="self">self</span>.<span class="ident">checked_cast</span>().<span class="ident">expect</span>(<span class="string">&quot;not finite&quot;</span>)
     }
 }
@@ -799,7 +799,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rational&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">CheckedCast</span><span class="op">&lt;</span><span class="ident">Rational</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Float</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">checked_cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Rational</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">checked_cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Rational</span><span class="op">&gt;</span> {
         (<span class="kw-2">&amp;</span><span class="self">self</span>).<span class="ident">checked_cast</span>()
     }
 }
@@ -807,7 +807,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rational&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">CheckedCast</span><span class="op">&lt;</span><span class="ident">Rational</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;_</span> <span class="ident">Float</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">checked_cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Rational</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">checked_cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Rational</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">is_finite</span>() {
             <span class="kw">return</span> <span class="prelude-val">None</span>;
         }
@@ -889,17 +889,17 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">check_floats</span>() {
-        <span class="kw">let</span> <span class="ident">f32_min_pos_subnormal</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">128</span>, <span class="number">1</span>) <span class="op">&gt;&gt;</span> (<span class="number">126</span> <span class="op">+</span> <span class="number">23</span>);
-        <span class="kw">let</span> <span class="ident">f32_min_pos_normal</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">128</span>, <span class="number">1</span>) <span class="op">&gt;&gt;</span> <span class="number">126</span>;
-        <span class="kw">let</span> <span class="ident">f32_max</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">128</span>, (<span class="number">1u32</span> <span class="op">&lt;&lt;</span> <span class="number">24</span>) <span class="op">-</span> <span class="number">1</span>) <span class="op">&lt;&lt;</span> (<span class="number">127</span> <span class="op">-</span> <span class="number">23</span>);
-        <span class="kw">let</span> <span class="ident">f64_min_pos_subnormal</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">128</span>, <span class="number">1</span>) <span class="op">&gt;&gt;</span> (<span class="number">1022</span> <span class="op">+</span> <span class="number">52</span>);
-        <span class="kw">let</span> <span class="ident">f64_min_pos_normal</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">128</span>, <span class="number">1</span>) <span class="op">&gt;&gt;</span> <span class="number">1022</span>;
-        <span class="kw">let</span> <span class="ident">f64_max</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">128</span>, (<span class="number">1u64</span> <span class="op">&lt;&lt;</span> <span class="number">53</span>) <span class="op">-</span> <span class="number">1</span>) <span class="op">&lt;&lt;</span> (<span class="number">1023</span> <span class="op">-</span> <span class="number">52</span>);
+        <span class="kw">let</span> <span class="ident">f32_min_pos_subnormal</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">128</span>, <span class="number">1</span>) <span class="op">&gt;</span><span class="op">&gt;</span> (<span class="number">126</span> <span class="op">+</span> <span class="number">23</span>);
+        <span class="kw">let</span> <span class="ident">f32_min_pos_normal</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">128</span>, <span class="number">1</span>) <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">126</span>;
+        <span class="kw">let</span> <span class="ident">f32_max</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">128</span>, (<span class="number">1u32</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">24</span>) <span class="op">-</span> <span class="number">1</span>) <span class="op">&lt;</span><span class="op">&lt;</span> (<span class="number">127</span> <span class="op">-</span> <span class="number">23</span>);
+        <span class="kw">let</span> <span class="ident">f64_min_pos_subnormal</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">128</span>, <span class="number">1</span>) <span class="op">&gt;</span><span class="op">&gt;</span> (<span class="number">1022</span> <span class="op">+</span> <span class="number">52</span>);
+        <span class="kw">let</span> <span class="ident">f64_min_pos_normal</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">128</span>, <span class="number">1</span>) <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">1022</span>;
+        <span class="kw">let</span> <span class="ident">f64_max</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">128</span>, (<span class="number">1u64</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">53</span>) <span class="op">-</span> <span class="number">1</span>) <span class="op">&lt;</span><span class="op">&lt;</span> (<span class="number">1023</span> <span class="op">-</span> <span class="number">52</span>);
         <span class="kw">let</span> <span class="ident">zero</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">new</span>(<span class="number">1</span>);
         <span class="kw">let</span> <span class="ident">one</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">1</span>, <span class="number">1</span>);
         <span class="kw">let</span> <span class="ident">two_point5</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">3</span>, <span class="number">2.5</span>);
-        <span class="kw">let</span> <span class="ident">f32_overflow</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">1</span>, <span class="number">1</span>) <span class="op">&lt;&lt;</span> <span class="number">128</span>;
-        <span class="kw">let</span> <span class="ident">f64_overflow</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">1</span>, <span class="number">1</span>) <span class="op">&lt;&lt;</span> <span class="number">1024</span>;
+        <span class="kw">let</span> <span class="ident">f32_overflow</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">1</span>, <span class="number">1</span>) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">128</span>;
+        <span class="kw">let</span> <span class="ident">f64_overflow</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">1</span>, <span class="number">1</span>) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1024</span>;
 
         <span class="macro">assert_eq</span><span class="macro">!</span>(
             (<span class="kw-2">*</span><span class="ident">f32_overflow</span>.<span class="ident">as_neg</span>()).<span class="ident">borrow</span>().<span class="ident">az</span>::<span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>(),

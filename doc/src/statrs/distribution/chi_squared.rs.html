@@ -390,7 +390,7 @@
     <span class="doccomment">/// result = ChiSquared::new(0.0);</span>
     <span class="doccomment">/// assert!(result.is_err());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">freedom</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ChiSquared</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">freedom</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ChiSquared</span><span class="op">&gt;</span> {
         <span class="ident">Gamma</span>::<span class="ident">new</span>(<span class="ident">freedom</span> <span class="op">/</span> <span class="number">2.0</span>, <span class="number">0.5</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">g</span><span class="op">|</span> <span class="ident">ChiSquared</span> {
             <span class="ident">freedom</span>: <span class="ident">freedom</span>,
             <span class="ident">g</span>: <span class="ident">g</span>,
@@ -408,7 +408,7 @@
     <span class="doccomment">/// let n = ChiSquared::new(3.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!(n.freedom(), 3.0);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">freedom</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">freedom</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">freedom</span>
     }
 
@@ -422,7 +422,7 @@
     <span class="doccomment">/// let n = ChiSquared::new(3.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!(n.shape(), 3.0 / 2.0);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">shape</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">shape</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">g</span>.<span class="ident">shape</span>()
     }
 
@@ -436,13 +436,13 @@
     <span class="doccomment">/// let n = ChiSquared::new(3.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!(n.rate(), 0.5);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">rate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">g</span>.<span class="ident">rate</span>()
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Distribution</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ChiSquared</span> {
-    <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="ident">Distribution</span>::<span class="ident">sample</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">g</span>, <span class="ident">r</span>)
     }
 }
@@ -459,7 +459,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `k` is the degrees of freedom, `Γ` is the gamma function,</span>
     <span class="doccomment">/// and `γ` is the lower incomplete gamma function</span>
-    <span class="kw">fn</span> <span class="ident">cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">g</span>.<span class="ident">cdf</span>(<span class="ident">x</span>)
     }
 }
@@ -474,7 +474,7 @@
     <span class="doccomment">/// ```ignore</span>
     <span class="doccomment">/// 0</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">min</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">min</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="number">0.0</span>
     }
 }
@@ -489,7 +489,7 @@
     <span class="doccomment">/// ```ignore</span>
     <span class="doccomment">/// INF</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="ident">f64</span>::<span class="ident">INFINITY</span>
     }
 }
@@ -504,7 +504,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `k` is the degrees of freedom</span>
-    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">g</span>.<span class="ident">mean</span>()
     }
 }
@@ -519,7 +519,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `k` is the degrees of freedom</span>
-    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">g</span>.<span class="ident">variance</span>()
     }
 
@@ -532,7 +532,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `k` is the degrees of freedom</span>
-    <span class="kw">fn</span> <span class="ident">std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">g</span>.<span class="ident">std_dev</span>()
     }
 }
@@ -548,7 +548,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `k` is the degrees of freedom, `Γ` is the gamma function,</span>
     <span class="doccomment">/// and `ψ` is the digamma function</span>
-    <span class="kw">fn</span> <span class="ident">entropy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">entropy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">g</span>.<span class="ident">entropy</span>()
     }
 }
@@ -563,7 +563,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `k` is the degrees of freedom</span>
-    <span class="kw">fn</span> <span class="ident">skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">g</span>.<span class="ident">skewness</span>()
     }
 }
@@ -576,7 +576,7 @@
     <span class="doccomment">/// ```ignore</span>
     <span class="doccomment">/// k * (1 - (2 / 9k))^3</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">freedom</span> <span class="op">&lt;</span> <span class="number">1.0</span> {
             <span class="comment">// if k is small, calculate using expansion of formula</span>
             <span class="self">self</span>.<span class="ident">freedom</span> <span class="op">-</span> <span class="number">2.0</span> <span class="op">/</span> <span class="number">3.0</span> <span class="op">+</span> <span class="number">12.0</span> <span class="op">/</span> (<span class="number">81.0</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">freedom</span>)
@@ -598,7 +598,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `k` is the degrees of freedom</span>
-    <span class="kw">fn</span> <span class="ident">mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">g</span>.<span class="ident">mode</span>()
     }
 }
@@ -614,7 +614,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `k` is the degrees of freedom and `Γ` is the gamma function</span>
-    <span class="kw">fn</span> <span class="ident">pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">g</span>.<span class="ident">pdf</span>(<span class="ident">x</span>)
     }
 
@@ -626,7 +626,7 @@
     <span class="doccomment">/// ```ignore</span>
     <span class="doccomment">/// ln(1 / (2^(k / 2) * Γ(k / 2)) * x^((k / 2) - 1) * e^(-x / 2))</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">ln_pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">ln_pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">g</span>.<span class="ident">ln_pdf</span>(<span class="ident">x</span>)
     }
 }
@@ -639,14 +639,14 @@
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">distribution</span>::<span class="ident">ChiSquared</span>;
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">distribution</span>::<span class="ident">internal</span>::<span class="kw-2">*</span>;
 
-    <span class="kw">fn</span> <span class="ident">try_create</span>(<span class="ident">freedom</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">ChiSquared</span> {
+    <span class="kw">fn</span> <span class="ident">try_create</span>(<span class="ident">freedom</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ChiSquared</span> {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">ChiSquared</span>::<span class="ident">new</span>(<span class="ident">freedom</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">n</span>.<span class="ident">is_ok</span>());
         <span class="ident">n</span>.<span class="ident">unwrap</span>()
     }
 
     <span class="kw">fn</span> <span class="ident">test_case</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">freedom</span>: <span class="ident">f64</span>, <span class="ident">expected</span>: <span class="ident">f64</span>, <span class="ident">eval</span>: <span class="ident">F</span>)
-        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">ChiSquared</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>
+        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">ChiSquared</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>
     {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">try_create</span>(<span class="ident">freedom</span>);
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">eval</span>(<span class="ident">n</span>);
@@ -654,7 +654,7 @@
     }
 
     <span class="kw">fn</span> <span class="ident">test_almost</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">freedom</span>: <span class="ident">f64</span>, <span class="ident">expected</span>: <span class="ident">f64</span>, <span class="ident">acc</span>: <span class="ident">f64</span>, <span class="ident">eval</span>: <span class="ident">F</span>)
-        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">ChiSquared</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>
+        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">ChiSquared</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>
     {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">try_create</span>(<span class="ident">freedom</span>);
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">eval</span>(<span class="ident">n</span>);

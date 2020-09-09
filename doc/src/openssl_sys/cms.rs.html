@@ -104,14 +104,14 @@
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">ossl101</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">CMS_ContentInfo_free</span>(<span class="ident">cms</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">CMS_ContentInfo</span>);
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">ossl101</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">i2d_CMS_ContentInfo</span>(<span class="ident">a</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">CMS_ContentInfo</span>, <span class="ident">pp</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_uchar</span>) <span class="op">-&gt;</span> <span class="ident">c_int</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">i2d_CMS_ContentInfo</span>(<span class="ident">a</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">CMS_ContentInfo</span>, <span class="ident">pp</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_uchar</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">ossl101</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">d2i_CMS_ContentInfo</span>(
         <span class="ident">a</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">CMS_ContentInfo</span>,
         <span class="ident">pp</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">c_uchar</span>,
         <span class="ident">length</span>: <span class="ident">c_long</span>,
-    ) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">CMS_ContentInfo</span>;
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">CMS_ContentInfo</span>;
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">ossl101</span>)]</span>
@@ -161,7 +161,7 @@
 
 <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> {
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">ossl101</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">SMIME_read_CMS</span>(<span class="ident">bio</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">BIO</span>, <span class="ident">bcont</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">BIO</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">CMS_ContentInfo</span>;
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">SMIME_read_CMS</span>(<span class="ident">bio</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">BIO</span>, <span class="ident">bcont</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">BIO</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">CMS_ContentInfo</span>;
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">ossl101</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">CMS_sign</span>(
@@ -170,7 +170,7 @@
         <span class="ident">certs</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">stack_st_X509</span>,
         <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">BIO</span>,
         <span class="ident">flags</span>: <span class="ident">c_uint</span>,
-    ) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">CMS_ContentInfo</span>;
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">CMS_ContentInfo</span>;
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">ossl101</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">CMS_encrypt</span>(
@@ -178,7 +178,7 @@
         <span class="ident">data</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">BIO</span>,
         <span class="ident">cipher</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">EVP_CIPHER</span>,
         <span class="ident">flags</span>: <span class="ident">c_uint</span>,
-    ) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">CMS_ContentInfo</span>;
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">CMS_ContentInfo</span>;
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">ossl101</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">CMS_decrypt</span>(
@@ -188,7 +188,7 @@
         <span class="ident">dcont</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">BIO</span>,
         <span class="ident">out</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> ::<span class="ident">BIO</span>,
         <span class="ident">flags</span>: <span class="ident">c_uint</span>,
-    ) <span class="op">-&gt;</span> <span class="ident">c_int</span>;
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">c_int</span>;
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "openssl_sys";</script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>

@@ -56,29 +56,29 @@
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">mod</span> <span class="ident">layoutfmt</span>;
 
-<span class="comment">// public struct but users don&#39;t interact with it</span>
+<span class="comment">// public struct but users don&#39;t interact with it</span>
 <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-<span class="doccomment">/// Memory layout description</span>
+<span class="doccomment">/// Memory layout description</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Layout</span>(<span class="ident">u32</span>);
 
 <span class="kw">impl</span> <span class="ident">Layout</span> {
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">x</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">x</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">Layout</span>(<span class="ident">x</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">is</span>(<span class="self">self</span>, <span class="ident">flag</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="number">0</span> <span class="op">&amp;</span> <span class="ident">flag</span> <span class="op">!=</span> <span class="number">0</span>
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">is</span>(<span class="self">self</span>, <span class="ident">flag</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="self">self</span>.<span class="number">0</span> <span class="op">&amp;</span> <span class="ident">flag</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>
     }
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">and</span>(<span class="self">self</span>, <span class="ident">flag</span>: <span class="ident">Layout</span>) <span class="op">-&gt;</span> <span class="ident">Layout</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">and</span>(<span class="self">self</span>, <span class="ident">flag</span>: <span class="ident">Layout</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Layout</span> {
         <span class="ident">Layout</span>(<span class="self">self</span>.<span class="number">0</span> <span class="op">&amp;</span> <span class="ident">flag</span>.<span class="number">0</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">flag</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">flag</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="number">0</span>
     }
 }
@@ -86,22 +86,22 @@
 <span class="kw">impl</span> <span class="ident">Layout</span> {
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">one_dimensional</span>() <span class="op">-&gt;</span> <span class="ident">Layout</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">one_dimensional</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Layout</span> {
         <span class="ident">Layout</span>(<span class="ident">CORDER</span> <span class="op">|</span> <span class="ident">FORDER</span>)
     }
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">c</span>() <span class="op">-&gt;</span> <span class="ident">Layout</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">c</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Layout</span> {
         <span class="ident">Layout</span>(<span class="ident">CORDER</span>)
     }
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">f</span>() <span class="op">-&gt;</span> <span class="ident">Layout</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">f</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Layout</span> {
         <span class="ident">Layout</span>(<span class="ident">FORDER</span>)
     }
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">none</span>() <span class="op">-&gt;</span> <span class="ident">Layout</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">none</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Layout</span> {
         <span class="ident">Layout</span>(<span class="number">0</span>)
     }
 }

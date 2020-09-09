@@ -128,10 +128,10 @@
 
 <span class="doccomment">/// An iterator over the relocations in a `MachOSection32`.</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">MachORelocationIterator32</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Endian</span> <span class="op">=</span> <span class="ident">Endianness</span><span class="op">&gt;</span> <span class="op">=</span>
-    <span class="ident">MachORelocationIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">macho</span>::<span class="ident">MachHeader32</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;&gt;</span>;
+    <span class="ident">MachORelocationIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">macho</span>::<span class="ident">MachHeader32</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 <span class="doccomment">/// An iterator over the relocations in a `MachOSection64`.</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">MachORelocationIterator64</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Endian</span> <span class="op">=</span> <span class="ident">Endianness</span><span class="op">&gt;</span> <span class="op">=</span>
-    <span class="ident">MachORelocationIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">macho</span>::<span class="ident">MachHeader64</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;&gt;</span>;
+    <span class="ident">MachORelocationIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">macho</span>::<span class="ident">MachHeader64</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
 <span class="doccomment">/// An iterator over the relocations in a `MachOSection`.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MachORelocationIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Mach</span><span class="op">&gt;</span>
@@ -140,13 +140,13 @@
     <span class="ident">Mach</span>: <span class="ident">MachHeader</span>,
 {
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;file</span> <span class="ident">MachOFile</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Mach</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">relocations</span>: <span class="ident">slice</span>::<span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">macho</span>::<span class="ident">Relocation</span><span class="op">&lt;</span><span class="ident">Mach</span>::<span class="ident">Endian</span><span class="op">&gt;&gt;</span>,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">relocations</span>: <span class="ident">slice</span>::<span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">macho</span>::<span class="ident">Relocation</span><span class="op">&lt;</span><span class="ident">Mach</span>::<span class="ident">Endian</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Mach</span>: <span class="ident">MachHeader</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">MachORelocationIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Mach</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="ident">u64</span>, <span class="ident">Relocation</span>);
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
         <span class="kw">loop</span> {
             <span class="kw">let</span> <span class="ident">reloc</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">relocations</span>.<span class="ident">next</span>()<span class="question-mark">?</span>;
             <span class="kw">let</span> <span class="ident">endian</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">file</span>.<span class="ident">endian</span>;
@@ -159,53 +159,53 @@
             <span class="kw">let</span> <span class="ident">reloc</span> <span class="op">=</span> <span class="ident">reloc</span>.<span class="ident">info</span>(<span class="self">self</span>.<span class="ident">file</span>.<span class="ident">endian</span>);
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">encoding</span> <span class="op">=</span> <span class="ident">RelocationEncoding</span>::<span class="ident">Generic</span>;
             <span class="kw">let</span> <span class="ident">kind</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">cputype</span> {
-                <span class="ident">macho</span>::<span class="ident">CPU_TYPE_ARM</span> <span class="op">=&gt;</span> <span class="kw">match</span> (<span class="ident">reloc</span>.<span class="ident">r_type</span>, <span class="ident">reloc</span>.<span class="ident">r_pcrel</span>) {
-                    (<span class="ident">macho</span>::<span class="ident">ARM_RELOC_VANILLA</span>, <span class="bool-val">false</span>) <span class="op">=&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>,
-                    <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">MachO</span> {
+                <span class="ident">macho</span>::<span class="ident">CPU_TYPE_ARM</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> (<span class="ident">reloc</span>.<span class="ident">r_type</span>, <span class="ident">reloc</span>.<span class="ident">r_pcrel</span>) {
+                    (<span class="ident">macho</span>::<span class="ident">ARM_RELOC_VANILLA</span>, <span class="bool-val">false</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>,
+                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">MachO</span> {
                         <span class="ident">value</span>: <span class="ident">reloc</span>.<span class="ident">r_type</span>,
                         <span class="ident">relative</span>: <span class="ident">reloc</span>.<span class="ident">r_pcrel</span>,
                     },
                 },
-                <span class="ident">macho</span>::<span class="ident">CPU_TYPE_ARM64</span> <span class="op">=&gt;</span> <span class="kw">match</span> (<span class="ident">reloc</span>.<span class="ident">r_type</span>, <span class="ident">reloc</span>.<span class="ident">r_pcrel</span>) {
-                    (<span class="ident">macho</span>::<span class="ident">ARM64_RELOC_UNSIGNED</span>, <span class="bool-val">false</span>) <span class="op">=&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>,
-                    <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">MachO</span> {
+                <span class="ident">macho</span>::<span class="ident">CPU_TYPE_ARM64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> (<span class="ident">reloc</span>.<span class="ident">r_type</span>, <span class="ident">reloc</span>.<span class="ident">r_pcrel</span>) {
+                    (<span class="ident">macho</span>::<span class="ident">ARM64_RELOC_UNSIGNED</span>, <span class="bool-val">false</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>,
+                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">MachO</span> {
                         <span class="ident">value</span>: <span class="ident">reloc</span>.<span class="ident">r_type</span>,
                         <span class="ident">relative</span>: <span class="ident">reloc</span>.<span class="ident">r_pcrel</span>,
                     },
                 },
-                <span class="ident">macho</span>::<span class="ident">CPU_TYPE_X86</span> <span class="op">=&gt;</span> <span class="kw">match</span> (<span class="ident">reloc</span>.<span class="ident">r_type</span>, <span class="ident">reloc</span>.<span class="ident">r_pcrel</span>) {
-                    (<span class="ident">macho</span>::<span class="ident">GENERIC_RELOC_VANILLA</span>, <span class="bool-val">false</span>) <span class="op">=&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>,
-                    <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">MachO</span> {
+                <span class="ident">macho</span>::<span class="ident">CPU_TYPE_X86</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> (<span class="ident">reloc</span>.<span class="ident">r_type</span>, <span class="ident">reloc</span>.<span class="ident">r_pcrel</span>) {
+                    (<span class="ident">macho</span>::<span class="ident">GENERIC_RELOC_VANILLA</span>, <span class="bool-val">false</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>,
+                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">MachO</span> {
                         <span class="ident">value</span>: <span class="ident">reloc</span>.<span class="ident">r_type</span>,
                         <span class="ident">relative</span>: <span class="ident">reloc</span>.<span class="ident">r_pcrel</span>,
                     },
                 },
-                <span class="ident">macho</span>::<span class="ident">CPU_TYPE_X86_64</span> <span class="op">=&gt;</span> <span class="kw">match</span> (<span class="ident">reloc</span>.<span class="ident">r_type</span>, <span class="ident">reloc</span>.<span class="ident">r_pcrel</span>) {
-                    (<span class="ident">macho</span>::<span class="ident">X86_64_RELOC_UNSIGNED</span>, <span class="bool-val">false</span>) <span class="op">=&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>,
-                    (<span class="ident">macho</span>::<span class="ident">X86_64_RELOC_SIGNED</span>, <span class="bool-val">true</span>) <span class="op">=&gt;</span> {
+                <span class="ident">macho</span>::<span class="ident">CPU_TYPE_X86_64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> (<span class="ident">reloc</span>.<span class="ident">r_type</span>, <span class="ident">reloc</span>.<span class="ident">r_pcrel</span>) {
+                    (<span class="ident">macho</span>::<span class="ident">X86_64_RELOC_UNSIGNED</span>, <span class="bool-val">false</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>,
+                    (<span class="ident">macho</span>::<span class="ident">X86_64_RELOC_SIGNED</span>, <span class="bool-val">true</span>) <span class="op">=</span><span class="op">&gt;</span> {
                         <span class="ident">encoding</span> <span class="op">=</span> <span class="ident">RelocationEncoding</span>::<span class="ident">X86RipRelative</span>;
                         <span class="ident">RelocationKind</span>::<span class="ident">Relative</span>
                     }
-                    (<span class="ident">macho</span>::<span class="ident">X86_64_RELOC_BRANCH</span>, <span class="bool-val">true</span>) <span class="op">=&gt;</span> {
+                    (<span class="ident">macho</span>::<span class="ident">X86_64_RELOC_BRANCH</span>, <span class="bool-val">true</span>) <span class="op">=</span><span class="op">&gt;</span> {
                         <span class="ident">encoding</span> <span class="op">=</span> <span class="ident">RelocationEncoding</span>::<span class="ident">X86Branch</span>;
                         <span class="ident">RelocationKind</span>::<span class="ident">Relative</span>
                     }
-                    (<span class="ident">macho</span>::<span class="ident">X86_64_RELOC_GOT</span>, <span class="bool-val">true</span>) <span class="op">=&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">GotRelative</span>,
-                    (<span class="ident">macho</span>::<span class="ident">X86_64_RELOC_GOT_LOAD</span>, <span class="bool-val">true</span>) <span class="op">=&gt;</span> {
+                    (<span class="ident">macho</span>::<span class="ident">X86_64_RELOC_GOT</span>, <span class="bool-val">true</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">GotRelative</span>,
+                    (<span class="ident">macho</span>::<span class="ident">X86_64_RELOC_GOT_LOAD</span>, <span class="bool-val">true</span>) <span class="op">=</span><span class="op">&gt;</span> {
                         <span class="ident">encoding</span> <span class="op">=</span> <span class="ident">RelocationEncoding</span>::<span class="ident">X86RipRelativeMovq</span>;
                         <span class="ident">RelocationKind</span>::<span class="ident">GotRelative</span>
                     }
-                    <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">MachO</span> {
+                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">MachO</span> {
                         <span class="ident">value</span>: <span class="ident">reloc</span>.<span class="ident">r_type</span>,
                         <span class="ident">relative</span>: <span class="ident">reloc</span>.<span class="ident">r_pcrel</span>,
                     },
                 },
-                <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">MachO</span> {
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">RelocationKind</span>::<span class="ident">MachO</span> {
                     <span class="ident">value</span>: <span class="ident">reloc</span>.<span class="ident">r_type</span>,
                     <span class="ident">relative</span>: <span class="ident">reloc</span>.<span class="ident">r_pcrel</span>,
                 },
             };
-            <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="number">8</span> <span class="op">&lt;&lt;</span> <span class="ident">reloc</span>.<span class="ident">r_length</span>;
+            <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> <span class="number">8</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">reloc</span>.<span class="ident">r_length</span>;
             <span class="kw">let</span> <span class="ident">target</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">reloc</span>.<span class="ident">r_extern</span> {
                 <span class="ident">RelocationTarget</span>::<span class="ident">Symbol</span>(<span class="ident">SymbolIndex</span>(<span class="ident">reloc</span>.<span class="ident">r_symbolnum</span> <span class="kw">as</span> <span class="ident">usize</span>))
             } <span class="kw">else</span> {
@@ -228,7 +228,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Mach</span>: <span class="ident">MachHeader</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">MachORelocationIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Mach</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;MachORelocationIterator&quot;</span>).<span class="ident">finish</span>()
     }
 }

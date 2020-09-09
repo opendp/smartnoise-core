@@ -59,7 +59,7 @@
 
 <span class="doccomment">/// Create an iterator that splits `n` in chunks of size `chunk`;</span>
 <span class="doccomment">/// the last item can be an uneven chunk.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range_chunk</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">chunk</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">RangeChunk</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range_chunk</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">chunk</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RangeChunk</span> {
     <span class="ident">RangeChunk</span> {
         <span class="ident">i</span>: <span class="number">0</span>,
         <span class="ident">n</span>: <span class="ident">n</span>,
@@ -71,23 +71,23 @@
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="ident">usize</span>, <span class="ident">usize</span>);
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">n</span> <span class="op">==</span> <span class="number">0</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">n</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="prelude-val">None</span>
         } <span class="kw">else</span> {
             <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">i</span>;
             <span class="kw">let</span> <span class="ident">rem</span> <span class="op">=</span> <span class="ident">min</span>(<span class="self">self</span>.<span class="ident">n</span>, <span class="self">self</span>.<span class="ident">chunk</span>);
-            <span class="self">self</span>.<span class="ident">i</span> <span class="op">+=</span> <span class="number">1</span>;
-            <span class="self">self</span>.<span class="ident">n</span> <span class="op">-=</span> <span class="ident">rem</span>;
+            <span class="self">self</span>.<span class="ident">i</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
+            <span class="self">self</span>.<span class="ident">n</span> <span class="op">-</span><span class="op">=</span> <span class="ident">rem</span>;
             <span class="prelude-val">Some</span>((<span class="ident">i</span>, <span class="ident">rem</span>))
         }
     }
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">round_up_to</span>(<span class="ident">x</span>: <span class="ident">usize</span>, <span class="ident">multiple_of</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">round_up_to</span>(<span class="ident">x</span>: <span class="ident">usize</span>, <span class="ident">multiple_of</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
     <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">d</span>, <span class="ident">r</span>) <span class="op">=</span> (<span class="ident">x</span> <span class="op">/</span> <span class="ident">multiple_of</span>, <span class="ident">x</span> <span class="op">%</span> <span class="ident">multiple_of</span>);
-    <span class="kw">if</span> <span class="ident">r</span> <span class="op">&gt;</span> <span class="number">0</span> { <span class="ident">d</span> <span class="op">+=</span> <span class="number">1</span>; }
+    <span class="kw">if</span> <span class="ident">r</span> <span class="op">&gt;</span> <span class="number">0</span> { <span class="ident">d</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>; }
     <span class="ident">d</span> <span class="op">*</span> <span class="ident">multiple_of</span>
 }
 </pre></div>

@@ -28,8 +28,8 @@
 <span class="doccomment">//! Implementation&#39;s internal macros</span>
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">debug_fmt_fields</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">tyname</span>:<span class="ident">ident</span>, $($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">field</span>:<span class="ident">ident</span>).<span class="op">+</span>),<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
-        <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-&gt;</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">tyname</span>:<span class="ident">ident</span>, $($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">field</span>:<span class="ident">ident</span>).<span class="op">+</span>),<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> ::<span class="ident">std</span>::<span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
             <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="macro">stringify</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">tyname</span>))
                 $(
               .<span class="ident">field</span>(<span class="macro">stringify</span><span class="macro">!</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">field</span>).<span class="op">+</span>), <span class="kw-2">&amp;</span><span class="self">self</span>.$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">field</span>).<span class="op">+</span>)
@@ -40,8 +40,8 @@
 }
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">clone_fields</span> {
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">field</span>:<span class="ident">ident</span>),<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
-        <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">field</span>:<span class="ident">ident</span>),<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
             <span class="self">Self</span> {
                 $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">field</span>: <span class="self">self</span>.<span class="macro-nonterminal">$</span><span class="macro-nonterminal">field</span>.<span class="ident">clone</span>(),)<span class="op">*</span>
             }

@@ -759,7 +759,7 @@ println!(&quot;Minimum exponent is {}&quot;, float::exp_min());
 ```
 */</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exp_min</span>() <span class="op">-&gt;</span> <span class="ident">i32</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exp_min</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i32</span> {
     <span class="kw">unsafe</span> { <span class="ident">mpfr</span>::<span class="ident">get_emin</span>() }.<span class="ident">saturating_cast</span>()
 }
 
@@ -774,7 +774,7 @@ println!(&quot;Maximum exponent is {}&quot;, float::exp_max());
 ```
 */</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exp_max</span>() <span class="op">-&gt;</span> <span class="ident">i32</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">exp_max</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i32</span> {
     <span class="kw">unsafe</span> { <span class="ident">mpfr</span>::<span class="ident">get_emax</span>() }.<span class="ident">saturating_cast</span>()
 }
 
@@ -790,7 +790,7 @@ println!(&quot;Minimum and maximum exponents are in [{}, {}]&quot;, min, max);
 ```
 */</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">allowed_exp_range</span>() <span class="op">-&gt;</span> (<span class="ident">i32</span>, <span class="ident">i32</span>) {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">allowed_exp_range</span>() <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">i32</span>, <span class="ident">i32</span>) {
     <span class="kw">unsafe</span> {
         (
             <span class="ident">mpfr</span>::<span class="ident">get_emin_min</span>().<span class="ident">saturating_cast</span>(),
@@ -810,7 +810,7 @@ println!(&quot;Minimum precision is {}&quot;, float::prec_min());
 ```
 */</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">prec_min</span>() <span class="op">-&gt;</span> <span class="ident">u32</span> {
+<span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">prec_min</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
     <span class="ident">mpfr</span>::<span class="ident">PREC_MIN</span> <span class="kw">as</span> <span class="ident">u32</span>
 }
 
@@ -825,7 +825,7 @@ println!(&quot;Maximum precision is {}&quot;, float::prec_max());
 ```
 */</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">prec_max</span>() <span class="op">-&gt;</span> <span class="ident">u32</span> {
+<span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">prec_max</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
     <span class="kw">const</span> <span class="ident">MAX_FITS</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="ident">mpfr</span>::<span class="ident">PREC_MAX</span> <span class="op">&lt;</span> <span class="ident">u32</span>::<span class="ident">MAX</span> <span class="kw">as</span> <span class="ident">prec_t</span>;
     <span class="kw">const</span> <span class="ident">VALUES</span>: [<span class="ident">u32</span>; <span class="number">2</span>] <span class="op">=</span> [<span class="ident">u32</span>::<span class="ident">MAX</span>, <span class="ident">mpfr</span>::<span class="ident">PREC_MAX</span> <span class="kw">as</span> <span class="ident">u32</span>];
     <span class="kw">const</span> <span class="ident">PREC_MAX</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="ident">VALUES</span>[<span class="ident">MAX_FITS</span> <span class="kw">as</span> <span class="ident">usize</span>];
@@ -889,7 +889,7 @@ assert_eq!(f4, 28);
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Round</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="ident">Round</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Round</span> {
         <span class="ident">Round</span>::<span class="ident">Nearest</span>
     }
 }
@@ -1042,10 +1042,10 @@ fn main() {
 <span class="attribute">#[<span class="ident">inline</span>]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">free_cache</span>(<span class="ident">which</span>: <span class="ident">FreeCache</span>) {
     <span class="kw">let</span> <span class="ident">way</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">which</span> {
-        <span class="ident">FreeCache</span>::<span class="ident">Local</span> <span class="op">=&gt;</span> <span class="ident">mpfr</span>::<span class="ident">FREE_LOCAL_CACHE</span>,
-        <span class="ident">FreeCache</span>::<span class="ident">Global</span> <span class="op">=&gt;</span> <span class="ident">mpfr</span>::<span class="ident">FREE_GLOBAL_CACHE</span>,
-        <span class="ident">FreeCache</span>::<span class="ident">All</span> <span class="op">=&gt;</span> <span class="ident">mpfr</span>::<span class="ident">FREE_LOCAL_CACHE</span> <span class="op">|</span> <span class="ident">mpfr</span>::<span class="ident">FREE_GLOBAL_CACHE</span>,
-        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
+        <span class="ident">FreeCache</span>::<span class="ident">Local</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">mpfr</span>::<span class="ident">FREE_LOCAL_CACHE</span>,
+        <span class="ident">FreeCache</span>::<span class="ident">Global</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">mpfr</span>::<span class="ident">FREE_GLOBAL_CACHE</span>,
+        <span class="ident">FreeCache</span>::<span class="ident">All</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">mpfr</span>::<span class="ident">FREE_LOCAL_CACHE</span> <span class="op">|</span> <span class="ident">mpfr</span>::<span class="ident">FREE_GLOBAL_CACHE</span>,
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
     };
     <span class="kw">unsafe</span> {
         <span class="ident">mpfr</span>::<span class="ident">free_cache2</span>(<span class="ident">way</span>);
@@ -1070,8 +1070,8 @@ fn main() {
     };
     <span class="kw">use</span> <span class="ident">gmp_mpfr_sys</span>::{<span class="ident">gmp</span>, <span class="ident">mpfr</span>};
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">nanflag</span>() <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="kw">unsafe</span> { <span class="ident">mpfr</span>::<span class="ident">nanflag_p</span>() <span class="op">!=</span> <span class="number">0</span> }
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">nanflag</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">unsafe</span> { <span class="ident">mpfr</span>::<span class="ident">nanflag_p</span>() <span class="op">!</span><span class="op">=</span> <span class="number">0</span> }
     }
 
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">clear_nanflag</span>() {
@@ -1087,7 +1087,7 @@ fn main() {
     }
 
     <span class="kw">impl</span> <span class="ident">Cmp</span> {
-        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">inf</span>(<span class="ident">neg</span>: <span class="ident">bool</span>) <span class="op">-&gt;</span> <span class="ident">Cmp</span> {
+        <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">inf</span>(<span class="ident">neg</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Cmp</span> {
             <span class="ident">Cmp</span>::<span class="ident">F64</span>(<span class="kw">if</span> <span class="ident">neg</span> {
                 <span class="ident">f64</span>::<span class="ident">NEG_INFINITY</span>
             } <span class="kw">else</span> {
@@ -1097,10 +1097,10 @@ fn main() {
     }
 
     <span class="kw">impl</span> <span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">Cmp</span> {
-        <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">FmtError</span><span class="op">&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">FmtError</span><span class="op">&gt;</span> {
             <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-                <span class="ident">Cmp</span>::<span class="ident">F64</span>(<span class="kw-2">ref</span> <span class="ident">val</span>) <span class="op">=&gt;</span> <span class="ident">val</span>.<span class="ident">fmt</span>(<span class="ident">f</span>),
-                <span class="ident">Cmp</span>::<span class="ident">Nan</span>(<span class="ident">negative</span>) <span class="op">=&gt;</span> {
+                <span class="ident">Cmp</span>::<span class="ident">F64</span>(<span class="kw-2">ref</span> <span class="ident">val</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">val</span>.<span class="ident">fmt</span>(<span class="ident">f</span>),
+                <span class="ident">Cmp</span>::<span class="ident">Nan</span>(<span class="ident">negative</span>) <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">negative</span> { <span class="string">&quot;-NaN&quot;</span> } <span class="kw">else</span> { <span class="string">&quot;NaN&quot;</span> };
                     <span class="ident">s</span>.<span class="ident">fmt</span>(<span class="ident">f</span>)
                 }
@@ -1109,10 +1109,10 @@ fn main() {
     }
 
     <span class="kw">impl</span> <span class="ident">PartialEq</span><span class="op">&lt;</span><span class="ident">Cmp</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Float</span> {
-        <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Cmp</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Cmp</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
             <span class="kw">match</span> <span class="kw-2">*</span><span class="ident">other</span> {
-                <span class="ident">Cmp</span>::<span class="ident">F64</span>(<span class="kw-2">ref</span> <span class="ident">f</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">eq</span>(<span class="ident">f</span>),
-                <span class="ident">Cmp</span>::<span class="ident">Nan</span>(<span class="ident">negative</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">is_nan</span>() <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">is_sign_negative</span>() <span class="op">==</span> <span class="ident">negative</span>,
+                <span class="ident">Cmp</span>::<span class="ident">F64</span>(<span class="kw-2">ref</span> <span class="ident">f</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">eq</span>(<span class="ident">f</span>),
+                <span class="ident">Cmp</span>::<span class="ident">Nan</span>(<span class="ident">negative</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">is_nan</span>() <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">is_sign_negative</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">negative</span>,
             }
         }
     }
@@ -1150,14 +1150,14 @@ fn main() {
         ];
         <span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="ident">s</span>, <span class="ident">radix</span>, <span class="ident">msg</span>) <span class="kw">in</span> <span class="ident">bad_strings</span>.<span class="ident">iter</span>() {
             <span class="kw">match</span> <span class="ident">Float</span>::<span class="ident">parse_radix</span>(<span class="ident">s</span>, <span class="ident">radix</span>) {
-                <span class="prelude-val">Ok</span>(<span class="ident">o</span>) <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(
+                <span class="prelude-val">Ok</span>(<span class="ident">o</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(
                     <span class="string">&quot;\&quot;{}\&quot; (radix {}) parsed correctly as {}, expected: {}&quot;</span>,
                     <span class="ident">s</span>,
                     <span class="ident">radix</span>,
                     <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">53</span>, <span class="ident">o</span>),
                     <span class="ident">msg</span>
                 ),
-                <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">e</span>.<span class="ident">to_string</span>(), <span class="ident">msg</span>, <span class="string">&quot;\&quot;{}\&quot; (radix {})&quot;</span>, <span class="ident">s</span>, <span class="ident">radix</span>),
+                <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">e</span>.<span class="ident">to_string</span>(), <span class="ident">msg</span>, <span class="string">&quot;\&quot;{}\&quot; (radix {})&quot;</span>, <span class="ident">s</span>, <span class="ident">radix</span>),
             }
         }
         <span class="kw">let</span> <span class="ident">good_strings</span> <span class="op">=</span> [
@@ -1176,8 +1176,8 @@ fn main() {
         ];
         <span class="kw">for</span> <span class="kw-2">&amp;</span>(<span class="ident">s</span>, <span class="ident">radix</span>, <span class="ident">f</span>) <span class="kw">in</span> <span class="ident">good_strings</span>.<span class="ident">iter</span>() {
             <span class="kw">match</span> <span class="ident">Float</span>::<span class="ident">parse_radix</span>(<span class="ident">s</span>, <span class="ident">radix</span>) {
-                <span class="prelude-val">Ok</span>(<span class="ident">ok</span>) <span class="op">=&gt;</span> <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">53</span>, <span class="ident">ok</span>), <span class="ident">f</span>),
-                <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;could not parse {}: {}&quot;</span>, <span class="ident">s</span>, <span class="ident">err</span>),
+                <span class="prelude-val">Ok</span>(<span class="ident">ok</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">53</span>, <span class="ident">ok</span>), <span class="ident">f</span>),
+                <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;could not parse {}: {}&quot;</span>, <span class="ident">s</span>, <span class="ident">err</span>),
             }
         }
 
@@ -1270,7 +1270,7 @@ fn main() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:012.3X}&quot;</span>, <span class="ident">f</span>), <span class="string">&quot;-00000001B.0&quot;</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:#012.2x}&quot;</span>, <span class="ident">f</span>), <span class="string">&quot;-0x00000001b&quot;</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:#12.2X}&quot;</span>, <span class="ident">f</span>), <span class="string">&quot;       -0x1B&quot;</span>);
-        <span class="ident">f</span> <span class="op">&lt;&lt;</span><span class="op">=</span> <span class="number">144</span>;
+        <span class="ident">f</span> <span class="op">&lt;</span><span class="op">&lt;</span><span class="op">=</span> <span class="number">144</span>;
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:.8b}&quot;</span>, <span class="ident">f</span>), <span class="string">&quot;-1.1011000e148&quot;</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:.3b}&quot;</span>, <span class="ident">f</span>), <span class="string">&quot;-1.11e148&quot;</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:#.8b}&quot;</span>, <span class="ident">f</span>), <span class="string">&quot;-0b1.1011000e148&quot;</span>);
@@ -1289,7 +1289,7 @@ fn main() {
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">check_assumptions</span>() {
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw">unsafe</span> { <span class="ident">mpfr</span>::<span class="ident">custom_get_size</span>(<span class="number">64</span>) }, <span class="number">8</span>);
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="kw">unsafe</span> { <span class="ident">mpfr</span>::<span class="ident">custom_get_size</span>(<span class="number">32</span>) } <span class="op">&lt;=</span> <span class="ident">gmp</span>::<span class="ident">NUMB_BITS</span>.<span class="ident">az</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>());
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="kw">unsafe</span> { <span class="ident">mpfr</span>::<span class="ident">custom_get_size</span>(<span class="number">32</span>) } <span class="op">&lt;</span><span class="op">=</span> <span class="ident">gmp</span>::<span class="ident">NUMB_BITS</span>.<span class="ident">az</span>::<span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>());
 
         <span class="ident">float</span>::<span class="ident">free_cache</span>(<span class="ident">FreeCache</span>::<span class="ident">All</span>);
     }
@@ -1369,9 +1369,9 @@ fn main() {
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rand&quot;</span>)]</span>
     <span class="kw">impl</span> <span class="ident">RandGen</span> <span class="kw">for</span> <span class="ident">OnesZerosRand</span> {
-        <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+        <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">one_words</span> <span class="op">&gt;</span> <span class="number">0</span> {
-                <span class="self">self</span>.<span class="ident">one_words</span> <span class="op">-=</span> <span class="number">1</span>;
+                <span class="self">self</span>.<span class="ident">one_words</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
                 <span class="op">!</span><span class="number">0</span>
             } <span class="kw">else</span> {
                 <span class="number">0</span>
@@ -1395,8 +1395,8 @@ fn main() {
                 <span class="ident">mpfr</span>::<span class="ident">set_emin</span>(<span class="op">-</span><span class="number">192</span> <span class="op">+</span> <span class="ident">i</span>);
             }
             <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">256</span>, <span class="ident">Float</span>::<span class="ident">random_bits</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">rand</span>));
-            <span class="kw">if</span> <span class="ident">i</span> <span class="op">==</span> <span class="number">0</span> {
-                <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">64</span>, <span class="op">!</span><span class="number">0u64</span>) <span class="op">&gt;&gt;</span> <span class="number">256</span>);
+            <span class="kw">if</span> <span class="ident">i</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+                <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">64</span>, <span class="op">!</span><span class="number">0u64</span>) <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">256</span>);
             } <span class="kw">else</span> {
                 <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">f</span>.<span class="ident">is_nan</span>());
             }

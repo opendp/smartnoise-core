@@ -75,40 +75,40 @@
 <span class="kw">use</span> <span class="ident">core</span>::<span class="ident">fmt</span>::{<span class="ident">Display</span>, <span class="ident">Formatter</span>, <span class="ident">LowerExp</span>, <span class="prelude-ty">Result</span> <span class="kw">as</span> <span class="ident">FmtResult</span>, <span class="ident">UpperExp</span>};
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">convert</span> {
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">Src</span>:<span class="ident">ty</span>),<span class="op">*</span> <span class="op">=&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Dst</span>:<span class="ident">ty</span>) <span class="op">=&gt;</span> { $(
+    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">Src</span>:<span class="ident">ty</span>),<span class="op">*</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Dst</span>:<span class="ident">ty</span>) <span class="op">=</span><span class="op">&gt;</span> { $(
         <span class="kw">impl</span> <span class="ident">Cast</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">Dst</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Src</span> {
             <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Dst</span> {
+            <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Dst</span> {
                 <span class="self">self</span> <span class="kw">as</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Dst</span>
             }
         }
 
         <span class="kw">impl</span> <span class="ident">CheckedCast</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">Dst</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">Src</span> {
             <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">fn</span> <span class="ident">checked_cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">Dst</span><span class="op">&gt;</span> {
+            <span class="kw">fn</span> <span class="ident">checked_cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">Dst</span><span class="op">&gt;</span> {
                 <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">cast</span>())
             }
         }
     )<span class="op">*</span> };
 }
 
-<span class="macro">convert</span><span class="macro">!</span> { <span class="ident">i8</span>, <span class="ident">i16</span>, <span class="ident">i32</span>, <span class="ident">i64</span>, <span class="ident">i128</span>, <span class="ident">isize</span>, <span class="ident">u8</span>, <span class="ident">u16</span>, <span class="ident">u32</span>, <span class="ident">u64</span>, <span class="ident">u128</span>, <span class="ident">usize</span>, <span class="ident">f32</span>, <span class="ident">f64</span> <span class="op">=&gt;</span> <span class="ident">f32</span> }
-<span class="macro">convert</span><span class="macro">!</span> { <span class="ident">i8</span>, <span class="ident">i16</span>, <span class="ident">i32</span>, <span class="ident">i64</span>, <span class="ident">i128</span>, <span class="ident">isize</span>, <span class="ident">u8</span>, <span class="ident">u16</span>, <span class="ident">u32</span>, <span class="ident">u64</span>, <span class="ident">u128</span>, <span class="ident">usize</span>, <span class="ident">f32</span>, <span class="ident">f64</span> <span class="op">=&gt;</span> <span class="ident">f64</span> }
+<span class="macro">convert</span><span class="macro">!</span> { <span class="ident">i8</span>, <span class="ident">i16</span>, <span class="ident">i32</span>, <span class="ident">i64</span>, <span class="ident">i128</span>, <span class="ident">isize</span>, <span class="ident">u8</span>, <span class="ident">u16</span>, <span class="ident">u32</span>, <span class="ident">u64</span>, <span class="ident">u128</span>, <span class="ident">usize</span>, <span class="ident">f32</span>, <span class="ident">f64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f32</span> }
+<span class="macro">convert</span><span class="macro">!</span> { <span class="ident">i8</span>, <span class="ident">i16</span>, <span class="ident">i32</span>, <span class="ident">i64</span>, <span class="ident">i128</span>, <span class="ident">isize</span>, <span class="ident">u8</span>, <span class="ident">u16</span>, <span class="ident">u32</span>, <span class="ident">u64</span>, <span class="ident">u128</span>, <span class="ident">usize</span>, <span class="ident">f32</span>, <span class="ident">f64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f64</span> }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Display</span><span class="op">&gt;</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">Round</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">FmtResult</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">FmtResult</span> {
         <span class="ident">Display</span>::<span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>, <span class="ident">f</span>)
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">LowerExp</span><span class="op">&gt;</span> <span class="ident">LowerExp</span> <span class="kw">for</span> <span class="ident">Round</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">FmtResult</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">FmtResult</span> {
         <span class="ident">LowerExp</span>::<span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>, <span class="ident">f</span>)
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">UpperExp</span><span class="op">&gt;</span> <span class="ident">UpperExp</span> <span class="kw">for</span> <span class="ident">Round</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Formatter</span>) <span class="op">-&gt;</span> <span class="ident">FmtResult</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">FmtResult</span> {
         <span class="ident">UpperExp</span>::<span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>, <span class="ident">f</span>)
     }
 }

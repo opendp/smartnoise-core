@@ -63,60 +63,60 @@
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">imp_prelude</span>::<span class="kw-2">*</span>;
 
-<span class="doccomment">/// Methods specific to `Array0`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ***See also all methods for [`ArrayBase`]***</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`ArrayBase`]: struct.ArrayBase.html</span>
+<span class="doccomment">/// Methods specific to `Array0`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ***See also all methods for [`ArrayBase`]***</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`ArrayBase`]: struct.ArrayBase.html</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">Ix0</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Returns the single element in the array without cloning it.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use ndarray::{arr0, Array0};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // `Foo` doesn&#39;t implement `Clone`.</span>
-    <span class="doccomment">/// #[derive(Debug, Eq, PartialEq)]</span>
-    <span class="doccomment">/// struct Foo;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let array: Array0&lt;Foo&gt; = arr0(Foo);</span>
-    <span class="doccomment">/// let scalar: Foo = array.into_scalar();</span>
-    <span class="doccomment">/// assert_eq!(scalar, Foo);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_scalar</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">A</span> {
+    <span class="doccomment">/// Returns the single element in the array without cloning it.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// use ndarray::{arr0, Array0};</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// // `Foo` doesn&#39;t implement `Clone`.</span>
+    <span class="doccomment">/// #[derive(Debug, Eq, PartialEq)]</span>
+    <span class="doccomment">/// struct Foo;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// let array: Array0&lt;Foo&gt; = arr0(Foo);</span>
+    <span class="doccomment">/// let scalar: Foo = array.into_scalar();</span>
+    <span class="doccomment">/// assert_eq!(scalar, Foo);</span>
+    <span class="doccomment">/// ```</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_scalar</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">A</span> {
         <span class="kw">let</span> <span class="ident">size</span> <span class="op">=</span> ::<span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>();
-        <span class="kw">if</span> <span class="ident">size</span> <span class="op">==</span> <span class="number">0</span> {
-            <span class="comment">// Any index in the `Vec` is fine since all elements are identical.</span>
+        <span class="kw">if</span> <span class="ident">size</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+            <span class="comment">// Any index in the `Vec` is fine since all elements are identical.</span>
             <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">into_vec</span>().<span class="ident">remove</span>(<span class="number">0</span>)
         } <span class="kw">else</span> {
-            <span class="comment">// Find the index in the `Vec` corresponding to `self.ptr`.</span>
-            <span class="comment">// (This is necessary because the element in the array might not be</span>
-            <span class="comment">// the first element in the `Vec`, such as if the array was created</span>
-            <span class="comment">// by `array![1, 2, 3, 4].slice_move(s![2])`.)</span>
+            <span class="comment">// Find the index in the `Vec` corresponding to `self.ptr`.</span>
+            <span class="comment">// (This is necessary because the element in the array might not be</span>
+            <span class="comment">// the first element in the `Vec`, such as if the array was created</span>
+            <span class="comment">// by `array![1, 2, 3, 4].slice_move(s![2])`.)</span>
             <span class="kw">let</span> <span class="ident">first</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="ident">usize</span>;
             <span class="kw">let</span> <span class="ident">base</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">as_ptr</span>() <span class="kw">as</span> <span class="ident">usize</span>;
             <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> (<span class="ident">first</span> <span class="op">-</span> <span class="ident">base</span>) <span class="op">/</span> <span class="ident">size</span>;
             <span class="macro">debug_assert_eq</span><span class="macro">!</span>((<span class="ident">first</span> <span class="op">-</span> <span class="ident">base</span>) <span class="op">%</span> <span class="ident">size</span>, <span class="number">0</span>);
-            <span class="comment">// Remove the element at the index and return it.</span>
+            <span class="comment">// Remove the element at the index and return it.</span>
             <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">into_vec</span>().<span class="ident">remove</span>(<span class="ident">index</span>)
         }
     }
 }
 
-<span class="doccomment">/// Methods specific to `Array`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ***See also all methods for [`ArrayBase`]***</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`ArrayBase`]: struct.ArrayBase.html</span>
+<span class="doccomment">/// Methods specific to `Array`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ***See also all methods for [`ArrayBase`]***</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`ArrayBase`]: struct.ArrayBase.html</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="doccomment">/// Return a vector of the elements in the array, in the way they are</span>
-    <span class="doccomment">/// stored internally.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the array is in standard memory layout, the logical element order</span>
-    <span class="doccomment">/// of the array (`.iter()` order) and of the returned vector will be the same.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_raw_vec</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Return a vector of the elements in the array, in the way they are</span>
+    <span class="doccomment">/// stored internally.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If the array is in standard memory layout, the logical element order</span>
+    <span class="doccomment">/// of the array (`.iter()` order) and of the returned vector will be the same.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_raw_vec</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">into_vec</span>()
     }
 }

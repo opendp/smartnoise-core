@@ -93,7 +93,7 @@
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="prelude-ty">Result</span>;
 
 <span class="doccomment">/// Computes the logistic function</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">logistic</span>(<span class="ident">p</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">logistic</span>(<span class="ident">p</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="number">1.0</span> <span class="op">/</span> ((<span class="op">-</span><span class="ident">p</span>).<span class="ident">exp</span>() <span class="op">+</span> <span class="number">1.0</span>)
 }
 
@@ -102,7 +102,7 @@
 <span class="doccomment">/// # Panics</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// If `p &lt; 0.0` or `p &gt; 1.0`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">logit</span>(<span class="ident">p</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">logit</span>(<span class="ident">p</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="ident">checked_logit</span>(<span class="ident">p</span>).<span class="ident">unwrap</span>()
 }
 
@@ -111,8 +111,8 @@
 <span class="doccomment">/// # Errors</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// If `p &lt; 0.0` or `p &gt; 1.0`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">checked_logit</span>(<span class="ident">p</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">p</span> <span class="op">&lt;</span> <span class="number">0.0</span> <span class="op">||</span> <span class="ident">p</span> <span class="op">&gt;</span> <span class="number">1.0</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">checked_logit</span>(<span class="ident">p</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+    <span class="kw">if</span> <span class="ident">p</span> <span class="op">&lt;</span> <span class="number">0.0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">p</span> <span class="op">&gt;</span> <span class="number">1.0</span> {
         <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ArgIntervalIncl</span>(<span class="string">&quot;p&quot;</span>, <span class="number">0.0</span>, <span class="number">1.0</span>))
     } <span class="kw">else</span> {
         <span class="prelude-val">Ok</span>((<span class="ident">p</span> <span class="op">/</span> (<span class="number">1.0</span> <span class="op">-</span> <span class="ident">p</span>)).<span class="ident">ln</span>())

@@ -9,7 +9,7 @@ thread and all caches before exiting.</p>
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">thread</span>;
 
 <span class="kw">fn</span> <span class="ident">main</span>() {
-    <span class="kw">let</span> <span class="ident">child</span> <span class="op">=</span> <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> {
+    <span class="kw">let</span> <span class="ident">child</span> <span class="op">=</span> <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
         <span class="comment">// some work here that uses Float</span>
         <span class="ident">float</span>::<span class="ident">free_cache</span>(<span class="ident">FreeCache</span>::<span class="ident">Local</span>);
     });

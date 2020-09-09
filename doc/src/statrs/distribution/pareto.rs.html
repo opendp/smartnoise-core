@@ -577,9 +577,9 @@
     <span class="doccomment">/// result = Pareto::new(0.0, 0.0);</span>
     <span class="doccomment">/// assert!(result.is_err());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">scale</span>: <span class="ident">f64</span>, <span class="ident">shape</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Pareto</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">is_nan</span> <span class="op">=</span> <span class="ident">scale</span>.<span class="ident">is_nan</span>() <span class="op">||</span> <span class="ident">shape</span>.<span class="ident">is_nan</span>();
-        <span class="kw">if</span> <span class="ident">is_nan</span> <span class="op">||</span> <span class="ident">scale</span> <span class="op">&lt;=</span> <span class="number">0.0</span> <span class="op">||</span> <span class="ident">shape</span> <span class="op">&lt;=</span> <span class="number">0.0</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">scale</span>: <span class="ident">f64</span>, <span class="ident">shape</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Pareto</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">is_nan</span> <span class="op">=</span> <span class="ident">scale</span>.<span class="ident">is_nan</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">shape</span>.<span class="ident">is_nan</span>();
+        <span class="kw">if</span> <span class="ident">is_nan</span> <span class="op">|</span><span class="op">|</span> <span class="ident">scale</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">shape</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
             <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">BadParams</span>)
         } <span class="kw">else</span> {
             <span class="prelude-val">Ok</span>(<span class="ident">Pareto</span> {
@@ -599,7 +599,7 @@
     <span class="doccomment">/// let n = Pareto::new(1.0, 2.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!(n.scale(), 1.0);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">scale</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">scale</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">scale</span>
     }
 
@@ -613,13 +613,13 @@
     <span class="doccomment">/// let n = Pareto::new(1.0, 2.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!(n.shape(), 2.0);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">shape</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">shape</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">shape</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Distribution</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Pareto</span> {
-    <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="comment">// Inverse transform sampling</span>
         <span class="kw">let</span> <span class="ident">u</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">r</span>.<span class="ident">sample</span>(<span class="ident">OpenClosed01</span>);
         <span class="self">self</span>.<span class="ident">scale</span> <span class="op">*</span> <span class="ident">u</span>.<span class="ident">powf</span>(<span class="op">-</span><span class="number">1.0</span> <span class="op">/</span> <span class="self">self</span>.<span class="ident">shape</span>)
@@ -641,7 +641,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `x_m` is the scale and `α` is the shape</span>
-    <span class="kw">fn</span> <span class="ident">cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">scale</span> {
             <span class="number">0.0</span>
         } <span class="kw">else</span> {
@@ -661,7 +661,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `x_m` is the scale</span>
-    <span class="kw">fn</span> <span class="ident">min</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">min</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">scale</span>
     }
 }
@@ -675,7 +675,7 @@
     <span class="doccomment">/// ```ignore</span>
     <span class="doccomment">/// INF</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="ident">f64</span>::<span class="ident">INFINITY</span>
     }
 }
@@ -694,8 +694,8 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `x_m` is the scale and `α` is the shape</span>
-    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">shape</span> <span class="op">&lt;=</span> <span class="number">1.0</span> {
+    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">shape</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1.0</span> {
             <span class="ident">f64</span>::<span class="ident">INFINITY</span>
         } <span class="kw">else</span> {
             (<span class="self">self</span>.<span class="ident">shape</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">scale</span>) <span class="op">/</span> (<span class="self">self</span>.<span class="ident">shape</span> <span class="op">-</span> <span class="number">1.0</span>)
@@ -717,8 +717,8 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `x_m` is the scale and `α` is the shape</span>
-    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">shape</span> <span class="op">&lt;=</span> <span class="number">2.0</span> {
+    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">shape</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">2.0</span> {
             <span class="ident">f64</span>::<span class="ident">INFINITY</span>
         } <span class="kw">else</span> {
             <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">scale</span> <span class="op">/</span> (<span class="self">self</span>.<span class="ident">shape</span> <span class="op">-</span> <span class="number">1.0</span>); <span class="comment">// just a temporary variable</span>
@@ -740,7 +740,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `x_m` is the scale and `α` is the shape</span>
-    <span class="kw">fn</span> <span class="ident">std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">variance</span>().<span class="ident">sqrt</span>()
     }
 }
@@ -755,7 +755,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `x_m` is the scale and `α` is the shape</span>
-    <span class="kw">fn</span> <span class="ident">entropy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">entropy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">shape</span>.<span class="ident">ln</span>() <span class="op">-</span> <span class="self">self</span>.<span class="ident">scale</span>.<span class="ident">ln</span>() <span class="op">-</span> (<span class="number">1.0</span> <span class="op">/</span> <span class="self">self</span>.<span class="ident">shape</span>) <span class="op">-</span> <span class="number">1.0</span>
     }
 }
@@ -776,7 +776,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `α` is the shape</span>
-    <span class="kw">fn</span> <span class="ident">skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">checked_skewness</span>().<span class="ident">unwrap</span>()
     }
 }
@@ -797,8 +797,8 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `α` is the shape</span>
-    <span class="kw">fn</span> <span class="ident">checked_skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">shape</span> <span class="op">&lt;=</span> <span class="number">3.0</span> {
+    <span class="kw">fn</span> <span class="ident">checked_skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">shape</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">3.0</span> {
             <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ArgGt</span>(<span class="string">&quot;shape&quot;</span>, <span class="number">3.0</span>))
         } <span class="kw">else</span> {
             <span class="prelude-val">Ok</span>((<span class="number">2.0</span> <span class="op">*</span> (<span class="self">self</span>.<span class="ident">shape</span> <span class="op">+</span> <span class="number">1.0</span>) <span class="op">/</span> (<span class="self">self</span>.<span class="ident">shape</span> <span class="op">-</span> <span class="number">3.0</span>))
@@ -817,7 +817,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `x_m` is the scale and `α` is the shape</span>
-    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">scale</span> <span class="op">*</span> (<span class="number">2f64</span>.<span class="ident">powf</span>(<span class="number">1.0</span> <span class="op">/</span> <span class="self">self</span>.<span class="ident">shape</span>))
     }
 }
@@ -832,7 +832,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `x_m` is the scale</span>
-    <span class="kw">fn</span> <span class="ident">mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">scale</span>
     }
 }
@@ -852,7 +852,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `x_m` is the scale and `α` is the shape</span>
-    <span class="kw">fn</span> <span class="ident">pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">scale</span> {
             <span class="number">0.0</span>
         } <span class="kw">else</span> {
@@ -874,7 +874,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `x_m` is the scale and `α` is the shape</span>
-    <span class="kw">fn</span> <span class="ident">ln_pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">ln_pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">scale</span> {
             <span class="ident">f64</span>::<span class="ident">NEG_INFINITY</span>
         } <span class="kw">else</span> {
@@ -891,7 +891,7 @@
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">distribution</span>::{<span class="ident">Univariate</span>, <span class="ident">Continuous</span>, <span class="ident">Pareto</span>};
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">distribution</span>::<span class="ident">internal</span>::<span class="kw-2">*</span>;
 
-    <span class="kw">fn</span> <span class="ident">try_create</span>(<span class="ident">scale</span>: <span class="ident">f64</span>, <span class="ident">shape</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">Pareto</span> {
+    <span class="kw">fn</span> <span class="ident">try_create</span>(<span class="ident">scale</span>: <span class="ident">f64</span>, <span class="ident">shape</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Pareto</span> {
         <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">Pareto</span>::<span class="ident">new</span>(<span class="ident">scale</span>, <span class="ident">shape</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">p</span>.<span class="ident">is_ok</span>());
         <span class="ident">p</span>.<span class="ident">unwrap</span>()
@@ -909,7 +909,7 @@
     }
 
     <span class="kw">fn</span> <span class="ident">test_case</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">scale</span>: <span class="ident">f64</span>, <span class="ident">shape</span>: <span class="ident">f64</span>, <span class="ident">expected</span>: <span class="ident">f64</span>, <span class="ident">eval</span>: <span class="ident">F</span>)
-        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Pareto</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>
+        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Pareto</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>
     {
         <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">try_create</span>(<span class="ident">scale</span>, <span class="ident">shape</span>);
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">eval</span>(<span class="ident">p</span>);
@@ -917,7 +917,7 @@
     }
 
     <span class="kw">fn</span> <span class="ident">test_almost</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">scale</span>: <span class="ident">f64</span>, <span class="ident">shape</span>: <span class="ident">f64</span>, <span class="ident">expected</span>: <span class="ident">f64</span>, <span class="ident">acc</span>: <span class="ident">f64</span>, <span class="ident">eval</span>: <span class="ident">F</span>)
-        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Pareto</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>
+        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Pareto</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>
     {
         <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">try_create</span>(<span class="ident">scale</span>, <span class="ident">shape</span>);
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">eval</span>(<span class="ident">p</span>);

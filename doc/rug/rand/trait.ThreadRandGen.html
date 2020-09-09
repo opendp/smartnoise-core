@@ -16,7 +16,7 @@ panic, they can cause the program to abort.</p>
 <span class="kw">use</span> <span class="ident">rug</span>::<span class="ident">rand</span>::{<span class="ident">ThreadRandGen</span>, <span class="ident">ThreadRandState</span>};
 <span class="kw">struct</span> <span class="ident">Generator</span>(<span class="ident">ThreadRng</span>);
 <span class="kw">impl</span> <span class="ident">ThreadRandGen</span> <span class="kw">for</span> <span class="ident">Generator</span> {
-    <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">next_u32</span>()
     }
 }
@@ -33,16 +33,14 @@ panic, they can cause the program to abort.</p>
 <span class="kw">use</span> <span class="ident">rug</span>::<span class="ident">rand</span>::<span class="ident">RandGen</span>;
 <span class="kw">struct</span> <span class="ident">Generator</span>(<span class="ident">ThreadRng</span>);
 <span class="kw">impl</span> <span class="ident">RandGen</span> <span class="kw">for</span> <span class="ident">Generator</span> {
-    <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">next_u32</span>()
     }
 }</pre></div>
-</div>
-            <h2 id='required-methods' class='small-section-header'>Required methods<a href='#required-methods' class='anchor'></a></h2><div class='methods'><h3 id='tymethod.gen' class='method'><code>fn <a href='#tymethod.gen' class='fnname'>gen</a>(&amp;mut self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a></code></h3><div class='docblock'><p>Gets a random 32-bit unsigned integer.</p>
+</div><h2 id='required-methods' class='small-section-header'>Required methods<a href='#required-methods' class='anchor'></a></h2><div class='methods'><h3 id='tymethod.gen' class='method'><code>fn <a href='#tymethod.gen' class='fnname'>gen</a>(&amp;mut self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a></code></h3><div class='docblock'><p>Gets a random 32-bit unsigned integer.</p>
 <p>This is similar to
 <code><a href="trait.RandGen.html">RandGen</a>::<a href="trait.RandGen.html#tymethod.gen">gen</a></code>.</p>
-</div></div><span class='loading-content'>Loading content...</span>
-            <h2 id='provided-methods' class='small-section-header'>Provided methods<a href='#provided-methods' class='anchor'></a></h2><div class='methods'><h3 id='method.gen_bits' class='method'><code>fn <a href='#method.gen_bits' class='fnname'>gen_bits</a>(&amp;mut self, bits: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a></code></h3><div class='docblock'><p>Gets up to 32 random bits.</p>
+</div></div><span class='loading-content'>Loading content...</span><h2 id='provided-methods' class='small-section-header'>Provided methods<a href='#provided-methods' class='anchor'></a></h2><div class='methods'><h3 id='method.gen_bits' class='method'><code>fn <a href='#method.gen_bits' class='fnname'>gen_bits</a>(&amp;mut self, bits: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a></code></h3><div class='docblock'><p>Gets up to 32 random bits.</p>
 <p>The default implementation simply calls the <a href="#tymethod.gen"><code>gen</code></a> method
 once and returns the most significant required bits.</p>
 <p>This method can be overridden to store any unused bits for
@@ -62,5 +60,4 @@ without using it otherwise.</p>
 <p>The default implementation returns <a href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html#variant.None"><code>None</code></a>.</p>
 <p>This method is similar to
 <code><a href="trait.RandGen.html">RandGen</a>::<a href="trait.RandGen.html#method.boxed_clone">boxed_clone</a></code>.</p>
-</div></div><span class='loading-content'>Loading content...</span>
-            <h2 id='implementors' class='small-section-header'>Implementors<a href='#implementors' class='anchor'></a></h2><div class='item-list' id='implementors-list'></div><span class='loading-content'>Loading content...</span><script type="text/javascript" src="../../implementors/rug/rand/trait.ThreadRandGen.js" async></script></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "rug";</script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>
+</div></div><span class='loading-content'>Loading content...</span><h2 id='implementors' class='small-section-header'>Implementors<a href='#implementors' class='anchor'></a></h2><div class='item-list' id='implementors-list'></div><span class='loading-content'>Loading content...</span><script type="text/javascript" src="../../implementors/rug/rand/trait.ThreadRandGen.js" async></script></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "rug";</script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>

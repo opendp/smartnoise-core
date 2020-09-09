@@ -57,41 +57,41 @@
 <span id="56">56</span>
 <span id="57">57</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">// Copyright 2019 ndarray developers.</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. This file may not be copied, modified, or distributed</span>
-<span class="comment">// except according to those terms.</span>
+<span class="comment">// Copyright 2019 ndarray developers.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">imp_prelude</span>::<span class="kw-2">*</span>;
 
-<span class="doccomment">/// Methods specific to `CowArray`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ***See also all methods for [`ArrayBase`]***</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`ArrayBase`]: struct.ArrayBase.html</span>
+<span class="doccomment">/// Methods specific to `CowArray`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ***See also all methods for [`ArrayBase`]***</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`ArrayBase`]: struct.ArrayBase.html</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">CowArray</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="doccomment">/// Returns `true` iff the array is the view (borrowed) variant.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_view</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="doccomment">/// Returns `true` iff the array is the view (borrowed) variant.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_view</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">is_view</span>()
     }
 
-    <span class="doccomment">/// Returns `true` iff the array is the owned variant.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_owned</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="doccomment">/// Returns `true` iff the array is the owned variant.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_owned</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">data</span>.<span class="ident">is_owned</span>()
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">CowArray</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">CowArray</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">view</span>: <span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">CowArray</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">view</span>: <span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CowArray</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
         <span class="ident">ArrayBase</span> {
             <span class="ident">data</span>: <span class="ident">CowRepr</span>::<span class="ident">View</span>(<span class="ident">view</span>.<span class="ident">data</span>),
             <span class="ident">ptr</span>: <span class="ident">view</span>.<span class="ident">ptr</span>,
@@ -101,11 +101,11 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">CowArray</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">CowArray</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">array</span>: <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">CowArray</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">array</span>: <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CowArray</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
         <span class="ident">ArrayBase</span> {
             <span class="ident">data</span>: <span class="ident">CowRepr</span>::<span class="ident">Owned</span>(<span class="ident">array</span>.<span class="ident">data</span>),
             <span class="ident">ptr</span>: <span class="ident">array</span>.<span class="ident">ptr</span>,

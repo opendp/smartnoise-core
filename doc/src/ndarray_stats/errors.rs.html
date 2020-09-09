@@ -153,7 +153,7 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EmptyInput</span>;
 
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">EmptyInput</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Empty input.&quot;</span>)
     }
 }
@@ -170,10 +170,10 @@
 }
 
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">MinMaxError</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">MinMaxError</span>::<span class="ident">EmptyInput</span> <span class="op">=&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Empty input.&quot;</span>),
-            <span class="ident">MinMaxError</span>::<span class="ident">UndefinedOrder</span> <span class="op">=&gt;</span> {
+            <span class="ident">MinMaxError</span>::<span class="ident">EmptyInput</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Empty input.&quot;</span>),
+            <span class="ident">MinMaxError</span>::<span class="ident">UndefinedOrder</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Undefined ordering between a tested pair of values.&quot;</span>)
             }
         }
@@ -183,7 +183,7 @@
 <span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="ident">MinMaxError</span> {}
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">EmptyInput</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">MinMaxError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <span class="ident">EmptyInput</span>) <span class="op">-&gt;</span> <span class="ident">MinMaxError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <span class="ident">EmptyInput</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">MinMaxError</span> {
         <span class="ident">MinMaxError</span>::<span class="ident">EmptyInput</span>
     }
 }
@@ -198,7 +198,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">ShapeMismatch</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="macro">write</span><span class="macro">!</span>(
             <span class="ident">f</span>,
             <span class="string">&quot;Array shapes do not match: {:?} and {:?}.&quot;</span>,
@@ -220,27 +220,27 @@
 
 <span class="kw">impl</span> <span class="ident">MultiInputError</span> {
     <span class="doccomment">/// Returns whether `self` is the `EmptyInput` variant.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty_input</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty_input</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">MultiInputError</span>::<span class="ident">EmptyInput</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
+            <span class="ident">MultiInputError</span>::<span class="ident">EmptyInput</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
         }
     }
 
     <span class="doccomment">/// Returns whether `self` is the `ShapeMismatch` variant.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_shape_mismatch</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_shape_mismatch</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">MultiInputError</span>::<span class="ident">ShapeMismatch</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
+            <span class="ident">MultiInputError</span>::<span class="ident">ShapeMismatch</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
         }
     }
 }
 
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">MultiInputError</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">MultiInputError</span>::<span class="ident">EmptyInput</span> <span class="op">=&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Empty input.&quot;</span>),
-            <span class="ident">MultiInputError</span>::<span class="ident">ShapeMismatch</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Shape mismatch: {}&quot;</span>, <span class="ident">e</span>),
+            <span class="ident">MultiInputError</span>::<span class="ident">EmptyInput</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Empty input.&quot;</span>),
+            <span class="ident">MultiInputError</span>::<span class="ident">ShapeMismatch</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Shape mismatch: {}&quot;</span>, <span class="ident">e</span>),
         }
     }
 }
@@ -248,13 +248,13 @@
 <span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="ident">MultiInputError</span> {}
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">EmptyInput</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">MultiInputError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <span class="ident">EmptyInput</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <span class="ident">EmptyInput</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">MultiInputError</span>::<span class="ident">EmptyInput</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">ShapeMismatch</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">MultiInputError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">ShapeMismatch</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">err</span>: <span class="ident">ShapeMismatch</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">MultiInputError</span>::<span class="ident">ShapeMismatch</span>(<span class="ident">err</span>)
     }
 }
@@ -269,10 +269,10 @@
 }
 
 <span class="kw">impl</span> <span class="ident">fmt</span>::<span class="ident">Display</span> <span class="kw">for</span> <span class="ident">QuantileError</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">QuantileError</span>::<span class="ident">EmptyInput</span> <span class="op">=&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Empty input.&quot;</span>),
-            <span class="ident">QuantileError</span>::<span class="ident">InvalidQuantile</span>(<span class="ident">q</span>) <span class="op">=&gt;</span> {
+            <span class="ident">QuantileError</span>::<span class="ident">EmptyInput</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;Empty input.&quot;</span>),
+            <span class="ident">QuantileError</span>::<span class="ident">InvalidQuantile</span>(<span class="ident">q</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{:} is not between 0. and 1. (inclusive).&quot;</span>, <span class="ident">q</span>)
             }
         }
@@ -282,7 +282,7 @@
 <span class="kw">impl</span> <span class="ident">Error</span> <span class="kw">for</span> <span class="ident">QuantileError</span> {}
 
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">EmptyInput</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">QuantileError</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <span class="ident">EmptyInput</span>) <span class="op">-&gt;</span> <span class="ident">QuantileError</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw">_</span>: <span class="ident">EmptyInput</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">QuantileError</span> {
         <span class="ident">QuantileError</span>::<span class="ident">EmptyInput</span>
     }
 }

@@ -387,17 +387,17 @@
 <span class="doccomment">/// for your use case and you&#39;re certain you know what you&#39;re doing).</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">implement_into_ffi_by_pointer</span> {
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>),<span class="op">*</span> $(,)<span class="kw-2">*</span>) <span class="op">=&gt;</span> {$(
+    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>),<span class="op">*</span> $(,)<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {$(
         <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">IntoFfi</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span> <span class="kw">where</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>: <span class="ident">Send</span> {
             <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>;
 
             <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span> {
+            <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span> {
                 <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>()
             }
 
             <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span> {
+            <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span> {
                 <span class="ident">Box</span>::<span class="ident">into_raw</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="self">self</span>))
             }
         }
@@ -434,15 +434,15 @@
 <span class="doccomment">/// of uses.</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">implement_into_ffi_by_json</span> {
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>),<span class="op">*</span> $(,)<span class="kw-2">*</span>) <span class="op">=&gt;</span> {$(
+    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>),<span class="op">*</span> $(,)<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {$(
         <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">IntoFfi</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span> <span class="kw">where</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>: <span class="ident">serde</span>::<span class="ident">Serialize</span> {
             <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_char</span>;
             <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_char</span> {
+            <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_char</span> {
                 <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">null_mut</span>()
             }
             <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_char</span> {
+            <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">std</span>::<span class="ident">os</span>::<span class="ident">raw</span>::<span class="ident">c_char</span> {
                 <span class="comment">// This panic is inside our catch_panic, so it should be fine.</span>
                 <span class="comment">// We&#39;ve also documented the case where the IntoFfi impl that</span>
                 <span class="comment">// calls this panics, and it&#39;s rare enough that it shouldn&#39;t</span>
@@ -466,16 +466,16 @@
 <span class="doccomment">/// Note: Each type passed in must implement or derive `prost::Message`.</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">implement_into_ffi_by_protobuf</span> {
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">FFIType</span>:<span class="ident">ty</span>),<span class="op">*</span> $(,)<span class="kw-2">*</span>) <span class="op">=&gt;</span> {$(
+    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">FFIType</span>:<span class="ident">ty</span>),<span class="op">*</span> $(,)<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {$(
         <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">IntoFfi</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">FFIType</span> <span class="kw">where</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">FFIType</span>: <span class="ident">prost</span>::<span class="ident">Message</span> {
             <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">ByteBuffer</span>;
             <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
+            <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
                 <span class="ident">Default</span>::<span class="ident">default</span>()
             }
 
             <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
+            <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
                 <span class="kw">use</span> <span class="ident">prost</span>::<span class="ident">Message</span>;
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bytes</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="self">self</span>.<span class="ident">encoded_len</span>());
                 <span class="comment">// Unwrap is safe, since we have reserved sufficient capacity in</span>
@@ -497,7 +497,7 @@
 <span class="doccomment">/// otherwise require use of `unsafe` to implement.</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">implement_into_ffi_by_delegation</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">SrcTy</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">MidTy</span>:<span class="ident">ty</span>) <span class="op">=&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">SrcTy</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">MidTy</span>:<span class="ident">ty</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">IntoFfi</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">SrcTy</span>
         <span class="kw">where</span>
             <span class="macro-nonterminal">$</span><span class="macro-nonterminal">MidTy</span>: <span class="ident">From</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">SrcTy</span><span class="op">&gt;</span> <span class="op">+</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">IntoFfi</span>,
@@ -507,14 +507,14 @@
             <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">MidTy</span> <span class="kw">as</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">IntoFfi</span><span class="op">&gt;</span>::<span class="ident">Value</span>;
 
             <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
+            <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
                 <span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">MidTy</span> <span class="kw">as</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">IntoFfi</span><span class="op">&gt;</span>::<span class="ident">ffi_default</span>()
             }
 
             <span class="attribute">#[<span class="ident">inline</span>]</span>
-            <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
+            <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
                 <span class="kw">use</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">IntoFfi</span>;
-                <span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">MidTy</span> <span class="kw">as</span> <span class="ident">From</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">SrcTy</span><span class="op">&gt;&gt;</span>::<span class="ident">from</span>(<span class="self">self</span>).<span class="ident">into_ffi_value</span>()
+                <span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">MidTy</span> <span class="kw">as</span> <span class="ident">From</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">SrcTy</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">from</span>(<span class="self">self</span>).<span class="ident">into_ffi_value</span>()
             }
         }
     };
@@ -552,7 +552,7 @@
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">define_string_destructor</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">mylib_destroy_string</span>:<span class="ident">ident</span>) <span class="op">=&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">mylib_destroy_string</span>:<span class="ident">ident</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="doccomment">/// Public destructor for strings managed by the other side of the FFI.</span>
         <span class="doccomment">///</span>
         <span class="doccomment">/// # Safety</span>
@@ -567,7 +567,7 @@
             <span class="comment">// Note: This should never happen, but in the case of a bug aborting</span>
             <span class="comment">// here is better than the badness that happens if we unwind across</span>
             <span class="comment">// the FFI boundary.</span>
-            <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">abort_on_panic</span>::<span class="ident">with_abort_on_panic</span>(<span class="op">||</span> {
+            <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">abort_on_panic</span>::<span class="ident">with_abort_on_panic</span>(<span class="op">|</span><span class="op">|</span> {
                 <span class="kw">if</span> <span class="op">!</span><span class="ident">s</span>.<span class="ident">is_null</span>() {
                     <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">destroy_c_string</span>(<span class="ident">s</span>)
                 }
@@ -603,7 +603,7 @@
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">define_box_destructor</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">destructor_name</span>:<span class="ident">ident</span>) <span class="op">=&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">destructor_name</span>:<span class="ident">ident</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="doccomment">/// # Safety</span>
         <span class="doccomment">/// This is equivalent to calling Box::from_raw with panic handling, and</span>
         <span class="doccomment">/// thus inherits [`Box::from_raw`]&#39;s safety properties. That is to say,</span>
@@ -614,7 +614,7 @@
             <span class="comment">// aborting, but at the moment the only case where we do this</span>
             <span class="comment">// (interrupt handles) should never panic in Drop, so it&#39;s probably</span>
             <span class="comment">// fine.</span>
-            <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">abort_on_panic</span>::<span class="ident">with_abort_on_panic</span>(<span class="op">||</span> {
+            <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">abort_on_panic</span>::<span class="ident">with_abort_on_panic</span>(<span class="op">|</span><span class="op">|</span> {
                 <span class="kw">if</span> <span class="op">!</span><span class="ident">v</span>.<span class="ident">is_null</span>() {
                     <span class="ident">drop</span>(<span class="ident">Box</span>::<span class="ident">from_raw</span>(<span class="ident">v</span>))
                 }
@@ -644,13 +644,13 @@
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">define_bytebuffer_destructor</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">destructor_name</span>:<span class="ident">ident</span>) <span class="op">=&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">destructor_name</span>:<span class="ident">ident</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
         <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">destructor_name</span>(<span class="ident">v</span>: <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">ByteBuffer</span>) {
             <span class="comment">// Note: This should never happen, but in the case of a bug aborting</span>
             <span class="comment">// here is better than the badness that happens if we unwind across</span>
             <span class="comment">// the FFI boundary.</span>
-            <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">abort_on_panic</span>::<span class="ident">with_abort_on_panic</span>(<span class="op">||</span> <span class="ident">v</span>.<span class="ident">destroy</span>())
+            <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">abort_on_panic</span>::<span class="ident">with_abort_on_panic</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">v</span>.<span class="ident">destroy</span>())
         }
     };
 }
@@ -679,10 +679,10 @@
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">define_handle_map_deleter</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">HANDLE_MAP_NAME</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">destructor_name</span>:<span class="ident">ident</span>) <span class="op">=&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">HANDLE_MAP_NAME</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">destructor_name</span>:<span class="ident">ident</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="attribute">#[<span class="ident">no_mangle</span>]</span>
         <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">destructor_name</span>(<span class="ident">v</span>: <span class="ident">u64</span>, <span class="ident">err</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">ExternError</span>) {
-            <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">call_with_result</span>(<span class="ident">err</span>, <span class="op">||</span> {
+            <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">call_with_result</span>(<span class="ident">err</span>, <span class="op">|</span><span class="op">|</span> {
                 <span class="comment">// Force type errors here.</span>
                 <span class="kw">let</span> <span class="ident">map</span>: <span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">ConcurrentHandleMap</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">HANDLE_MAP_NAME</span>;
                 <span class="ident">map</span>.<span class="ident">delete_u64</span>(<span class="ident">v</span>)
@@ -710,7 +710,7 @@
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">static_assert</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ASSERT_NAME</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">test</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ASSERT_NAME</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">test</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">dead_code</span>, <span class="ident">nonstandard_style</span>)]</span>
         <span class="kw">const</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ASSERT_NAME</span>: [<span class="ident">u8</span>; <span class="number">0</span> <span class="op">-</span> (<span class="op">!</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">test</span> <span class="kw">as</span> <span class="ident">bool</span> <span class="kw">as</span> <span class="ident">usize</span>)] <span class="op">=</span>
             [<span class="number">0u8</span>; <span class="number">0</span> <span class="op">-</span> (<span class="op">!</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">test</span> <span class="kw">as</span> <span class="ident">bool</span> <span class="kw">as</span> <span class="ident">usize</span>)];

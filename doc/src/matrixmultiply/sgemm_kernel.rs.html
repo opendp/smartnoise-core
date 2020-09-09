@@ -650,9 +650,9 @@
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_arch</span><span class="op">=</span><span class="string">&quot;x86&quot;</span>, <span class="ident">target_arch</span><span class="op">=</span><span class="string">&quot;x86_64&quot;</span>))]</span>
-<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">loop_m</span> { (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">i</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> { <span class="macro">loop8</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">i</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>) }; }
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">loop_m</span> { (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">i</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> { <span class="macro">loop8</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">i</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>) }; }
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
-<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">loop_n</span> { (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">j</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> { <span class="macro">loop8</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">j</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>) }; }
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">loop_n</span> { (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">j</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> { <span class="macro">loop8</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">j</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>) }; }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">target_arch</span><span class="op">=</span><span class="string">&quot;x86&quot;</span>, <span class="ident">target_arch</span><span class="op">=</span><span class="string">&quot;x86_64&quot;</span>))]</span>
 <span class="kw">impl</span> <span class="ident">GemmKernel</span> <span class="kw">for</span> <span class="ident">KernelAvx</span> {
@@ -662,17 +662,17 @@
     <span class="kw">type</span> <span class="ident">NRTy</span> <span class="op">=</span> <span class="ident">U8</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">align_to</span>() <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="number">32</span> }
+    <span class="kw">fn</span> <span class="ident">align_to</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> { <span class="number">32</span> }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">always_masked</span>() <span class="op">-&gt;</span> <span class="ident">bool</span> { <span class="bool-val">false</span> }
+    <span class="kw">fn</span> <span class="ident">always_masked</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> { <span class="bool-val">false</span> }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">nc</span>() <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_NC</span> }
+    <span class="kw">fn</span> <span class="ident">nc</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_NC</span> }
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">kc</span>() <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_KC</span> }
+    <span class="kw">fn</span> <span class="ident">kc</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_KC</span> }
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">mc</span>() <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_MC</span> }
+    <span class="kw">fn</span> <span class="ident">mc</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_MC</span> }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
     <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">kernel</span>(
@@ -694,17 +694,17 @@
     <span class="kw">type</span> <span class="ident">NRTy</span> <span class="op">=</span> <span class="op">&lt;</span><span class="ident">KernelAvx</span> <span class="kw">as</span> <span class="ident">GemmKernel</span><span class="op">&gt;</span>::<span class="ident">NRTy</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">align_to</span>() <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="ident">KernelAvx</span>::<span class="ident">align_to</span>() }
+    <span class="kw">fn</span> <span class="ident">align_to</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> { <span class="ident">KernelAvx</span>::<span class="ident">align_to</span>() }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">always_masked</span>() <span class="op">-&gt;</span> <span class="ident">bool</span> { <span class="ident">KernelAvx</span>::<span class="ident">always_masked</span>() }
+    <span class="kw">fn</span> <span class="ident">always_masked</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> { <span class="ident">KernelAvx</span>::<span class="ident">always_masked</span>() }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">nc</span>() <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_NC</span> }
+    <span class="kw">fn</span> <span class="ident">nc</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_NC</span> }
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">kc</span>() <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_KC</span> }
+    <span class="kw">fn</span> <span class="ident">kc</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_KC</span> }
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">mc</span>() <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_MC</span> }
+    <span class="kw">fn</span> <span class="ident">mc</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_MC</span> }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
     <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">kernel</span>(
@@ -726,17 +726,17 @@
     <span class="kw">type</span> <span class="ident">NRTy</span> <span class="op">=</span> <span class="op">&lt;</span><span class="ident">KernelFallback</span> <span class="kw">as</span> <span class="ident">GemmKernel</span><span class="op">&gt;</span>::<span class="ident">NRTy</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">align_to</span>() <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="number">16</span> }
+    <span class="kw">fn</span> <span class="ident">align_to</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> { <span class="number">16</span> }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">always_masked</span>() <span class="op">-&gt;</span> <span class="ident">bool</span> { <span class="ident">KernelFallback</span>::<span class="ident">always_masked</span>() }
+    <span class="kw">fn</span> <span class="ident">always_masked</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> { <span class="ident">KernelFallback</span>::<span class="ident">always_masked</span>() }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">nc</span>() <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_NC</span> }
+    <span class="kw">fn</span> <span class="ident">nc</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_NC</span> }
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">kc</span>() <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_KC</span> }
+    <span class="kw">fn</span> <span class="ident">kc</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_KC</span> }
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">mc</span>() <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_MC</span> }
+    <span class="kw">fn</span> <span class="ident">mc</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_MC</span> }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
     <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">kernel</span>(
@@ -757,17 +757,17 @@
     <span class="kw">type</span> <span class="ident">NRTy</span> <span class="op">=</span> <span class="ident">U4</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">align_to</span>() <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="number">0</span> }
+    <span class="kw">fn</span> <span class="ident">align_to</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> { <span class="number">0</span> }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">always_masked</span>() <span class="op">-&gt;</span> <span class="ident">bool</span> { <span class="bool-val">true</span> }
+    <span class="kw">fn</span> <span class="ident">always_masked</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> { <span class="bool-val">true</span> }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">nc</span>() <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_NC</span> }
+    <span class="kw">fn</span> <span class="ident">nc</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_NC</span> }
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">kc</span>() <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_KC</span> }
+    <span class="kw">fn</span> <span class="ident">kc</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_KC</span> }
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">mc</span>() <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_MC</span> }
+    <span class="kw">fn</span> <span class="ident">mc</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> { <span class="ident">archparam</span>::<span class="ident">S_MC</span> }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
     <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">kernel</span>(
@@ -822,25 +822,25 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ab</span> <span class="op">=</span> [<span class="ident">_mm256_setzero_ps</span>(); <span class="ident">MR</span>];
 
     <span class="comment">// this kernel can operate in either transposition (C = A B or C^T = B^T A^T)</span>
-    <span class="kw">let</span> <span class="ident">prefer_row_major_c</span> <span class="op">=</span> <span class="ident">rsc</span> <span class="op">!=</span> <span class="number">1</span>;
+    <span class="kw">let</span> <span class="ident">prefer_row_major_c</span> <span class="op">=</span> <span class="ident">rsc</span> <span class="op">!</span><span class="op">=</span> <span class="number">1</span>;
 
     <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">a</span>, <span class="kw-2">mut</span> <span class="ident">b</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">prefer_row_major_c</span> { (<span class="ident">a</span>, <span class="ident">b</span>) } <span class="kw">else</span> { (<span class="ident">b</span>, <span class="ident">a</span>) };
     <span class="kw">let</span> (<span class="ident">rsc</span>, <span class="ident">csc</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">prefer_row_major_c</span> { (<span class="ident">rsc</span>, <span class="ident">csc</span>) } <span class="kw">else</span> { (<span class="ident">csc</span>, <span class="ident">rsc</span>) };
 
     <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">shuffle_mask</span> {
-        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">z</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">w</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> {
-            (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">z</span> <span class="op">&lt;&lt;</span> <span class="number">6</span>) <span class="op">|</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span> <span class="op">&lt;&lt;</span> <span class="number">4</span>) <span class="op">|</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span> <span class="op">&lt;&lt;</span> <span class="number">2</span>) <span class="op">|</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">w</span>
+        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">z</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">w</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">z</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>) <span class="op">|</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">4</span>) <span class="op">|</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">2</span>) <span class="op">|</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">w</span>
         }
     }
     <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">permute_mask</span> {
-        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">z</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">w</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> {
-            (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">z</span> <span class="op">&lt;&lt;</span> <span class="number">6</span>) <span class="op">|</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span> <span class="op">&lt;&lt;</span> <span class="number">4</span>) <span class="op">|</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span> <span class="op">&lt;&lt;</span> <span class="number">2</span>) <span class="op">|</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">w</span>
+        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">z</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">w</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">z</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">6</span>) <span class="op">|</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">4</span>) <span class="op">|</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">2</span>) <span class="op">|</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">w</span>
         }
     }
 
     <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">permute2f128_mask</span> {
-        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> {
-            ((<span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span> <span class="op">&lt;&lt;</span> <span class="number">4</span>) <span class="op">|</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span>)
+        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            ((<span class="macro-nonterminal">$</span><span class="macro-nonterminal">y</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">4</span>) <span class="op">|</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span>)
         }
     }
 
@@ -849,7 +849,7 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bv</span> <span class="op">=</span> <span class="ident">_mm256_load_ps</span>(<span class="ident">b</span>);
 
     <span class="comment">// Compute A B</span>
-    <span class="macro">unroll_by_with_last</span><span class="macro">!</span>(<span class="number">4</span> <span class="op">=&gt;</span> <span class="ident">k</span>, <span class="ident">is_last</span>, {
+    <span class="macro">unroll_by_with_last</span><span class="macro">!</span>(<span class="number">4</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">k</span>, <span class="ident">is_last</span>, {
         <span class="comment">// We compute abij = ai bj</span>
         <span class="comment">//</span>
         <span class="comment">// Load b as one contiguous vector</span>
@@ -1010,15 +1010,15 @@
     }
 
     <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">c</span> {
-        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">i</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">j</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> (<span class="ident">c</span>.<span class="ident">offset</span>(<span class="ident">rsc</span> <span class="op">*</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">i</span> <span class="kw">as</span> <span class="ident">isize</span> <span class="op">+</span> <span class="ident">csc</span> <span class="op">*</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">j</span> <span class="kw">as</span> <span class="ident">isize</span>));
+        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">i</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">j</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">c</span>.<span class="ident">offset</span>(<span class="ident">rsc</span> <span class="op">*</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">i</span> <span class="kw">as</span> <span class="ident">isize</span> <span class="op">+</span> <span class="ident">csc</span> <span class="op">*</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">j</span> <span class="kw">as</span> <span class="ident">isize</span>));
     }
 
     <span class="comment">// C ← α A B + β C</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cv</span> <span class="op">=</span> [<span class="ident">_mm256_setzero_ps</span>(); <span class="ident">MR</span>];
-    <span class="kw">if</span> <span class="ident">beta</span> <span class="op">!=</span> <span class="number">0.</span> {
+    <span class="kw">if</span> <span class="ident">beta</span> <span class="op">!</span><span class="op">=</span> <span class="number">0.</span> {
         <span class="kw">let</span> <span class="ident">betav</span> <span class="op">=</span> <span class="ident">_mm256_set1_ps</span>(<span class="ident">beta</span>);
         <span class="comment">// Read C</span>
-        <span class="kw">if</span> <span class="ident">csc</span> <span class="op">==</span> <span class="number">1</span> {
+        <span class="kw">if</span> <span class="ident">csc</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span> {
             <span class="macro">loop_m</span><span class="macro">!</span>(<span class="ident">i</span>, <span class="ident">cv</span>[<span class="ident">i</span>] <span class="op">=</span> <span class="ident">_mm256_loadu_ps</span>(<span class="macro">c</span><span class="macro">!</span>[<span class="ident">i</span>, <span class="number">0</span>]));
         } <span class="kw">else</span> {
             <span class="macro">loop_m</span><span class="macro">!</span>(<span class="ident">i</span>, <span class="ident">cv</span>[<span class="ident">i</span>] <span class="op">=</span> <span class="ident">_mm256_setr_ps</span>(<span class="kw-2">*</span><span class="macro">c</span><span class="macro">!</span>[<span class="ident">i</span>, <span class="number">0</span>], <span class="kw-2">*</span><span class="macro">c</span><span class="macro">!</span>[<span class="ident">i</span>, <span class="number">1</span>], <span class="kw-2">*</span><span class="macro">c</span><span class="macro">!</span>[<span class="ident">i</span>, <span class="number">2</span>], <span class="kw-2">*</span><span class="macro">c</span><span class="macro">!</span>[<span class="ident">i</span>, <span class="number">3</span>],
@@ -1036,7 +1036,7 @@
     }
 
     <span class="comment">// Store C back to memory</span>
-    <span class="kw">if</span> <span class="ident">csc</span> <span class="op">==</span> <span class="number">1</span> {
+    <span class="kw">if</span> <span class="ident">csc</span> <span class="op">=</span><span class="op">=</span> <span class="number">1</span> {
         <span class="macro">loop_m</span><span class="macro">!</span>(<span class="ident">i</span>, <span class="ident">_mm256_storeu_ps</span>(<span class="macro">c</span><span class="macro">!</span>[<span class="ident">i</span>, <span class="number">0</span>], <span class="ident">cv</span>[<span class="ident">i</span>]));
     } <span class="kw">else</span> {
         <span class="comment">// Permute to bring each element in the vector to the front and store</span>
@@ -1075,15 +1075,15 @@
     <span class="macro">debug_assert_eq</span><span class="macro">!</span>(<span class="ident">beta</span>, <span class="number">0.</span>, <span class="string">&quot;Beta must be 0 or is not masked&quot;</span>);
 
     <span class="comment">// Compute A B into ab[i][j]</span>
-    <span class="macro">unroll_by</span><span class="macro">!</span>(<span class="number">4</span> <span class="op">=&gt;</span> <span class="ident">k</span>, {
-        <span class="macro">loop8</span><span class="macro">!</span>(<span class="ident">i</span>, <span class="macro">loop4</span><span class="macro">!</span>(<span class="ident">j</span>, <span class="ident">ab</span>[<span class="ident">i</span>][<span class="ident">j</span>] <span class="op">+=</span> <span class="ident">at</span>(<span class="ident">a</span>, <span class="ident">i</span>) <span class="op">*</span> <span class="ident">at</span>(<span class="ident">b</span>, <span class="ident">j</span>)));
+    <span class="macro">unroll_by</span><span class="macro">!</span>(<span class="number">4</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">k</span>, {
+        <span class="macro">loop8</span><span class="macro">!</span>(<span class="ident">i</span>, <span class="macro">loop4</span><span class="macro">!</span>(<span class="ident">j</span>, <span class="ident">ab</span>[<span class="ident">i</span>][<span class="ident">j</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">at</span>(<span class="ident">a</span>, <span class="ident">i</span>) <span class="op">*</span> <span class="ident">at</span>(<span class="ident">b</span>, <span class="ident">j</span>)));
 
         <span class="ident">a</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">offset</span>(<span class="ident">MR</span> <span class="kw">as</span> <span class="ident">isize</span>);
         <span class="ident">b</span> <span class="op">=</span> <span class="ident">b</span>.<span class="ident">offset</span>(<span class="ident">NR</span> <span class="kw">as</span> <span class="ident">isize</span>);
     });
 
     <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">c</span> {
-        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">i</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">j</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> (<span class="ident">c</span>.<span class="ident">offset</span>(<span class="ident">rsc</span> <span class="op">*</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">i</span> <span class="kw">as</span> <span class="ident">isize</span> <span class="op">+</span> <span class="ident">csc</span> <span class="op">*</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">j</span> <span class="kw">as</span> <span class="ident">isize</span>));
+        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">i</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">j</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">c</span>.<span class="ident">offset</span>(<span class="ident">rsc</span> <span class="op">*</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">i</span> <span class="kw">as</span> <span class="ident">isize</span> <span class="op">+</span> <span class="ident">csc</span> <span class="op">*</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">j</span> <span class="kw">as</span> <span class="ident">isize</span>));
     }
 
     <span class="comment">// set C = α A B</span>
@@ -1091,7 +1091,7 @@
 }
 
 <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">at</span>(<span class="ident">ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">T</span>, <span class="ident">i</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
+<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">at</span>(<span class="ident">ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">T</span>, <span class="ident">i</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span> {
     <span class="kw-2">*</span><span class="ident">ptr</span>.<span class="ident">offset</span>(<span class="ident">i</span> <span class="kw">as</span> <span class="ident">isize</span>)
 }
 
@@ -1100,7 +1100,7 @@
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="ident">aligned_alloc</span>::<span class="ident">Alloc</span>;
 
-    <span class="kw">fn</span> <span class="ident">aligned_alloc</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">elt</span>: <span class="ident">T</span>, <span class="ident">n</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">Alloc</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Copy</span>
+    <span class="kw">fn</span> <span class="ident">aligned_alloc</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">elt</span>: <span class="ident">T</span>, <span class="ident">n</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Alloc</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Copy</span>
     {
         <span class="kw">unsafe</span> {
             <span class="ident">Alloc</span>::<span class="ident">new</span>(<span class="ident">n</span>, <span class="ident">KernelAvx</span>::<span class="ident">align_to</span>()).<span class="ident">init_with</span>(<span class="ident">elt</span>)
@@ -1109,7 +1109,7 @@
 
     <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">T</span>;
 
-    <span class="kw">fn</span> <span class="ident">test_a_kernel</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">GemmKernel</span><span class="op">&lt;</span><span class="ident">Elem</span><span class="op">=</span><span class="ident">T</span><span class="op">&gt;&gt;</span>(<span class="ident">_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
+    <span class="kw">fn</span> <span class="ident">test_a_kernel</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">GemmKernel</span><span class="op">&lt;</span><span class="ident">Elem</span><span class="op">=</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">_name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
         <span class="kw">const</span> <span class="ident">K</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">4</span>;
         <span class="kw">let</span> <span class="ident">mr</span> <span class="op">=</span> <span class="ident">K</span>::<span class="ident">MR</span>;
         <span class="kw">let</span> <span class="ident">nr</span> <span class="op">=</span> <span class="ident">K</span>::<span class="ident">NR</span>;
@@ -1138,7 +1138,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_loop_m_n</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">m</span> <span class="op">=</span> [[<span class="number">0</span>; <span class="ident">KernelAvx</span>::<span class="ident">NR</span>]; <span class="ident">KernelAvx</span>::<span class="ident">MR</span>];
-        <span class="macro">loop_m</span><span class="macro">!</span>(<span class="ident">i</span>, <span class="macro">loop_n</span><span class="macro">!</span>(<span class="ident">j</span>, <span class="ident">m</span>[<span class="ident">i</span>][<span class="ident">j</span>] <span class="op">+=</span> <span class="number">1</span>));
+        <span class="macro">loop_m</span><span class="macro">!</span>(<span class="ident">i</span>, <span class="macro">loop_n</span><span class="macro">!</span>(<span class="ident">j</span>, <span class="ident">m</span>[<span class="ident">i</span>][<span class="ident">j</span>] <span class="op">+</span><span class="op">=</span> <span class="number">1</span>));
         <span class="kw">for</span> <span class="ident">arr</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">m</span>[..] {
             <span class="kw">for</span> <span class="ident">elt</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="ident">arr</span>[..] {
                 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">elt</span>, <span class="number">1</span>);
@@ -1151,7 +1151,7 @@
         <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">test_a_kernel</span>;
         <span class="kw">use</span> <span class="kw">super</span>::<span class="kw">super</span>::<span class="kw-2">*</span>;
         <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">test_arch_kernels_x86</span> {
-            ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">feature_name</span>:<span class="ident">tt</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kernel_ty</span>:<span class="ident">ty</span>),<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
+            ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">feature_name</span>:<span class="ident">tt</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kernel_ty</span>:<span class="ident">ty</span>),<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 $(
                 <span class="attribute">#[<span class="ident">test</span>]</span>
                 <span class="kw">fn</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>() {
@@ -1184,10 +1184,10 @@
             <span class="kw">let</span> <span class="ident">feature_name</span> <span class="op">=</span> <span class="macro">option_env</span><span class="macro">!</span>(<span class="string">&quot;MMTEST_FEATURE&quot;</span>)
                                           .<span class="ident">expect</span>(<span class="string">&quot;No MMTEST_FEATURE configured!&quot;</span>);
             <span class="kw">let</span> <span class="ident">detected</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">feature_name</span> {
-                <span class="string">&quot;avx&quot;</span> <span class="op">=&gt;</span> <span class="macro">is_x86_feature_detected_</span><span class="macro">!</span>(<span class="string">&quot;avx&quot;</span>),
-                <span class="string">&quot;fma&quot;</span> <span class="op">=&gt;</span> <span class="macro">is_x86_feature_detected_</span><span class="macro">!</span>(<span class="string">&quot;fma&quot;</span>),
-                <span class="string">&quot;sse2&quot;</span> <span class="op">=&gt;</span> <span class="macro">is_x86_feature_detected_</span><span class="macro">!</span>(<span class="string">&quot;sse2&quot;</span>),
-                <span class="kw">_</span> <span class="op">=&gt;</span> <span class="bool-val">false</span>,
+                <span class="string">&quot;avx&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">is_x86_feature_detected_</span><span class="macro">!</span>(<span class="string">&quot;avx&quot;</span>),
+                <span class="string">&quot;fma&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">is_x86_feature_detected_</span><span class="macro">!</span>(<span class="string">&quot;fma&quot;</span>),
+                <span class="string">&quot;sse2&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">is_x86_feature_detected_</span><span class="macro">!</span>(<span class="string">&quot;sse2&quot;</span>),
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
             };
             <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">detected</span>, <span class="string">&quot;Feature {:?} was not detected, so it could not be tested&quot;</span>,
                     <span class="ident">feature_name</span>);

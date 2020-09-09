@@ -107,14 +107,14 @@
 <span class="kw">use</span> <span class="ident">rand</span>::<span class="ident">distributions</span>::<span class="ident">Open01</span>;
 <span class="kw">use</span> <span class="ident">rand</span>::<span class="ident">Rng</span>;
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_std_normal</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_std_normal</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">pdf</span>(<span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">pdf</span>(<span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         (<span class="op">-</span><span class="ident">x</span> <span class="op">*</span> <span class="ident">x</span> <span class="op">/</span> <span class="number">2.0</span>).<span class="ident">exp</span>()
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">zero_case</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>, <span class="ident">u</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">zero_case</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>, <span class="ident">u</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">x</span> <span class="op">=</span> <span class="number">1.0f64</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">y</span> <span class="op">=</span> <span class="number">0.0f64</span>;
         <span class="kw">while</span> <span class="op">-</span><span class="number">2.0</span> <span class="op">*</span> <span class="ident">y</span> <span class="op">&lt;</span> <span class="ident">x</span> <span class="op">*</span> <span class="ident">x</span> {
@@ -141,14 +141,14 @@
     )
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_exp_1</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_exp_1</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">pdf</span>(<span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">pdf</span>(<span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         (<span class="op">-</span><span class="ident">x</span>).<span class="ident">exp</span>()
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">zero_case</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>, <span class="ident">_u</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">zero_case</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>, <span class="ident">_u</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="ident">ziggurat_tables</span>::<span class="ident">ZIG_EXP_R</span> <span class="op">-</span> <span class="ident">r</span>.<span class="ident">gen</span>::<span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>().<span class="ident">ln</span>()
     }
 
@@ -174,16 +174,16 @@
     <span class="ident">f_tab</span>: <span class="ident">ziggurat_tables</span>::<span class="ident">ZigTable</span>,
     <span class="kw-2">mut</span> <span class="ident">pdf</span>: <span class="ident">P</span>,
     <span class="kw-2">mut</span> <span class="ident">zero_case</span>: <span class="ident">Z</span>,
-) <span class="op">-&gt;</span> <span class="ident">f64</span>
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>
 <span class="kw">where</span>
-    <span class="ident">P</span>: <span class="ident">FnMut</span>(<span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>,
-    <span class="ident">Z</span>: <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>, <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>,
+    <span class="ident">P</span>: <span class="ident">FnMut</span>(<span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>,
+    <span class="ident">Z</span>: <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>, <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>,
 {
-    <span class="kw">const</span> <span class="ident">SCALE</span>: <span class="ident">f64</span> <span class="op">=</span> (<span class="number">1u64</span> <span class="op">&lt;&lt;</span> <span class="number">53</span>) <span class="kw">as</span> <span class="ident">f64</span>;
+    <span class="kw">const</span> <span class="ident">SCALE</span>: <span class="ident">f64</span> <span class="op">=</span> (<span class="number">1u64</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">53</span>) <span class="kw">as</span> <span class="ident">f64</span>;
     <span class="kw">loop</span> {
         <span class="kw">let</span> <span class="ident">bits</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="ident">rng</span>.<span class="ident">gen</span>();
         <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> (<span class="ident">bits</span> <span class="op">&amp;</span> <span class="number">0xff</span>) <span class="kw">as</span> <span class="ident">usize</span>;
-        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> (<span class="ident">bits</span> <span class="op">&gt;&gt;</span> <span class="number">11</span>) <span class="kw">as</span> <span class="ident">f64</span> <span class="op">/</span> <span class="ident">SCALE</span>;
+        <span class="kw">let</span> <span class="ident">f</span> <span class="op">=</span> (<span class="ident">bits</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">11</span>) <span class="kw">as</span> <span class="ident">f64</span> <span class="op">/</span> <span class="ident">SCALE</span>;
 
         <span class="comment">// u is either U(-1, 1) or U(0, 1) depending on if this is a</span>
         <span class="comment">// symmetric distribution or not.</span>
@@ -197,7 +197,7 @@
         <span class="kw">if</span> <span class="ident">test_x</span> <span class="op">&lt;</span> <span class="ident">x_tab</span>[<span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>] {
             <span class="kw">return</span> <span class="ident">x</span>;
         }
-        <span class="kw">if</span> <span class="ident">i</span> <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="ident">i</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="kw">return</span> <span class="ident">zero_case</span>(<span class="ident">rng</span>, <span class="ident">u</span>);
         }
         <span class="comment">// algebraically equivalent to f1 + DRanU()*(f0 - f1) &lt; 1</span>

@@ -38,7 +38,7 @@ any restrictions; the examples are in the public domain.</p>
 <span class="kw">let</span> <span class="ident">hex_160</span> <span class="op">=</span> <span class="string">&quot;ffff0000ffff0000ffff0000ffff0000ffff0000&quot;</span>;
 <span class="ident">int</span>.<span class="ident">assign</span>(<span class="ident">Integer</span>::<span class="ident">parse_radix</span>(<span class="ident">hex_160</span>, <span class="number">16</span>).<span class="ident">unwrap</span>());
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">int</span>.<span class="ident">significant_bits</span>(), <span class="number">160</span>);
-<span class="ident">int</span> <span class="op">=</span> (<span class="ident">int</span> <span class="op">&gt;&gt;</span> <span class="number">128</span>) <span class="op">-</span> <span class="number">1</span>;
+<span class="ident">int</span> <span class="op">=</span> (<span class="ident">int</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">128</span>) <span class="op">-</span> <span class="number">1</span>;
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">int</span>, <span class="number">0xfffe_ffff_u32</span>);</pre></div>
 <ul>
 <li><code><a href="struct.Integer.html">Integer</a>::<a href="struct.Integer.html#method.new">new</a></code> creates a new

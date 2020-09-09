@@ -153,17 +153,17 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">integral</span>(<span class="ident">x</span>: <span class="ident">f64</span>, <span class="ident">n</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">integral</span>(<span class="ident">x</span>: <span class="ident">f64</span>, <span class="ident">n</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">eps</span> <span class="op">=</span> <span class="number">0.00000000000000001</span>;
     <span class="kw">let</span> <span class="ident">max_iter</span> <span class="op">=</span> <span class="number">100</span>;
     <span class="kw">let</span> <span class="ident">nf64</span> <span class="op">=</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">f64</span>;
     <span class="kw">let</span> <span class="ident">near_f64min</span> <span class="op">=</span> <span class="number">1e-100</span>; <span class="comment">// needs very small value that is not quite as small as f64 min</span>
 
     <span class="comment">// special cases</span>
-    <span class="kw">if</span> <span class="ident">n</span> <span class="op">==</span> <span class="number">0</span> {
+    <span class="kw">if</span> <span class="ident">n</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
         <span class="kw">return</span> <span class="prelude-val">Ok</span>((<span class="op">-</span><span class="number">1.0</span> <span class="op">*</span> <span class="ident">x</span>).<span class="ident">exp</span>() <span class="op">/</span> <span class="ident">x</span>);
     }
-    <span class="kw">if</span> <span class="ident">x</span> <span class="op">==</span> <span class="number">0.0</span> {
+    <span class="kw">if</span> <span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="number">0.0</span> {
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="number">1.0</span> <span class="op">/</span> (<span class="ident">nf64</span> <span class="op">-</span> <span class="number">1.0</span>));
     }
 
@@ -174,11 +174,11 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">h</span> <span class="op">=</span> <span class="ident">d</span>;
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">1</span>..<span class="ident">max_iter</span> <span class="op">+</span> <span class="number">1</span> {
             <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="op">-</span><span class="number">1.0</span> <span class="op">*</span> <span class="ident">i</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">*</span> (<span class="ident">nf64</span> <span class="op">-</span> <span class="number">1.0</span> <span class="op">+</span> <span class="ident">i</span> <span class="kw">as</span> <span class="ident">f64</span>);
-            <span class="ident">b</span> <span class="op">+=</span> <span class="number">2.0</span>;
+            <span class="ident">b</span> <span class="op">+</span><span class="op">=</span> <span class="number">2.0</span>;
             <span class="ident">d</span> <span class="op">=</span> <span class="number">1.0</span> <span class="op">/</span> (<span class="ident">a</span> <span class="op">*</span> <span class="ident">d</span> <span class="op">+</span> <span class="ident">b</span>);
             <span class="ident">c</span> <span class="op">=</span> <span class="ident">b</span> <span class="op">+</span> <span class="ident">a</span> <span class="op">/</span> <span class="ident">c</span>;
             <span class="kw">let</span> <span class="ident">del</span> <span class="op">=</span> <span class="ident">c</span> <span class="op">*</span> <span class="ident">d</span>;
-            <span class="ident">h</span> <span class="op">*=</span> <span class="ident">del</span>;
+            <span class="ident">h</span> <span class="kw-2">*</span><span class="op">=</span> <span class="ident">del</span>;
             <span class="kw">if</span> (<span class="ident">del</span> <span class="op">-</span> <span class="number">1.0</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">eps</span> {
                 <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">h</span> <span class="op">*</span> (<span class="op">-</span><span class="ident">x</span>).<span class="ident">exp</span>());
             }
@@ -186,23 +186,23 @@
         <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ComputationFailedToConverge</span>)
     } <span class="kw">else</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">factorial</span> <span class="op">=</span> <span class="number">1.0</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">n</span> <span class="op">-</span> <span class="number">1</span> <span class="op">!=</span> <span class="number">0</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">n</span> <span class="op">-</span> <span class="number">1</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
             <span class="number">1.0</span> <span class="op">/</span> (<span class="ident">nf64</span> <span class="op">-</span> <span class="number">1.0</span>)
         } <span class="kw">else</span> {
             <span class="op">-</span><span class="number">1.0</span> <span class="op">*</span> <span class="ident">x</span>.<span class="ident">ln</span>() <span class="op">-</span> <span class="ident">consts</span>::<span class="ident">EULER_MASCHERONI</span>
         };
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">1</span>..<span class="ident">max_iter</span> <span class="op">+</span> <span class="number">1</span> {
-            <span class="ident">factorial</span> <span class="op">*=</span> <span class="op">-</span><span class="number">1.0</span> <span class="op">*</span> <span class="ident">x</span> <span class="op">/</span> <span class="ident">i</span> <span class="kw">as</span> <span class="ident">f64</span>;
-            <span class="kw">let</span> <span class="ident">del</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">i</span> <span class="op">!=</span> <span class="ident">n</span> <span class="op">-</span> <span class="number">1</span> {
+            <span class="ident">factorial</span> <span class="kw-2">*</span><span class="op">=</span> <span class="op">-</span><span class="number">1.0</span> <span class="op">*</span> <span class="ident">x</span> <span class="op">/</span> <span class="ident">i</span> <span class="kw">as</span> <span class="ident">f64</span>;
+            <span class="kw">let</span> <span class="ident">del</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">i</span> <span class="op">!</span><span class="op">=</span> <span class="ident">n</span> <span class="op">-</span> <span class="number">1</span> {
                 <span class="op">-</span><span class="ident">factorial</span> <span class="op">/</span> (<span class="ident">i</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">-</span> <span class="ident">nf64</span> <span class="op">+</span> <span class="number">1.0</span>)
             } <span class="kw">else</span> {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">psi</span> <span class="op">=</span> <span class="op">-</span><span class="number">1.0</span> <span class="op">*</span> <span class="ident">consts</span>::<span class="ident">EULER_MASCHERONI</span>;
                 <span class="kw">for</span> <span class="ident">ii</span> <span class="kw">in</span> <span class="number">1</span>..<span class="ident">n</span> {
-                    <span class="ident">psi</span> <span class="op">+=</span> <span class="number">1.0</span> <span class="op">/</span> <span class="ident">ii</span> <span class="kw">as</span> <span class="ident">f64</span>;
+                    <span class="ident">psi</span> <span class="op">+</span><span class="op">=</span> <span class="number">1.0</span> <span class="op">/</span> <span class="ident">ii</span> <span class="kw">as</span> <span class="ident">f64</span>;
                 }
                 <span class="ident">factorial</span> <span class="op">*</span> (<span class="op">-</span><span class="number">1.0</span> <span class="op">*</span> <span class="ident">x</span>.<span class="ident">ln</span>() <span class="op">+</span> <span class="ident">psi</span>)
             };
-            <span class="ident">result</span> <span class="op">+=</span> <span class="ident">del</span>;
+            <span class="ident">result</span> <span class="op">+</span><span class="op">=</span> <span class="ident">del</span>;
             <span class="kw">if</span> <span class="ident">del</span>.<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="ident">result</span>.<span class="ident">abs</span>() <span class="op">*</span> <span class="ident">eps</span> {
                 <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">result</span>);
             }

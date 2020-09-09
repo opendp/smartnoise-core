@@ -207,103 +207,103 @@
 <span id="206">206</span>
 <span id="207">207</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. This file may not be copied, modified, or distributed</span>
-<span class="comment">// except according to those terms.</span>
+<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">arraytraits</span>::<span class="ident">array_out_of_bounds</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">imp_prelude</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">NdIndex</span>;
 
-<span class="doccomment">/// Extra indexing methods for array views</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// These methods are very similar to regular indexing or calling of the</span>
-<span class="doccomment">/// `get`/`get_mut` methods that we can use on any array or array view. The</span>
-<span class="doccomment">/// difference here is in the length of lifetime in the resulting reference.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// **Note** that the `ArrayView` (read-only) and `ArrayViewMut` (read-write) differ</span>
-<span class="doccomment">/// in how they are allowed implement this trait -- `ArrayView`&#39;s implementation</span>
-<span class="doccomment">/// is usual. If you put in a `ArrayView&lt;&#39;a, T, D&gt;` here, you get references</span>
-<span class="doccomment">/// `&amp;&#39;a T` out.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// For `ArrayViewMut` to obey the borrowing rules we have to consume the</span>
-<span class="doccomment">/// view if we call any of these methods. (The equivalent of reborrow is</span>
-<span class="doccomment">/// `.view_mut()` for read-write array views, but if you can use that,</span>
-<span class="doccomment">/// then the regular indexing / `get_mut` should suffice, too.)</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use ndarray::IndexLonger;</span>
-<span class="doccomment">/// use ndarray::ArrayView;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let data = [0.; 256];</span>
-<span class="doccomment">/// let long_life_ref = {</span>
-<span class="doccomment">///     // make a 16 × 16 array view</span>
-<span class="doccomment">///     let view = ArrayView::from(&amp;data[..]).into_shape((16, 16)).unwrap();</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     // index the view and with `IndexLonger`.</span>
-<span class="doccomment">///     // Note here that we get a reference with a life that is derived from</span>
-<span class="doccomment">///     // `data`, the base data, instead of being derived from the view</span>
-<span class="doccomment">///     IndexLonger::index(&amp;view, [0, 1])</span>
-<span class="doccomment">/// };</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// // view goes out of scope</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// assert_eq!(long_life_ref, &amp;0.);</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
+<span class="doccomment">/// Extra indexing methods for array views</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// These methods are very similar to regular indexing or calling of the</span>
+<span class="doccomment">/// `get`/`get_mut` methods that we can use on any array or array view. The</span>
+<span class="doccomment">/// difference here is in the length of lifetime in the resulting reference.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// **Note** that the `ArrayView` (read-only) and `ArrayViewMut` (read-write) differ</span>
+<span class="doccomment">/// in how they are allowed implement this trait -- `ArrayView`&#39;s implementation</span>
+<span class="doccomment">/// is usual. If you put in a `ArrayView&lt;&#39;a, T, D&gt;` here, you get references</span>
+<span class="doccomment">/// `&amp;&#39;a T` out.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// For `ArrayViewMut` to obey the borrowing rules we have to consume the</span>
+<span class="doccomment">/// view if we call any of these methods. (The equivalent of reborrow is</span>
+<span class="doccomment">/// `.view_mut()` for read-write array views, but if you can use that,</span>
+<span class="doccomment">/// then the regular indexing / `get_mut` should suffice, too.)</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// use ndarray::IndexLonger;</span>
+<span class="doccomment">/// use ndarray::ArrayView;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// let data = [0.; 256];</span>
+<span class="doccomment">/// let long_life_ref = {</span>
+<span class="doccomment">///     // make a 16 × 16 array view</span>
+<span class="doccomment">///     let view = ArrayView::from(&amp;data[..]).into_shape((16, 16)).unwrap();</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///     // index the view and with `IndexLonger`.</span>
+<span class="doccomment">///     // Note here that we get a reference with a life that is derived from</span>
+<span class="doccomment">///     // `data`, the base data, instead of being derived from the view</span>
+<span class="doccomment">///     IndexLonger::index(&amp;view, [0, 1])</span>
+<span class="doccomment">/// };</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// // view goes out of scope</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// assert_eq!(long_life_ref, &amp;0.);</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">IndexLonger</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// The type of the reference to the element that is produced, including</span>
-    <span class="doccomment">/// its lifetime.</span>
+    <span class="doccomment">/// The type of the reference to the element that is produced, including</span>
+    <span class="doccomment">/// its lifetime.</span>
     <span class="kw">type</span> <span class="ident">Output</span>;
-    <span class="doccomment">/// Get a reference of a element through the view.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This method is like `Index::index` but with a longer lifetime (matching</span>
-    <span class="doccomment">/// the array view); which we can only do for the array view and not in the</span>
-    <span class="doccomment">/// `Index` trait.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// See also [the `get` method][1] which works for all arrays and array</span>
-    <span class="doccomment">/// views.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [1]: struct.ArrayBase.html#method.get</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if index is out of bounds.</span>
-    <span class="kw">fn</span> <span class="ident">index</span>(<span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
+    <span class="doccomment">/// Get a reference of a element through the view.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This method is like `Index::index` but with a longer lifetime (matching</span>
+    <span class="doccomment">/// the array view); which we can only do for the array view and not in the</span>
+    <span class="doccomment">/// `Index` trait.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// See also [the `get` method][1] which works for all arrays and array</span>
+    <span class="doccomment">/// views.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [1]: struct.ArrayBase.html#method.get</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if index is out of bounds.</span>
+    <span class="kw">fn</span> <span class="ident">index</span>(<span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
 
-    <span class="doccomment">/// Get a reference of a element through the view.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This method is like `ArrayBase::get` but with a longer lifetime (matching</span>
-    <span class="doccomment">/// the array view); which we can only do for the array view and not in the</span>
-    <span class="doccomment">/// `Index` trait.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// See also [the `get` method][1] (and [`get_mut`][2]) which works for all arrays and array</span>
-    <span class="doccomment">/// views.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [1]: struct.ArrayBase.html#method.get</span>
-    <span class="doccomment">/// [2]: struct.ArrayBase.html#method.get_mut</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if index is out of bounds.</span>
-    <span class="kw">fn</span> <span class="ident">get</span>(<span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Output</span><span class="op">&gt;</span>;
+    <span class="doccomment">/// Get a reference of a element through the view.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This method is like `ArrayBase::get` but with a longer lifetime (matching</span>
+    <span class="doccomment">/// the array view); which we can only do for the array view and not in the</span>
+    <span class="doccomment">/// `Index` trait.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// See also [the `get` method][1] (and [`get_mut`][2]) which works for all arrays and array</span>
+    <span class="doccomment">/// views.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [1]: struct.ArrayBase.html#method.get</span>
+    <span class="doccomment">/// [2]: struct.ArrayBase.html#method.get_mut</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if index is out of bounds.</span>
+    <span class="kw">fn</span> <span class="ident">get</span>(<span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Output</span><span class="op">&gt;</span>;
 
-    <span class="doccomment">/// Get a reference of a element through the view without boundary check</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This method is like `elem` with a longer lifetime (matching the array</span>
-    <span class="doccomment">/// view); which we can&#39;t do for general arrays.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// See also [the `uget` method][1] which works for all arrays and array</span>
-    <span class="doccomment">/// views.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [1]: struct.ArrayBase.html#method.uget</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Note:** only unchecked for non-debug builds of ndarray.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Safety</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The caller must ensure that the index is in-bounds.</span>
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">uget</span>(<span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
+    <span class="doccomment">/// Get a reference of a element through the view without boundary check</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This method is like `elem` with a longer lifetime (matching the array</span>
+    <span class="doccomment">/// view); which we can&#39;t do for general arrays.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// See also [the `uget` method][1] which works for all arrays and array</span>
+    <span class="doccomment">/// views.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [1]: struct.ArrayBase.html#method.uget</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Note:** only unchecked for non-debug builds of ndarray.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Safety</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The caller must ensure that the index is in-bounds.</span>
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">uget</span>(<span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>, <span class="ident">I</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">IndexLonger</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;b</span> <span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
@@ -313,39 +313,39 @@
 {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">A</span>;
 
-    <span class="doccomment">/// Get a reference of a element through the view.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This method is like `Index::index` but with a longer lifetime (matching</span>
-    <span class="doccomment">/// the array view); which we can only do for the array view and not in the</span>
-    <span class="doccomment">/// `Index` trait.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// See also [the `get` method][1] which works for all arrays and array</span>
-    <span class="doccomment">/// views.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [1]: struct.ArrayBase.html#method.get</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if index is out of bounds.</span>
-    <span class="kw">fn</span> <span class="ident">index</span>(<span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">A</span> {
+    <span class="doccomment">/// Get a reference of a element through the view.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This method is like `Index::index` but with a longer lifetime (matching</span>
+    <span class="doccomment">/// the array view); which we can only do for the array view and not in the</span>
+    <span class="doccomment">/// `Index` trait.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// See also [the `get` method][1] which works for all arrays and array</span>
+    <span class="doccomment">/// views.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [1]: struct.ArrayBase.html#method.get</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if index is out of bounds.</span>
+    <span class="kw">fn</span> <span class="ident">index</span>(<span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">A</span> {
         <span class="macro">debug_bounds_check</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">index</span>);
-        <span class="kw">unsafe</span> { <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">get_ptr</span>(<span class="ident">index</span>).<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="ident">array_out_of_bounds</span>()) }
+        <span class="kw">unsafe</span> { <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">get_ptr</span>(<span class="ident">index</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">array_out_of_bounds</span>()) }
     }
 
-    <span class="kw">fn</span> <span class="ident">get</span>(<span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">get</span>(<span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">A</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">get_ptr</span>(<span class="ident">index</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">ptr</span><span class="op">|</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">ptr</span>) }
     }
 
-    <span class="doccomment">/// Get a reference of a element through the view without boundary check</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This method is like `elem` with a longer lifetime (matching the array</span>
-    <span class="doccomment">/// view); which we can&#39;t do for general arrays.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// See also [the `uget` method][1] which works for all arrays and array</span>
-    <span class="doccomment">/// views.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [1]: struct.ArrayBase.html#method.uget</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Note:** only unchecked for non-debug builds of ndarray.</span>
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">uget</span>(<span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">A</span> {
+    <span class="doccomment">/// Get a reference of a element through the view without boundary check</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This method is like `elem` with a longer lifetime (matching the array</span>
+    <span class="doccomment">/// view); which we can&#39;t do for general arrays.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// See also [the `uget` method][1] which works for all arrays and array</span>
+    <span class="doccomment">/// views.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [1]: struct.ArrayBase.html#method.uget</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Note:** only unchecked for non-debug builds of ndarray.</span>
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">uget</span>(<span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">A</span> {
         <span class="macro">debug_bounds_check</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">index</span>);
         <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">as_ptr</span>().<span class="ident">offset</span>(<span class="ident">index</span>.<span class="ident">index_unchecked</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">strides</span>))
     }
@@ -358,56 +358,56 @@
 {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">A</span>;
 
-    <span class="doccomment">/// Convert a mutable array view to a mutable reference of a element.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This method is like `IndexMut::index_mut` but with a longer lifetime</span>
-    <span class="doccomment">/// (matching the array view); which we can only do for the array view and</span>
-    <span class="doccomment">/// not in the `Index` trait.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// See also [the `get_mut` method][1] which works for all arrays and array</span>
-    <span class="doccomment">/// views.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [1]: struct.ArrayBase.html#method.get_mut</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if index is out of bounds.</span>
-    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">A</span> {
+    <span class="doccomment">/// Convert a mutable array view to a mutable reference of a element.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This method is like `IndexMut::index_mut` but with a longer lifetime</span>
+    <span class="doccomment">/// (matching the array view); which we can only do for the array view and</span>
+    <span class="doccomment">/// not in the `Index` trait.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// See also [the `get_mut` method][1] which works for all arrays and array</span>
+    <span class="doccomment">/// views.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [1]: struct.ArrayBase.html#method.get_mut</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if index is out of bounds.</span>
+    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">A</span> {
         <span class="macro">debug_bounds_check</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">index</span>);
         <span class="kw">unsafe</span> {
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">get_ptr_mut</span>(<span class="ident">index</span>) {
-                <span class="prelude-val">Some</span>(<span class="ident">ptr</span>) <span class="op">=&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">ptr</span>,
-                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">array_out_of_bounds</span>(),
+                <span class="prelude-val">Some</span>(<span class="ident">ptr</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">ptr</span>,
+                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">array_out_of_bounds</span>(),
             }
         }
     }
 
-    <span class="doccomment">/// Convert a mutable array view to a mutable reference of a element, with</span>
-    <span class="doccomment">/// checked access.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// See also [the `get_mut` method][1] which works for all arrays and array</span>
-    <span class="doccomment">/// views.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [1]: struct.ArrayBase.html#method.get_mut</span>
-    <span class="doccomment">///</span>
-    <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Convert a mutable array view to a mutable reference of a element, with</span>
+    <span class="doccomment">/// checked access.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// See also [the `get_mut` method][1] which works for all arrays and array</span>
+    <span class="doccomment">/// views.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [1]: struct.ArrayBase.html#method.get_mut</span>
+    <span class="doccomment">///</span>
+    <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">A</span><span class="op">&gt;</span> {
         <span class="macro">debug_bounds_check</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">index</span>);
         <span class="kw">unsafe</span> {
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">get_ptr_mut</span>(<span class="ident">index</span>) {
-                <span class="prelude-val">Some</span>(<span class="ident">ptr</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">ptr</span>),
-                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+                <span class="prelude-val">Some</span>(<span class="ident">ptr</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">ptr</span>),
+                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
             }
         }
     }
 
-    <span class="doccomment">/// Convert a mutable array view to a mutable reference of a element without</span>
-    <span class="doccomment">/// boundary check.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// See also [the `uget_mut` method][1] which works for all arrays and array</span>
-    <span class="doccomment">/// views.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [1]: struct.ArrayBase.html#method.uget_mut</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Note:** only unchecked for non-debug builds of ndarray.</span>
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">uget</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">A</span> {
+    <span class="doccomment">/// Convert a mutable array view to a mutable reference of a element without</span>
+    <span class="doccomment">/// boundary check.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// See also [the `uget_mut` method][1] which works for all arrays and array</span>
+    <span class="doccomment">/// views.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [1]: struct.ArrayBase.html#method.uget_mut</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Note:** only unchecked for non-debug builds of ndarray.</span>
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">uget</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">index</span>: <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">A</span> {
         <span class="macro">debug_bounds_check</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">index</span>);
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="self">self</span>
             .<span class="ident">as_mut_ptr</span>()

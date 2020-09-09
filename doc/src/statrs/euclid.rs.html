@@ -74,41 +74,41 @@
     <span class="doccomment">/// let y = -4i64.modulus(5);</span>
     <span class="doccomment">/// assert_eq!(x, 4);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">modulus</span>(<span class="self">self</span>, <span class="ident">divisor</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">modulus</span>(<span class="self">self</span>, <span class="ident">divisor</span>: <span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 }
 
 <span class="kw">impl</span> <span class="ident">Modulus</span> <span class="kw">for</span> <span class="ident">f64</span> {
-    <span class="kw">fn</span> <span class="ident">modulus</span>(<span class="self">self</span>, <span class="ident">divisor</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">modulus</span>(<span class="self">self</span>, <span class="ident">divisor</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         ((<span class="self">self</span> <span class="op">%</span> <span class="ident">divisor</span>) <span class="op">+</span> <span class="ident">divisor</span>) <span class="op">%</span> <span class="ident">divisor</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Modulus</span> <span class="kw">for</span> <span class="ident">f32</span> {
-    <span class="kw">fn</span> <span class="ident">modulus</span>(<span class="self">self</span>, <span class="ident">divisor</span>: <span class="ident">f32</span>) <span class="op">-&gt;</span> <span class="ident">f32</span> {
+    <span class="kw">fn</span> <span class="ident">modulus</span>(<span class="self">self</span>, <span class="ident">divisor</span>: <span class="ident">f32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f32</span> {
         ((<span class="self">self</span> <span class="op">%</span> <span class="ident">divisor</span>) <span class="op">+</span> <span class="ident">divisor</span>) <span class="op">%</span> <span class="ident">divisor</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Modulus</span> <span class="kw">for</span> <span class="ident">i64</span> {
-    <span class="kw">fn</span> <span class="ident">modulus</span>(<span class="self">self</span>, <span class="ident">divisor</span>: <span class="ident">i64</span>) <span class="op">-&gt;</span> <span class="ident">i64</span> {
+    <span class="kw">fn</span> <span class="ident">modulus</span>(<span class="self">self</span>, <span class="ident">divisor</span>: <span class="ident">i64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i64</span> {
         ((<span class="self">self</span> <span class="op">%</span> <span class="ident">divisor</span>) <span class="op">+</span> <span class="ident">divisor</span>) <span class="op">%</span> <span class="ident">divisor</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Modulus</span> <span class="kw">for</span> <span class="ident">i32</span> {
-    <span class="kw">fn</span> <span class="ident">modulus</span>(<span class="self">self</span>, <span class="ident">divisor</span>: <span class="ident">i32</span>) <span class="op">-&gt;</span> <span class="ident">i32</span> {
+    <span class="kw">fn</span> <span class="ident">modulus</span>(<span class="self">self</span>, <span class="ident">divisor</span>: <span class="ident">i32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">i32</span> {
         ((<span class="self">self</span> <span class="op">%</span> <span class="ident">divisor</span>) <span class="op">+</span> <span class="ident">divisor</span>) <span class="op">%</span> <span class="ident">divisor</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Modulus</span> <span class="kw">for</span> <span class="ident">u64</span> {
-    <span class="kw">fn</span> <span class="ident">modulus</span>(<span class="self">self</span>, <span class="ident">divisor</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">fn</span> <span class="ident">modulus</span>(<span class="self">self</span>, <span class="ident">divisor</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
         ((<span class="self">self</span> <span class="op">%</span> <span class="ident">divisor</span>) <span class="op">+</span> <span class="ident">divisor</span>) <span class="op">%</span> <span class="ident">divisor</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Modulus</span> <span class="kw">for</span> <span class="ident">u32</span> {
-    <span class="kw">fn</span> <span class="ident">modulus</span>(<span class="self">self</span>, <span class="ident">divisor</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">modulus</span>(<span class="self">self</span>, <span class="ident">divisor</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         ((<span class="self">self</span> <span class="op">%</span> <span class="ident">divisor</span>) <span class="op">+</span> <span class="ident">divisor</span>) <span class="op">%</span> <span class="ident">divisor</span>
     }
 }

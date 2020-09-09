@@ -513,7 +513,7 @@
     <span class="doccomment">/// result = Multinomial::new(&amp;[0.0, -1.0, 2.0], 3);</span>
     <span class="doccomment">/// assert!(result.is_err());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">n</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Multinomial</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">n</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Multinomial</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="op">!</span><span class="kw">super</span>::<span class="ident">internal</span>::<span class="ident">is_valid_multinomial</span>(<span class="ident">p</span>, <span class="bool-val">true</span>) {
             <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">BadParams</span>)
         } <span class="kw">else</span> {
@@ -535,7 +535,7 @@
     <span class="doccomment">/// let n = Multinomial::new(&amp;[0.0, 1.0, 2.0], 3).unwrap();</span>
     <span class="doccomment">/// assert_eq!(n.p(), [0.0, 1.0, 2.0]);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">p</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">f64</span>] {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">p</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">f64</span>] {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">p</span>
     }
 
@@ -550,13 +550,13 @@
     <span class="doccomment">/// let n = Multinomial::new(&amp;[0.0, 1.0, 2.0], 3).unwrap();</span>
     <span class="doccomment">/// assert_eq!(n.n(), 3);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">n</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">n</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">n</span>
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Distribution</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">Multinomial</span> {
-    <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+<span class="kw">impl</span> <span class="ident">Distribution</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Multinomial</span> {
+    <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">p_cdf</span> <span class="op">=</span> <span class="kw">super</span>::<span class="ident">categorical</span>::<span class="ident">prob_mass_to_cdf</span>(<span class="self">self</span>.<span class="ident">p</span>());
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">res</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0.0</span>; <span class="self">self</span>.<span class="ident">p</span>.<span class="ident">len</span>()];
         <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="self">self</span>.<span class="ident">n</span> {
@@ -568,7 +568,7 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Mean</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">Multinomial</span> {
+<span class="kw">impl</span> <span class="ident">Mean</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Multinomial</span> {
     <span class="doccomment">/// Returns the mean of the multinomial distribution</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Formula</span>
@@ -579,12 +579,12 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `n` is the number of trials, `p_i` is the `i`th probability,</span>
     <span class="doccomment">/// and `k` is the total number of probabilities</span>
-    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">p</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">n</span> <span class="kw">as</span> <span class="ident">f64</span>).<span class="ident">collect</span>()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Variance</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">Multinomial</span> {
+<span class="kw">impl</span> <span class="ident">Variance</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Multinomial</span> {
     <span class="doccomment">/// Returns the variance of the multinomial distribution</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Formula</span>
@@ -595,7 +595,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `n` is the number of trials, `p_i` is the `i`th probability,</span>
     <span class="doccomment">/// and `k` is the total number of probabilities</span>
-    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">p</span>
             .<span class="ident">iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">n</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">*</span> (<span class="number">1.0</span> <span class="op">-</span> <span class="ident">x</span>))
@@ -612,12 +612,12 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `n` is the number of trials, `p_i` is the `i`th probability,</span>
     <span class="doccomment">/// and `k` is the total number of probabilities</span>
-    <span class="kw">fn</span> <span class="ident">std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">variance</span>().<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">sqrt</span>()).<span class="ident">collect</span>()
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Skewness</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">Multinomial</span> {
+<span class="kw">impl</span> <span class="ident">Skewness</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Multinomial</span> {
     <span class="doccomment">/// Returns the skewness of the multinomial distribution</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// # Formula</span>
@@ -628,7 +628,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `n` is the number of trials, `p_i` is the `i`th probability,</span>
     <span class="doccomment">/// and `k` is the total number of probabilities</span>
-    <span class="kw">fn</span> <span class="ident">skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">p</span>
             .<span class="ident">iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> (<span class="number">1.0</span> <span class="op">-</span> <span class="number">2.0</span> <span class="op">*</span> <span class="ident">x</span>) <span class="op">/</span> (<span class="self">self</span>.<span class="ident">n</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">*</span> (<span class="number">1.0</span> <span class="op">-</span> <span class="ident">x</span>) <span class="op">*</span> <span class="ident">x</span>).<span class="ident">sqrt</span>())
@@ -656,7 +656,7 @@
     <span class="doccomment">/// where `n` is the number of trials, `p_i` is the `i`th probability,</span>
     <span class="doccomment">/// `x_i` is the `i`th `x` value, and `k` is the total number of</span>
     <span class="doccomment">/// probabilities</span>
-    <span class="kw">fn</span> <span class="ident">pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="kw-2">&amp;</span>[<span class="ident">u64</span>]) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="kw-2">&amp;</span>[<span class="ident">u64</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">checked_pmf</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>()
     }
 
@@ -679,7 +679,7 @@
     <span class="doccomment">/// where `n` is the number of trials, `p_i` is the `i`th probability,</span>
     <span class="doccomment">/// `x_i` is the `i`th `x` value, and `k` is the total number of</span>
     <span class="doccomment">/// probabilities</span>
-    <span class="kw">fn</span> <span class="ident">ln_pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="kw-2">&amp;</span>[<span class="ident">u64</span>]) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">ln_pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="kw-2">&amp;</span>[<span class="ident">u64</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">checked_ln_pmf</span>(<span class="ident">x</span>).<span class="ident">unwrap</span>()
     }
 }
@@ -704,11 +704,11 @@
     <span class="doccomment">/// where `n` is the number of trials, `p_i` is the `i`th probability,</span>
     <span class="doccomment">/// `x_i` is the `i`th `x` value, and `k` is the total number of</span>
     <span class="doccomment">/// probabilities</span>
-    <span class="kw">fn</span> <span class="ident">checked_pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="kw-2">&amp;</span>[<span class="ident">u64</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">p</span>.<span class="ident">len</span>() <span class="op">!=</span> <span class="ident">x</span>.<span class="ident">len</span>() {
+    <span class="kw">fn</span> <span class="ident">checked_pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="kw-2">&amp;</span>[<span class="ident">u64</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">p</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">x</span>.<span class="ident">len</span>() {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ContainersMustBeSameLength</span>);
         }
-        <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">iter</span>().<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>() <span class="op">!=</span> <span class="self">self</span>.<span class="ident">n</span> {
+        <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">iter</span>().<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>() <span class="op">!</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">n</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ContainerExpectedSumVar</span>(<span class="string">&quot;x&quot;</span>, <span class="string">&quot;n&quot;</span>));
         }
         <span class="kw">let</span> <span class="ident">coeff</span> <span class="op">=</span> <span class="ident">factorial</span>::<span class="ident">multinomial</span>(<span class="self">self</span>.<span class="ident">n</span>, <span class="ident">x</span>);
@@ -740,11 +740,11 @@
     <span class="doccomment">/// where `n` is the number of trials, `p_i` is the `i`th probability,</span>
     <span class="doccomment">/// `x_i` is the `i`th `x` value, and `k` is the total number of</span>
     <span class="doccomment">/// probabilities</span>
-    <span class="kw">fn</span> <span class="ident">checked_ln_pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="kw-2">&amp;</span>[<span class="ident">u64</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">p</span>.<span class="ident">len</span>() <span class="op">!=</span> <span class="ident">x</span>.<span class="ident">len</span>() {
+    <span class="kw">fn</span> <span class="ident">checked_ln_pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="kw-2">&amp;</span>[<span class="ident">u64</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">p</span>.<span class="ident">len</span>() <span class="op">!</span><span class="op">=</span> <span class="ident">x</span>.<span class="ident">len</span>() {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ContainersMustBeSameLength</span>);
         }
-        <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">iter</span>().<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>() <span class="op">!=</span> <span class="self">self</span>.<span class="ident">n</span> {
+        <span class="kw">if</span> <span class="ident">x</span>.<span class="ident">iter</span>().<span class="ident">sum</span>::<span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>() <span class="op">!</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">n</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ContainerExpectedSumVar</span>(<span class="string">&quot;x&quot;</span>, <span class="string">&quot;n&quot;</span>));
         }
         <span class="kw">let</span> <span class="ident">coeff</span> <span class="op">=</span> <span class="ident">factorial</span>::<span class="ident">multinomial</span>(<span class="self">self</span>.<span class="ident">n</span>, <span class="ident">x</span>).<span class="ident">ln</span>();
@@ -765,7 +765,7 @@
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">statistics</span>::<span class="kw-2">*</span>;
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">distribution</span>::{<span class="ident">CheckedDiscrete</span>, <span class="ident">Discrete</span>, <span class="ident">Multinomial</span>};
 
-    <span class="kw">fn</span> <span class="ident">try_create</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">n</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">Multinomial</span> {
+    <span class="kw">fn</span> <span class="ident">try_create</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">n</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Multinomial</span> {
         <span class="kw">let</span> <span class="ident">dist</span> <span class="op">=</span> <span class="ident">Multinomial</span>::<span class="ident">new</span>(<span class="ident">p</span>, <span class="ident">n</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">dist</span>.<span class="ident">is_ok</span>());
         <span class="ident">dist</span>.<span class="ident">unwrap</span>()
@@ -783,7 +783,7 @@
     }
 
     <span class="kw">fn</span> <span class="ident">test_case</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">n</span>: <span class="ident">u64</span>, <span class="ident">expected</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">eval</span>: <span class="ident">F</span>)
-        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Multinomial</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>
+        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Multinomial</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>
     {
         <span class="kw">let</span> <span class="ident">dist</span> <span class="op">=</span> <span class="ident">try_create</span>(<span class="ident">p</span>, <span class="ident">n</span>);
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">eval</span>(<span class="ident">dist</span>);
@@ -791,7 +791,7 @@
     }
 
     <span class="kw">fn</span> <span class="ident">test_almost</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">n</span>: <span class="ident">u64</span>, <span class="ident">expected</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">acc</span>: <span class="ident">f64</span>, <span class="ident">eval</span>: <span class="ident">F</span>)
-        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Multinomial</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>
+        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Multinomial</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>
     {
         <span class="kw">let</span> <span class="ident">dist</span> <span class="op">=</span> <span class="ident">try_create</span>(<span class="ident">p</span>, <span class="ident">n</span>);
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">eval</span>(<span class="ident">dist</span>);
@@ -802,7 +802,7 @@
     }
 
     <span class="kw">fn</span> <span class="ident">test_almost_sr</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">p</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">n</span>: <span class="ident">u64</span>, <span class="ident">expected</span>: <span class="ident">f64</span>, <span class="ident">acc</span>:<span class="ident">f64</span>, <span class="ident">eval</span>: <span class="ident">F</span>)
-        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Multinomial</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>
+        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Multinomial</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>
     {
         <span class="kw">let</span> <span class="ident">dist</span> <span class="op">=</span> <span class="ident">try_create</span>(<span class="ident">p</span>, <span class="ident">n</span>);
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">eval</span>(<span class="ident">dist</span>);

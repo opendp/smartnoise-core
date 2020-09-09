@@ -207,7 +207,7 @@
 <span class="doccomment">/// # Remarks</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Returns `f64::INFINITY` if `x &gt; 170`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">factorial</span>(<span class="ident">x</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">factorial</span>(<span class="ident">x</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="kw">if</span> <span class="ident">x</span> <span class="op">&gt;</span> <span class="ident">MAX_ARG</span> {
         <span class="ident">f64</span>::<span class="ident">INFINITY</span>
     } <span class="kw">else</span> {
@@ -221,8 +221,8 @@
 <span class="doccomment">/// # Remarks</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Returns `0.0` if `x &lt;= 1`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ln_factorial</span>(<span class="ident">x</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
-    <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;=</span> <span class="number">1</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ln_factorial</span>(<span class="ident">x</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1</span> {
         <span class="number">0.0</span>
     } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">&gt;</span> <span class="ident">MAX_ARG</span> {
         <span class="ident">gamma</span>::<span class="ident">ln_gamma</span>(<span class="ident">x</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">+</span> <span class="number">1.0</span>)
@@ -237,7 +237,7 @@
 <span class="doccomment">/// # Remarks</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Returns `0.0` if `k &gt; n`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">binomial</span>(<span class="ident">n</span>: <span class="ident">u64</span>, <span class="ident">k</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">binomial</span>(<span class="ident">n</span>: <span class="ident">u64</span>, <span class="ident">k</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="kw">if</span> <span class="ident">k</span> <span class="op">&gt;</span> <span class="ident">n</span> {
         <span class="number">0.0</span>
     } <span class="kw">else</span> {
@@ -251,7 +251,7 @@
 <span class="doccomment">/// # Remarks</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Returns `f64::NEG_INFINITY` if `k &gt; n`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ln_binomial</span>(<span class="ident">n</span>: <span class="ident">u64</span>, <span class="ident">k</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">ln_binomial</span>(<span class="ident">n</span>: <span class="ident">u64</span>, <span class="ident">k</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="kw">if</span> <span class="ident">k</span> <span class="op">&gt;</span> <span class="ident">n</span> {
         <span class="ident">f64</span>::<span class="ident">NEG_INFINITY</span>
     } <span class="kw">else</span> {
@@ -264,7 +264,7 @@
 <span class="doccomment">/// # Panics</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// If the elements in `ni` do not sum to `n`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">multinomial</span>(<span class="ident">n</span>: <span class="ident">u64</span>, <span class="ident">ni</span>: <span class="kw-2">&amp;</span>[<span class="ident">u64</span>]) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">multinomial</span>(<span class="ident">n</span>: <span class="ident">u64</span>, <span class="ident">ni</span>: <span class="kw-2">&amp;</span>[<span class="ident">u64</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="ident">checked_multinomial</span>(<span class="ident">n</span>, <span class="ident">ni</span>).<span class="ident">unwrap</span>()
 }
 
@@ -273,11 +273,11 @@
 <span class="doccomment">/// # Errors</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// If the elements in `ni` do not sum to `n`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">checked_multinomial</span>(<span class="ident">n</span>: <span class="ident">u64</span>, <span class="ident">ni</span>: <span class="kw-2">&amp;</span>[<span class="ident">u64</span>]) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">checked_multinomial</span>(<span class="ident">n</span>: <span class="ident">u64</span>, <span class="ident">ni</span>: <span class="kw-2">&amp;</span>[<span class="ident">u64</span>]) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
     <span class="kw">let</span> (<span class="ident">sum</span>, <span class="ident">ret</span>) <span class="op">=</span> <span class="ident">ni</span>.<span class="ident">iter</span>().<span class="ident">fold</span>((<span class="number">0</span>, <span class="ident">ln_factorial</span>(<span class="ident">n</span>)), <span class="op">|</span><span class="ident">acc</span>, <span class="kw-2">&amp;</span><span class="ident">x</span><span class="op">|</span> {
         (<span class="ident">acc</span>.<span class="number">0</span> <span class="op">+</span> <span class="ident">x</span>, <span class="ident">acc</span>.<span class="number">1</span> <span class="op">-</span> <span class="ident">ln_factorial</span>(<span class="ident">x</span>))
     });
-    <span class="kw">if</span> <span class="ident">sum</span> <span class="op">!=</span> <span class="ident">n</span> {
+    <span class="kw">if</span> <span class="ident">sum</span> <span class="op">!</span><span class="op">=</span> <span class="ident">n</span> {
         <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ContainerExpectedSumVar</span>(<span class="string">&quot;ni&quot;</span>, <span class="string">&quot;n&quot;</span>))
     } <span class="kw">else</span> {
         <span class="prelude-val">Ok</span>((<span class="number">0.5</span> <span class="op">+</span> <span class="ident">ret</span>.<span class="ident">exp</span>()).<span class="ident">floor</span>())
@@ -291,9 +291,9 @@
 <span class="kw">static</span> <span class="kw-2">mut</span> <span class="ident">FCACHE</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="kw-2">mut</span> [<span class="ident">f64</span>; <span class="ident">CACHE_SIZE</span>] <span class="op">=</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="number">1.0</span>; <span class="ident">CACHE_SIZE</span>];
 <span class="kw">static</span> <span class="ident">START</span>: <span class="ident">Once</span> <span class="op">=</span> <span class="ident">ONCE_INIT</span>;
 
-<span class="kw">fn</span> <span class="ident">get_fcache</span>() <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">f64</span>; <span class="ident">CACHE_SIZE</span>] {
+<span class="kw">fn</span> <span class="ident">get_fcache</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [<span class="ident">f64</span>; <span class="ident">CACHE_SIZE</span>] {
     <span class="kw">unsafe</span> {
-        <span class="ident">START</span>.<span class="ident">call_once</span>(<span class="op">||</span> {
+        <span class="ident">START</span>.<span class="ident">call_once</span>(<span class="op">|</span><span class="op">|</span> {
             (<span class="number">1</span>..<span class="ident">CACHE_SIZE</span>).<span class="ident">fold</span>(<span class="ident">FCACHE</span>[<span class="number">0</span>], <span class="op">|</span><span class="ident">acc</span>, <span class="ident">i</span><span class="op">|</span> {
                 <span class="kw">let</span> <span class="ident">fac</span> <span class="op">=</span> <span class="ident">acc</span> <span class="op">*</span> <span class="ident">i</span> <span class="kw">as</span> <span class="ident">f64</span>;
                 <span class="ident">FCACHE</span>[<span class="ident">i</span>] <span class="op">=</span> <span class="ident">fac</span>;
@@ -313,7 +313,7 @@
     <span class="kw">fn</span> <span class="ident">test_factorial_and_ln_factorial</span>() {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">factorial</span> <span class="op">=</span> <span class="number">1.0</span>;
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">1</span>..<span class="number">171</span> {
-            <span class="ident">factorial</span> <span class="op">*=</span> <span class="ident">i</span> <span class="kw">as</span> <span class="ident">f64</span>;
+            <span class="ident">factorial</span> <span class="kw-2">*</span><span class="op">=</span> <span class="ident">i</span> <span class="kw">as</span> <span class="ident">f64</span>;
             <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">factorial</span>(<span class="ident">i</span>), <span class="ident">factorial</span>);
             <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">ln_factorial</span>(<span class="ident">i</span>), <span class="ident">factorial</span>.<span class="ident">ln</span>());
         }
@@ -327,10 +327,10 @@
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_ln_factorial_does_not_overflow</span>() {
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">ln_factorial</span>(<span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">10</span>), <span class="number">6078.2118847500501140</span>);
-        <span class="macro">assert_almost_eq</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">ln_factorial</span>(<span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">12</span>), <span class="number">29978.648060844048236</span>, <span class="number">1e-11</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">ln_factorial</span>(<span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">15</span>), <span class="number">307933.81973375485425</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">ln_factorial</span>(<span class="number">1</span> <span class="op">&lt;&lt;</span> <span class="number">17</span>), <span class="number">1413421.9939462073242</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">ln_factorial</span>(<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">10</span>), <span class="number">6078.2118847500501140</span>);
+        <span class="macro">assert_almost_eq</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">ln_factorial</span>(<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">12</span>), <span class="number">29978.648060844048236</span>, <span class="number">1e-11</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">ln_factorial</span>(<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">15</span>), <span class="number">307933.81973375485425</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw">super</span>::<span class="ident">ln_factorial</span>(<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">17</span>), <span class="number">1413421.9939462073242</span>);
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>

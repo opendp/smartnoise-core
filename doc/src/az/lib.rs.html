@@ -751,7 +751,7 @@ assert_eq!(Cast::&lt;u8&gt;::cast(17.1f32), 17);
 */</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Cast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Casts the value.</span>
-    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Dst</span>;
+    <span class="kw">fn</span> <span class="ident">cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Dst</span>;
 }
 
 <span class="doccomment">/**
@@ -780,7 +780,7 @@ assert_eq!(b, None);
 */</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">CheckedCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Casts the value.</span>
-    <span class="kw">fn</span> <span class="ident">checked_cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">checked_cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/**
@@ -807,7 +807,7 @@ assert_eq!(SaturatingCast::&lt;u8&gt;::saturating_cast(17.0 + 256.0), 255);
 */</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">SaturatingCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Casts the value.</span>
-    <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Dst</span>;
+    <span class="kw">fn</span> <span class="ident">saturating_cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Dst</span>;
 }
 
 <span class="doccomment">/**
@@ -834,7 +834,7 @@ assert_eq!(WrappingCast::&lt;u8&gt;::wrapping_cast(17.0 + 256.0), 17);
 */</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">WrappingCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Casts the value.</span>
-    <span class="kw">fn</span> <span class="ident">wrapping_cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Dst</span>;
+    <span class="kw">fn</span> <span class="ident">wrapping_cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Dst</span>;
 }
 
 <span class="doccomment">/**
@@ -868,7 +868,7 @@ integer type.
  */</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">OverflowingCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Casts the value.</span>
-    <span class="kw">fn</span> <span class="ident">overflowing_cast</span>(<span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">Dst</span>, <span class="ident">bool</span>);
+    <span class="kw">fn</span> <span class="ident">overflowing_cast</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Dst</span>, <span class="ident">bool</span>);
 }
 
 <span class="doccomment">/**
@@ -907,14 +907,14 @@ assert_eq!(17.1f32.az::&lt;u8&gt;(), 17);
 */</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Az</span> {
     <span class="doccomment">/// Casts the value.</span>
-    <span class="kw">fn</span> <span class="ident">az</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Dst</span>
+    <span class="kw">fn</span> <span class="ident">az</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Dst</span>
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">Cast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Az</span> <span class="kw">for</span> <span class="ident">T</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">az</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Dst</span>
+    <span class="kw">fn</span> <span class="ident">az</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Dst</span>
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">Cast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>,
     {
@@ -953,14 +953,14 @@ assert_eq!(f32::NAN.checked_as::&lt;u8&gt;(), None);
 */</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">CheckedAs</span> {
     <span class="doccomment">/// Casts the value.</span>
-    <span class="kw">fn</span> <span class="ident">checked_as</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">checked_as</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">CheckedCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">CheckedAs</span> <span class="kw">for</span> <span class="ident">T</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">checked_as</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">checked_as</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">CheckedCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>,
     {
@@ -998,14 +998,14 @@ assert_eq!((17.0 + 256.0).saturating_as::&lt;u8&gt;(), 255);
 */</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">SaturatingAs</span> {
     <span class="doccomment">/// Casts the value.</span>
-    <span class="kw">fn</span> <span class="ident">saturating_as</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Dst</span>
+    <span class="kw">fn</span> <span class="ident">saturating_as</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Dst</span>
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">SaturatingCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">SaturatingAs</span> <span class="kw">for</span> <span class="ident">T</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">saturating_as</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Dst</span>
+    <span class="kw">fn</span> <span class="ident">saturating_as</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Dst</span>
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">SaturatingCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>,
     {
@@ -1043,14 +1043,14 @@ assert_eq!((17.0 + 256.0).wrapping_as::&lt;u8&gt;(), 17);
 */</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">WrappingAs</span> {
     <span class="doccomment">/// Casts the value.</span>
-    <span class="kw">fn</span> <span class="ident">wrapping_as</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Dst</span>
+    <span class="kw">fn</span> <span class="ident">wrapping_as</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Dst</span>
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">WrappingCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">WrappingAs</span> <span class="kw">for</span> <span class="ident">T</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">wrapping_as</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Dst</span>
+    <span class="kw">fn</span> <span class="ident">wrapping_as</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Dst</span>
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">WrappingCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>,
     {
@@ -1095,14 +1095,14 @@ assert_eq!((17.0 + 256.0).overflowing_as::&lt;u8&gt;(), (17, true));
 */</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">OverflowingAs</span> {
     <span class="doccomment">/// Casts the value.</span>
-    <span class="kw">fn</span> <span class="ident">overflowing_as</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">Dst</span>, <span class="ident">bool</span>)
+    <span class="kw">fn</span> <span class="ident">overflowing_as</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Dst</span>, <span class="ident">bool</span>)
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">OverflowingCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>;
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">OverflowingAs</span> <span class="kw">for</span> <span class="ident">T</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">overflowing_as</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">Dst</span>, <span class="ident">bool</span>)
+    <span class="kw">fn</span> <span class="ident">overflowing_as</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Dst</span>, <span class="ident">bool</span>)
     <span class="kw">where</span>
         <span class="self">Self</span>: <span class="ident">OverflowingCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>,
     {
@@ -1133,7 +1133,7 @@ assert_eq!((17.0 + 256.0).overflowing_as::&lt;u8&gt;(), (17, true));
 <span class="doccomment">/// assert_eq!(az::cast::&lt;f32, u8&gt;(17.1), 17);</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cast</span><span class="op">&lt;</span><span class="ident">Src</span>: <span class="ident">Cast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>, <span class="ident">Dst</span><span class="op">&gt;</span>(<span class="ident">src</span>: <span class="ident">Src</span>) <span class="op">-&gt;</span> <span class="ident">Dst</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cast</span><span class="op">&lt;</span><span class="ident">Src</span>: <span class="ident">Cast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>, <span class="ident">Dst</span><span class="op">&gt;</span>(<span class="ident">src</span>: <span class="ident">Src</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Dst</span> {
     <span class="ident">src</span>.<span class="ident">cast</span>()
 }
 
@@ -1152,7 +1152,7 @@ assert_eq!((17.0 + 256.0).overflowing_as::&lt;u8&gt;(), (17, true));
 <span class="doccomment">/// assert_eq!(az::checked_cast::&lt;f32, u8&gt;(f32::NAN), None);</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">checked_cast</span><span class="op">&lt;</span><span class="ident">Src</span>: <span class="ident">CheckedCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>, <span class="ident">Dst</span><span class="op">&gt;</span>(<span class="ident">src</span>: <span class="ident">Src</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">checked_cast</span><span class="op">&lt;</span><span class="ident">Src</span>: <span class="ident">CheckedCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>, <span class="ident">Dst</span><span class="op">&gt;</span>(<span class="ident">src</span>: <span class="ident">Src</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span> {
     <span class="ident">src</span>.<span class="ident">checked_cast</span>()
 }
 
@@ -1171,7 +1171,7 @@ assert_eq!((17.0 + 256.0).overflowing_as::&lt;u8&gt;(), (17, true));
 <span class="doccomment">/// assert_eq!(az::saturating_cast::&lt;f32, u8&gt;(17.0 + 256.0), 255);</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">saturating_cast</span><span class="op">&lt;</span><span class="ident">Src</span>: <span class="ident">SaturatingCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>, <span class="ident">Dst</span><span class="op">&gt;</span>(<span class="ident">src</span>: <span class="ident">Src</span>) <span class="op">-&gt;</span> <span class="ident">Dst</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">saturating_cast</span><span class="op">&lt;</span><span class="ident">Src</span>: <span class="ident">SaturatingCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>, <span class="ident">Dst</span><span class="op">&gt;</span>(<span class="ident">src</span>: <span class="ident">Src</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Dst</span> {
     <span class="ident">src</span>.<span class="ident">saturating_cast</span>()
 }
 
@@ -1189,7 +1189,7 @@ assert_eq!((17.0 + 256.0).overflowing_as::&lt;u8&gt;(), (17, true));
 <span class="doccomment">/// assert_eq!(az::wrapping_cast::&lt;f32, u8&gt;(17.0 + 256.0), 17);</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrapping_cast</span><span class="op">&lt;</span><span class="ident">Src</span>: <span class="ident">WrappingCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>, <span class="ident">Dst</span><span class="op">&gt;</span>(<span class="ident">src</span>: <span class="ident">Src</span>) <span class="op">-&gt;</span> <span class="ident">Dst</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrapping_cast</span><span class="op">&lt;</span><span class="ident">Src</span>: <span class="ident">WrappingCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>, <span class="ident">Dst</span><span class="op">&gt;</span>(<span class="ident">src</span>: <span class="ident">Src</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Dst</span> {
     <span class="ident">src</span>.<span class="ident">wrapping_cast</span>()
 }
 
@@ -1214,7 +1214,7 @@ assert_eq!((17.0 + 256.0).overflowing_as::&lt;u8&gt;(), (17, true));
 <span class="doccomment">/// [`bool`]: https://doc.rust-lang.org/nightly/std/primitive.bool.html</span>
 <span class="doccomment">/// [tuple]: https://doc.rust-lang.org/nightly/std/primitive.tuple.html</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">overflowing_cast</span><span class="op">&lt;</span><span class="ident">Src</span>: <span class="ident">OverflowingCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>, <span class="ident">Dst</span><span class="op">&gt;</span>(<span class="ident">src</span>: <span class="ident">Src</span>) <span class="op">-&gt;</span> (<span class="ident">Dst</span>, <span class="ident">bool</span>) {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">overflowing_cast</span><span class="op">&lt;</span><span class="ident">Src</span>: <span class="ident">OverflowingCast</span><span class="op">&lt;</span><span class="ident">Dst</span><span class="op">&gt;</span>, <span class="ident">Dst</span><span class="op">&gt;</span>(<span class="ident">src</span>: <span class="ident">Src</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">Dst</span>, <span class="ident">bool</span>) {
     <span class="ident">src</span>.<span class="ident">overflowing_cast</span>()
 }
 

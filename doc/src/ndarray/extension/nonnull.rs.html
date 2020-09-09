@@ -20,19 +20,19 @@
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">NonNull</span>;
 
-<span class="doccomment">/// Return a NonNull&lt;T&gt; pointer to the vector&#39;s data</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">nonnull_from_vec_data</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">v</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">NonNull</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="comment">// this pointer is guaranteed to be non-null</span>
+<span class="doccomment">/// Return a NonNull&lt;T&gt; pointer to the vector&#39;s data</span>
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">nonnull_from_vec_data</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">v</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">NonNull</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="comment">// this pointer is guaranteed to be non-null</span>
     <span class="kw">unsafe</span> { <span class="ident">NonNull</span>::<span class="ident">new_unchecked</span>(<span class="ident">v</span>.<span class="ident">as_mut_ptr</span>()) }
 }
 
-<span class="doccomment">/// Converts `ptr` to `NonNull&lt;T&gt;`</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Safety: `ptr` *must* be non-null.</span>
-<span class="doccomment">/// This is checked with a debug assertion, and will panic if this is not true,</span>
-<span class="doccomment">/// but treat this as an unconditional conversion.</span>
+<span class="doccomment">/// Converts `ptr` to `NonNull&lt;T&gt;`</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Safety: `ptr` *must* be non-null.</span>
+<span class="doccomment">/// This is checked with a debug assertion, and will panic if this is not true,</span>
+<span class="doccomment">/// but treat this as an unconditional conversion.</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">nonnull_debug_checked_from_ptr</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">ptr</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">NonNull</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">nonnull_debug_checked_from_ptr</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">ptr</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">NonNull</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="op">!</span><span class="ident">ptr</span>.<span class="ident">is_null</span>());
     <span class="ident">NonNull</span>::<span class="ident">new_unchecked</span>(<span class="ident">ptr</span>)
 }

@@ -563,30 +563,30 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Elf</span>: <span class="ident">FileHeader</span><span class="op">&gt;</span> <span class="ident">SectionTable</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Elf</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Create a new section table.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">sections</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> [<span class="ident">Elf</span>::<span class="ident">SectionHeader</span>], <span class="ident">strings</span>: <span class="ident">StringTable</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">sections</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> [<span class="ident">Elf</span>::<span class="ident">SectionHeader</span>], <span class="ident">strings</span>: <span class="ident">StringTable</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">SectionTable</span> { <span class="ident">sections</span>, <span class="ident">strings</span> }
     }
 
     <span class="doccomment">/// Iterate over the section headers.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">slice</span>::<span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Elf</span>::<span class="ident">SectionHeader</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">slice</span>::<span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Elf</span>::<span class="ident">SectionHeader</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">sections</span>.<span class="ident">iter</span>()
     }
 
     <span class="doccomment">/// Return true if the section table is empty.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_empty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">sections</span>.<span class="ident">is_empty</span>()
     }
 
     <span class="doccomment">/// The number of section headers.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">sections</span>.<span class="ident">len</span>()
     }
 
     <span class="doccomment">/// Return the section header at the given index.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">section</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">Elf</span>::<span class="ident">SectionHeader</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">section</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">Elf</span>::<span class="ident">SectionHeader</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">sections</span>
             .<span class="ident">get</span>(<span class="ident">index</span>)
             .<span class="ident">read_error</span>(<span class="string">&quot;Invalid ELF section index&quot;</span>)
@@ -599,11 +599,11 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">endian</span>: <span class="ident">Elf</span>::<span class="ident">Endian</span>,
         <span class="ident">name</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">Elf</span>::<span class="ident">SectionHeader</span>)<span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">Elf</span>::<span class="ident">SectionHeader</span>)<span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">sections</span>
             .<span class="ident">iter</span>()
             .<span class="ident">enumerate</span>()
-            .<span class="ident">find</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">section</span>)<span class="op">|</span> <span class="self">self</span>.<span class="ident">section_name</span>(<span class="ident">endian</span>, <span class="ident">section</span>) <span class="op">==</span> <span class="prelude-val">Ok</span>(<span class="ident">name</span>))
+            .<span class="ident">find</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">section</span>)<span class="op">|</span> <span class="self">self</span>.<span class="ident">section_name</span>(<span class="ident">endian</span>, <span class="ident">section</span>) <span class="op">=</span><span class="op">=</span> <span class="prelude-val">Ok</span>(<span class="ident">name</span>))
     }
 
     <span class="doccomment">/// Return the section name for the given section header.</span>
@@ -611,7 +611,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">endian</span>: <span class="ident">Elf</span>::<span class="ident">Endian</span>,
         <span class="ident">section</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">Elf</span>::<span class="ident">SectionHeader</span>,
-    ) <span class="op">-&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> [<span class="ident">u8</span>]<span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> [<span class="ident">u8</span>]<span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">strings</span>
             .<span class="ident">get</span>(<span class="ident">section</span>.<span class="ident">sh_name</span>(<span class="ident">endian</span>))
             .<span class="ident">read_error</span>(<span class="string">&quot;Invalid ELF section name offset&quot;</span>)
@@ -626,7 +626,7 @@
         <span class="ident">endian</span>: <span class="ident">Elf</span>::<span class="ident">Endian</span>,
         <span class="ident">data</span>: <span class="ident">Bytes</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>,
         <span class="ident">sh_type</span>: <span class="ident">u32</span>,
-    ) <span class="op">-&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">SymbolTable</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Elf</span><span class="op">&gt;&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">SymbolTable</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Elf</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="ident">SymbolTable</span>::<span class="ident">parse</span>(<span class="ident">endian</span>, <span class="ident">data</span>, <span class="self">self</span>, <span class="ident">sh_type</span>)
     }
 
@@ -636,17 +636,17 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">endian</span>: <span class="ident">Elf</span>::<span class="ident">Endian</span>,
         <span class="ident">symbol_section</span>: <span class="ident">usize</span>,
-    ) <span class="op">-&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">RelocationSections</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">RelocationSections</span><span class="op">&gt;</span> {
         <span class="ident">RelocationSections</span>::<span class="ident">parse</span>(<span class="ident">endian</span>, <span class="self">self</span>, <span class="ident">symbol_section</span>)
     }
 }
 
 <span class="doccomment">/// An iterator over the sections of an `ElfFile32`.</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ElfSectionIterator32</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Endian</span> <span class="op">=</span> <span class="ident">Endianness</span><span class="op">&gt;</span> <span class="op">=</span>
-    <span class="ident">ElfSectionIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">elf</span>::<span class="ident">FileHeader32</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;&gt;</span>;
+    <span class="ident">ElfSectionIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">elf</span>::<span class="ident">FileHeader32</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 <span class="doccomment">/// An iterator over the sections of an `ElfFile64`.</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ElfSectionIterator64</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Endian</span> <span class="op">=</span> <span class="ident">Endianness</span><span class="op">&gt;</span> <span class="op">=</span>
-    <span class="ident">ElfSectionIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">elf</span>::<span class="ident">FileHeader64</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;&gt;</span>;
+    <span class="ident">ElfSectionIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">elf</span>::<span class="ident">FileHeader64</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
 <span class="doccomment">/// An iterator over the sections of an `ElfFile`.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
@@ -656,13 +656,13 @@
     <span class="ident">Elf</span>: <span class="ident">FileHeader</span>,
 {
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;file</span> <span class="ident">ElfFile</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Elf</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">iter</span>: <span class="ident">iter</span>::<span class="ident">Enumerate</span><span class="op">&lt;</span><span class="ident">slice</span>::<span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Elf</span>::<span class="ident">SectionHeader</span><span class="op">&gt;&gt;</span>,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">iter</span>: <span class="ident">iter</span>::<span class="ident">Enumerate</span><span class="op">&lt;</span><span class="ident">slice</span>::<span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Elf</span>::<span class="ident">SectionHeader</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span>: <span class="ident">FileHeader</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">ElfSectionIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">ElfSection</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">next</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">index</span>, <span class="ident">section</span>)<span class="op">|</span> <span class="ident">ElfSection</span> {
             <span class="ident">index</span>: <span class="ident">SectionIndex</span>(<span class="ident">index</span>),
             <span class="ident">file</span>: <span class="self">self</span>.<span class="ident">file</span>,
@@ -673,10 +673,10 @@
 
 <span class="doccomment">/// A section of an `ElfFile32`.</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ElfSection32</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Endian</span> <span class="op">=</span> <span class="ident">Endianness</span><span class="op">&gt;</span> <span class="op">=</span>
-    <span class="ident">ElfSection</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">elf</span>::<span class="ident">FileHeader32</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;&gt;</span>;
+    <span class="ident">ElfSection</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">elf</span>::<span class="ident">FileHeader32</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 <span class="doccomment">/// A section of an `ElfFile64`.</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ElfSection64</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Endian</span> <span class="op">=</span> <span class="ident">Endianness</span><span class="op">&gt;</span> <span class="op">=</span>
-    <span class="ident">ElfSection</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">elf</span>::<span class="ident">FileHeader64</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;&gt;</span>;
+    <span class="ident">ElfSection</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">elf</span>::<span class="ident">FileHeader64</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
 <span class="doccomment">/// A section of an `ElfFile`.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
@@ -691,15 +691,15 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span>: <span class="ident">FileHeader</span><span class="op">&gt;</span> <span class="ident">ElfSection</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">bytes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">section</span>
             .<span class="ident">data</span>(<span class="self">self</span>.<span class="ident">file</span>.<span class="ident">endian</span>, <span class="self">self</span>.<span class="ident">file</span>.<span class="ident">data</span>)
             .<span class="ident">read_error</span>(<span class="string">&quot;Invalid ELF section size or offset&quot;</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">maybe_compressed_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CompressedData</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">maybe_compressed_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CompressedData</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">endian</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">file</span>.<span class="ident">endian</span>;
-        <span class="kw">if</span> (<span class="self">self</span>.<span class="ident">section</span>.<span class="ident">sh_flags</span>(<span class="ident">endian</span>).<span class="ident">into</span>() <span class="op">&amp;</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">elf</span>::<span class="ident">SHF_COMPRESSED</span>)) <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">if</span> (<span class="self">self</span>.<span class="ident">section</span>.<span class="ident">sh_flags</span>(<span class="ident">endian</span>).<span class="ident">into</span>() <span class="op">&amp;</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">elf</span>::<span class="ident">SHF_COMPRESSED</span>)) <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
         }
 
@@ -710,7 +710,7 @@
         <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="ident">data</span>
             .<span class="ident">read</span>::<span class="op">&lt;</span><span class="ident">Elf</span>::<span class="ident">CompressionHeader</span><span class="op">&gt;</span>()
             .<span class="ident">read_error</span>(<span class="string">&quot;Invalid ELF compression header size or alignment&quot;</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="ident">header</span>.<span class="ident">ch_type</span>(<span class="ident">endian</span>) <span class="op">!=</span> <span class="ident">elf</span>::<span class="ident">ELFCOMPRESS_ZLIB</span> {
+        <span class="kw">if</span> <span class="ident">header</span>.<span class="ident">ch_type</span>(<span class="ident">endian</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">elf</span>::<span class="ident">ELFCOMPRESS_ZLIB</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>(<span class="string">&quot;Unsupported ELF compression type&quot;</span>));
         }
         <span class="kw">let</span> <span class="ident">uncompressed_size</span>: <span class="ident">u64</span> <span class="op">=</span> <span class="ident">header</span>.<span class="ident">ch_size</span>(<span class="ident">endian</span>).<span class="ident">into</span>();
@@ -722,11 +722,11 @@
     }
 
     <span class="doccomment">/// Try GNU-style &quot;ZLIB&quot; header decompression.</span>
-    <span class="kw">fn</span> <span class="ident">maybe_compressed_data_gnu</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CompressedData</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">maybe_compressed_data_gnu</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CompressedData</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">name</span>() {
-            <span class="prelude-val">Ok</span>(<span class="ident">name</span>) <span class="op">=&gt;</span> <span class="ident">name</span>,
+            <span class="prelude-val">Ok</span>(<span class="ident">name</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">name</span>,
             <span class="comment">// I think it&#39;s ok to ignore this error?</span>
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
         };
         <span class="kw">if</span> <span class="op">!</span><span class="ident">name</span>.<span class="ident">starts_with</span>(<span class="string">&quot;.zdebug_&quot;</span>) {
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
@@ -739,12 +739,12 @@
             .<span class="ident">read_bytes</span>(<span class="number">8</span>)
             .<span class="ident">read_error</span>(<span class="string">&quot;ELF GNU compressed section is too short&quot;</span>)<span class="question-mark">?</span>
             .<span class="number">0</span>
-            <span class="op">!=</span> <span class="string">b&quot;ZLIB\0\0\0\0&quot;</span>
+            <span class="op">!</span><span class="op">=</span> <span class="string">b&quot;ZLIB\0\0\0\0&quot;</span>
         {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>(<span class="string">&quot;Invalid ELF GNU compressed section header&quot;</span>));
         }
         <span class="kw">let</span> <span class="ident">uncompressed_size</span> <span class="op">=</span> <span class="ident">data</span>
-            .<span class="ident">read</span>::<span class="op">&lt;</span><span class="ident">U32Bytes</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>()
+            .<span class="ident">read</span>::<span class="op">&lt;</span><span class="ident">U32Bytes</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
             .<span class="ident">read_error</span>(<span class="string">&quot;ELF GNU compressed section is too short&quot;</span>)<span class="question-mark">?</span>
             .<span class="ident">get</span>(<span class="ident">endian</span>::<span class="ident">BigEndian</span>);
         <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">CompressedData</span> {
@@ -761,36 +761,36 @@
     <span class="kw">type</span> <span class="ident">RelocationIterator</span> <span class="op">=</span> <span class="ident">ElfRelocationIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span><span class="op">&gt;</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">SectionIndex</span> {
+    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SectionIndex</span> {
         <span class="self">self</span>.<span class="ident">index</span>
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">fn</span> <span class="ident">address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">section</span>.<span class="ident">sh_addr</span>(<span class="self">self</span>.<span class="ident">file</span>.<span class="ident">endian</span>).<span class="ident">into</span>()
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">fn</span> <span class="ident">size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">section</span>.<span class="ident">sh_size</span>(<span class="self">self</span>.<span class="ident">file</span>.<span class="ident">endian</span>).<span class="ident">into</span>()
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">align</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
+    <span class="kw">fn</span> <span class="ident">align</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
         <span class="self">self</span>.<span class="ident">section</span>.<span class="ident">sh_addralign</span>(<span class="self">self</span>.<span class="ident">file</span>.<span class="ident">endian</span>).<span class="ident">into</span>()
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">file_range</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">u64</span>, <span class="ident">u64</span>)<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">file_range</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">u64</span>, <span class="ident">u64</span>)<span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">section</span>.<span class="ident">file_range</span>(<span class="self">self</span>.<span class="ident">file</span>.<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> [<span class="ident">u8</span>]<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> [<span class="ident">u8</span>]<span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">bytes</span>()<span class="question-mark">?</span>.<span class="number">0</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">data_range</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">address</span>: <span class="ident">u64</span>, <span class="ident">size</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> [<span class="ident">u8</span>]<span class="op">&gt;&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">data_range</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">address</span>: <span class="ident">u64</span>, <span class="ident">size</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> [<span class="ident">u8</span>]<span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="ident">read</span>::<span class="ident">data_range</span>(
             <span class="self">self</span>.<span class="ident">bytes</span>()<span class="question-mark">?</span>,
             <span class="self">self</span>.<span class="ident">address</span>(),
@@ -799,7 +799,7 @@
         ))
     }
 
-    <span class="kw">fn</span> <span class="ident">compressed_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">CompressedData</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">compressed_data</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">CompressedData</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">data</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">maybe_compressed_data</span>()<span class="question-mark">?</span> {
             <span class="ident">data</span>
         } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">data</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">maybe_compressed_data_gnu</span>()<span class="question-mark">?</span> {
@@ -809,7 +809,7 @@
         })
     }
 
-    <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">file</span>
             .<span class="ident">sections</span>
@@ -820,40 +820,40 @@
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">segment_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">segment_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">kind</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">SectionKind</span> {
+    <span class="kw">fn</span> <span class="ident">kind</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SectionKind</span> {
         <span class="kw">let</span> <span class="ident">flags</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">section</span>.<span class="ident">sh_flags</span>(<span class="self">self</span>.<span class="ident">file</span>.<span class="ident">endian</span>).<span class="ident">into</span>();
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">section</span>.<span class="ident">sh_type</span>(<span class="self">self</span>.<span class="ident">file</span>.<span class="ident">endian</span>) {
-            <span class="ident">elf</span>::<span class="ident">SHT_PROGBITS</span> <span class="op">=&gt;</span> {
-                <span class="kw">if</span> <span class="ident">flags</span> <span class="op">&amp;</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">elf</span>::<span class="ident">SHF_ALLOC</span>) <span class="op">!=</span> <span class="number">0</span> {
-                    <span class="kw">if</span> <span class="ident">flags</span> <span class="op">&amp;</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">elf</span>::<span class="ident">SHF_EXECINSTR</span>) <span class="op">!=</span> <span class="number">0</span> {
+            <span class="ident">elf</span>::<span class="ident">SHT_PROGBITS</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">if</span> <span class="ident">flags</span> <span class="op">&amp;</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">elf</span>::<span class="ident">SHF_ALLOC</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+                    <span class="kw">if</span> <span class="ident">flags</span> <span class="op">&amp;</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">elf</span>::<span class="ident">SHF_EXECINSTR</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
                         <span class="ident">SectionKind</span>::<span class="ident">Text</span>
-                    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">flags</span> <span class="op">&amp;</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">elf</span>::<span class="ident">SHF_TLS</span>) <span class="op">!=</span> <span class="number">0</span> {
+                    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">flags</span> <span class="op">&amp;</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">elf</span>::<span class="ident">SHF_TLS</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
                         <span class="ident">SectionKind</span>::<span class="ident">Tls</span>
-                    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">flags</span> <span class="op">&amp;</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">elf</span>::<span class="ident">SHF_WRITE</span>) <span class="op">!=</span> <span class="number">0</span> {
+                    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">flags</span> <span class="op">&amp;</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">elf</span>::<span class="ident">SHF_WRITE</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
                         <span class="ident">SectionKind</span>::<span class="ident">Data</span>
-                    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">flags</span> <span class="op">&amp;</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">elf</span>::<span class="ident">SHF_STRINGS</span>) <span class="op">!=</span> <span class="number">0</span> {
+                    } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">flags</span> <span class="op">&amp;</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">elf</span>::<span class="ident">SHF_STRINGS</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
                         <span class="ident">SectionKind</span>::<span class="ident">ReadOnlyString</span>
                     } <span class="kw">else</span> {
                         <span class="ident">SectionKind</span>::<span class="ident">ReadOnlyData</span>
                     }
-                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">flags</span> <span class="op">&amp;</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">elf</span>::<span class="ident">SHF_STRINGS</span>) <span class="op">!=</span> <span class="number">0</span> {
+                } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">flags</span> <span class="op">&amp;</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">elf</span>::<span class="ident">SHF_STRINGS</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
                     <span class="ident">SectionKind</span>::<span class="ident">OtherString</span>
                 } <span class="kw">else</span> {
                     <span class="ident">SectionKind</span>::<span class="ident">Other</span>
                 }
             }
-            <span class="ident">elf</span>::<span class="ident">SHT_NOBITS</span> <span class="op">=&gt;</span> {
-                <span class="kw">if</span> <span class="ident">flags</span> <span class="op">&amp;</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">elf</span>::<span class="ident">SHF_TLS</span>) <span class="op">!=</span> <span class="number">0</span> {
+            <span class="ident">elf</span>::<span class="ident">SHT_NOBITS</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">if</span> <span class="ident">flags</span> <span class="op">&amp;</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">elf</span>::<span class="ident">SHF_TLS</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
                     <span class="ident">SectionKind</span>::<span class="ident">UninitializedTls</span>
                 } <span class="kw">else</span> {
                     <span class="ident">SectionKind</span>::<span class="ident">UninitializedData</span>
                 }
             }
-            <span class="ident">elf</span>::<span class="ident">SHT_NOTE</span> <span class="op">=&gt;</span> <span class="ident">SectionKind</span>::<span class="ident">Note</span>,
+            <span class="ident">elf</span>::<span class="ident">SHT_NOTE</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SectionKind</span>::<span class="ident">Note</span>,
             <span class="ident">elf</span>::<span class="ident">SHT_NULL</span>
             <span class="op">|</span> <span class="ident">elf</span>::<span class="ident">SHT_SYMTAB</span>
             <span class="op">|</span> <span class="ident">elf</span>::<span class="ident">SHT_STRTAB</span>
@@ -861,15 +861,15 @@
             <span class="op">|</span> <span class="ident">elf</span>::<span class="ident">SHT_HASH</span>
             <span class="op">|</span> <span class="ident">elf</span>::<span class="ident">SHT_DYNAMIC</span>
             <span class="op">|</span> <span class="ident">elf</span>::<span class="ident">SHT_REL</span>
-            <span class="op">|</span> <span class="ident">elf</span>::<span class="ident">SHT_DYNSYM</span> <span class="op">=&gt;</span> <span class="ident">SectionKind</span>::<span class="ident">Metadata</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> {
+            <span class="op">|</span> <span class="ident">elf</span>::<span class="ident">SHT_DYNSYM</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">SectionKind</span>::<span class="ident">Metadata</span>,
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="comment">// TODO: maybe add more specialised kinds based on sh_type (e.g. Unwind)</span>
                 <span class="ident">SectionKind</span>::<span class="ident">Unknown</span>
             }
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">relocations</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">ElfRelocationIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">relocations</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ElfRelocationIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span><span class="op">&gt;</span> {
         <span class="ident">ElfRelocationIterator</span> {
             <span class="ident">section_index</span>: <span class="self">self</span>.<span class="ident">index</span>.<span class="number">0</span>,
             <span class="ident">file</span>: <span class="self">self</span>.<span class="ident">file</span>,
@@ -877,7 +877,7 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">flags</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">SectionFlags</span> {
+    <span class="kw">fn</span> <span class="ident">flags</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SectionFlags</span> {
         <span class="ident">SectionFlags</span>::<span class="ident">Elf</span> {
             <span class="ident">sh_flags</span>: <span class="self">self</span>.<span class="ident">section</span>.<span class="ident">sh_flags</span>(<span class="self">self</span>.<span class="ident">file</span>.<span class="ident">endian</span>).<span class="ident">into</span>(),
         }
@@ -891,22 +891,22 @@
     <span class="kw">type</span> <span class="ident">Endian</span>: <span class="ident">endian</span>::<span class="ident">Endian</span>;
     <span class="kw">type</span> <span class="ident">Elf</span>: <span class="ident">FileHeader</span><span class="op">&lt;</span><span class="ident">Word</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Word</span>, <span class="ident">Endian</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Endian</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">sh_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span>;
-    <span class="kw">fn</span> <span class="ident">sh_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span>;
-    <span class="kw">fn</span> <span class="ident">sh_flags</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span>;
-    <span class="kw">fn</span> <span class="ident">sh_addr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span>;
-    <span class="kw">fn</span> <span class="ident">sh_offset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span>;
-    <span class="kw">fn</span> <span class="ident">sh_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span>;
-    <span class="kw">fn</span> <span class="ident">sh_link</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span>;
-    <span class="kw">fn</span> <span class="ident">sh_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span>;
-    <span class="kw">fn</span> <span class="ident">sh_addralign</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span>;
-    <span class="kw">fn</span> <span class="ident">sh_entsize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span>;
+    <span class="kw">fn</span> <span class="ident">sh_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span>;
+    <span class="kw">fn</span> <span class="ident">sh_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span>;
+    <span class="kw">fn</span> <span class="ident">sh_flags</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span>;
+    <span class="kw">fn</span> <span class="ident">sh_addr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span>;
+    <span class="kw">fn</span> <span class="ident">sh_offset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span>;
+    <span class="kw">fn</span> <span class="ident">sh_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span>;
+    <span class="kw">fn</span> <span class="ident">sh_link</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span>;
+    <span class="kw">fn</span> <span class="ident">sh_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span>;
+    <span class="kw">fn</span> <span class="ident">sh_addralign</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span>;
+    <span class="kw">fn</span> <span class="ident">sh_entsize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span>;
 
     <span class="doccomment">/// Return the offset and size of the section in the file.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Returns `None` for sections that have no data in the file.</span>
-    <span class="kw">fn</span> <span class="ident">file_range</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">u64</span>, <span class="ident">u64</span>)<span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">sh_type</span>(<span class="ident">endian</span>) <span class="op">==</span> <span class="ident">elf</span>::<span class="ident">SHT_NOBITS</span> {
+    <span class="kw">fn</span> <span class="ident">file_range</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">u64</span>, <span class="ident">u64</span>)<span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">sh_type</span>(<span class="ident">endian</span>) <span class="op">=</span><span class="op">=</span> <span class="ident">elf</span>::<span class="ident">SHT_NOBITS</span> {
             <span class="prelude-val">None</span>
         } <span class="kw">else</span> {
             <span class="prelude-val">Some</span>((<span class="self">self</span>.<span class="ident">sh_offset</span>(<span class="ident">endian</span>).<span class="ident">into</span>(), <span class="self">self</span>.<span class="ident">sh_size</span>(<span class="ident">endian</span>).<span class="ident">into</span>()))
@@ -917,7 +917,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// Returns `Ok(&amp;[])` if the section has no data.</span>
     <span class="doccomment">/// Returns `Err` for invalid values.</span>
-    <span class="kw">fn</span> <span class="ident">data</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>, <span class="ident">data</span>: <span class="ident">Bytes</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>, ()<span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">data</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>, <span class="ident">data</span>: <span class="ident">Bytes</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>, ()<span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="ident">offset</span>, <span class="ident">size</span>)) <span class="op">=</span> <span class="self">self</span>.<span class="ident">file_range</span>(<span class="ident">endian</span>) {
             <span class="ident">data</span>.<span class="ident">read_bytes_at</span>(<span class="ident">offset</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="ident">size</span> <span class="kw">as</span> <span class="ident">usize</span>)
         } <span class="kw">else</span> {
@@ -934,7 +934,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>,
         <span class="ident">data</span>: <span class="ident">Bytes</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> [<span class="ident">T</span>], ()<span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> [<span class="ident">T</span>], ()<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">data</span>(<span class="ident">endian</span>, <span class="ident">data</span>)<span class="question-mark">?</span>;
         <span class="ident">data</span>.<span class="ident">read_slice</span>(<span class="ident">data</span>.<span class="ident">len</span>() <span class="op">/</span> <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>())
     }
@@ -947,8 +947,8 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>,
         <span class="ident">data</span>: <span class="ident">Bytes</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>,
-    ) <span class="op">-&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ElfNoteIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="self">Self</span>::<span class="ident">Elf</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">sh_type</span>(<span class="ident">endian</span>) <span class="op">!=</span> <span class="ident">elf</span>::<span class="ident">SHT_NOTE</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ElfNoteIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="self">Self</span>::<span class="ident">Elf</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">sh_type</span>(<span class="ident">endian</span>) <span class="op">!</span><span class="op">=</span> <span class="ident">elf</span>::<span class="ident">SHT_NOTE</span> {
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
         }
         <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="self">self</span>
@@ -965,52 +965,52 @@
     <span class="kw">type</span> <span class="ident">Elf</span> <span class="op">=</span> <span class="ident">elf</span>::<span class="ident">FileHeader32</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">sh_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="ident">sh_name</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">sh_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="ident">sh_type</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_flags</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
+    <span class="kw">fn</span> <span class="ident">sh_flags</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
         <span class="self">self</span>.<span class="ident">sh_flags</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_addr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
+    <span class="kw">fn</span> <span class="ident">sh_addr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
         <span class="self">self</span>.<span class="ident">sh_addr</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_offset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
+    <span class="kw">fn</span> <span class="ident">sh_offset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
         <span class="self">self</span>.<span class="ident">sh_offset</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
+    <span class="kw">fn</span> <span class="ident">sh_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
         <span class="self">self</span>.<span class="ident">sh_size</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_link</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">sh_link</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="ident">sh_link</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">sh_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="ident">sh_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_addralign</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
+    <span class="kw">fn</span> <span class="ident">sh_addralign</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
         <span class="self">self</span>.<span class="ident">sh_addralign</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_entsize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
+    <span class="kw">fn</span> <span class="ident">sh_entsize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
         <span class="self">self</span>.<span class="ident">sh_entsize</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 }
@@ -1021,52 +1021,52 @@
     <span class="kw">type</span> <span class="ident">Elf</span> <span class="op">=</span> <span class="ident">elf</span>::<span class="ident">FileHeader64</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">sh_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="ident">sh_name</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">sh_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="ident">sh_type</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_flags</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
+    <span class="kw">fn</span> <span class="ident">sh_flags</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
         <span class="self">self</span>.<span class="ident">sh_flags</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_addr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
+    <span class="kw">fn</span> <span class="ident">sh_addr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
         <span class="self">self</span>.<span class="ident">sh_addr</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_offset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
+    <span class="kw">fn</span> <span class="ident">sh_offset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
         <span class="self">self</span>.<span class="ident">sh_offset</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
+    <span class="kw">fn</span> <span class="ident">sh_size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
         <span class="self">self</span>.<span class="ident">sh_size</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_link</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">sh_link</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="ident">sh_link</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">sh_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="ident">sh_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_addralign</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
+    <span class="kw">fn</span> <span class="ident">sh_addralign</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
         <span class="self">self</span>.<span class="ident">sh_addralign</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sh_entsize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
+    <span class="kw">fn</span> <span class="ident">sh_entsize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
         <span class="self">self</span>.<span class="ident">sh_entsize</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 }

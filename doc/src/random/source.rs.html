@@ -30,23 +30,23 @@
 <span class="doccomment">/// A source of randomness.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Source</span> {
     <span class="doccomment">/// Read `u64` uniformly distributed over `{0, 1, …, u64::MAX}`.</span>
-    <span class="kw">fn</span> <span class="ident">read_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span>;
+    <span class="kw">fn</span> <span class="ident">read_u64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span>;
 
     <span class="doccomment">/// Read `f64` uniformly distributed over `[0, 1]`.</span>
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">read_f64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">read_f64</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">read_u64</span>() <span class="kw">as</span> <span class="ident">f64</span> <span class="op">/</span> ::<span class="ident">std</span>::<span class="ident">u64</span>::<span class="ident">MAX</span> <span class="kw">as</span> <span class="ident">f64</span>
     }
 
     <span class="doccomment">/// Read a random value.</span>
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">read</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">V</span> <span class="kw">where</span> <span class="self">Self</span>: <span class="ident">Sized</span>, <span class="ident">V</span>: <span class="ident">Value</span> {
+    <span class="kw">fn</span> <span class="ident">read</span><span class="op">&lt;</span><span class="ident">V</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">V</span> <span class="kw">where</span> <span class="self">Self</span>: <span class="ident">Sized</span>, <span class="ident">V</span>: <span class="ident">Value</span> {
         <span class="ident">Value</span>::<span class="ident">read</span>(<span class="self">self</span>)
     }
 
     <span class="doccomment">/// Read a sequence of random values.</span>
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">iter</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">V</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;l</span> <span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Sequence</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="self">Self</span>, <span class="ident">V</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="self">Self</span>: <span class="ident">Sized</span>, <span class="ident">V</span>: <span class="ident">Value</span> {
+    <span class="kw">fn</span> <span class="ident">iter</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="ident">V</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;l</span> <span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Sequence</span><span class="op">&lt;</span><span class="lifetime">&#39;l</span>, <span class="self">Self</span>, <span class="ident">V</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="self">Self</span>: <span class="ident">Sized</span>, <span class="ident">V</span>: <span class="ident">Value</span> {
         <span class="ident">From</span>::<span class="ident">from</span>(<span class="self">self</span>)
     }
 }

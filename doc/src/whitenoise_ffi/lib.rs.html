@@ -485,41 +485,41 @@
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">not_unsafe_ptr_arg_deref</span>)]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">validate_analysis</span>(
     <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
-) <span class="op">-&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
     <span class="kw">let</span> <span class="ident">request_buffer</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ptr_to_buffer</span>(<span class="ident">request_ptr</span>, <span class="ident">request_length</span>) };
 
     <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">proto</span>::<span class="ident">ResponseValidateAnalysis</span> {
         <span class="ident">value</span>: <span class="kw">match</span> <span class="ident">proto</span>::<span class="ident">RequestValidateAnalysis</span>::<span class="ident">decode</span>(<span class="ident">request_buffer</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">request</span>) <span class="op">=&gt;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">request</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">RequestValidateAnalysis</span> {
                     <span class="ident">analysis</span>, <span class="ident">release</span>
                 } <span class="op">=</span> <span class="ident">request</span>;
 
-                <span class="kw">let</span> <span class="ident">run</span> <span class="op">=</span> <span class="op">||</span> <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="ident">run</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {
                     <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">Analysis</span> {
                         <span class="ident">privacy_definition</span>, <span class="ident">computation_graph</span>
                     } <span class="op">=</span> <span class="ident">analysis</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;analysis must be defined&quot;</span>))<span class="question-mark">?</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;analysis must be defined&quot;</span>))<span class="question-mark">?</span>;
                     <span class="kw">let</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">parse_release</span>(<span class="ident">release</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;release must be defined&quot;</span>))<span class="question-mark">?</span>);
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;release must be defined&quot;</span>))<span class="question-mark">?</span>);
 
                     <span class="kw">let</span> <span class="ident">computation_graph</span> <span class="op">=</span> <span class="ident">computation_graph</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;computation_graph must be defined&quot;</span>))<span class="question-mark">?</span>.<span class="ident">value</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;computation_graph must be defined&quot;</span>))<span class="question-mark">?</span>.<span class="ident">value</span>;
 
                     <span class="ident">whitenoise_validator</span>::<span class="ident">validate_analysis</span>(<span class="ident">privacy_definition</span>, <span class="ident">computation_graph</span>, <span class="ident">release</span>)
                 };
 
                 <span class="kw">match</span> <span class="ident">run</span>() {
-                    <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=&gt;</span>
+                    <span class="prelude-val">Ok</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span>
                         <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_validate_analysis</span>::<span class="ident">Value</span>::<span class="ident">Data</span>(<span class="ident">proto</span>::<span class="ident">response_validate_analysis</span>::<span class="ident">Validated</span> {
                             <span class="ident">value</span>: <span class="bool-val">true</span>,
                             <span class="ident">message</span>: <span class="string">&quot;The analysis is valid.&quot;</span>.<span class="ident">to_string</span>(),
                         })),
-                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span>
+                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span>
                         <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_validate_analysis</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="ident">err</span>))),
                 }
             }
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span>
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span>
                 <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_validate_analysis</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="string">&quot;unable to parse protobuf&quot;</span>.<span class="ident">into</span>())))
         }
     };
@@ -538,41 +538,41 @@
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">not_unsafe_ptr_arg_deref</span>)]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">compute_privacy_usage</span>(
     <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
-) <span class="op">-&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
     <span class="kw">let</span> <span class="ident">request_buffer</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ptr_to_buffer</span>(<span class="ident">request_ptr</span>, <span class="ident">request_length</span>) };
 
     <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">proto</span>::<span class="ident">ResponseComputePrivacyUsage</span> {
         <span class="ident">value</span>: <span class="kw">match</span> <span class="ident">proto</span>::<span class="ident">RequestComputePrivacyUsage</span>::<span class="ident">decode</span>(<span class="ident">request_buffer</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">request</span>) <span class="op">=&gt;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">request</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">RequestComputePrivacyUsage</span> {
                     <span class="ident">analysis</span>, <span class="ident">release</span>
                 } <span class="op">=</span> <span class="ident">request</span>;
 
 
-                <span class="kw">let</span> <span class="ident">run</span> <span class="op">=</span> <span class="op">||</span> <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="ident">run</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsage</span><span class="op">&gt;</span> {
                     <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">Analysis</span> {
                         <span class="ident">privacy_definition</span>, <span class="ident">computation_graph</span>
                     } <span class="op">=</span> <span class="ident">analysis</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;analysis must be defined&quot;</span>))<span class="question-mark">?</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;analysis must be defined&quot;</span>))<span class="question-mark">?</span>;
                     <span class="kw">let</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">parse_release</span>(<span class="ident">release</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;release must be defined&quot;</span>))<span class="question-mark">?</span>);
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;release must be defined&quot;</span>))<span class="question-mark">?</span>);
 
                     <span class="kw">let</span> <span class="ident">privacy_definition</span> <span class="op">=</span> <span class="ident">privacy_definition</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;privacy_definition must be defined&quot;</span>))<span class="question-mark">?</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;privacy_definition must be defined&quot;</span>))<span class="question-mark">?</span>;
                     <span class="kw">let</span> <span class="ident">computation_graph</span> <span class="op">=</span> <span class="ident">computation_graph</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;computation_graph must be defined&quot;</span>))<span class="question-mark">?</span>.<span class="ident">value</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;computation_graph must be defined&quot;</span>))<span class="question-mark">?</span>.<span class="ident">value</span>;
 
                     <span class="ident">whitenoise_validator</span>::<span class="ident">compute_privacy_usage</span>(<span class="ident">privacy_definition</span>, <span class="ident">computation_graph</span>, <span class="ident">release</span>)
                 };
 
                 <span class="kw">match</span> <span class="ident">run</span>() {
-                    <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=&gt;</span>
+                    <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span>
                         <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_compute_privacy_usage</span>::<span class="ident">Value</span>::<span class="ident">Data</span>(<span class="ident">x</span>)),
-                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span>
+                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span>
                         <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_compute_privacy_usage</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="ident">err</span>))),
                 }
             }
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span>
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span>
                 <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_compute_privacy_usage</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="string">&quot;unable to parse protobuf&quot;</span>.<span class="ident">into</span>())))
         }
     };
@@ -591,36 +591,36 @@
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">not_unsafe_ptr_arg_deref</span>)]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">generate_report</span>(
     <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
-) <span class="op">-&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
     <span class="kw">let</span> <span class="ident">request_buffer</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ptr_to_buffer</span>(<span class="ident">request_ptr</span>, <span class="ident">request_length</span>) };
 
     <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">proto</span>::<span class="ident">ResponseGenerateReport</span> {
         <span class="ident">value</span>: <span class="kw">match</span> <span class="ident">proto</span>::<span class="ident">RequestGenerateReport</span>::<span class="ident">decode</span>(<span class="ident">request_buffer</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">request</span>) <span class="op">=&gt;</span> {
-                <span class="kw">let</span> <span class="ident">run</span> <span class="op">=</span> <span class="op">||</span> <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">request</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="ident">run</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
                     <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">Analysis</span> {
                         <span class="ident">privacy_definition</span>, <span class="ident">computation_graph</span>
                     } <span class="op">=</span> <span class="ident">request</span>.<span class="ident">analysis</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;analysis must be defined&quot;</span>))<span class="question-mark">?</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;analysis must be defined&quot;</span>))<span class="question-mark">?</span>;
                     <span class="kw">let</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">parse_release</span>(<span class="ident">request</span>.<span class="ident">release</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;release must be defined&quot;</span>))<span class="question-mark">?</span>);
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;release must be defined&quot;</span>))<span class="question-mark">?</span>);
 
                     <span class="kw">let</span> <span class="ident">privacy_definition</span> <span class="op">=</span> <span class="ident">privacy_definition</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;privacy_definition must be defined&quot;</span>))<span class="question-mark">?</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;privacy_definition must be defined&quot;</span>))<span class="question-mark">?</span>;
                     <span class="kw">let</span> <span class="ident">computation_graph</span> <span class="op">=</span> <span class="ident">computation_graph</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;computation_graph must be defined&quot;</span>))<span class="question-mark">?</span>.<span class="ident">value</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;computation_graph must be defined&quot;</span>))<span class="question-mark">?</span>.<span class="ident">value</span>;
 
                     <span class="ident">whitenoise_validator</span>::<span class="ident">generate_report</span>(<span class="ident">privacy_definition</span>, <span class="ident">computation_graph</span>, <span class="ident">release</span>)
                 };
 
                 <span class="kw">match</span> <span class="ident">run</span>() {
-                    <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=&gt;</span>
+                    <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span>
                         <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_generate_report</span>::<span class="ident">Value</span>::<span class="ident">Data</span>(<span class="ident">x</span>)),
-                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span>
+                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span>
                         <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_generate_report</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="ident">err</span>))),
                 }
             }
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span>
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span>
                 <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_generate_report</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="string">&quot;unable to parse protobuf&quot;</span>.<span class="ident">into</span>())))
         }
     };
@@ -639,27 +639,27 @@
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">not_unsafe_ptr_arg_deref</span>)]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">accuracy_to_privacy_usage</span>(
     <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
-) <span class="op">-&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
     <span class="kw">let</span> <span class="ident">request_buffer</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ptr_to_buffer</span>(<span class="ident">request_ptr</span>, <span class="ident">request_length</span>) };
 
     <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">proto</span>::<span class="ident">ResponseAccuracyToPrivacyUsage</span> {
         <span class="ident">value</span>: <span class="kw">match</span> <span class="ident">proto</span>::<span class="ident">RequestAccuracyToPrivacyUsage</span>::<span class="ident">decode</span>(<span class="ident">request_buffer</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">request</span>) <span class="op">=&gt;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">request</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">RequestAccuracyToPrivacyUsage</span> {
                     <span class="ident">component</span>, <span class="ident">privacy_definition</span>, <span class="ident">properties</span>, <span class="ident">accuracies</span>
                 } <span class="op">=</span> <span class="ident">request</span>;
 
 
                 <span class="comment">// this function allows for catching errors via ?.</span>
-                <span class="kw">let</span> <span class="ident">run</span> <span class="op">=</span> <span class="op">||</span> <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsages</span><span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="ident">run</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyUsages</span><span class="op">&gt;</span> {
                     <span class="kw">let</span> <span class="ident">component</span>: <span class="ident">proto</span>::<span class="ident">Component</span> <span class="op">=</span> <span class="ident">component</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;component must be defined&quot;</span>))<span class="question-mark">?</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;component must be defined&quot;</span>))<span class="question-mark">?</span>;
                     <span class="kw">let</span> <span class="ident">privacy_definition</span>: <span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span> <span class="op">=</span> <span class="ident">privacy_definition</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;privacy definition must be defined&quot;</span>))<span class="question-mark">?</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;privacy definition must be defined&quot;</span>))<span class="question-mark">?</span>;
                     <span class="kw">let</span> <span class="ident">properties</span> <span class="op">=</span> <span class="ident">parse_argument_properties</span>(<span class="ident">properties</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;properties must be defined&quot;</span>))<span class="question-mark">?</span>);
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;properties must be defined&quot;</span>))<span class="question-mark">?</span>);
                     <span class="kw">let</span> <span class="ident">accuracies</span>: <span class="ident">proto</span>::<span class="ident">Accuracies</span> <span class="op">=</span> <span class="ident">accuracies</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;accuracies must be defined&quot;</span>))<span class="question-mark">?</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;accuracies must be defined&quot;</span>))<span class="question-mark">?</span>;
 
                     <span class="ident">whitenoise_validator</span>::<span class="ident">accuracy_to_privacy_usage</span>(
                         <span class="ident">component</span>, <span class="ident">privacy_definition</span>, <span class="ident">properties</span>, <span class="ident">accuracies</span>,
@@ -667,13 +667,13 @@
                 };
 
                 <span class="kw">match</span> <span class="ident">run</span>() {
-                    <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=&gt;</span>
+                    <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span>
                         <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_accuracy_to_privacy_usage</span>::<span class="ident">Value</span>::<span class="ident">Data</span>(<span class="ident">x</span>)),
-                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span>
+                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span>
                         <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_accuracy_to_privacy_usage</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="ident">err</span>))),
                 }
             }
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span>
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span>
                 <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_accuracy_to_privacy_usage</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="string">&quot;unable to parse protobuf&quot;</span>.<span class="ident">into</span>())))
         }
     };
@@ -693,36 +693,36 @@
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">not_unsafe_ptr_arg_deref</span>)]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">privacy_usage_to_accuracy</span>(
     <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
-) <span class="op">-&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
     <span class="kw">let</span> <span class="ident">request_buffer</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ptr_to_buffer</span>(<span class="ident">request_ptr</span>, <span class="ident">request_length</span>) };
 
     <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">proto</span>::<span class="ident">ResponsePrivacyUsageToAccuracy</span> {
         <span class="ident">value</span>: <span class="kw">match</span> <span class="ident">proto</span>::<span class="ident">RequestPrivacyUsageToAccuracy</span>::<span class="ident">decode</span>(<span class="ident">request_buffer</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">request</span>) <span class="op">=&gt;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">request</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">RequestPrivacyUsageToAccuracy</span> {
                     <span class="ident">component</span>, <span class="ident">privacy_definition</span>, <span class="ident">properties</span>, <span class="ident">alpha</span>
                 } <span class="op">=</span> <span class="ident">request</span>;
 
-                <span class="kw">let</span> <span class="ident">run</span> <span class="op">=</span> <span class="op">||</span> <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">Accuracies</span><span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="ident">run</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">Accuracies</span><span class="op">&gt;</span> {
                     <span class="kw">let</span> <span class="ident">component</span>: <span class="ident">proto</span>::<span class="ident">Component</span> <span class="op">=</span> <span class="ident">component</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;component must be defined&quot;</span>))<span class="question-mark">?</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;component must be defined&quot;</span>))<span class="question-mark">?</span>;
                     <span class="kw">let</span> <span class="ident">privacy_definition</span>: <span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span> <span class="op">=</span> <span class="ident">privacy_definition</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;privacy definition must be defined&quot;</span>))<span class="question-mark">?</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;privacy definition must be defined&quot;</span>))<span class="question-mark">?</span>;
                     <span class="kw">let</span> <span class="ident">properties</span> <span class="op">=</span> <span class="ident">parse_argument_properties</span>(<span class="ident">properties</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;properties must be defined&quot;</span>))<span class="question-mark">?</span>);
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;properties must be defined&quot;</span>))<span class="question-mark">?</span>);
 
                     <span class="ident">whitenoise_validator</span>::<span class="ident">privacy_usage_to_accuracy</span>(
                         <span class="ident">component</span>, <span class="ident">privacy_definition</span>, <span class="ident">properties</span>, <span class="ident">alpha</span>)
                 };
 
                 <span class="kw">match</span> <span class="ident">run</span>() {
-                    <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=&gt;</span>
+                    <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span>
                         <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_privacy_usage_to_accuracy</span>::<span class="ident">Value</span>::<span class="ident">Data</span>(<span class="ident">x</span>)),
-                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span>
+                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span>
                         <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_privacy_usage_to_accuracy</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="ident">err</span>))),
                 }
             }
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span>
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span>
                 <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_privacy_usage_to_accuracy</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="string">&quot;unable to parse protobuf&quot;</span>.<span class="ident">into</span>())))
         }
     };
@@ -741,26 +741,26 @@
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">not_unsafe_ptr_arg_deref</span>)]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">get_properties</span>(
     <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
-) <span class="op">-&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
     <span class="kw">let</span> <span class="ident">request_buffer</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ptr_to_buffer</span>(<span class="ident">request_ptr</span>, <span class="ident">request_length</span>) };
 
     <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">proto</span>::<span class="ident">ResponseGetProperties</span> {
         <span class="ident">value</span>: <span class="kw">match</span> <span class="ident">proto</span>::<span class="ident">RequestGetProperties</span>::<span class="ident">decode</span>(<span class="ident">request_buffer</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">request</span>) <span class="op">=&gt;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">request</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">RequestGetProperties</span> {
                     <span class="ident">analysis</span>, <span class="ident">release</span>, <span class="ident">node_ids</span>
                 } <span class="op">=</span> <span class="ident">request</span>;
 
-                <span class="kw">let</span> <span class="ident">run</span> <span class="op">=</span> <span class="op">||</span> <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">GraphProperties</span><span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="ident">run</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">GraphProperties</span><span class="op">&gt;</span> {
                     <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">Analysis</span> {
                         <span class="ident">privacy_definition</span>, <span class="ident">computation_graph</span>
                     } <span class="op">=</span> <span class="ident">analysis</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;analysis must be defined&quot;</span>))<span class="question-mark">?</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;analysis must be defined&quot;</span>))<span class="question-mark">?</span>;
                     <span class="kw">let</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">parse_release</span>(<span class="ident">release</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;release must be defined&quot;</span>))<span class="question-mark">?</span>);
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;release must be defined&quot;</span>))<span class="question-mark">?</span>);
 
                     <span class="kw">let</span> <span class="ident">computation_graph</span> <span class="op">=</span> <span class="ident">computation_graph</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;computation_graph must be defined&quot;</span>))<span class="question-mark">?</span>.<span class="ident">value</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;computation_graph must be defined&quot;</span>))<span class="question-mark">?</span>.<span class="ident">value</span>;
 
                     <span class="kw">let</span> (<span class="ident">properties</span>, <span class="ident">warnings</span>) <span class="op">=</span> <span class="ident">whitenoise_validator</span>::<span class="ident">get_properties</span>(
                         <span class="ident">privacy_definition</span>, <span class="ident">computation_graph</span>, <span class="ident">release</span>, <span class="ident">node_ids</span>)<span class="question-mark">?</span>;
@@ -768,19 +768,19 @@
                     <span class="prelude-val">Ok</span>(<span class="ident">proto</span>::<span class="ident">GraphProperties</span> {
                         <span class="ident">properties</span>: <span class="ident">properties</span>.<span class="ident">into_iter</span>()
                             .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">node_id</span>, <span class="ident">properties</span>)<span class="op">|</span> (<span class="ident">node_id</span>, <span class="ident">serialize_value_properties</span>(<span class="ident">properties</span>)))
-                            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">ValueProperties</span><span class="op">&gt;&gt;</span>(),
+                            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">proto</span>::<span class="ident">ValueProperties</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
                         <span class="ident">warnings</span>: <span class="ident">warnings</span>.<span class="ident">into_iter</span>().<span class="ident">map</span>(<span class="ident">serialize_error</span>).<span class="ident">collect</span>(),
                     })
                 };
 
                 <span class="kw">match</span> <span class="ident">run</span>() {
-                    <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=&gt;</span>
+                    <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span>
                         <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_get_properties</span>::<span class="ident">Value</span>::<span class="ident">Data</span>(<span class="ident">x</span>)),
-                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span>
+                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span>
                         <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_get_properties</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="ident">err</span>))),
                 }
             }
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span>
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span>
                 <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_get_properties</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="string">&quot;unable to parse protobuf&quot;</span>.<span class="ident">into</span>())))
         }
     };
@@ -799,19 +799,19 @@
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">not_unsafe_ptr_arg_deref</span>)]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">expand_component</span>(
     <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
-) <span class="op">-&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
     <span class="kw">let</span> <span class="ident">request_buffer</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ptr_to_buffer</span>(<span class="ident">request_ptr</span>, <span class="ident">request_length</span>) };
 
     <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">proto</span>::<span class="ident">ResponseExpandComponent</span> {
         <span class="ident">value</span>: <span class="kw">match</span> <span class="ident">proto</span>::<span class="ident">RequestExpandComponent</span>::<span class="ident">decode</span>(<span class="ident">request_buffer</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">request</span>) <span class="op">=&gt;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">request</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">RequestExpandComponent</span> {
                     <span class="ident">component</span>, <span class="ident">properties</span>, <span class="ident">arguments</span>, <span class="ident">privacy_definition</span>, <span class="ident">component_id</span>, <span class="ident">maximum_id</span>,
                 } <span class="op">=</span> <span class="ident">request</span>;
 
-                <span class="kw">let</span> <span class="ident">run</span> <span class="op">=</span> <span class="op">||</span> <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="ident">run</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">ComponentExpansion</span><span class="op">&gt;</span> {
                     <span class="kw">let</span> <span class="ident">component</span> <span class="op">=</span> <span class="ident">component</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;component must be defined&quot;</span>))<span class="question-mark">?</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;component must be defined&quot;</span>))<span class="question-mark">?</span>;
 
                     <span class="kw">let</span> <span class="ident">public_arguments</span> <span class="op">=</span> <span class="ident">arguments</span>
                         .<span class="ident">map_or_else</span>(<span class="ident">IndexMap</span>::<span class="ident">new</span>, <span class="ident">parse_indexmap_release_node</span>);
@@ -829,13 +829,13 @@
                 };
 
                 <span class="kw">match</span> <span class="ident">run</span>() {
-                    <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=&gt;</span>
+                    <span class="prelude-val">Ok</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span>
                         <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_expand_component</span>::<span class="ident">Value</span>::<span class="ident">Data</span>(<span class="ident">x</span>)),
-                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span>
+                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span>
                         <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_expand_component</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="ident">err</span>))),
                 }
             }
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span>
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span>
                 <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_expand_component</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="string">&quot;unable to parse protobuf&quot;</span>.<span class="ident">into</span>())))
         }
     };
@@ -855,28 +855,28 @@
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">not_unsafe_ptr_arg_deref</span>)]</span>
 <span class="kw">pub</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">release</span>(
     <span class="ident">request_ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">u8</span>, <span class="ident">request_length</span>: <span class="ident">i32</span>,
-) <span class="op">-&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ffi_support</span>::<span class="ident">ByteBuffer</span> {
     <span class="kw">let</span> <span class="ident">request_buffer</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">ptr_to_buffer</span>(<span class="ident">request_ptr</span>, <span class="ident">request_length</span>) };
 
     <span class="kw">let</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">proto</span>::<span class="ident">ResponseRelease</span> {
         <span class="ident">value</span>: <span class="kw">match</span> <span class="ident">proto</span>::<span class="ident">RequestRelease</span>::<span class="ident">decode</span>(<span class="ident">request_buffer</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">request</span>) <span class="op">=&gt;</span> {
+            <span class="prelude-val">Ok</span>(<span class="ident">request</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">RequestRelease</span> {
                     <span class="ident">analysis</span>, <span class="ident">release</span>, <span class="ident">stack_trace</span>, <span class="ident">filter_level</span>
                 } <span class="op">=</span> <span class="ident">request</span>;
 
 
-                <span class="kw">let</span> <span class="ident">run</span> <span class="op">=</span> <span class="op">||</span> <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">Release</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">Error</span><span class="op">&gt;</span>)<span class="op">&gt;</span> {
+                <span class="kw">let</span> <span class="ident">run</span> <span class="op">=</span> <span class="op">|</span><span class="op">|</span> <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">Release</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">Error</span><span class="op">&gt;</span>)<span class="op">&gt;</span> {
                     <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">Analysis</span> {
                         <span class="ident">privacy_definition</span>, <span class="ident">computation_graph</span>
                     } <span class="op">=</span> <span class="ident">analysis</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;analysis must be defined&quot;</span>))<span class="question-mark">?</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;analysis must be defined&quot;</span>))<span class="question-mark">?</span>;
                     <span class="kw">let</span> <span class="ident">computation_graph</span> <span class="op">=</span> <span class="ident">computation_graph</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;computation_graph must be defined&quot;</span>))<span class="question-mark">?</span>.<span class="ident">value</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;computation_graph must be defined&quot;</span>))<span class="question-mark">?</span>.<span class="ident">value</span>;
                     <span class="kw">let</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">parse_release</span>(<span class="ident">release</span>
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;release must be defined&quot;</span>))<span class="question-mark">?</span>);
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;release must be defined&quot;</span>))<span class="question-mark">?</span>);
                     <span class="kw">let</span> <span class="ident">filter_level</span> <span class="op">=</span> <span class="ident">proto</span>::<span class="ident">FilterLevel</span>::<span class="ident">from_i32</span>(<span class="ident">filter_level</span>)
-                        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;unrecognized filter level {:?}&quot;</span>, <span class="ident">filter_level</span>)))<span class="question-mark">?</span>;
+                        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;unrecognized filter level {:?}&quot;</span>, <span class="ident">filter_level</span>)))<span class="question-mark">?</span>;
 
                     <span class="kw">let</span> (<span class="ident">release</span>, <span class="ident">warnings</span>) <span class="op">=</span> <span class="ident">whitenoise_runtime</span>::<span class="ident">release</span>(
                         <span class="ident">privacy_definition</span>, <span class="ident">computation_graph</span>, <span class="ident">release</span>, <span class="ident">filter_level</span>)<span class="question-mark">?</span>;
@@ -885,18 +885,18 @@
                 };
 
                 <span class="kw">match</span> <span class="ident">run</span>() {
-                    <span class="prelude-val">Ok</span>((<span class="ident">release</span>, <span class="ident">warnings</span>)) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_release</span>::<span class="ident">Value</span>::<span class="ident">Data</span>(<span class="ident">proto</span>::<span class="ident">response_release</span>::<span class="ident">Success</span> {
+                    <span class="prelude-val">Ok</span>((<span class="ident">release</span>, <span class="ident">warnings</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_release</span>::<span class="ident">Value</span>::<span class="ident">Data</span>(<span class="ident">proto</span>::<span class="ident">response_release</span>::<span class="ident">Success</span> {
                         <span class="ident">release</span>: <span class="prelude-val">Some</span>(<span class="ident">serialize_release</span>(<span class="ident">release</span>)),
                         <span class="ident">warnings</span>: <span class="kw">if</span> <span class="ident">stack_trace</span> { <span class="ident">warnings</span> } <span class="kw">else</span> { <span class="ident">Vec</span>::<span class="ident">new</span>() },
                     })),
-                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=&gt;</span> <span class="kw">if</span> <span class="ident">stack_trace</span> {
+                    <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">if</span> <span class="ident">stack_trace</span> {
                         <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_release</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="ident">err</span>)))
                     } <span class="kw">else</span> {
                         <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_release</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="string">&quot;unspecified error while executing analysis&quot;</span>.<span class="ident">into</span>())))
                     }
                 }
             }
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_release</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="string">&quot;unable to parse protobuf&quot;</span>.<span class="ident">into</span>())))
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">proto</span>::<span class="ident">response_release</span>::<span class="ident">Value</span>::<span class="ident">Error</span>(<span class="ident">serialize_error</span>(<span class="string">&quot;unable to parse protobuf&quot;</span>.<span class="ident">into</span>())))
         }
     };
     <span class="ident">buffer_to_ptr</span>(<span class="ident">response</span>)

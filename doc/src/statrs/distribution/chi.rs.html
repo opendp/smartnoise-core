@@ -610,8 +610,8 @@
     <span class="doccomment">/// result = Chi::new(0.0);</span>
     <span class="doccomment">/// assert!(result.is_err());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">freedom</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Chi</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="ident">freedom</span>.<span class="ident">is_nan</span>() <span class="op">||</span> <span class="ident">freedom</span> <span class="op">&lt;=</span> <span class="number">0.0</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">freedom</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Chi</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="ident">freedom</span>.<span class="ident">is_nan</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">freedom</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
             <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">BadParams</span>)
         } <span class="kw">else</span> {
             <span class="prelude-val">Ok</span>(<span class="ident">Chi</span> { <span class="ident">freedom</span>: <span class="ident">freedom</span> })
@@ -629,13 +629,13 @@
     <span class="doccomment">/// let n = Chi::new(2.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!(n.freedom(), 2.0);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">freedom</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">freedom</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">freedom</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Distribution</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Chi</span> {
-    <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Rng</span> <span class="op">+</span> <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         (<span class="number">0</span>..<span class="self">self</span>.<span class="ident">freedom</span> <span class="kw">as</span> <span class="ident">i64</span>)
             .<span class="ident">fold</span>(<span class="number">0.0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="kw">_</span><span class="op">|</span> {
                 <span class="ident">acc</span> <span class="op">+</span> <span class="kw">super</span>::<span class="ident">normal</span>::<span class="ident">sample_unchecked</span>(<span class="ident">r</span>, <span class="number">0.0</span>, <span class="number">1.0</span>).<span class="ident">powf</span>(<span class="number">2.0</span>)
@@ -656,10 +656,10 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `k` is the degrees of freedom and `P` is</span>
     <span class="doccomment">/// the regularized Gamma function</span>
-    <span class="kw">fn</span> <span class="ident">cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">freedom</span> <span class="op">==</span> <span class="ident">f64</span>::<span class="ident">INFINITY</span> <span class="op">||</span> <span class="ident">x</span> <span class="op">==</span> <span class="ident">f64</span>::<span class="ident">INFINITY</span> {
+    <span class="kw">fn</span> <span class="ident">cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">freedom</span> <span class="op">=</span><span class="op">=</span> <span class="ident">f64</span>::<span class="ident">INFINITY</span> <span class="op">|</span><span class="op">|</span> <span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="ident">f64</span>::<span class="ident">INFINITY</span> {
             <span class="number">1.0</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;=</span> <span class="number">0.0</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
             <span class="number">0.0</span>
         } <span class="kw">else</span> {
             <span class="ident">gamma</span>::<span class="ident">gamma_lr</span>(<span class="self">self</span>.<span class="ident">freedom</span> <span class="op">/</span> <span class="number">2.0</span>, <span class="ident">x</span> <span class="op">*</span> <span class="ident">x</span> <span class="op">/</span> <span class="number">2.0</span>)
@@ -676,7 +676,7 @@
     <span class="doccomment">/// ```ignore</span>
     <span class="doccomment">/// 0</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">min</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">min</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="number">0.0</span>
     }
 }
@@ -690,7 +690,7 @@
     <span class="doccomment">/// ```ignore</span>
     <span class="doccomment">/// INF</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="ident">f64</span>::<span class="ident">INFINITY</span>
     }
 }
@@ -709,7 +709,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `k` is degrees of freedom and `Γ` is the gamma function</span>
-    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="ident">f64</span>::<span class="ident">consts</span>::<span class="ident">SQRT_2</span> <span class="op">*</span> <span class="ident">gamma</span>::<span class="ident">gamma</span>((<span class="self">self</span>.<span class="ident">freedom</span> <span class="op">+</span> <span class="number">1.0</span>) <span class="op">/</span> <span class="number">2.0</span>)
             <span class="op">/</span> <span class="ident">gamma</span>::<span class="ident">gamma</span>(<span class="self">self</span>.<span class="ident">freedom</span> <span class="op">/</span> <span class="number">2.0</span>)
     }
@@ -730,7 +730,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `k` is degrees of freedom and `μ` is the mean</span>
     <span class="doccomment">/// of the distribution</span>
-    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">freedom</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">mean</span>() <span class="op">*</span> <span class="self">self</span>.<span class="ident">mean</span>()
     }
 
@@ -748,7 +748,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `k` is degrees of freedom and `μ` is the mean</span>
     <span class="doccomment">/// of the distribution</span>
-    <span class="kw">fn</span> <span class="ident">std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">variance</span>().<span class="ident">sqrt</span>()
     }
 }
@@ -768,7 +768,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `k` is degrees of freedom, `Γ` is the gamma function,</span>
     <span class="doccomment">/// and `ψ` is the digamma function</span>
-    <span class="kw">fn</span> <span class="ident">entropy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">entropy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="ident">gamma</span>::<span class="ident">ln_gamma</span>(<span class="self">self</span>.<span class="ident">freedom</span> <span class="op">/</span> <span class="number">2.0</span>)
             <span class="op">+</span> (<span class="self">self</span>.<span class="ident">freedom</span>
                 <span class="op">-</span> (<span class="number">2.0f64</span>).<span class="ident">ln</span>()
@@ -791,7 +791,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">/// where `μ` is the mean and `σ` the standard deviation</span>
     <span class="doccomment">/// of the distribution</span>
-    <span class="kw">fn</span> <span class="ident">skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">let</span> <span class="ident">sigma</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">std_dev</span>();
         <span class="self">self</span>.<span class="ident">mean</span>() <span class="op">*</span> (<span class="number">1.0</span> <span class="op">-</span> <span class="number">2.0</span> <span class="op">*</span> <span class="ident">sigma</span> <span class="op">*</span> <span class="ident">sigma</span>) <span class="op">/</span> (<span class="ident">sigma</span> <span class="op">*</span> <span class="ident">sigma</span> <span class="op">*</span> <span class="ident">sigma</span>)
     }
@@ -811,7 +811,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `k` is the degrees of freedom</span>
-    <span class="kw">fn</span> <span class="ident">mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">checked_mode</span>().<span class="ident">unwrap</span>()
     }
 }
@@ -830,7 +830,7 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `k` is the degrees of freedom</span>
-    <span class="kw">fn</span> <span class="ident">checked_mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">checked_mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">freedom</span> <span class="op">&lt;</span> <span class="number">1.0</span> {
             <span class="prelude-val">Err</span>(<span class="ident">StatsError</span>::<span class="ident">ArgGte</span>(<span class="string">&quot;freedom&quot;</span>, <span class="number">1.0</span>))
         } <span class="kw">else</span> {
@@ -850,8 +850,8 @@
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// where `k` is the degrees of freedom and `Γ` is the gamma function</span>
-    <span class="kw">fn</span> <span class="ident">pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">freedom</span> <span class="op">==</span> <span class="ident">f64</span>::<span class="ident">INFINITY</span> <span class="op">||</span> <span class="ident">x</span> <span class="op">==</span> <span class="ident">f64</span>::<span class="ident">INFINITY</span> <span class="op">||</span> <span class="ident">x</span> <span class="op">&lt;=</span> <span class="number">0.0</span> {
+    <span class="kw">fn</span> <span class="ident">pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">freedom</span> <span class="op">=</span><span class="op">=</span> <span class="ident">f64</span>::<span class="ident">INFINITY</span> <span class="op">|</span><span class="op">|</span> <span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="ident">f64</span>::<span class="ident">INFINITY</span> <span class="op">|</span><span class="op">|</span> <span class="ident">x</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
             <span class="number">0.0</span>
         } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">freedom</span> <span class="op">&gt;</span> <span class="number">160.0</span> {
             <span class="self">self</span>.<span class="ident">ln_pdf</span>(<span class="ident">x</span>).<span class="ident">exp</span>()
@@ -871,8 +871,8 @@
     <span class="doccomment">/// ```ignore</span>
     <span class="doccomment">/// ln((2^(1 - (k / 2)) * x^(k - 1) * e^(-x^2 / 2)) / Γ(k / 2))</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">ln_pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">freedom</span> <span class="op">==</span> <span class="ident">f64</span>::<span class="ident">INFINITY</span> <span class="op">||</span> <span class="ident">x</span> <span class="op">==</span> <span class="ident">f64</span>::<span class="ident">INFINITY</span> <span class="op">||</span> <span class="ident">x</span> <span class="op">&lt;=</span> <span class="number">0.0</span> {
+    <span class="kw">fn</span> <span class="ident">ln_pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">freedom</span> <span class="op">=</span><span class="op">=</span> <span class="ident">f64</span>::<span class="ident">INFINITY</span> <span class="op">|</span><span class="op">|</span> <span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="ident">f64</span>::<span class="ident">INFINITY</span> <span class="op">|</span><span class="op">|</span> <span class="ident">x</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
             <span class="ident">f64</span>::<span class="ident">NEG_INFINITY</span>
         } <span class="kw">else</span> {
             (<span class="number">1.0</span> <span class="op">-</span> <span class="self">self</span>.<span class="ident">freedom</span> <span class="op">/</span> <span class="number">2.0</span>) <span class="op">*</span> (<span class="number">2.0f64</span>).<span class="ident">ln</span>() <span class="op">+</span> ((<span class="self">self</span>.<span class="ident">freedom</span> <span class="op">-</span> <span class="number">1.0</span>) <span class="op">*</span> <span class="ident">x</span>.<span class="ident">ln</span>())
@@ -890,7 +890,7 @@
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">distribution</span>::{<span class="ident">Univariate</span>, <span class="ident">Continuous</span>, <span class="ident">Chi</span>};
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">distribution</span>::<span class="ident">internal</span>::<span class="kw-2">*</span>;
 
-    <span class="kw">fn</span> <span class="ident">try_create</span>(<span class="ident">freedom</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">Chi</span> {
+    <span class="kw">fn</span> <span class="ident">try_create</span>(<span class="ident">freedom</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Chi</span> {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">Chi</span>::<span class="ident">new</span>(<span class="ident">freedom</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">n</span>.<span class="ident">is_ok</span>());
         <span class="ident">n</span>.<span class="ident">unwrap</span>()
@@ -906,29 +906,29 @@
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">n</span>.<span class="ident">is_err</span>());
     }
 
-    <span class="kw">fn</span> <span class="ident">get_value</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">freedom</span>: <span class="ident">f64</span>, <span class="ident">eval</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>
-        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Chi</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>
+    <span class="kw">fn</span> <span class="ident">get_value</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">freedom</span>: <span class="ident">f64</span>, <span class="ident">eval</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>
+        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Chi</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>
     {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">try_create</span>(<span class="ident">freedom</span>);
         <span class="ident">eval</span>(<span class="ident">n</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">test_case</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">freedom</span>: <span class="ident">f64</span>, <span class="ident">expected</span>: <span class="ident">f64</span>, <span class="ident">eval</span>: <span class="ident">F</span>)
-        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Chi</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>
+        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Chi</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>
     {
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">get_value</span>(<span class="ident">freedom</span>, <span class="ident">eval</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">expected</span>, <span class="ident">x</span>);
     }
 
     <span class="kw">fn</span> <span class="ident">test_almost</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">freedom</span>: <span class="ident">f64</span>, <span class="ident">expected</span>: <span class="ident">f64</span>, <span class="ident">acc</span>: <span class="ident">f64</span>, <span class="ident">eval</span>: <span class="ident">F</span>)
-        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Chi</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>
+        <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">Chi</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>
     {
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">get_value</span>(<span class="ident">freedom</span>, <span class="ident">eval</span>);
         <span class="macro">assert_almost_eq</span><span class="macro">!</span>(<span class="ident">expected</span>, <span class="ident">x</span>, <span class="ident">acc</span>);
     }
 
     <span class="kw">fn</span> <span class="ident">test_is_nan</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">freedom</span>: <span class="ident">f64</span>, <span class="ident">eval</span>: <span class="ident">F</span>)
-        <span class="kw">where</span> <span class="ident">F</span> : <span class="ident">Fn</span>(<span class="ident">Chi</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>
+        <span class="kw">where</span> <span class="ident">F</span> : <span class="ident">Fn</span>(<span class="ident">Chi</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>
     {
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">get_value</span>(<span class="ident">freedom</span>, <span class="ident">eval</span>);
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">x</span>.<span class="ident">is_nan</span>());

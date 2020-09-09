@@ -230,7 +230,7 @@
         <span class="ident">_public_arguments</span>: <span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">base</span>::<span class="ident">IndexKey</span>, <span class="kw-2">&amp;</span><span class="ident">Value</span><span class="op">&gt;</span>,
         <span class="ident">properties</span>: <span class="ident">base</span>::<span class="ident">NodeProperties</span>,
         <span class="ident">node_id</span>: <span class="ident">u32</span>
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Warnable</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Warnable</span><span class="op">&lt;</span><span class="ident">ValueProperties</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="ident">properties</span>.<span class="ident">contains_key</span>(<span class="kw-2">&amp;</span><span class="ident">IndexKey</span>::<span class="ident">from</span>(<span class="string">&quot;data&quot;</span>)) {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">properties</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;data&quot;</span>.<span class="ident">into</span>())
                 .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()
@@ -247,10 +247,10 @@
 
             <span class="ident">data_property</span>.<span class="ident">c_stability</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">c_stability</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>()
                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">i</span>, <span class="ident">l_stab</span>)<span class="op">|</span> <span class="ident">data_property</span>.<span class="ident">c_stability</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>()
-                    .<span class="ident">filter</span>(<span class="op">|</span>(<span class="ident">j</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">i</span> <span class="op">&lt;=</span> <span class="kw-2">*</span><span class="ident">j</span>)
+                    .<span class="ident">filter</span>(<span class="op">|</span>(<span class="ident">j</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">i</span> <span class="op">&lt;</span><span class="op">=</span> <span class="kw-2">*</span><span class="ident">j</span>)
                     .<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">r_stab</span>)<span class="op">|</span> <span class="ident">l_stab</span> <span class="op">*</span> <span class="ident">r_stab</span>)
-                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;&gt;</span>())
-                .<span class="ident">flatten</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;&gt;</span>();
+                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span><span class="op">&gt;</span>())
+                .<span class="ident">flatten</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
             <span class="comment">// save a snapshot of the state when aggregating</span>
             <span class="ident">data_property</span>.<span class="ident">aggregator</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">AggregatorProperties</span> {
@@ -264,7 +264,7 @@
             <span class="ident">data_property</span>.<span class="ident">num_records</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="number">1</span>);
             <span class="ident">data_property</span>.<span class="ident">num_columns</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">num_columns</span>);
 
-            <span class="kw">if</span> <span class="ident">data_property</span>.<span class="ident">data_type</span> <span class="op">!=</span> <span class="ident">DataType</span>::<span class="ident">Float</span> {
+            <span class="kw">if</span> <span class="ident">data_property</span>.<span class="ident">data_type</span> <span class="op">!</span><span class="op">=</span> <span class="ident">DataType</span>::<span class="ident">Float</span> {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;data: atomic type must be float&quot;</span>.<span class="ident">into</span>());
             }
             <span class="comment">// min/max of data is not known after computing covariance</span>
@@ -281,10 +281,10 @@
                 .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;right:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
 
 
-            <span class="kw">if</span> <span class="ident">left_property</span>.<span class="ident">data_type</span> <span class="op">!=</span> <span class="ident">DataType</span>::<span class="ident">Float</span> {
+            <span class="kw">if</span> <span class="ident">left_property</span>.<span class="ident">data_type</span> <span class="op">!</span><span class="op">=</span> <span class="ident">DataType</span>::<span class="ident">Float</span> {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;left: atomic type must be float&quot;</span>.<span class="ident">into</span>());
             }
-            <span class="kw">if</span> <span class="ident">right_property</span>.<span class="ident">data_type</span> <span class="op">!=</span> <span class="ident">DataType</span>::<span class="ident">Float</span> {
+            <span class="kw">if</span> <span class="ident">right_property</span>.<span class="ident">data_type</span> <span class="op">!</span><span class="op">=</span> <span class="ident">DataType</span>::<span class="ident">Float</span> {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;right: atomic type must be float&quot;</span>.<span class="ident">into</span>());
             }
             <span class="ident">left_property</span>.<span class="ident">assert_is_not_empty</span>()<span class="question-mark">?</span>;
@@ -302,7 +302,7 @@
 
             <span class="ident">left_property</span>.<span class="ident">c_stability</span> <span class="op">=</span> <span class="ident">left_property</span>.<span class="ident">c_stability</span>.<span class="ident">iter</span>()
                 .<span class="ident">map</span>(<span class="op">|</span><span class="ident">l</span><span class="op">|</span> <span class="ident">right_property</span>.<span class="ident">c_stability</span>.<span class="ident">iter</span>()
-                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">l</span> <span class="op">*</span> <span class="ident">r</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>()).<span class="ident">flatten</span>().<span class="ident">collect</span>();
+                    .<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> <span class="ident">l</span> <span class="op">*</span> <span class="ident">r</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()).<span class="ident">flatten</span>().<span class="ident">collect</span>();
 
             <span class="comment">// save a snapshot of the state when aggregating</span>
             <span class="ident">left_property</span>.<span class="ident">aggregator</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">AggregatorProperties</span> {
@@ -333,12 +333,12 @@
         <span class="ident">privacy_definition</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span>,
         <span class="ident">properties</span>: <span class="kw-2">&amp;</span><span class="ident">NodeProperties</span>,
         <span class="ident">sensitivity_type</span>: <span class="kw-2">&amp;</span><span class="ident">SensitivitySpace</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Value</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="ident">sensitivity_type</span> {
-            <span class="ident">SensitivitySpace</span>::<span class="ident">KNorm</span>(<span class="ident">k</span>) <span class="op">=&gt;</span> {
+            <span class="ident">SensitivitySpace</span>::<span class="ident">KNorm</span>(<span class="ident">k</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">data_n</span>;
                 <span class="kw">let</span> <span class="ident">differences</span> <span class="op">=</span> <span class="kw">match</span> (<span class="ident">properties</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">IndexKey</span>::<span class="ident">from</span>(<span class="string">&quot;data&quot;</span>)), <span class="ident">properties</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;left&quot;</span>.<span class="ident">into</span>()), <span class="ident">properties</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">IndexKey</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="string">&quot;right&quot;</span>.<span class="ident">into</span>())) {
-                    (<span class="prelude-val">Some</span>(<span class="ident">data_property</span>), <span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="op">=&gt;</span> {
+                    (<span class="prelude-val">Some</span>(<span class="ident">data_property</span>), <span class="prelude-val">None</span>, <span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> {
 
                         <span class="comment">// data: perform checks and prepare parameters</span>
                         <span class="kw">let</span> <span class="ident">data_property</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">array</span>()
@@ -353,12 +353,12 @@
                         <span class="ident">data_lower</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">data_upper</span>.<span class="ident">iter</span>()).<span class="ident">enumerate</span>()
                             .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">i</span>, (<span class="ident">left_min</span>, <span class="ident">left_max</span>))<span class="op">|</span>
                                 <span class="ident">data_lower</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">data_upper</span>.<span class="ident">iter</span>()).<span class="ident">enumerate</span>()
-                                    .<span class="ident">filter</span>(<span class="op">|</span>(<span class="ident">j</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">i</span> <span class="op">&lt;=</span> <span class="kw-2">*</span><span class="ident">j</span>)
+                                    .<span class="ident">filter</span>(<span class="op">|</span>(<span class="ident">j</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">i</span> <span class="op">&lt;</span><span class="op">=</span> <span class="kw-2">*</span><span class="ident">j</span>)
                                     .<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, (<span class="ident">right_min</span>, <span class="ident">right_max</span>))<span class="op">|</span>
                                         (<span class="kw-2">*</span><span class="ident">left_max</span> <span class="op">-</span> <span class="kw-2">*</span><span class="ident">left_min</span>) <span class="op">*</span> (<span class="kw-2">*</span><span class="ident">right_max</span> <span class="op">-</span> <span class="kw-2">*</span><span class="ident">right_min</span>))
-                                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;&gt;</span>()).<span class="ident">flatten</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;&gt;</span>()
+                                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span><span class="op">&gt;</span>()).<span class="ident">flatten</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span><span class="op">&gt;</span>()
                     }
-                    (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">left_property</span>), <span class="prelude-val">Some</span>(<span class="ident">right_property</span>)) <span class="op">=&gt;</span> {
+                    (<span class="prelude-val">None</span>, <span class="prelude-val">Some</span>(<span class="ident">left_property</span>), <span class="prelude-val">Some</span>(<span class="ident">right_property</span>)) <span class="op">=</span><span class="op">&gt;</span> {
 
                         <span class="comment">// left side: perform checks and prepare parameters</span>
                         <span class="kw">let</span> <span class="ident">left_property</span> <span class="op">=</span> <span class="ident">left_property</span>.<span class="ident">array</span>()
@@ -379,7 +379,7 @@
                         <span class="kw">let</span> <span class="ident">right_upper</span> <span class="op">=</span> <span class="ident">right_property</span>.<span class="ident">upper_float</span>()<span class="question-mark">?</span>;
 
                         <span class="comment">// ensure conformability</span>
-                        <span class="kw">if</span> <span class="ident">left_n</span> <span class="op">!=</span> <span class="ident">right_n</span> {
+                        <span class="kw">if</span> <span class="ident">left_n</span> <span class="op">!</span><span class="op">=</span> <span class="ident">right_n</span> {
                             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;n for left and right must be equivalent&quot;</span>.<span class="ident">into</span>());
                         }
                         <span class="ident">data_n</span> <span class="op">=</span> <span class="ident">left_n</span> <span class="kw">as</span> <span class="ident">f64</span>;
@@ -390,10 +390,10 @@
                                 <span class="ident">right_lower</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">right_upper</span>.<span class="ident">iter</span>())
                                 .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">right_min</span>, <span class="ident">right_max</span>)<span class="op">|</span>
                                     (<span class="ident">left_max</span> <span class="op">-</span> <span class="kw-2">*</span><span class="ident">left_min</span>) <span class="op">*</span> (<span class="ident">right_max</span> <span class="op">-</span> <span class="kw-2">*</span><span class="ident">right_min</span>))
-                                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;&gt;</span>())
-                            .<span class="ident">flatten</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;&gt;</span>()
+                                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span><span class="op">&gt;</span>())
+                            .<span class="ident">flatten</span>().<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span><span class="op">&gt;</span>()
                     }
-                    <span class="kw">_</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;either \&quot;data\&quot; or \&quot;left\&quot; and \&quot;right\&quot; must be supplied&quot;</span>.<span class="ident">into</span>())
+                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;either \&quot;data\&quot; or \&quot;left\&quot; and \&quot;right\&quot; must be supplied&quot;</span>.<span class="ident">into</span>())
                 };
 
                 <span class="kw">let</span> <span class="ident">delta_degrees_of_freedom</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">finite_sample_correction</span> { <span class="number">1</span> } <span class="kw">else</span> { <span class="number">0</span> } <span class="kw">as</span> <span class="ident">f64</span>;
@@ -401,26 +401,26 @@
 
                 <span class="kw">use</span> <span class="ident">proto</span>::<span class="ident">privacy_definition</span>::<span class="ident">Neighboring</span>;
                 <span class="kw">let</span> <span class="ident">neighboring_type</span> <span class="op">=</span> <span class="ident">Neighboring</span>::<span class="ident">from_i32</span>(<span class="ident">privacy_definition</span>.<span class="ident">neighboring</span>)
-                    .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;neighboring definition must be either \&quot;AddRemove\&quot; or \&quot;Substitute\&quot;&quot;</span>))<span class="question-mark">?</span>;
+                    .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;neighboring definition must be either \&quot;AddRemove\&quot; or \&quot;Substitute\&quot;&quot;</span>))<span class="question-mark">?</span>;
 
                 <span class="kw">let</span> <span class="ident">scaling_constant</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">k</span> {
-                    <span class="number">1</span> <span class="op">|</span> <span class="number">2</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">neighboring_type</span> {
-                        <span class="ident">Neighboring</span>::<span class="ident">AddRemove</span> <span class="op">=&gt;</span> <span class="ident">data_n</span> <span class="op">/</span> (<span class="ident">data_n</span> <span class="op">+</span> <span class="number">1.</span>) <span class="op">/</span> <span class="ident">normalization</span>,
-                        <span class="ident">Neighboring</span>::<span class="ident">Substitute</span> <span class="op">=&gt;</span> <span class="number">2.</span> <span class="op">*</span> (<span class="ident">data_n</span> <span class="op">-</span> <span class="number">1.</span>) <span class="op">/</span> <span class="ident">data_n</span> <span class="op">/</span> <span class="ident">normalization</span>
+                    <span class="number">1</span> <span class="op">|</span> <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">neighboring_type</span> {
+                        <span class="ident">Neighboring</span>::<span class="ident">AddRemove</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_n</span> <span class="op">/</span> (<span class="ident">data_n</span> <span class="op">+</span> <span class="number">1.</span>) <span class="op">/</span> <span class="ident">normalization</span>,
+                        <span class="ident">Neighboring</span>::<span class="ident">Substitute</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">2.</span> <span class="op">*</span> (<span class="ident">data_n</span> <span class="op">-</span> <span class="number">1.</span>) <span class="op">/</span> <span class="ident">data_n</span> <span class="op">/</span> <span class="ident">normalization</span>
                     },
-                    <span class="kw">_</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;KNorm sensitivity is only supported in L1 and L2 spaces&quot;</span>.<span class="ident">into</span>())
+                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;KNorm sensitivity is only supported in L1 and L2 spaces&quot;</span>.<span class="ident">into</span>())
                 } <span class="kw">as</span> <span class="ident">Float</span>;
 
                 <span class="kw">let</span> <span class="ident">row_sensitivity</span> <span class="op">=</span> <span class="ident">differences</span>.<span class="ident">iter</span>()
                     .<span class="ident">map</span>(<span class="op">|</span><span class="ident">difference</span><span class="op">|</span> (<span class="ident">difference</span> <span class="op">*</span> <span class="ident">scaling_constant</span>))
-                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;&gt;</span>();
+                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">array_sensitivity</span> <span class="op">=</span> <span class="ident">Array</span>::<span class="ident">from</span>(<span class="ident">row_sensitivity</span>).<span class="ident">into_dyn</span>();
                 <span class="ident">array_sensitivity</span>.<span class="ident">insert_axis_inplace</span>(<span class="ident">Axis</span>(<span class="number">0</span>));
 
                 <span class="prelude-val">Ok</span>(<span class="ident">array_sensitivity</span>.<span class="ident">into</span>())
             }
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Covariance sensitivity is only implemented for KNorm&quot;</span>.<span class="ident">into</span>())
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Covariance sensitivity is only implemented for KNorm&quot;</span>.<span class="ident">into</span>())
         }
     }
 }</pre></div>

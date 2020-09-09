@@ -1081,16 +1081,16 @@ assert_eq!(i.0, 42);
     <span class="kw">use</span> <span class="ident">core</span>::<span class="ident">mem</span>;
     <span class="kw">use</span> <span class="ident">gmp_mpfr_sys</span>::<span class="ident">gmp</span>::{<span class="ident">limb_t</span>, <span class="ident">LIMB_BITS</span>, <span class="ident">NAIL_BITS</span>, <span class="ident">NUMB_BITS</span>};
 
-    <span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">NAIL_BITS</span> <span class="op">==</span> <span class="number">0</span>);
-    <span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">NUMB_BITS</span> <span class="op">==</span> <span class="ident">LIMB_BITS</span>);
+    <span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">NAIL_BITS</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span>);
+    <span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">NUMB_BITS</span> <span class="op">=</span><span class="op">=</span> <span class="ident">LIMB_BITS</span>);
     <span class="macro">static_assert</span><span class="macro">!</span>(<span class="macro">cfg</span><span class="macro">!</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;32&quot;</span>) <span class="op">^</span> <span class="macro">cfg</span><span class="macro">!</span>(<span class="ident">target_pointer_width</span> <span class="op">=</span> <span class="string">&quot;64&quot;</span>));
     <span class="macro">static_assert</span><span class="macro">!</span>(<span class="macro">cfg</span><span class="macro">!</span>(<span class="ident">gmp_limb_bits_32</span>) <span class="op">^</span> <span class="macro">cfg</span><span class="macro">!</span>(<span class="ident">gmp_limb_bits_64</span>));
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_64</span>)]</span>
-    <span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">NUMB_BITS</span> <span class="op">==</span> <span class="number">64</span>);
+    <span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">NUMB_BITS</span> <span class="op">=</span><span class="op">=</span> <span class="number">64</span>);
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_32</span>)]</span>
-    <span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">NUMB_BITS</span> <span class="op">==</span> <span class="number">32</span>);
-    <span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">NUMB_BITS</span> <span class="op">%</span> <span class="number">8</span> <span class="op">==</span> <span class="number">0</span>);
-    <span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">limb_t</span><span class="op">&gt;</span>() <span class="op">==</span> <span class="ident">NUMB_BITS</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">/</span> <span class="number">8</span>);
+    <span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">NUMB_BITS</span> <span class="op">=</span><span class="op">=</span> <span class="number">32</span>);
+    <span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">NUMB_BITS</span> <span class="op">%</span> <span class="number">8</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span>);
+    <span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">limb_t</span><span class="op">&gt;</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">NUMB_BITS</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">/</span> <span class="number">8</span>);
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">test</span>, <span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;integer&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;float&quot;</span>)))]</span>

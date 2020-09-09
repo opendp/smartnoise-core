@@ -344,7 +344,7 @@
     <span class="doccomment">/// let n = Uniform::new(0.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!(0.5, n.cdf(0.5));</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">K</span>) <span class="op">-&gt;</span> <span class="ident">K</span>;
+    <span class="kw">fn</span> <span class="ident">cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">K</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">K</span>;
 }
 
 <span class="doccomment">/// The `InverseCDF` trait is used to specify an interface for distributions</span>
@@ -365,7 +365,7 @@
     <span class="doccomment">/// let n = Categorical::new(&amp;[0.0, 1.0, 2.0]).unwrap();</span>
     <span class="doccomment">/// assert_eq!(n.inverse_cdf(0.5), 2.0);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">inverse_cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">inverse_cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 }
 
 <span class="doccomment">/// The `CheckedInverseCDF` trait is used to specify an interface</span>
@@ -387,7 +387,7 @@
     <span class="doccomment">/// let n = Categorical::new(&amp;[0.0, 1.0, 2.0]).unwrap();</span>
     <span class="doccomment">/// assert!(n.checked_inverse_cdf(-1.0).is_err());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">checked_inverse_cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">checked_inverse_cdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// The `Continuous` trait  provides an interface for interacting with</span>
@@ -411,7 +411,7 @@
     <span class="doccomment">/// let n = Uniform::new(0.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!(1.0, n.pdf(0.5));</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">K</span>;
+    <span class="kw">fn</span> <span class="ident">pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">K</span>;
 
     <span class="doccomment">/// Returns the log of the probability density function calculated at `x`</span>
     <span class="doccomment">/// for a given distribution.</span>
@@ -425,7 +425,7 @@
     <span class="doccomment">/// let n = Uniform::new(0.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!(0.0, n.ln_pdf(0.5));</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">ln_pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">K</span>;
+    <span class="kw">fn</span> <span class="ident">ln_pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">K</span>;
 }
 
 <span class="doccomment">/// The `CheckedContinuous` trait provides an interface for</span>
@@ -443,7 +443,7 @@
     <span class="doccomment">/// let n = Dirichlet::new(&amp;[1.0, 2.0, 3.0]).unwrap();</span>
     <span class="doccomment">/// assert!(n.checked_pdf(&amp;[0.0]).is_err());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">checked_pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">checked_pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Returns the log of the probability density function calculated at `x`</span>
     <span class="doccomment">/// for a given distribution.</span>
@@ -456,7 +456,7 @@
     <span class="doccomment">/// let n = Dirichlet::new(&amp;[1.0, 2.0, 3.0]).unwrap();</span>
     <span class="doccomment">/// assert!(n.checked_ln_pdf(&amp;[0.0]).is_err());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">checked_ln_pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">checked_ln_pdf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// The `Discrete` trait provides an interface for interacting with discrete</span>
@@ -481,7 +481,7 @@
     <span class="doccomment">/// let n = Binomial::new(0.5, 10).unwrap();</span>
     <span class="doccomment">/// assert!(prec::almost_eq(n.pmf(5), 0.24609375, 1e-15));</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">K</span>;
+    <span class="kw">fn</span> <span class="ident">pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">K</span>;
 
     <span class="doccomment">/// Returns the log of the probability mass function calculated at `x` for</span>
     <span class="doccomment">/// a given distribution.</span>
@@ -496,7 +496,7 @@
     <span class="doccomment">/// let n = Binomial::new(0.5, 10).unwrap();</span>
     <span class="doccomment">/// assert!(prec::almost_eq(n.ln_pmf(5), (0.24609375f64).ln(), 1e-15));</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">ln_pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">K</span>;
+    <span class="kw">fn</span> <span class="ident">ln_pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">K</span>;
 }
 
 <span class="doccomment">/// The `CheckedDiscrete` trait provides an interface for interacting</span>
@@ -514,7 +514,7 @@
     <span class="doccomment">/// let n = Multinomial::new(&amp;[0.3, 0.7], 5).unwrap();</span>
     <span class="doccomment">/// assert!(n.checked_pmf(&amp;[1]).is_err());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">checked_pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">checked_pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Returns the log of the probability mass function calculated at `x` for</span>
     <span class="doccomment">/// a given distribution.</span>
@@ -528,7 +528,7 @@
     <span class="doccomment">/// let n = Multinomial::new(&amp;[0.3, 0.7], 5).unwrap();</span>
     <span class="doccomment">/// assert!(n.checked_ln_pmf(&amp;[1]).is_err());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">checked_ln_pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">checked_ln_pmf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span>;
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "statrs";</script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>

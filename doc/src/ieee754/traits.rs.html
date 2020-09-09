@@ -690,13 +690,13 @@
 <span class="kw">use</span> <span class="ident">Iter</span>;
 
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Bits</span>: <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">PartialEq</span> <span class="op">+</span> <span class="ident">PartialOrd</span> <span class="op">+</span> <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Copy</span> {
-    <span class="kw">fn</span> <span class="ident">as_u64</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span>;
+    <span class="kw">fn</span> <span class="ident">as_u64</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span>;
 }
 <span class="kw">impl</span> <span class="ident">Bits</span> <span class="kw">for</span> <span class="ident">u32</span> {
-    <span class="kw">fn</span> <span class="ident">as_u64</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> { <span class="self">self</span> <span class="kw">as</span> <span class="ident">u64</span> }
+    <span class="kw">fn</span> <span class="ident">as_u64</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> { <span class="self">self</span> <span class="kw">as</span> <span class="ident">u64</span> }
 }
 <span class="kw">impl</span> <span class="ident">Bits</span> <span class="kw">for</span> <span class="ident">u64</span> {
-    <span class="kw">fn</span> <span class="ident">as_u64</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> { <span class="self">self</span> }
+    <span class="kw">fn</span> <span class="ident">as_u64</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> { <span class="self">self</span> }
 }
 
 <span class="doccomment">/// Types that are IEEE754 floating point numbers.</span>
@@ -719,7 +719,7 @@
     <span class="doccomment">/// // (inclusive).</span>
     <span class="doccomment">/// assert_eq!(1_f32.upto(1.0001).count(), 840);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">upto</span>(<span class="self">self</span>, <span class="ident">lim</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">upto</span>(<span class="self">self</span>, <span class="ident">lim</span>: <span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// A type that represents the raw bits of `Self`.</span>
     <span class="kw">type</span> <span class="ident">Bits</span>: <span class="ident">Bits</span>;
@@ -741,7 +741,7 @@
     <span class="doccomment">/// let x: f32 = 1.0;</span>
     <span class="doccomment">/// assert_eq!(x.next(), 1.000000119209);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Return the previous value before `self`.</span>
     <span class="doccomment">///</span>
@@ -754,7 +754,7 @@
     <span class="doccomment">/// let x: f32 = 1.0;</span>
     <span class="doccomment">/// assert_eq!(x.prev(), 0.99999995);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">prev</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">prev</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Return the unit-in-the-last-place ulp of `self`. That is,</span>
     <span class="doccomment">/// `x.abs().next() - x.abs()`, but handling overflow properly.</span>
@@ -808,7 +808,7 @@
     <span class="doccomment">/// assert_eq!(f64::INFINITY.ulp(), None);</span>
     <span class="doccomment">/// assert_eq!(f64::NAN.ulp(), None);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">ulp</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">ulp</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// View `self` as a collection of bits.</span>
     <span class="doccomment">///</span>
@@ -819,7 +819,7 @@
     <span class="doccomment">/// let x: f32 = 1.0;</span>
     <span class="doccomment">/// assert_eq!(x.bits(), 0x3f80_0000);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">bits</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Bits</span>;
+    <span class="kw">fn</span> <span class="ident">bits</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Bits</span>;
 
     <span class="doccomment">/// View a collections of bits as a floating point number.</span>
     <span class="doccomment">///</span>
@@ -830,7 +830,7 @@
     <span class="doccomment">/// let float: f32 = Ieee754::from_bits(0xbf80_0000);</span>
     <span class="doccomment">/// assert_eq!(float, -1.0);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">from_bits</span>(<span class="ident">x</span>: <span class="self">Self</span>::<span class="ident">Bits</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">from_bits</span>(<span class="ident">x</span>: <span class="self">Self</span>::<span class="ident">Bits</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Get the bias of the stored exponent.</span>
     <span class="doccomment">///</span>
@@ -842,7 +842,7 @@
     <span class="doccomment">/// assert_eq!(f32::exponent_bias(), 127);</span>
     <span class="doccomment">/// assert_eq!(f64::exponent_bias(), 1023);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">exponent_bias</span>() <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Exponent</span>;
+    <span class="kw">fn</span> <span class="ident">exponent_bias</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Exponent</span>;
 
     <span class="doccomment">/// Break `self` into the three constituent parts of an IEEE754 float.</span>
     <span class="doccomment">///</span>
@@ -885,7 +885,7 @@
     <span class="doccomment">/// assert_eq!((sign, expn), (false, 2047));</span>
     <span class="doccomment">/// assert!(signif != 0);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">decompose_raw</span>(<span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">bool</span>, <span class="self">Self</span>::<span class="ident">RawExponent</span>, <span class="self">Self</span>::<span class="ident">Significand</span>);
+    <span class="kw">fn</span> <span class="ident">decompose_raw</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">bool</span>, <span class="self">Self</span>::<span class="ident">RawExponent</span>, <span class="self">Self</span>::<span class="ident">Significand</span>);
 
     <span class="doccomment">/// Create a `Self` out of the three constituent parts of an IEEE754 float.</span>
     <span class="doccomment">///</span>
@@ -931,7 +931,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// assert!(f64::recompose_raw(false, 2047, 1).is_nan());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">recompose_raw</span>(<span class="ident">sign</span>: <span class="ident">bool</span>, <span class="ident">expn</span>: <span class="self">Self</span>::<span class="ident">RawExponent</span>, <span class="ident">signif</span>: <span class="self">Self</span>::<span class="ident">Significand</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">recompose_raw</span>(<span class="ident">sign</span>: <span class="ident">bool</span>, <span class="ident">expn</span>: <span class="self">Self</span>::<span class="ident">RawExponent</span>, <span class="ident">signif</span>: <span class="self">Self</span>::<span class="ident">Significand</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Break `self` into the three constituent parts of an IEEE754 float.</span>
     <span class="doccomment">///</span>
@@ -975,7 +975,7 @@
     <span class="doccomment">/// assert_eq!((sign, expn), (false, 1024));</span>
     <span class="doccomment">/// assert!(signif != 0);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">decompose</span>(<span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">bool</span>, <span class="self">Self</span>::<span class="ident">Exponent</span>, <span class="self">Self</span>::<span class="ident">Significand</span>);
+    <span class="kw">fn</span> <span class="ident">decompose</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">bool</span>, <span class="self">Self</span>::<span class="ident">Exponent</span>, <span class="self">Self</span>::<span class="ident">Significand</span>);
 
     <span class="doccomment">/// Create a `Self` out of the three constituent parts of an IEEE754 float.</span>
     <span class="doccomment">///</span>
@@ -1026,7 +1026,7 @@
     <span class="doccomment">/// // NaN</span>
     <span class="doccomment">/// assert!(f64::recompose(false, 1024, 1).is_nan());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">recompose</span>(<span class="ident">sign</span>: <span class="ident">bool</span>, <span class="ident">expn</span>: <span class="self">Self</span>::<span class="ident">Exponent</span>, <span class="ident">signif</span>: <span class="self">Self</span>::<span class="ident">Significand</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">recompose</span>(<span class="ident">sign</span>: <span class="ident">bool</span>, <span class="ident">expn</span>: <span class="self">Self</span>::<span class="ident">Exponent</span>, <span class="ident">signif</span>: <span class="self">Self</span>::<span class="ident">Significand</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Compare `x` and `y` using the IEEE-754 `totalOrder` predicate</span>
     <span class="doccomment">/// (Section 5.10).</span>
@@ -1102,7 +1102,7 @@
     <span class="doccomment">/// assert_eq!(f64::NAN.total_cmp(&amp;f64::INFINITY), Ordering::Greater);</span>
     <span class="doccomment">/// assert_eq!((-f64::NAN).total_cmp(&amp;f64::NEG_INFINITY), Ordering::Less);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">total_cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-&gt;</span> <span class="ident">Ordering</span>;
+    <span class="kw">fn</span> <span class="ident">total_cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ordering</span>;
 
     <span class="doccomment">/// Return the absolute value of `x`.</span>
     <span class="doccomment">///</span>
@@ -1156,7 +1156,7 @@
     <span class="doccomment">/// assert!(f64::NAN.abs().is_nan());</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">abs</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">abs</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Return a float with the magnitude of `self` but the sign of</span>
     <span class="doccomment">/// `sign`.</span>
@@ -1217,7 +1217,7 @@
     <span class="doccomment">/// assert!(f64::NAN.copy_sign(1.0).is_nan());</span>
     <span class="doccomment">/// assert_eq!(8_f64.copy_sign(-f64::NAN), -8.0);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">copy_sign</span>(<span class="self">self</span>, <span class="ident">sign</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">copy_sign</span>(<span class="self">self</span>, <span class="ident">sign</span>: <span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Return the sign of `x`.</span>
     <span class="doccomment">///</span>
@@ -1280,7 +1280,7 @@
     <span class="doccomment">/// assert_eq!(f64::NEG_INFINITY.sign(), -1.0);</span>
     <span class="doccomment">/// assert!(f64::NAN.sign().is_nan());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">sign</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">sign</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Compute the (generalized) **signed** relative error of `self`</span>
     <span class="doccomment">/// as an approximation to `exact`.</span>
@@ -1368,7 +1368,7 @@
     <span class="doccomment">/// assert!(f64::NAN.rel_error(4.0).is_nan());</span>
     <span class="doccomment">/// assert!(4_f64.rel_error(f64::NAN).is_nan());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">rel_error</span>(<span class="self">self</span>, <span class="ident">exact</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">rel_error</span>(<span class="self">self</span>, <span class="ident">exact</span>: <span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "ieee754";</script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>

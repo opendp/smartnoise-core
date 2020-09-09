@@ -70,7 +70,7 @@
 <span class="kw">use</span> <span class="ident">whitenoise_validator</span>::{<span class="ident">proto</span>};
 
 <span class="kw">impl</span> <span class="ident">Evaluable</span> <span class="kw">for</span> <span class="ident">proto</span>::<span class="ident">Materialize</span> {
-    <span class="kw">fn</span> <span class="ident">evaluate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_privacy_definition</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span><span class="op">&gt;</span>, <span class="ident">arguments</span>: <span class="ident">NodeArguments</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ReleaseNode</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">evaluate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">_privacy_definition</span>: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">proto</span>::<span class="ident">PrivacyDefinition</span><span class="op">&gt;</span>, <span class="ident">arguments</span>: <span class="ident">NodeArguments</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ReleaseNode</span><span class="op">&gt;</span> {
 
         <span class="kw">let</span> <span class="ident">column_names</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">get_names</span>(
             <span class="ident">arguments</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="ident">v</span>)<span class="op">|</span> (<span class="ident">k</span>.<span class="ident">clone</span>(), <span class="ident">v</span>)).<span class="ident">collect</span>(),
@@ -81,13 +81,13 @@
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">response</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">num_columns</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Vec</span>::<span class="ident">new</span>())
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>();
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">reader</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">csv</span>::<span class="ident">ReaderBuilder</span>::<span class="ident">new</span>()
             .<span class="ident">has_headers</span>(<span class="self">self</span>.<span class="ident">skip_row</span>)
             .<span class="ident">from_path</span>(<span class="self">self</span>.<span class="ident">file_path</span>.<span class="ident">clone</span>()) {
-            <span class="prelude-val">Ok</span>(<span class="ident">reader</span>) <span class="op">=&gt;</span> <span class="ident">reader</span>,
-            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;the provided file path could not be found&quot;</span>.<span class="ident">into</span>())
+            <span class="prelude-val">Ok</span>(<span class="ident">reader</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">reader</span>,
+            <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;the provided file path could not be found&quot;</span>.<span class="ident">into</span>())
         };
 
         <span class="comment">// parse from csv into response</span>
@@ -95,10 +95,10 @@
 
             <span class="comment">// parse each record into the whitenoise internal format</span>
             <span class="kw">match</span> <span class="ident">result</span> {
-                <span class="prelude-val">Ok</span>(<span class="ident">record</span>) <span class="op">=&gt;</span> <span class="ident">record</span>.<span class="ident">into_iter</span>().<span class="ident">enumerate</span>()
+                <span class="prelude-val">Ok</span>(<span class="ident">record</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">record</span>.<span class="ident">into_iter</span>().<span class="ident">enumerate</span>()
                     .<span class="ident">filter</span>(<span class="op">|</span>(<span class="ident">idx</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">idx</span> <span class="op">&lt;</span> <span class="kw-2">&amp;</span><span class="ident">num_columns</span>)
                     .<span class="ident">for_each</span>(<span class="op">|</span>(<span class="ident">idx</span>, <span class="ident">value</span>)<span class="op">|</span> <span class="ident">response</span>[<span class="ident">idx</span>].<span class="ident">push</span>(<span class="ident">value</span>)),
-                <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">e</span>).<span class="ident">into</span>())
+                <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">e</span>).<span class="ident">into</span>())
             };
             <span class="prelude-val">Ok</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">Error</span><span class="op">&gt;</span>(())
         })<span class="question-mark">?</span>;
@@ -108,14 +108,14 @@
 
         <span class="kw">if</span> <span class="number">0</span> <span class="op">&lt;</span> <span class="ident">num_nonempty_columns</span> <span class="op">&amp;&amp;</span> <span class="ident">num_nonempty_columns</span> <span class="op">&lt;</span> <span class="ident">num_columns</span> {
             (<span class="ident">num_nonempty_columns</span>..<span class="ident">num_columns</span>).<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">idx</span><span class="op">|</span>
-                <span class="ident">response</span>[<span class="ident">idx</span>] <span class="op">=</span> (<span class="number">0</span>..<span class="ident">response</span>[<span class="number">0</span>].<span class="ident">len</span>()).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>()).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;&gt;</span>())
+                <span class="ident">response</span>[<span class="ident">idx</span>] <span class="op">=</span> (<span class="number">0</span>..<span class="ident">response</span>[<span class="number">0</span>].<span class="ident">len</span>()).<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="string">&quot;&quot;</span>.<span class="ident">to_string</span>()).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>())
         }
 
         <span class="prelude-val">Ok</span>(<span class="ident">ReleaseNode</span>::<span class="ident">new</span>(<span class="ident">Value</span>::<span class="ident">Dataframe</span>(<span class="ident">column_names</span>.<span class="ident">into_iter</span>()
             .<span class="ident">zip</span>(<span class="ident">response</span>.<span class="ident">into_iter</span>())
             .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">key</span>, <span class="ident">value</span>): (<span class="ident">IndexKey</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>)<span class="op">|</span>
                 (<span class="ident">key</span>, <span class="ident">ndarray</span>::<span class="ident">Array</span>::<span class="ident">from</span>(<span class="ident">value</span>).<span class="ident">into_dyn</span>().<span class="ident">into</span>()))
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">IndexKey</span>, <span class="ident">Value</span><span class="op">&gt;&gt;</span>())))
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">IndexMap</span><span class="op">&lt;</span><span class="ident">IndexKey</span>, <span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span>())))
     }
 }
 </pre></div>

@@ -296,19 +296,19 @@
 <span class="kw">impl</span> <span class="ident">Format</span> {
     <span class="doccomment">/// Return the serialized size of an initial length field for the format.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initial_length_size</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u8</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">initial_length_size</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Format</span>::<span class="ident">Dwarf32</span> <span class="op">=&gt;</span> <span class="number">4</span>,
-            <span class="ident">Format</span>::<span class="ident">Dwarf64</span> <span class="op">=&gt;</span> <span class="number">12</span>,
+            <span class="ident">Format</span>::<span class="ident">Dwarf32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">4</span>,
+            <span class="ident">Format</span>::<span class="ident">Dwarf64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">12</span>,
         }
     }
 
     <span class="doccomment">/// Return the natural word size for the format</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">word_size</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u8</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">word_size</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Format</span>::<span class="ident">Dwarf32</span> <span class="op">=&gt;</span> <span class="number">4</span>,
-            <span class="ident">Format</span>::<span class="ident">Dwarf64</span> <span class="op">=&gt;</span> <span class="number">8</span>,
+            <span class="ident">Format</span>::<span class="ident">Dwarf32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">4</span>,
+            <span class="ident">Format</span>::<span class="ident">Dwarf64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">8</span>,
         }
     }
 }
@@ -354,7 +354,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">LineEncoding</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="comment">// Values from LLVM.</span>
         <span class="ident">LineEncoding</span> {
             <span class="ident">minimum_instruction_length</span>: <span class="number">1</span>,
@@ -457,7 +457,7 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">DebugFrameOffset</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">o</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">o</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">DebugFrameOffset</span>(<span class="ident">o</span>)
     }
 }
@@ -468,7 +468,7 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">EhFrameOffset</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">o</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">o</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">EhFrameOffset</span>(<span class="ident">o</span>)
     }
 }
@@ -529,42 +529,42 @@
 
 <span class="kw">impl</span> <span class="ident">SectionId</span> {
     <span class="doccomment">/// Returns the ELF section name for this kind.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">name</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">SectionId</span>::<span class="ident">DebugAbbrev</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_abbrev&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugAddr</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_addr&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugAranges</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_aranges&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugFrame</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_frame&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">EhFrame</span> <span class="op">=&gt;</span> <span class="string">&quot;.eh_frame&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">EhFrameHdr</span> <span class="op">=&gt;</span> <span class="string">&quot;.eh_frame_hdr&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugInfo</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_info&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugLine</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_line&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugLineStr</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_line_str&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugLoc</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_loc&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugLocLists</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_loclists&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugMacinfo</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_macinfo&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugMacro</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_macro&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugPubNames</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_pubnames&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugPubTypes</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_pubtypes&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugRanges</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_ranges&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugRngLists</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_rnglists&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugStr</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_str&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugStrOffsets</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_str_offsets&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugTypes</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_types&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugAbbrev</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_abbrev&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugAddr</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_addr&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugAranges</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_aranges&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugFrame</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_frame&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">EhFrame</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.eh_frame&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">EhFrameHdr</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.eh_frame_hdr&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugInfo</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_info&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugLine</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_line&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugLineStr</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_line_str&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugLoc</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_loc&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugLocLists</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_loclists&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugMacinfo</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_macinfo&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugMacro</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_macro&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugPubNames</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_pubnames&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugPubTypes</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_pubtypes&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugRanges</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_ranges&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugRngLists</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_rnglists&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugStr</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_str&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugStrOffsets</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_str_offsets&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugTypes</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_types&quot;</span>,
         }
     }
 
     <span class="doccomment">/// Returns the ELF section name for this kind, when found in a .dwo file.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dwo_name</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">dwo_name</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> {
         <span class="prelude-val">Some</span>(<span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">SectionId</span>::<span class="ident">DebugAbbrev</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_abbrev.dwo&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugInfo</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_info.dwo&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugLine</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_line.dwo&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugLocLists</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_loclists.dwo&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugMacro</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_macro.dwo&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugStr</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_str.dwo&quot;</span>,
-            <span class="ident">SectionId</span>::<span class="ident">DebugStrOffsets</span> <span class="op">=&gt;</span> <span class="string">&quot;.debug_str_offsets.dwo&quot;</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">None</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugAbbrev</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_abbrev.dwo&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugInfo</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_info.dwo&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugLine</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_line.dwo&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugLocLists</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_loclists.dwo&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugMacro</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_macro.dwo&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugStr</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_str.dwo&quot;</span>,
+            <span class="ident">SectionId</span>::<span class="ident">DebugStrOffsets</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;.debug_str_offsets.dwo&quot;</span>,
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">None</span>,
         })
     }
 }

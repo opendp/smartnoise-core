@@ -631,7 +631,7 @@
     <span class="doccomment">/// [`Bins`] given the observed data according to the chosen strategy.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`Bins`]: ../struct.Bins.html</span>
-    <span class="kw">fn</span> <span class="ident">from_array</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">array</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">from_array</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">array</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Elem</span><span class="op">&gt;</span>,
         <span class="self">Self</span>: <span class="ident">std</span>::<span class="ident">marker</span>::<span class="ident">Sized</span>;
@@ -641,13 +641,13 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`Bins`]: ../struct.Bins.html</span>
     <span class="doccomment">/// [`from_array`]: #method.from_array.html</span>
-    <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Bins</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Elem</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Bins</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Elem</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Returns the optimal number of bins, according to the parameters</span>
     <span class="doccomment">/// inferred from observations in [`from_array`].</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`from_array`]: #method.from_array.html</span>
-    <span class="kw">fn</span> <span class="ident">n_bins</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span>;
+    <span class="kw">fn</span> <span class="ident">n_bins</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span>;
 }
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
@@ -741,8 +741,8 @@
 {
     <span class="doccomment">/// Returns `Err(BinsBuildError::Strategy)` if `bin_width&lt;=0` or `min` &gt;= `max`.</span>
     <span class="doccomment">/// Returns `Ok(Self)` otherwise.</span>
-    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">bin_width</span>: <span class="ident">T</span>, <span class="ident">min</span>: <span class="ident">T</span>, <span class="ident">max</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> (<span class="ident">bin_width</span> <span class="op">&lt;=</span> <span class="ident">T</span>::<span class="ident">zero</span>()) <span class="op">||</span> (<span class="ident">min</span> <span class="op">&gt;=</span> <span class="ident">max</span>) {
+    <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">bin_width</span>: <span class="ident">T</span>, <span class="ident">min</span>: <span class="ident">T</span>, <span class="ident">max</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> (<span class="ident">bin_width</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">T</span>::<span class="ident">zero</span>()) <span class="op">|</span><span class="op">|</span> (<span class="ident">min</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">max</span>) {
             <span class="prelude-val">Err</span>(<span class="ident">BinsBuildError</span>::<span class="ident">Strategy</span>)
         } <span class="kw">else</span> {
             <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
@@ -753,7 +753,7 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">n_bins</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">n_bins</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">edges</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..(<span class="ident">n_bins</span> <span class="op">+</span> <span class="number">1</span>) {
@@ -763,17 +763,17 @@
         <span class="ident">Bins</span>::<span class="ident">new</span>(<span class="ident">Edges</span>::<span class="ident">from</span>(<span class="ident">edges</span>))
     }
 
-    <span class="kw">fn</span> <span class="ident">n_bins</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">n_bins</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">max_edge</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">min</span>.<span class="ident">clone</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">n_bins</span> <span class="op">=</span> <span class="number">0</span>;
-        <span class="kw">while</span> <span class="ident">max_edge</span> <span class="op">&lt;=</span> <span class="self">self</span>.<span class="ident">max</span> {
+        <span class="kw">while</span> <span class="ident">max_edge</span> <span class="op">&lt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">max</span> {
             <span class="ident">max_edge</span> <span class="op">=</span> <span class="ident">max_edge</span> <span class="op">+</span> <span class="self">self</span>.<span class="ident">bin_width</span>.<span class="ident">clone</span>();
-            <span class="ident">n_bins</span> <span class="op">+=</span> <span class="number">1</span>;
+            <span class="ident">n_bins</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
         }
         <span class="kw">return</span> <span class="ident">n_bins</span>;
     }
 
-    <span class="kw">fn</span> <span class="ident">bin_width</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
+    <span class="kw">fn</span> <span class="ident">bin_width</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span> {
         <span class="self">self</span>.<span class="ident">bin_width</span>.<span class="ident">clone</span>()
     }
 }
@@ -787,7 +787,7 @@
     <span class="doccomment">/// Returns `Err(BinsBuildError::Strategy)` if the array is constant.</span>
     <span class="doccomment">/// Returns `Err(BinsBuildError::EmptyInput)` if `a.len()==0`.</span>
     <span class="doccomment">/// Returns `Ok(Self)` otherwise.</span>
-    <span class="kw">fn</span> <span class="ident">from_array</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">from_array</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Elem</span><span class="op">&gt;</span>,
     {
@@ -800,11 +800,11 @@
         <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">builder</span> })
     }
 
-    <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">build</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">n_bins</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">n_bins</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">n_bins</span>()
     }
 }
@@ -814,7 +814,7 @@
     <span class="ident">T</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">FromPrimitive</span> <span class="op">+</span> <span class="ident">NumOps</span> <span class="op">+</span> <span class="ident">Zero</span>,
 {
     <span class="doccomment">/// The bin width (or bin length) according to the fitted strategy.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bin_width</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bin_width</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span> {
         <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">bin_width</span>()
     }
 }
@@ -828,7 +828,7 @@
     <span class="doccomment">/// Returns `Err(BinsBuildError::Strategy)` if the array is constant.</span>
     <span class="doccomment">/// Returns `Err(BinsBuildError::EmptyInput)` if `a.len()==0`.</span>
     <span class="doccomment">/// Returns `Ok(Self)` otherwise.</span>
-    <span class="kw">fn</span> <span class="ident">from_array</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">from_array</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Elem</span><span class="op">&gt;</span>,
     {
@@ -841,11 +841,11 @@
         <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">builder</span> })
     }
 
-    <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">build</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">n_bins</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">n_bins</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">n_bins</span>()
     }
 }
@@ -855,7 +855,7 @@
     <span class="ident">T</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">FromPrimitive</span> <span class="op">+</span> <span class="ident">NumOps</span> <span class="op">+</span> <span class="ident">Zero</span>,
 {
     <span class="doccomment">/// The bin width (or bin length) according to the fitted strategy.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bin_width</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bin_width</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span> {
         <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">bin_width</span>()
     }
 }
@@ -869,7 +869,7 @@
     <span class="doccomment">/// Returns `Err(BinsBuildError::Strategy)` if the array is constant.</span>
     <span class="doccomment">/// Returns `Err(BinsBuildError::EmptyInput)` if `a.len()==0`.</span>
     <span class="doccomment">/// Returns `Ok(Self)` otherwise.</span>
-    <span class="kw">fn</span> <span class="ident">from_array</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">from_array</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Elem</span><span class="op">&gt;</span>,
     {
@@ -882,11 +882,11 @@
         <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">builder</span> })
     }
 
-    <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">build</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">n_bins</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">n_bins</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">n_bins</span>()
     }
 }
@@ -896,7 +896,7 @@
     <span class="ident">T</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">FromPrimitive</span> <span class="op">+</span> <span class="ident">NumOps</span> <span class="op">+</span> <span class="ident">Zero</span>,
 {
     <span class="doccomment">/// The bin width (or bin length) according to the fitted strategy.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bin_width</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bin_width</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span> {
         <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">bin_width</span>()
     }
 }
@@ -910,12 +910,12 @@
     <span class="doccomment">/// Returns `Err(BinsBuildError::Strategy)` if `IQR==0`.</span>
     <span class="doccomment">/// Returns `Err(BinsBuildError::EmptyInput)` if `a.len()==0`.</span>
     <span class="doccomment">/// Returns `Ok(Self)` otherwise.</span>
-    <span class="kw">fn</span> <span class="ident">from_array</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">from_array</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Elem</span><span class="op">&gt;</span>,
     {
         <span class="kw">let</span> <span class="ident">n_points</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">len</span>();
-        <span class="kw">if</span> <span class="ident">n_points</span> <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="ident">n_points</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">BinsBuildError</span>::<span class="ident">EmptyInput</span>);
         }
 
@@ -931,11 +931,11 @@
         <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">builder</span> })
     }
 
-    <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">build</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">n_bins</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">n_bins</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">n_bins</span>()
     }
 }
@@ -944,14 +944,14 @@
 <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">FromPrimitive</span> <span class="op">+</span> <span class="ident">NumOps</span> <span class="op">+</span> <span class="ident">Zero</span>,
 {
-    <span class="kw">fn</span> <span class="ident">compute_bin_width</span>(<span class="ident">n_bins</span>: <span class="ident">usize</span>, <span class="ident">iqr</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
+    <span class="kw">fn</span> <span class="ident">compute_bin_width</span>(<span class="ident">n_bins</span>: <span class="ident">usize</span>, <span class="ident">iqr</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span> {
         <span class="kw">let</span> <span class="ident">denominator</span> <span class="op">=</span> (<span class="ident">n_bins</span> <span class="kw">as</span> <span class="ident">f64</span>).<span class="ident">powf</span>(<span class="number">1.</span> <span class="op">/</span> <span class="number">3.</span>);
         <span class="kw">let</span> <span class="ident">bin_width</span> <span class="op">=</span> <span class="ident">T</span>::<span class="ident">from_usize</span>(<span class="number">2</span>).<span class="ident">unwrap</span>() <span class="op">*</span> <span class="ident">iqr</span> <span class="op">/</span> <span class="ident">T</span>::<span class="ident">from_f64</span>(<span class="ident">denominator</span>).<span class="ident">unwrap</span>();
         <span class="ident">bin_width</span>
     }
 
     <span class="doccomment">/// The bin width (or bin length) according to the fitted strategy.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bin_width</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bin_width</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span> {
         <span class="self">self</span>.<span class="ident">builder</span>.<span class="ident">bin_width</span>()
     }
 }
@@ -965,22 +965,22 @@
     <span class="doccomment">/// Returns `Err(BinsBuildError::Strategy)` if `IQR==0`.</span>
     <span class="doccomment">/// Returns `Err(BinsBuildError::EmptyInput)` if `a.len()==0`.</span>
     <span class="doccomment">/// Returns `Ok(Self)` otherwise.</span>
-    <span class="kw">fn</span> <span class="ident">from_array</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;</span>
+    <span class="kw">fn</span> <span class="ident">from_array</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">BinsBuildError</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Elem</span><span class="op">&gt;</span>,
     {
         <span class="kw">let</span> <span class="ident">fd_builder</span> <span class="op">=</span> <span class="ident">FreedmanDiaconis</span>::<span class="ident">from_array</span>(<span class="kw-2">&amp;</span><span class="ident">a</span>);
         <span class="kw">let</span> <span class="ident">sturges_builder</span> <span class="op">=</span> <span class="ident">Sturges</span>::<span class="ident">from_array</span>(<span class="kw-2">&amp;</span><span class="ident">a</span>);
         <span class="kw">match</span> (<span class="ident">fd_builder</span>, <span class="ident">sturges_builder</span>) {
-            (<span class="prelude-val">Err</span>(<span class="kw">_</span>), <span class="prelude-val">Ok</span>(<span class="ident">sturges_builder</span>)) <span class="op">=&gt;</span> {
+            (<span class="prelude-val">Err</span>(<span class="kw">_</span>), <span class="prelude-val">Ok</span>(<span class="ident">sturges_builder</span>)) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">SturgesOrFD</span>::<span class="ident">Sturges</span>(<span class="ident">sturges_builder</span>);
                 <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">builder</span> })
             }
-            (<span class="prelude-val">Ok</span>(<span class="ident">fd_builder</span>), <span class="prelude-val">Err</span>(<span class="kw">_</span>)) <span class="op">=&gt;</span> {
+            (<span class="prelude-val">Ok</span>(<span class="ident">fd_builder</span>), <span class="prelude-val">Err</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="ident">SturgesOrFD</span>::<span class="ident">FreedmanDiaconis</span>(<span class="ident">fd_builder</span>);
                 <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">builder</span> })
             }
-            (<span class="prelude-val">Ok</span>(<span class="ident">fd_builder</span>), <span class="prelude-val">Ok</span>(<span class="ident">sturges_builder</span>)) <span class="op">=&gt;</span> {
+            (<span class="prelude-val">Ok</span>(<span class="ident">fd_builder</span>), <span class="prelude-val">Ok</span>(<span class="ident">sturges_builder</span>)) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">builder</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">fd_builder</span>.<span class="ident">bin_width</span>() <span class="op">&gt;</span> <span class="ident">sturges_builder</span>.<span class="ident">bin_width</span>() {
                     <span class="ident">SturgesOrFD</span>::<span class="ident">Sturges</span>(<span class="ident">sturges_builder</span>)
                 } <span class="kw">else</span> {
@@ -988,23 +988,23 @@
                 };
                 <span class="prelude-val">Ok</span>(<span class="self">Self</span> { <span class="ident">builder</span> })
             }
-            (<span class="prelude-val">Err</span>(<span class="ident">err</span>), <span class="prelude-val">Err</span>(<span class="kw">_</span>)) <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>),
+            (<span class="prelude-val">Err</span>(<span class="ident">err</span>), <span class="prelude-val">Err</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">build</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Bins</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="comment">// Ugly</span>
         <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">builder</span> {
-            <span class="ident">SturgesOrFD</span>::<span class="ident">FreedmanDiaconis</span>(<span class="ident">b</span>) <span class="op">=&gt;</span> <span class="ident">b</span>.<span class="ident">build</span>(),
-            <span class="ident">SturgesOrFD</span>::<span class="ident">Sturges</span>(<span class="ident">b</span>) <span class="op">=&gt;</span> <span class="ident">b</span>.<span class="ident">build</span>(),
+            <span class="ident">SturgesOrFD</span>::<span class="ident">FreedmanDiaconis</span>(<span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">b</span>.<span class="ident">build</span>(),
+            <span class="ident">SturgesOrFD</span>::<span class="ident">Sturges</span>(<span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">b</span>.<span class="ident">build</span>(),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">n_bins</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">n_bins</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="comment">// Ugly</span>
         <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">builder</span> {
-            <span class="ident">SturgesOrFD</span>::<span class="ident">FreedmanDiaconis</span>(<span class="ident">b</span>) <span class="op">=&gt;</span> <span class="ident">b</span>.<span class="ident">n_bins</span>(),
-            <span class="ident">SturgesOrFD</span>::<span class="ident">Sturges</span>(<span class="ident">b</span>) <span class="op">=&gt;</span> <span class="ident">b</span>.<span class="ident">n_bins</span>(),
+            <span class="ident">SturgesOrFD</span>::<span class="ident">FreedmanDiaconis</span>(<span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">b</span>.<span class="ident">n_bins</span>(),
+            <span class="ident">SturgesOrFD</span>::<span class="ident">Sturges</span>(<span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">b</span>.<span class="ident">n_bins</span>(),
         }
     }
 }
@@ -1014,11 +1014,11 @@
     <span class="ident">T</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">FromPrimitive</span> <span class="op">+</span> <span class="ident">NumOps</span> <span class="op">+</span> <span class="ident">Zero</span>,
 {
     <span class="doccomment">/// The bin width (or bin length) according to the fitted strategy.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bin_width</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bin_width</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span> {
         <span class="comment">// Ugly</span>
         <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">builder</span> {
-            <span class="ident">SturgesOrFD</span>::<span class="ident">FreedmanDiaconis</span>(<span class="ident">b</span>) <span class="op">=&gt;</span> <span class="ident">b</span>.<span class="ident">bin_width</span>(),
-            <span class="ident">SturgesOrFD</span>::<span class="ident">Sturges</span>(<span class="ident">b</span>) <span class="op">=&gt;</span> <span class="ident">b</span>.<span class="ident">bin_width</span>(),
+            <span class="ident">SturgesOrFD</span>::<span class="ident">FreedmanDiaconis</span>(<span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">b</span>.<span class="ident">bin_width</span>(),
+            <span class="ident">SturgesOrFD</span>::<span class="ident">Sturges</span>(<span class="ident">b</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">b</span>.<span class="ident">bin_width</span>(),
         }
     }
 }
@@ -1029,7 +1029,7 @@
 <span class="doccomment">/// `bin_width = (max - min)/n`</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// **Panics** if `n_bins == 0` and division by 0 panics for `T`.</span>
-<span class="kw">fn</span> <span class="ident">compute_bin_width</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">min</span>: <span class="ident">T</span>, <span class="ident">max</span>: <span class="ident">T</span>, <span class="ident">n_bins</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span>
+<span class="kw">fn</span> <span class="ident">compute_bin_width</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">min</span>: <span class="ident">T</span>, <span class="ident">max</span>: <span class="ident">T</span>, <span class="ident">n_bins</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>
 <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">FromPrimitive</span> <span class="op">+</span> <span class="ident">NumOps</span> <span class="op">+</span> <span class="ident">Zero</span>,
 {

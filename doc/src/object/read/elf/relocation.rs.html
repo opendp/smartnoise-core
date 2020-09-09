@@ -311,25 +311,25 @@
         <span class="ident">endian</span>: <span class="ident">Elf</span>::<span class="ident">Endian</span>,
         <span class="ident">sections</span>: <span class="kw-2">&amp;</span><span class="ident">SectionTable</span><span class="op">&lt;</span><span class="ident">Elf</span><span class="op">&gt;</span>,
         <span class="ident">symbol_section</span>: <span class="ident">usize</span>,
-    ) <span class="op">-&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">read</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">relocations</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0</span>; <span class="ident">sections</span>.<span class="ident">len</span>()];
         <span class="kw">for</span> (<span class="ident">index</span>, <span class="ident">section</span>) <span class="kw">in</span> <span class="ident">sections</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>().<span class="ident">rev</span>() {
             <span class="kw">let</span> <span class="ident">sh_type</span> <span class="op">=</span> <span class="ident">section</span>.<span class="ident">sh_type</span>(<span class="ident">endian</span>);
-            <span class="kw">if</span> <span class="ident">sh_type</span> <span class="op">==</span> <span class="ident">elf</span>::<span class="ident">SHT_REL</span> <span class="op">||</span> <span class="ident">sh_type</span> <span class="op">==</span> <span class="ident">elf</span>::<span class="ident">SHT_RELA</span> {
+            <span class="kw">if</span> <span class="ident">sh_type</span> <span class="op">=</span><span class="op">=</span> <span class="ident">elf</span>::<span class="ident">SHT_REL</span> <span class="op">|</span><span class="op">|</span> <span class="ident">sh_type</span> <span class="op">=</span><span class="op">=</span> <span class="ident">elf</span>::<span class="ident">SHT_RELA</span> {
                 <span class="comment">// The symbol indices used in relocations must be for the symbol table</span>
                 <span class="comment">// we are expecting to use.</span>
                 <span class="comment">// TODO: support relocations that use dynamic symbols.</span>
                 <span class="kw">let</span> <span class="ident">sh_link</span> <span class="op">=</span> <span class="ident">section</span>.<span class="ident">sh_link</span>(<span class="ident">endian</span>) <span class="kw">as</span> <span class="ident">usize</span>;
-                <span class="kw">if</span> <span class="ident">sh_link</span> <span class="op">!=</span> <span class="ident">symbol_section</span> {
+                <span class="kw">if</span> <span class="ident">sh_link</span> <span class="op">!</span><span class="op">=</span> <span class="ident">symbol_section</span> {
                     <span class="kw">continue</span>;
                 }
 
                 <span class="kw">let</span> <span class="ident">sh_info</span> <span class="op">=</span> <span class="ident">section</span>.<span class="ident">sh_info</span>(<span class="ident">endian</span>) <span class="kw">as</span> <span class="ident">usize</span>;
-                <span class="kw">if</span> <span class="ident">sh_info</span> <span class="op">==</span> <span class="number">0</span> {
+                <span class="kw">if</span> <span class="ident">sh_info</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
                     <span class="comment">// Skip dynamic relocations.</span>
                     <span class="kw">continue</span>;
                 }
-                <span class="kw">if</span> <span class="ident">sh_info</span> <span class="op">&gt;=</span> <span class="ident">relocations</span>.<span class="ident">len</span>() {
+                <span class="kw">if</span> <span class="ident">sh_info</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">relocations</span>.<span class="ident">len</span>() {
                     <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>(<span class="string">&quot;Invalid ELF sh_info for relocation section&quot;</span>));
                 }
 
@@ -346,8 +346,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// This may also be called with a relocation section index, and it will return the</span>
     <span class="doccomment">/// next associated relocation section.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">relocations</span>.<span class="ident">get</span>(<span class="ident">index</span>).<span class="ident">cloned</span>().<span class="ident">filter</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">x</span> <span class="op">!=</span> <span class="number">0</span>)
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">relocations</span>.<span class="ident">get</span>(<span class="ident">index</span>).<span class="ident">cloned</span>().<span class="ident">filter</span>(<span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">x</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>)
     }
 }
 
@@ -357,10 +357,10 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Elf</span>: <span class="ident">FileHeader</span><span class="op">&gt;</span> <span class="ident">ElfRelaIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Elf</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">is_rel</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">is_rel</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ElfRelaIterator</span>::<span class="ident">Rel</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-            <span class="ident">ElfRelaIterator</span>::<span class="ident">Rela</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="bool-val">false</span>,
+            <span class="ident">ElfRelaIterator</span>::<span class="ident">Rel</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
+            <span class="ident">ElfRelaIterator</span>::<span class="ident">Rela</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
         }
     }
 }
@@ -368,20 +368,20 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Elf</span>: <span class="ident">FileHeader</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">ElfRelaIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Elf</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">Elf</span>::<span class="ident">Rela</span>;
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ElfRelaIterator</span>::<span class="ident">Rel</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">i</span>) <span class="op">=&gt;</span> <span class="ident">i</span>.<span class="ident">next</span>().<span class="ident">cloned</span>().<span class="ident">map</span>(<span class="self">Self</span>::<span class="ident">Item</span>::<span class="ident">from</span>),
-            <span class="ident">ElfRelaIterator</span>::<span class="ident">Rela</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">i</span>) <span class="op">=&gt;</span> <span class="ident">i</span>.<span class="ident">next</span>().<span class="ident">cloned</span>(),
+            <span class="ident">ElfRelaIterator</span>::<span class="ident">Rel</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">i</span>.<span class="ident">next</span>().<span class="ident">cloned</span>().<span class="ident">map</span>(<span class="self">Self</span>::<span class="ident">Item</span>::<span class="ident">from</span>),
+            <span class="ident">ElfRelaIterator</span>::<span class="ident">Rela</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">i</span>.<span class="ident">next</span>().<span class="ident">cloned</span>(),
         }
     }
 }
 
 <span class="doccomment">/// An iterator over the relocations for an `ElfSection32`.</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ElfRelocationIterator32</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Endian</span> <span class="op">=</span> <span class="ident">Endianness</span><span class="op">&gt;</span> <span class="op">=</span>
-    <span class="ident">ElfRelocationIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">elf</span>::<span class="ident">FileHeader32</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;&gt;</span>;
+    <span class="ident">ElfRelocationIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">elf</span>::<span class="ident">FileHeader32</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 <span class="doccomment">/// An iterator over the relocations for an `ElfSection64`.</span>
 <span class="kw">pub</span> <span class="kw">type</span> <span class="ident">ElfRelocationIterator64</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Endian</span> <span class="op">=</span> <span class="ident">Endianness</span><span class="op">&gt;</span> <span class="op">=</span>
-    <span class="ident">ElfRelocationIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">elf</span>::<span class="ident">FileHeader64</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;&gt;</span>;
+    <span class="ident">ElfRelocationIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">elf</span>::<span class="ident">FileHeader64</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
 <span class="doccomment">/// An iterator over the relocations for an `ElfSection`.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ElfRelocationIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span><span class="op">&gt;</span>
@@ -392,63 +392,63 @@
     <span class="doccomment">/// The current pointer in the chain of relocation sections.</span>
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">section_index</span>: <span class="ident">usize</span>,
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">file</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;file</span> <span class="ident">ElfFile</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Elf</span><span class="op">&gt;</span>,
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">relocations</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ElfRelaIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Elf</span><span class="op">&gt;&gt;</span>,
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">relocations</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">ElfRelaIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Elf</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span>: <span class="ident">FileHeader</span><span class="op">&gt;</span> <span class="ident">Iterator</span> <span class="kw">for</span> <span class="ident">ElfRelocationIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> (<span class="ident">u64</span>, <span class="ident">Relocation</span>);
 
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">endian</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">file</span>.<span class="ident">endian</span>;
         <span class="kw">loop</span> {
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">relocations</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">relocations</span> {
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">reloc</span>) <span class="op">=</span> <span class="ident">relocations</span>.<span class="ident">next</span>() {
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">encoding</span> <span class="op">=</span> <span class="ident">RelocationEncoding</span>::<span class="ident">Generic</span>;
                     <span class="kw">let</span> (<span class="ident">kind</span>, <span class="ident">size</span>) <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">file</span>.<span class="ident">header</span>.<span class="ident">e_machine</span>(<span class="ident">endian</span>) {
-                        <span class="ident">elf</span>::<span class="ident">EM_ARM</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">reloc</span>.<span class="ident">r_type</span>(<span class="ident">endian</span>) {
-                            <span class="ident">elf</span>::<span class="ident">R_ARM_ABS32</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">32</span>),
-                            <span class="ident">r_type</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Elf</span>(<span class="ident">r_type</span>), <span class="number">0</span>),
+                        <span class="ident">elf</span>::<span class="ident">EM_ARM</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">reloc</span>.<span class="ident">r_type</span>(<span class="ident">endian</span>) {
+                            <span class="ident">elf</span>::<span class="ident">R_ARM_ABS32</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">32</span>),
+                            <span class="ident">r_type</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Elf</span>(<span class="ident">r_type</span>), <span class="number">0</span>),
                         },
-                        <span class="ident">elf</span>::<span class="ident">EM_AARCH64</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">reloc</span>.<span class="ident">r_type</span>(<span class="ident">endian</span>) {
-                            <span class="ident">elf</span>::<span class="ident">R_AARCH64_ABS64</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">64</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_AARCH64_ABS32</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">32</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_AARCH64_ABS16</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">16</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_AARCH64_PREL64</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">64</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_AARCH64_PREL32</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">32</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_AARCH64_PREL16</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">16</span>),
-                            <span class="ident">r_type</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Elf</span>(<span class="ident">r_type</span>), <span class="number">0</span>),
+                        <span class="ident">elf</span>::<span class="ident">EM_AARCH64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">reloc</span>.<span class="ident">r_type</span>(<span class="ident">endian</span>) {
+                            <span class="ident">elf</span>::<span class="ident">R_AARCH64_ABS64</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">64</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_AARCH64_ABS32</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">32</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_AARCH64_ABS16</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">16</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_AARCH64_PREL64</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">64</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_AARCH64_PREL32</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">32</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_AARCH64_PREL16</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">16</span>),
+                            <span class="ident">r_type</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Elf</span>(<span class="ident">r_type</span>), <span class="number">0</span>),
                         },
-                        <span class="ident">elf</span>::<span class="ident">EM_386</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">reloc</span>.<span class="ident">r_type</span>(<span class="ident">endian</span>) {
-                            <span class="ident">elf</span>::<span class="ident">R_386_32</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">32</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_386_PC32</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">32</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_386_GOT32</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Got</span>, <span class="number">32</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_386_PLT32</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">PltRelative</span>, <span class="number">32</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_386_GOTOFF</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">GotBaseOffset</span>, <span class="number">32</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_386_GOTPC</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">GotBaseRelative</span>, <span class="number">32</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_386_16</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">16</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_386_PC16</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">16</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_386_8</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">8</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_386_PC8</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">8</span>),
-                            <span class="ident">r_type</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Elf</span>(<span class="ident">r_type</span>), <span class="number">0</span>),
+                        <span class="ident">elf</span>::<span class="ident">EM_386</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">reloc</span>.<span class="ident">r_type</span>(<span class="ident">endian</span>) {
+                            <span class="ident">elf</span>::<span class="ident">R_386_32</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">32</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_386_PC32</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">32</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_386_GOT32</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Got</span>, <span class="number">32</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_386_PLT32</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">PltRelative</span>, <span class="number">32</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_386_GOTOFF</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">GotBaseOffset</span>, <span class="number">32</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_386_GOTPC</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">GotBaseRelative</span>, <span class="number">32</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_386_16</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">16</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_386_PC16</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">16</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_386_8</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">8</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_386_PC8</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">8</span>),
+                            <span class="ident">r_type</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Elf</span>(<span class="ident">r_type</span>), <span class="number">0</span>),
                         },
-                        <span class="ident">elf</span>::<span class="ident">EM_X86_64</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">reloc</span>.<span class="ident">r_type</span>(<span class="ident">endian</span>) {
-                            <span class="ident">elf</span>::<span class="ident">R_X86_64_64</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">64</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_X86_64_PC32</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">32</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_X86_64_GOT32</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Got</span>, <span class="number">32</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_X86_64_PLT32</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">PltRelative</span>, <span class="number">32</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_X86_64_GOTPCREL</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">GotRelative</span>, <span class="number">32</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_X86_64_32</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">32</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_X86_64_32S</span> <span class="op">=&gt;</span> {
+                        <span class="ident">elf</span>::<span class="ident">EM_X86_64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">reloc</span>.<span class="ident">r_type</span>(<span class="ident">endian</span>) {
+                            <span class="ident">elf</span>::<span class="ident">R_X86_64_64</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">64</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_X86_64_PC32</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">32</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_X86_64_GOT32</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Got</span>, <span class="number">32</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_X86_64_PLT32</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">PltRelative</span>, <span class="number">32</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_X86_64_GOTPCREL</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">GotRelative</span>, <span class="number">32</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_X86_64_32</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">32</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_X86_64_32S</span> <span class="op">=</span><span class="op">&gt;</span> {
                                 <span class="ident">encoding</span> <span class="op">=</span> <span class="ident">RelocationEncoding</span>::<span class="ident">X86Signed</span>;
                                 (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">32</span>)
                             }
-                            <span class="ident">elf</span>::<span class="ident">R_X86_64_16</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">16</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_X86_64_PC16</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">16</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_X86_64_8</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">8</span>),
-                            <span class="ident">elf</span>::<span class="ident">R_X86_64_PC8</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">8</span>),
-                            <span class="ident">r_type</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Elf</span>(<span class="ident">r_type</span>), <span class="number">0</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_X86_64_16</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">16</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_X86_64_PC16</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">16</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_X86_64_8</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Absolute</span>, <span class="number">8</span>),
+                            <span class="ident">elf</span>::<span class="ident">R_X86_64_PC8</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Relative</span>, <span class="number">8</span>),
+                            <span class="ident">r_type</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Elf</span>(<span class="ident">r_type</span>), <span class="number">0</span>),
                         },
-                        <span class="kw">_</span> <span class="op">=&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Elf</span>(<span class="ident">reloc</span>.<span class="ident">r_type</span>(<span class="ident">endian</span>)), <span class="number">0</span>),
+                        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">RelocationKind</span>::<span class="ident">Elf</span>(<span class="ident">reloc</span>.<span class="ident">r_type</span>(<span class="ident">endian</span>)), <span class="number">0</span>),
                     };
                     <span class="kw">let</span> <span class="ident">target</span> <span class="op">=</span>
                         <span class="ident">RelocationTarget</span>::<span class="ident">Symbol</span>(<span class="ident">SymbolIndex</span>(<span class="ident">reloc</span>.<span class="ident">r_sym</span>(<span class="ident">endian</span>) <span class="kw">as</span> <span class="ident">usize</span>));
@@ -469,24 +469,24 @@
             <span class="comment">// The construction of RelocationSections ensures section_index is valid.</span>
             <span class="kw">let</span> <span class="ident">section</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">file</span>.<span class="ident">sections</span>.<span class="ident">section</span>(<span class="self">self</span>.<span class="ident">section_index</span>).<span class="ident">unwrap</span>();
             <span class="kw">match</span> <span class="ident">section</span>.<span class="ident">sh_type</span>(<span class="ident">endian</span>) {
-                <span class="ident">elf</span>::<span class="ident">SHT_REL</span> <span class="op">=&gt;</span> {
+                <span class="ident">elf</span>::<span class="ident">SHT_REL</span> <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">relocations</span>) <span class="op">=</span> <span class="ident">section</span>.<span class="ident">data_as_array</span>(<span class="ident">endian</span>, <span class="self">self</span>.<span class="ident">file</span>.<span class="ident">data</span>) {
                         <span class="self">self</span>.<span class="ident">relocations</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ElfRelaIterator</span>::<span class="ident">Rel</span>(<span class="ident">relocations</span>.<span class="ident">iter</span>()));
                     }
                 }
-                <span class="ident">elf</span>::<span class="ident">SHT_RELA</span> <span class="op">=&gt;</span> {
+                <span class="ident">elf</span>::<span class="ident">SHT_RELA</span> <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">relocations</span>) <span class="op">=</span> <span class="ident">section</span>.<span class="ident">data_as_array</span>(<span class="ident">endian</span>, <span class="self">self</span>.<span class="ident">file</span>.<span class="ident">data</span>) {
                         <span class="self">self</span>.<span class="ident">relocations</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">ElfRelaIterator</span>::<span class="ident">Rela</span>(<span class="ident">relocations</span>.<span class="ident">iter</span>()));
                     }
                 }
-                <span class="kw">_</span> <span class="op">=&gt;</span> {}
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {}
             }
         }
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span>: <span class="ident">FileHeader</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">ElfRelocationIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
         <span class="ident">f</span>.<span class="ident">debug_struct</span>(<span class="string">&quot;ElfRelocationIterator&quot;</span>).<span class="ident">finish</span>()
     }
 }
@@ -498,11 +498,11 @@
     <span class="kw">type</span> <span class="ident">Sword</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">Endian</span>: <span class="ident">endian</span>::<span class="ident">Endian</span>;
 
-    <span class="kw">fn</span> <span class="ident">r_offset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span>;
-    <span class="kw">fn</span> <span class="ident">r_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span>;
-    <span class="kw">fn</span> <span class="ident">r_addend</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Sword</span>;
-    <span class="kw">fn</span> <span class="ident">r_sym</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span>;
-    <span class="kw">fn</span> <span class="ident">r_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span>;
+    <span class="kw">fn</span> <span class="ident">r_offset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span>;
+    <span class="kw">fn</span> <span class="ident">r_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span>;
+    <span class="kw">fn</span> <span class="ident">r_addend</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Sword</span>;
+    <span class="kw">fn</span> <span class="ident">r_sym</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span>;
+    <span class="kw">fn</span> <span class="ident">r_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span>;
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">Endian</span>: <span class="ident">endian</span>::<span class="ident">Endian</span><span class="op">&gt;</span> <span class="ident">Rela</span> <span class="kw">for</span> <span class="ident">elf</span>::<span class="ident">Rela32</span><span class="op">&lt;</span><span class="ident">Endian</span><span class="op">&gt;</span> {
@@ -511,27 +511,27 @@
     <span class="kw">type</span> <span class="ident">Endian</span> <span class="op">=</span> <span class="ident">Endian</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">r_offset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
+    <span class="kw">fn</span> <span class="ident">r_offset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
         <span class="self">self</span>.<span class="ident">r_offset</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">r_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
+    <span class="kw">fn</span> <span class="ident">r_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
         <span class="self">self</span>.<span class="ident">r_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">r_addend</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Sword</span> {
+    <span class="kw">fn</span> <span class="ident">r_addend</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Sword</span> {
         <span class="self">self</span>.<span class="ident">r_addend</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">r_sym</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">r_sym</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="ident">r_sym</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">r_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">r_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="ident">r_type</span>(<span class="ident">endian</span>)
     }
 }
@@ -542,27 +542,27 @@
     <span class="kw">type</span> <span class="ident">Endian</span> <span class="op">=</span> <span class="ident">Endian</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">r_offset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
+    <span class="kw">fn</span> <span class="ident">r_offset</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
         <span class="self">self</span>.<span class="ident">r_offset</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">r_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
+    <span class="kw">fn</span> <span class="ident">r_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Word</span> {
         <span class="self">self</span>.<span class="ident">r_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">r_addend</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Sword</span> {
+    <span class="kw">fn</span> <span class="ident">r_addend</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Sword</span> {
         <span class="self">self</span>.<span class="ident">r_addend</span>.<span class="ident">get</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">r_sym</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">r_sym</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="ident">r_sym</span>(<span class="ident">endian</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">r_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">r_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="self">Self</span>::<span class="ident">Endian</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="ident">r_type</span>(<span class="ident">endian</span>)
     }
 }

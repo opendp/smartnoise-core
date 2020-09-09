@@ -171,7 +171,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">E</span>: <span class="ident">Endian</span><span class="op">&gt;</span> <span class="ident">MachOLoadCommandIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">E</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">endian</span>: <span class="ident">E</span>, <span class="ident">data</span>: <span class="ident">Bytes</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>, <span class="ident">ncmds</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">endian</span>: <span class="ident">E</span>, <span class="ident">data</span>: <span class="ident">Bytes</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>, <span class="ident">ncmds</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">MachOLoadCommandIterator</span> {
             <span class="ident">endian</span>,
             <span class="ident">data</span>,
@@ -180,13 +180,13 @@
     }
 
     <span class="doccomment">/// Return the next load command.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">MachOLoadCommand</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">E</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ncmds</span> <span class="op">==</span> <span class="number">0</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">MachOLoadCommand</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">ncmds</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>);
         }
         <span class="kw">let</span> <span class="ident">header</span> <span class="op">=</span> <span class="self">self</span>
             .<span class="ident">data</span>
-            .<span class="ident">read_at</span>::<span class="op">&lt;</span><span class="ident">macho</span>::<span class="ident">LoadCommand</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;&gt;</span>(<span class="number">0</span>)
+            .<span class="ident">read_at</span>::<span class="op">&lt;</span><span class="ident">macho</span>::<span class="ident">LoadCommand</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="number">0</span>)
             .<span class="ident">read_error</span>(<span class="string">&quot;Invalid Mach-O load command header&quot;</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">cmd</span> <span class="op">=</span> <span class="ident">header</span>.<span class="ident">cmd</span>.<span class="ident">get</span>(<span class="self">self</span>.<span class="ident">endian</span>);
         <span class="kw">let</span> <span class="ident">cmdsize</span> <span class="op">=</span> <span class="ident">header</span>.<span class="ident">cmdsize</span>.<span class="ident">get</span>(<span class="self">self</span>.<span class="ident">endian</span>) <span class="kw">as</span> <span class="ident">usize</span>;
@@ -194,7 +194,7 @@
             .<span class="ident">data</span>
             .<span class="ident">read_bytes</span>(<span class="ident">cmdsize</span>)
             .<span class="ident">read_error</span>(<span class="string">&quot;Invalid Mach-O load command size&quot;</span>)<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">ncmds</span> <span class="op">-=</span> <span class="number">1</span>;
+        <span class="self">self</span>.<span class="ident">ncmds</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
         <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">MachOLoadCommand</span> {
             <span class="ident">cmd</span>,
             <span class="ident">data</span>,
@@ -214,8 +214,8 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">E</span>: <span class="ident">Endian</span><span class="op">&gt;</span> <span class="ident">MachOLoadCommand</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">E</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Try to parse this command as a `SegmentCommand32`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">segment_32</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">macho</span>::<span class="ident">SegmentCommand32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>, <span class="ident">Bytes</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>)<span class="op">&gt;&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cmd</span> <span class="op">==</span> <span class="ident">macho</span>::<span class="ident">LC_SEGMENT</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">segment_32</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">macho</span>::<span class="ident">SegmentCommand32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>, <span class="ident">Bytes</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>)<span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cmd</span> <span class="op">=</span><span class="op">=</span> <span class="ident">macho</span>::<span class="ident">LC_SEGMENT</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">data</span>;
             <span class="kw">let</span> <span class="ident">command</span> <span class="op">=</span> <span class="ident">data</span>
                 .<span class="ident">read</span>()
@@ -227,8 +227,8 @@
     }
 
     <span class="doccomment">/// Try to parse this command as a `SymtabCommand`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">symtab</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">macho</span>::<span class="ident">SymtabCommand</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cmd</span> <span class="op">==</span> <span class="ident">macho</span>::<span class="ident">LC_SYMTAB</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">symtab</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">macho</span>::<span class="ident">SymtabCommand</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cmd</span> <span class="op">=</span><span class="op">=</span> <span class="ident">macho</span>::<span class="ident">LC_SYMTAB</span> {
             <span class="prelude-val">Some</span>(
                 <span class="self">self</span>.<span class="ident">data</span>
                     .<span class="ident">clone</span>()
@@ -242,8 +242,8 @@
     }
 
     <span class="doccomment">/// Try to parse this command as a `UuidCommand`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uuid</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">macho</span>::<span class="ident">UuidCommand</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cmd</span> <span class="op">==</span> <span class="ident">macho</span>::<span class="ident">LC_UUID</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">uuid</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">macho</span>::<span class="ident">UuidCommand</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cmd</span> <span class="op">=</span><span class="op">=</span> <span class="ident">macho</span>::<span class="ident">LC_UUID</span> {
             <span class="prelude-val">Some</span>(
                 <span class="self">self</span>.<span class="ident">data</span>
                     .<span class="ident">clone</span>()
@@ -257,8 +257,8 @@
     }
 
     <span class="doccomment">/// Try to parse this command as a `SegmentCommand64`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">segment_64</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">macho</span>::<span class="ident">SegmentCommand64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>, <span class="ident">Bytes</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>)<span class="op">&gt;&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cmd</span> <span class="op">==</span> <span class="ident">macho</span>::<span class="ident">LC_SEGMENT_64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">segment_64</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">macho</span>::<span class="ident">SegmentCommand64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>, <span class="ident">Bytes</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>)<span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cmd</span> <span class="op">=</span><span class="op">=</span> <span class="ident">macho</span>::<span class="ident">LC_SEGMENT_64</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">data</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">data</span>;
             <span class="kw">let</span> <span class="ident">command</span> <span class="op">=</span> <span class="ident">data</span>
                 .<span class="ident">read</span>()
@@ -270,8 +270,8 @@
     }
 
     <span class="doccomment">/// Try to parse this command as an `EntryPointCommand`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">entry_point</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">macho</span>::<span class="ident">EntryPointCommand</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cmd</span> <span class="op">==</span> <span class="ident">macho</span>::<span class="ident">LC_MAIN</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">entry_point</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">macho</span>::<span class="ident">EntryPointCommand</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">cmd</span> <span class="op">=</span><span class="op">=</span> <span class="ident">macho</span>::<span class="ident">LC_MAIN</span> {
             <span class="prelude-val">Some</span>(
                 <span class="self">self</span>.<span class="ident">data</span>
                     .<span class="ident">clone</span>()
@@ -287,11 +287,11 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endian</span><span class="op">&gt;</span> <span class="ident">macho</span>::<span class="ident">SymtabCommand</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Return the symbol table that this command references.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">symbols</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Mach</span>: <span class="ident">MachHeader</span><span class="op">&lt;</span><span class="ident">Endian</span> <span class="op">=</span> <span class="ident">E</span><span class="op">&gt;&gt;</span>(
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">symbols</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Mach</span>: <span class="ident">MachHeader</span><span class="op">&lt;</span><span class="ident">Endian</span> <span class="op">=</span> <span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         <span class="ident">endian</span>: <span class="ident">E</span>,
         <span class="ident">data</span>: <span class="ident">Bytes</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span>,
-    ) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">SymbolTable</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Mach</span><span class="op">&gt;&gt;</span> {
+    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">SymbolTable</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Mach</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">symbols</span> <span class="op">=</span> <span class="ident">data</span>
             .<span class="ident">read_slice_at</span>(
                 <span class="self">self</span>.<span class="ident">symoff</span>.<span class="ident">get</span>(<span class="ident">endian</span>) <span class="kw">as</span> <span class="ident">usize</span>,

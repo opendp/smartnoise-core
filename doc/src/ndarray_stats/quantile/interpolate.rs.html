@@ -149,7 +149,7 @@
 <span class="kw">use</span> <span class="ident">noisy_float</span>::<span class="ident">types</span>::<span class="ident">N64</span>;
 <span class="kw">use</span> <span class="ident">num_traits</span>::{<span class="ident">Float</span>, <span class="ident">FromPrimitive</span>, <span class="ident">NumOps</span>, <span class="ident">ToPrimitive</span>};
 
-<span class="kw">fn</span> <span class="ident">float_quantile_index</span>(<span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">N64</span> {
+<span class="kw">fn</span> <span class="ident">float_quantile_index</span>(<span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">N64</span> {
     <span class="ident">q</span> <span class="op">*</span> ((<span class="ident">len</span> <span class="op">-</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">f64</span>)
 }
 
@@ -157,17 +157,17 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// This ranges from 0, where the quantile exactly corresponds the lower index,</span>
 <span class="doccomment">/// to 1, where the quantile exactly corresponds to the higher index.</span>
-<span class="kw">fn</span> <span class="ident">float_quantile_index_fraction</span>(<span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">N64</span> {
+<span class="kw">fn</span> <span class="ident">float_quantile_index_fraction</span>(<span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">N64</span> {
     <span class="ident">float_quantile_index</span>(<span class="ident">q</span>, <span class="ident">len</span>).<span class="ident">fract</span>()
 }
 
 <span class="doccomment">/// Returns the index of the value on the lower side of the quantile.</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">lower_index</span>(<span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">lower_index</span>(<span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
     <span class="ident">float_quantile_index</span>(<span class="ident">q</span>, <span class="ident">len</span>).<span class="ident">floor</span>().<span class="ident">to_usize</span>().<span class="ident">unwrap</span>()
 }
 
 <span class="doccomment">/// Returns the index of the value on the higher side of the quantile.</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">higher_index</span>(<span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">higher_index</span>(<span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
     <span class="ident">float_quantile_index</span>(<span class="ident">q</span>, <span class="ident">len</span>).<span class="ident">ceil</span>().<span class="ident">to_usize</span>().<span class="ident">unwrap</span>()
 }
 
@@ -178,19 +178,19 @@
     <span class="doccomment">/// Returns `true` iff the lower value is needed to compute the</span>
     <span class="doccomment">/// interpolated value.</span>
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">needs_lower</span>(<span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">bool</span>;
+    <span class="kw">fn</span> <span class="ident">needs_lower</span>(<span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>;
 
     <span class="doccomment">/// Returns `true` iff the higher value is needed to compute the</span>
     <span class="doccomment">/// interpolated value.</span>
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">needs_higher</span>(<span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">bool</span>;
+    <span class="kw">fn</span> <span class="ident">needs_higher</span>(<span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>;
 
     <span class="doccomment">/// Computes the interpolated value.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// **Panics** if `None` is provided for the lower value when it&#39;s needed</span>
     <span class="doccomment">/// or if `None` is provided for the higher value when it&#39;s needed.</span>
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">interpolate</span>(<span class="ident">lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">higher</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">interpolate</span>(<span class="ident">lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">higher</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 
     <span class="macro">private_decl</span><span class="macro">!</span> {}
 }
@@ -209,40 +209,40 @@
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Linear</span>;
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Interpolate</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Higher</span> {
-    <span class="kw">fn</span> <span class="ident">needs_lower</span>(<span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">needs_lower</span>(<span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="bool-val">false</span>
     }
-    <span class="kw">fn</span> <span class="ident">needs_higher</span>(<span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">needs_higher</span>(<span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="bool-val">true</span>
     }
-    <span class="kw">fn</span> <span class="ident">interpolate</span>(<span class="ident">_lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">higher</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
+    <span class="kw">fn</span> <span class="ident">interpolate</span>(<span class="ident">_lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">higher</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span> {
         <span class="ident">higher</span>.<span class="ident">unwrap</span>()
     }
     <span class="macro">private_impl</span><span class="macro">!</span> {}
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Interpolate</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Lower</span> {
-    <span class="kw">fn</span> <span class="ident">needs_lower</span>(<span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">needs_lower</span>(<span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="bool-val">true</span>
     }
-    <span class="kw">fn</span> <span class="ident">needs_higher</span>(<span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">needs_higher</span>(<span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="bool-val">false</span>
     }
-    <span class="kw">fn</span> <span class="ident">interpolate</span>(<span class="ident">lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">_higher</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
+    <span class="kw">fn</span> <span class="ident">interpolate</span>(<span class="ident">lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">_higher</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span> {
         <span class="ident">lower</span>.<span class="ident">unwrap</span>()
     }
     <span class="macro">private_impl</span><span class="macro">!</span> {}
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Interpolate</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Nearest</span> {
-    <span class="kw">fn</span> <span class="ident">needs_lower</span>(<span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">needs_lower</span>(<span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="ident">float_quantile_index_fraction</span>(<span class="ident">q</span>, <span class="ident">len</span>) <span class="op">&lt;</span> <span class="number">0.5</span>
     }
-    <span class="kw">fn</span> <span class="ident">needs_higher</span>(<span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-        <span class="op">!</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">Interpolate</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;&gt;</span>::<span class="ident">needs_lower</span>(<span class="ident">q</span>, <span class="ident">len</span>)
+    <span class="kw">fn</span> <span class="ident">needs_higher</span>(<span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+        <span class="op">!</span><span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">Interpolate</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">needs_lower</span>(<span class="ident">q</span>, <span class="ident">len</span>)
     }
-    <span class="kw">fn</span> <span class="ident">interpolate</span>(<span class="ident">lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">higher</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
-        <span class="kw">if</span> <span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">Interpolate</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;&gt;</span>::<span class="ident">needs_lower</span>(<span class="ident">q</span>, <span class="ident">len</span>) {
+    <span class="kw">fn</span> <span class="ident">interpolate</span>(<span class="ident">lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">higher</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span> {
+        <span class="kw">if</span> <span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">Interpolate</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">needs_lower</span>(<span class="ident">q</span>, <span class="ident">len</span>) {
             <span class="ident">lower</span>.<span class="ident">unwrap</span>()
         } <span class="kw">else</span> {
             <span class="ident">higher</span>.<span class="ident">unwrap</span>()
@@ -255,13 +255,13 @@
 <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">NumOps</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">FromPrimitive</span>,
 {
-    <span class="kw">fn</span> <span class="ident">needs_lower</span>(<span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">needs_lower</span>(<span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="bool-val">true</span>
     }
-    <span class="kw">fn</span> <span class="ident">needs_higher</span>(<span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">needs_higher</span>(<span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="bool-val">true</span>
     }
-    <span class="kw">fn</span> <span class="ident">interpolate</span>(<span class="ident">lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">higher</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
+    <span class="kw">fn</span> <span class="ident">interpolate</span>(<span class="ident">lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">higher</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span> {
         <span class="kw">let</span> <span class="ident">denom</span> <span class="op">=</span> <span class="ident">T</span>::<span class="ident">from_u8</span>(<span class="number">2</span>).<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">lower</span> <span class="op">=</span> <span class="ident">lower</span>.<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">higher</span> <span class="op">=</span> <span class="ident">higher</span>.<span class="ident">unwrap</span>();
@@ -274,13 +274,13 @@
 <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">NumOps</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">FromPrimitive</span> <span class="op">+</span> <span class="ident">ToPrimitive</span>,
 {
-    <span class="kw">fn</span> <span class="ident">needs_lower</span>(<span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">needs_lower</span>(<span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="bool-val">true</span>
     }
-    <span class="kw">fn</span> <span class="ident">needs_higher</span>(<span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">needs_higher</span>(<span class="ident">_q</span>: <span class="ident">N64</span>, <span class="ident">_len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="bool-val">true</span>
     }
-    <span class="kw">fn</span> <span class="ident">interpolate</span>(<span class="ident">lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">higher</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span> {
+    <span class="kw">fn</span> <span class="ident">interpolate</span>(<span class="ident">lower</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">higher</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">q</span>: <span class="ident">N64</span>, <span class="ident">len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span> {
         <span class="kw">let</span> <span class="ident">fraction</span> <span class="op">=</span> <span class="ident">float_quantile_index_fraction</span>(<span class="ident">q</span>, <span class="ident">len</span>).<span class="ident">to_f64</span>().<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">lower</span> <span class="op">=</span> <span class="ident">lower</span>.<span class="ident">unwrap</span>();
         <span class="kw">let</span> <span class="ident">higher</span> <span class="op">=</span> <span class="ident">higher</span>.<span class="ident">unwrap</span>();

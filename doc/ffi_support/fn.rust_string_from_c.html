@@ -8,7 +8,7 @@ unicode replacement character.</p>
 actually true. If it's not, we'll read arbitrary memory from the heap until we see a '\0', which
 can result in a enormous number of problems.</p>
 <h2 id="panics" class="section-header"><a href="#panics">Panics</a></h2>
-<p>Panics if it's argument is null. See also <a href="../ffi_support/fn.opt_rust_string_from_c.html" title="`opt_rust_string_from_c`"><code>opt_rust_string_from_c</code></a>, which returns None
+<p>Panics if it's argument is null. See also <a href="../ffi_support/fn.opt_rust_string_from_c.html" title="opt_rust_string_from_c"><code>opt_rust_string_from_c</code></a>, which returns None
 instead.</p>
 <p>Note: This means it's forbidden to call this outside of a <code>call_with_result</code> (or something else
 that uses <code>std::panic::catch_unwind</code>), as it is UB to panic across the FFI boundary.</p>

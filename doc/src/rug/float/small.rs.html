@@ -680,11 +680,11 @@ assert_eq!(a, -15000);
     <span class="kw">pub</span> <span class="ident">prec</span>: <span class="ident">prec_t</span>,
     <span class="kw">pub</span> <span class="ident">sign</span>: <span class="ident">c_int</span>,
     <span class="kw">pub</span> <span class="ident">exp</span>: <span class="ident">exp_t</span>,
-    <span class="kw">pub</span> <span class="ident">d</span>: <span class="ident">UnsafeCell</span><span class="op">&lt;</span><span class="ident">NonNull</span><span class="op">&lt;</span><span class="ident">limb_t</span><span class="op">&gt;&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">d</span>: <span class="ident">UnsafeCell</span><span class="op">&lt;</span><span class="ident">NonNull</span><span class="op">&lt;</span><span class="ident">limb_t</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">Mpfr</span> {
-    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Mpfr</span> {
+    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Mpfr</span> {
         <span class="ident">Mpfr</span> {
             <span class="ident">prec</span>: <span class="self">self</span>.<span class="ident">prec</span>,
             <span class="ident">sign</span>: <span class="self">self</span>.<span class="ident">sign</span>,
@@ -694,7 +694,7 @@ assert_eq!(a, -15000);
     }
 }
 
-<span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">Limbs</span><span class="op">&gt;</span>() <span class="op">==</span> <span class="number">16</span>);
+<span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">Limbs</span><span class="op">&gt;</span>() <span class="op">=</span><span class="op">=</span> <span class="number">16</span>);
 <span class="macro">static_assert_same_layout</span><span class="macro">!</span>(<span class="ident">Mpfr</span>, <span class="ident">mpfr_t</span>);
 
 <span class="comment">// Safety: SmallFloat cannot be Sync because it contains an UnsafeCell</span>
@@ -705,7 +705,7 @@ assert_eq!(a, -15000);
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">SmallFloat</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">SmallFloat</span>::<span class="ident">new</span>()
     }
 }
@@ -726,7 +726,7 @@ assert_eq!(a, -15000);
     <span class="doccomment">/// [`SmallFloat`]: struct.SmallFloat.html</span>
     <span class="doccomment">/// [`prec_min`]: fn.prec_min.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">SmallFloat</span> {
             <span class="ident">inner</span>: <span class="ident">Mpfr</span> {
                 <span class="ident">prec</span>: <span class="ident">float</span>::<span class="ident">prec_min</span>() <span class="kw">as</span> <span class="ident">prec_t</span>,
@@ -764,7 +764,7 @@ assert_eq!(a, -15000);
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="comment">// Safety: after calling update_d(), self.inner.d points to the</span>
     <span class="comment">// limbs so it is in a consistent state.</span>
-    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">as_nonreallocating_float</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Float</span> {
+    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">as_nonreallocating_float</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Float</span> {
         <span class="self">self</span>.<span class="ident">update_d</span>();
         <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">inner</span>, <span class="ident">Float</span>);
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">ptr</span>
@@ -785,7 +785,7 @@ assert_eq!(a, -15000);
 <span class="kw">impl</span> <span class="ident">Deref</span> <span class="kw">for</span> <span class="ident">SmallFloat</span> {
     <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> <span class="ident">Float</span>;
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Float</span> {
+    <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Float</span> {
         <span class="self">self</span>.<span class="ident">update_d</span>();
         <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="macro">cast_ptr</span><span class="macro">!</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span>, <span class="ident">Float</span>);
         <span class="comment">// Safety: since we called update_d, the inner pointer is</span>
@@ -829,7 +829,7 @@ assert_eq!(a, -15000);
 }
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">unsafe_signed</span> {
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">I</span>:<span class="ident">ty</span>)<span class="kw-2">*</span>) <span class="op">=&gt;</span> { $(
+    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">I</span>:<span class="ident">ty</span>)<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> { $(
         <span class="kw">impl</span> <span class="ident">ToSmall</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">I</span> {}
         <span class="kw">impl</span> <span class="ident">SealedToSmall</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">I</span> {
             <span class="attribute">#[<span class="ident">inline</span>]</span>
@@ -845,19 +845,19 @@ assert_eq!(a, -15000);
 }
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">unsafe_unsigned_32</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bits</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bits</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">impl</span> <span class="ident">ToSmall</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span> {}
         <span class="kw">impl</span> <span class="ident">SealedToSmall</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span> {
             <span class="attribute">#[<span class="ident">inline</span>]</span>
             <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">copy</span>(<span class="self">self</span>, <span class="ident">inner</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Mpfr</span>, <span class="ident">limbs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Limbs</span>) {
                 <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">inner</span>, <span class="ident">mpfr_t</span>);
                 <span class="kw">let</span> <span class="ident">limbs_ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">limbs</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">limb_t</span>);
-                <span class="kw">if</span> <span class="self">self</span> <span class="op">==</span> <span class="number">0</span> {
+                <span class="kw">if</span> <span class="self">self</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
                     <span class="ident">xmpfr</span>::<span class="ident">custom_zero</span>(<span class="ident">ptr</span>, <span class="ident">limbs_ptr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bits</span>);
                 } <span class="kw">else</span> {
                     <span class="kw">let</span> <span class="ident">leading</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">leading_zeros</span>();
                     <span class="kw">let</span> <span class="ident">limb_leading</span> <span class="op">=</span> <span class="ident">leading</span> <span class="op">+</span> <span class="ident">gmp</span>::<span class="ident">LIMB_BITS</span>.<span class="ident">az</span>::<span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>() <span class="op">-</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bits</span>;
-                    <span class="ident">limbs</span>[<span class="number">0</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>(<span class="ident">limb_t</span>::<span class="ident">from</span>(<span class="self">self</span>) <span class="op">&lt;&lt;</span> <span class="ident">limb_leading</span>);
+                    <span class="ident">limbs</span>[<span class="number">0</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>(<span class="ident">limb_t</span>::<span class="ident">from</span>(<span class="self">self</span>) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">limb_leading</span>);
                     <span class="kw">let</span> <span class="ident">exp</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bits</span> <span class="op">-</span> <span class="ident">leading</span>;
                     <span class="ident">xmpfr</span>::<span class="ident">custom_regular</span>(<span class="ident">ptr</span>, <span class="ident">limbs_ptr</span>, <span class="ident">exp</span>.<span class="ident">unwrapped_cast</span>(), <span class="macro-nonterminal">$</span><span class="macro-nonterminal">bits</span>);
                 }
@@ -878,11 +878,11 @@ assert_eq!(a, -15000);
     <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">copy</span>(<span class="self">self</span>, <span class="ident">inner</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Mpfr</span>, <span class="ident">limbs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Limbs</span>) {
         <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">inner</span>, <span class="ident">mpfr_t</span>);
         <span class="kw">let</span> <span class="ident">limbs_ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">limbs</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">limb_t</span>);
-        <span class="kw">if</span> <span class="self">self</span> <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="self">self</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="ident">xmpfr</span>::<span class="ident">custom_zero</span>(<span class="ident">ptr</span>, <span class="ident">limbs_ptr</span>, <span class="number">64</span>);
         } <span class="kw">else</span> {
             <span class="kw">let</span> <span class="ident">leading</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">leading_zeros</span>();
-            <span class="kw">let</span> <span class="ident">sval</span> <span class="op">=</span> <span class="self">self</span> <span class="op">&lt;&lt;</span> <span class="ident">leading</span>;
+            <span class="kw">let</span> <span class="ident">sval</span> <span class="op">=</span> <span class="self">self</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">leading</span>;
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_64</span>)]</span>
             {
                 <span class="ident">limbs</span>[<span class="number">0</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>(<span class="ident">sval</span>);
@@ -890,7 +890,7 @@ assert_eq!(a, -15000);
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_32</span>)]</span>
             {
                 <span class="ident">limbs</span>[<span class="number">0</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>(<span class="ident">sval</span>.<span class="ident">wrapping_cast</span>());
-                <span class="ident">limbs</span>[<span class="number">1</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="ident">sval</span> <span class="op">&gt;&gt;</span> <span class="number">32</span>).<span class="ident">wrapping_cast</span>());
+                <span class="ident">limbs</span>[<span class="number">1</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="ident">sval</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">32</span>).<span class="ident">wrapping_cast</span>());
             }
             <span class="ident">xmpfr</span>::<span class="ident">custom_regular</span>(<span class="ident">ptr</span>, <span class="ident">limbs_ptr</span>, (<span class="number">64</span> <span class="op">-</span> <span class="ident">leading</span>).<span class="ident">unwrapped_cast</span>(), <span class="number">64</span>);
         }
@@ -903,22 +903,22 @@ assert_eq!(a, -15000);
     <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">copy</span>(<span class="self">self</span>, <span class="ident">inner</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">Mpfr</span>, <span class="ident">limbs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Limbs</span>) {
         <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">inner</span>, <span class="ident">mpfr_t</span>);
         <span class="kw">let</span> <span class="ident">limbs_ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="ident">limbs</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">limb_t</span>);
-        <span class="kw">if</span> <span class="self">self</span> <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="self">self</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="ident">xmpfr</span>::<span class="ident">custom_zero</span>(<span class="ident">ptr</span>, <span class="ident">limbs_ptr</span>, <span class="number">128</span>);
         } <span class="kw">else</span> {
             <span class="kw">let</span> <span class="ident">leading</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">leading_zeros</span>();
-            <span class="kw">let</span> <span class="ident">sval</span> <span class="op">=</span> <span class="self">self</span> <span class="op">&lt;&lt;</span> <span class="ident">leading</span>;
+            <span class="kw">let</span> <span class="ident">sval</span> <span class="op">=</span> <span class="self">self</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">leading</span>;
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_64</span>)]</span>
             {
                 <span class="ident">limbs</span>[<span class="number">0</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>(<span class="ident">sval</span>.<span class="ident">wrapping_cast</span>());
-                <span class="ident">limbs</span>[<span class="number">1</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="ident">sval</span> <span class="op">&gt;&gt;</span> <span class="number">64</span>).<span class="ident">wrapping_cast</span>());
+                <span class="ident">limbs</span>[<span class="number">1</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="ident">sval</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">64</span>).<span class="ident">wrapping_cast</span>());
             }
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_32</span>)]</span>
             {
                 <span class="ident">limbs</span>[<span class="number">0</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>(<span class="ident">sval</span>.<span class="ident">wrapping_cast</span>());
-                <span class="ident">limbs</span>[<span class="number">1</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="ident">sval</span> <span class="op">&gt;&gt;</span> <span class="number">32</span>).<span class="ident">wrapping_cast</span>());
-                <span class="ident">limbs</span>[<span class="number">2</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="ident">sval</span> <span class="op">&gt;&gt;</span> <span class="number">64</span>).<span class="ident">wrapping_cast</span>());
-                <span class="ident">limbs</span>[<span class="number">3</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="ident">sval</span> <span class="op">&gt;&gt;</span> <span class="number">96</span>).<span class="ident">wrapping_cast</span>());
+                <span class="ident">limbs</span>[<span class="number">1</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="ident">sval</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">32</span>).<span class="ident">wrapping_cast</span>());
+                <span class="ident">limbs</span>[<span class="number">2</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="ident">sval</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">64</span>).<span class="ident">wrapping_cast</span>());
+                <span class="ident">limbs</span>[<span class="number">3</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="ident">sval</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">96</span>).<span class="ident">wrapping_cast</span>());
             }
             <span class="ident">xmpfr</span>::<span class="ident">custom_regular</span>(<span class="ident">ptr</span>, <span class="ident">limbs_ptr</span>, (<span class="number">128</span> <span class="op">-</span> <span class="ident">leading</span>).<span class="ident">unwrapped_cast</span>(), <span class="number">128</span>);
         }
@@ -991,7 +991,7 @@ assert_eq!(a, -15000);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ToSmall</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SmallFloat</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">src</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">src</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">Mpfr</span> {
             <span class="ident">prec</span>: <span class="number">0</span>,
             <span class="ident">sign</span>: <span class="number">0</span>,
@@ -1021,22 +1021,22 @@ assert_eq!(a, -15000);
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unchecked_get_unshifted_u8</span>(<span class="ident">small</span>: <span class="kw-2">&amp;</span><span class="ident">SmallFloat</span>) <span class="op">-&gt;</span> <span class="ident">u8</span> {
-    <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">prec</span>() <span class="op">&gt;=</span> <span class="number">8</span>);
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unchecked_get_unshifted_u8</span>(<span class="ident">small</span>: <span class="kw-2">&amp;</span><span class="ident">SmallFloat</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span> {
+    <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">prec</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="number">8</span>);
     <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">is_normal</span>());
-    (<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">0</span>].<span class="ident">assume_init</span>() <span class="op">&gt;&gt;</span> (<span class="ident">gmp</span>::<span class="ident">LIMB_BITS</span> <span class="op">-</span> <span class="number">8</span>)).<span class="ident">wrapping_cast</span>()
+    (<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">0</span>].<span class="ident">assume_init</span>() <span class="op">&gt;</span><span class="op">&gt;</span> (<span class="ident">gmp</span>::<span class="ident">LIMB_BITS</span> <span class="op">-</span> <span class="number">8</span>)).<span class="ident">wrapping_cast</span>()
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unchecked_get_unshifted_u16</span>(<span class="ident">small</span>: <span class="kw-2">&amp;</span><span class="ident">SmallFloat</span>) <span class="op">-&gt;</span> <span class="ident">u16</span> {
-    <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">prec</span>() <span class="op">&gt;=</span> <span class="number">16</span>);
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unchecked_get_unshifted_u16</span>(<span class="ident">small</span>: <span class="kw-2">&amp;</span><span class="ident">SmallFloat</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u16</span> {
+    <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">prec</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="number">16</span>);
     <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">is_normal</span>());
-    (<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">0</span>].<span class="ident">assume_init</span>() <span class="op">&gt;&gt;</span> (<span class="ident">gmp</span>::<span class="ident">LIMB_BITS</span> <span class="op">-</span> <span class="number">16</span>)).<span class="ident">wrapping_cast</span>()
+    (<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">0</span>].<span class="ident">assume_init</span>() <span class="op">&gt;</span><span class="op">&gt;</span> (<span class="ident">gmp</span>::<span class="ident">LIMB_BITS</span> <span class="op">-</span> <span class="number">16</span>)).<span class="ident">wrapping_cast</span>()
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unchecked_get_unshifted_u32</span>(<span class="ident">small</span>: <span class="kw-2">&amp;</span><span class="ident">SmallFloat</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
-    <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">prec</span>() <span class="op">&gt;=</span> <span class="number">32</span>);
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unchecked_get_unshifted_u32</span>(<span class="ident">small</span>: <span class="kw-2">&amp;</span><span class="ident">SmallFloat</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
+    <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">prec</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="number">32</span>);
     <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">is_normal</span>());
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_32</span>)]</span>
     {
@@ -1044,17 +1044,17 @@ assert_eq!(a, -15000);
     }
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_64</span>)]</span>
     {
-        (<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">0</span>].<span class="ident">assume_init</span>() <span class="op">&gt;&gt;</span> <span class="number">32</span>).<span class="ident">wrapping_cast</span>()
+        (<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">0</span>].<span class="ident">assume_init</span>() <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">32</span>).<span class="ident">wrapping_cast</span>()
     }
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unchecked_get_unshifted_u64</span>(<span class="ident">small</span>: <span class="kw-2">&amp;</span><span class="ident">SmallFloat</span>) <span class="op">-&gt;</span> <span class="ident">u64</span> {
-    <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">prec</span>() <span class="op">&gt;=</span> <span class="number">64</span>);
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unchecked_get_unshifted_u64</span>(<span class="ident">small</span>: <span class="kw-2">&amp;</span><span class="ident">SmallFloat</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
+    <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">prec</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="number">64</span>);
     <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">is_normal</span>());
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_32</span>)]</span>
     {
-        <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">0</span>].<span class="ident">assume_init</span>()) <span class="op">|</span> (<span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">1</span>].<span class="ident">assume_init</span>()) <span class="op">&lt;&lt;</span> <span class="number">32</span>)
+        <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">0</span>].<span class="ident">assume_init</span>()) <span class="op">|</span> (<span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">1</span>].<span class="ident">assume_init</span>()) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">32</span>)
     }
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_64</span>)]</span>
     {
@@ -1063,19 +1063,19 @@ assert_eq!(a, -15000);
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unchecked_get_unshifted_u128</span>(<span class="ident">small</span>: <span class="kw-2">&amp;</span><span class="ident">SmallFloat</span>) <span class="op">-&gt;</span> <span class="ident">u128</span> {
-    <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">prec</span>() <span class="op">&gt;=</span> <span class="number">128</span>);
+<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unchecked_get_unshifted_u128</span>(<span class="ident">small</span>: <span class="kw-2">&amp;</span><span class="ident">SmallFloat</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u128</span> {
+    <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">prec</span>() <span class="op">&gt;</span><span class="op">=</span> <span class="number">128</span>);
     <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">small</span>.<span class="ident">is_normal</span>());
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_32</span>)]</span>
     {
         <span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">0</span>].<span class="ident">assume_init</span>())
-            <span class="op">|</span> (<span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">1</span>].<span class="ident">assume_init</span>()) <span class="op">&lt;&lt;</span> <span class="number">32</span>)
-            <span class="op">|</span> (<span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">2</span>].<span class="ident">assume_init</span>()) <span class="op">&lt;&lt;</span> <span class="number">64</span>)
-            <span class="op">|</span> (<span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">3</span>].<span class="ident">assume_init</span>()) <span class="op">&lt;&lt;</span> <span class="number">96</span>)
+            <span class="op">|</span> (<span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">1</span>].<span class="ident">assume_init</span>()) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">32</span>)
+            <span class="op">|</span> (<span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">2</span>].<span class="ident">assume_init</span>()) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">64</span>)
+            <span class="op">|</span> (<span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">3</span>].<span class="ident">assume_init</span>()) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">96</span>)
     }
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_64</span>)]</span>
     {
-        <span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">0</span>].<span class="ident">assume_init</span>()) <span class="op">|</span> (<span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">1</span>].<span class="ident">assume_init</span>()) <span class="op">&lt;&lt;</span> <span class="number">64</span>)
+        <span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">0</span>].<span class="ident">assume_init</span>()) <span class="op">|</span> (<span class="ident">u128</span>::<span class="ident">from</span>(<span class="ident">small</span>.<span class="ident">limbs</span>[<span class="number">1</span>].<span class="ident">assume_init</span>()) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">64</span>)
     }
 }
 

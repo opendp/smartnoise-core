@@ -77,10 +77,10 @@
 <span class="doccomment">/// # Remarks</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Returns `1` as a special case when `t == 0`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">harmonic</span>(<span class="ident">t</span>: <span class="ident">u64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">harmonic</span>(<span class="ident">t</span>: <span class="ident">u64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="kw">match</span> <span class="ident">t</span> {
-        <span class="number">0</span> <span class="op">=&gt;</span> <span class="number">1.0</span>,
-        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">consts</span>::<span class="ident">EULER_MASCHERONI</span> <span class="op">+</span> <span class="ident">gamma</span>::<span class="ident">digamma</span>(<span class="ident">t</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">+</span> <span class="number">1.0</span>),
+        <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">1.0</span>,
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">consts</span>::<span class="ident">EULER_MASCHERONI</span> <span class="op">+</span> <span class="ident">gamma</span>::<span class="ident">digamma</span>(<span class="ident">t</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">+</span> <span class="number">1.0</span>),
     }
 }
 
@@ -90,10 +90,10 @@
 <span class="doccomment">/// # Remarks</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// Returns `1` as a special case when `n == 0`</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gen_harmonic</span>(<span class="ident">n</span>: <span class="ident">u64</span>, <span class="ident">m</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gen_harmonic</span>(<span class="ident">n</span>: <span class="ident">u64</span>, <span class="ident">m</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="kw">match</span> <span class="ident">n</span> {
-        <span class="number">0</span> <span class="op">=&gt;</span> <span class="number">1.0</span>,
-        <span class="kw">_</span> <span class="op">=&gt;</span> (<span class="number">0</span>..<span class="ident">n</span>).<span class="ident">fold</span>(<span class="number">0.0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> (<span class="ident">x</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">+</span> <span class="number">1.0</span>).<span class="ident">powf</span>(<span class="op">-</span><span class="ident">m</span>)),
+        <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">1.0</span>,
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="number">0</span>..<span class="ident">n</span>).<span class="ident">fold</span>(<span class="number">0.0</span>, <span class="op">|</span><span class="ident">acc</span>, <span class="ident">x</span><span class="op">|</span> <span class="ident">acc</span> <span class="op">+</span> (<span class="ident">x</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">+</span> <span class="number">1.0</span>).<span class="ident">powf</span>(<span class="op">-</span><span class="ident">m</span>)),
     }
 }
 

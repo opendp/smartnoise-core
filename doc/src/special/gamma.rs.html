@@ -405,10 +405,10 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// 1. M. J. Beal, Variational algorithms for approximate Bayesian</span>
     <span class="doccomment">///    inference. University of London, 2003, pp. 265–266.</span>
-    <span class="kw">fn</span> <span class="ident">digamma</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">digamma</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Compute the gamma function.</span>
-    <span class="kw">fn</span> <span class="ident">gamma</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">gamma</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Compute the regularized lower incomplete gamma function.</span>
     <span class="doccomment">///</span>
@@ -429,29 +429,29 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// [1]: http://people.sc.fsu.edu/~jburkardt/c_src/asa239/asa239.html</span>
     <span class="doccomment">/// [2]: http://www.jstor.org/stable/2347328</span>
-    <span class="kw">fn</span> <span class="ident">inc_gamma</span>(<span class="self">self</span>, <span class="ident">p</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">inc_gamma</span>(<span class="self">self</span>, <span class="ident">p</span>: <span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Compute the natural logarithm of the gamma function.</span>
-    <span class="kw">fn</span> <span class="ident">ln_gamma</span>(<span class="self">self</span>) <span class="op">-&gt;</span> (<span class="self">Self</span>, <span class="ident">i32</span>);
+    <span class="kw">fn</span> <span class="ident">ln_gamma</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="self">Self</span>, <span class="ident">i32</span>);
 
     <span class="doccomment">/// Compute the trigamma function.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The code is based on a [Julia implementation][1].</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [1]: https://github.com/JuliaMath/SpecialFunctions.jl</span>
-    <span class="kw">fn</span> <span class="ident">trigamma</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">trigamma</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 }
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">evaluate_polynomial</span>(
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">coefficients</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> (
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">coefficients</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> (
         <span class="macro-nonterminal">$</span><span class="macro-nonterminal">coefficients</span>.<span class="ident">iter</span>().<span class="ident">rev</span>().<span class="ident">fold</span>(<span class="number">0.0</span>, <span class="op">|</span><span class="ident">sum</span>, <span class="kw-2">&amp;</span><span class="ident">c</span><span class="op">|</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">x</span> <span class="op">*</span> <span class="ident">sum</span> <span class="op">+</span> <span class="ident">c</span>)
     );
 );
 
-<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">implement</span> { (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span>:<span class="ident">ty</span>) <span class="op">=&gt;</span> { <span class="kw">impl</span> <span class="ident">Gamma</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span> {
-    <span class="kw">fn</span> <span class="ident">digamma</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">implement</span> { (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span>:<span class="ident">ty</span>) <span class="op">=</span><span class="op">&gt;</span> { <span class="kw">impl</span> <span class="ident">Gamma</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span> {
+    <span class="kw">fn</span> <span class="ident">digamma</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="self">self</span>;
-        <span class="kw">if</span> <span class="ident">p</span> <span class="op">&lt;=</span> <span class="number">8.0</span> {
+        <span class="kw">if</span> <span class="ident">p</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">8.0</span> {
             <span class="kw">return</span> (<span class="ident">p</span> <span class="op">+</span> <span class="number">1.0</span>).<span class="ident">digamma</span>() <span class="op">-</span> <span class="ident">p</span>.<span class="ident">recip</span>();
         }
         <span class="kw">let</span> <span class="ident">q</span> <span class="op">=</span> <span class="ident">p</span>.<span class="ident">recip</span>();
@@ -474,20 +474,20 @@
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">gamma</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">gamma</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">unsafe</span> { <span class="ident">math</span>::<span class="ident">tgamma</span>(<span class="self">self</span> <span class="kw">as</span> <span class="ident">f64</span>) <span class="kw">as</span> <span class="self">Self</span> }
     }
 
-    <span class="kw">fn</span> <span class="ident">inc_gamma</span>(<span class="self">self</span>, <span class="ident">p</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">inc_gamma</span>(<span class="self">self</span>, <span class="ident">p</span>: <span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">const</span> <span class="ident">ELIMIT</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span> <span class="op">=</span> <span class="op">-</span><span class="number">88.0</span>;
         <span class="kw">const</span> <span class="ident">OFLO</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span> <span class="op">=</span> <span class="number">1e+37</span>;
         <span class="kw">const</span> <span class="ident">TOL</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span> <span class="op">=</span> <span class="number">1e-14</span>;
         <span class="kw">const</span> <span class="ident">XBIG</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span> <span class="op">=</span> <span class="number">1e+08</span>;
 
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="self">self</span>;
-        <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">x</span> <span class="op">&gt;=</span> <span class="number">0.0</span> <span class="op">&amp;&amp;</span> <span class="ident">p</span> <span class="op">&gt;</span> <span class="number">0.0</span>);
+        <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">x</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0.0</span> <span class="op">&amp;&amp;</span> <span class="ident">p</span> <span class="op">&gt;</span> <span class="number">0.0</span>);
 
-        <span class="kw">if</span> <span class="ident">x</span> <span class="op">==</span> <span class="number">0.0</span> {
+        <span class="kw">if</span> <span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="number">0.0</span> {
             <span class="kw">return</span> <span class="number">0.0</span>;
         }
 
@@ -509,23 +509,23 @@
             <span class="kw">return</span> <span class="number">1.0</span>;
         }
 
-        <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;=</span> <span class="number">1.0</span> <span class="op">||</span> <span class="ident">x</span> <span class="op">&lt;</span> <span class="ident">p</span> {
+        <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1.0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">x</span> <span class="op">&lt;</span> <span class="ident">p</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">arg</span> <span class="op">=</span> <span class="ident">p</span> <span class="op">*</span> <span class="ident">x</span>.<span class="ident">ln</span>() <span class="op">-</span> <span class="ident">x</span> <span class="op">-</span> (<span class="ident">p</span> <span class="op">+</span> <span class="number">1.0</span>).<span class="ident">ln_gamma</span>().<span class="number">0</span>;
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">value</span> <span class="op">=</span> <span class="number">1.0</span>;
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">a</span> <span class="op">=</span> <span class="ident">p</span>;
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">c</span> <span class="op">=</span> <span class="number">1.0</span>;
 
             <span class="kw">loop</span> {
-                <span class="ident">a</span> <span class="op">+=</span> <span class="number">1.0</span>;
-                <span class="ident">c</span> <span class="op">*=</span> <span class="ident">x</span> <span class="op">/</span> <span class="ident">a</span>;
-                <span class="ident">value</span> <span class="op">+=</span> <span class="ident">c</span>;
-                <span class="kw">if</span> <span class="ident">c</span> <span class="op">&lt;=</span> <span class="ident">TOL</span> {
+                <span class="ident">a</span> <span class="op">+</span><span class="op">=</span> <span class="number">1.0</span>;
+                <span class="ident">c</span> <span class="kw-2">*</span><span class="op">=</span> <span class="ident">x</span> <span class="op">/</span> <span class="ident">a</span>;
+                <span class="ident">value</span> <span class="op">+</span><span class="op">=</span> <span class="ident">c</span>;
+                <span class="kw">if</span> <span class="ident">c</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">TOL</span> {
                     <span class="kw">break</span>;
                 }
             }
-            <span class="ident">arg</span> <span class="op">+=</span> <span class="ident">value</span>.<span class="ident">ln</span>();
+            <span class="ident">arg</span> <span class="op">+</span><span class="op">=</span> <span class="ident">value</span>.<span class="ident">ln</span>();
 
-            <span class="kw">return</span> <span class="kw">if</span> <span class="ident">ELIMIT</span> <span class="op">&lt;=</span> <span class="ident">arg</span> { <span class="ident">arg</span>.<span class="ident">exp</span>() } <span class="kw">else</span> { <span class="number">0.0</span> };
+            <span class="kw">return</span> <span class="kw">if</span> <span class="ident">ELIMIT</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">arg</span> { <span class="ident">arg</span>.<span class="ident">exp</span>() } <span class="kw">else</span> { <span class="number">0.0</span> };
         }
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">arg</span> <span class="op">=</span> <span class="ident">p</span> <span class="op">*</span> <span class="ident">x</span>.<span class="ident">ln</span>() <span class="op">-</span> <span class="ident">x</span> <span class="op">-</span> <span class="ident">p</span>.<span class="ident">ln_gamma</span>().<span class="number">0</span>;
@@ -539,15 +539,15 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">value</span> <span class="op">=</span> <span class="ident">pn3</span> <span class="op">/</span> <span class="ident">pn4</span>;
 
         <span class="kw">loop</span> {
-            <span class="ident">a</span> <span class="op">+=</span> <span class="number">1.0</span>;
-            <span class="ident">b</span> <span class="op">+=</span> <span class="number">2.0</span>;
-            <span class="ident">c</span> <span class="op">+=</span> <span class="number">1.0</span>;
+            <span class="ident">a</span> <span class="op">+</span><span class="op">=</span> <span class="number">1.0</span>;
+            <span class="ident">b</span> <span class="op">+</span><span class="op">=</span> <span class="number">2.0</span>;
+            <span class="ident">c</span> <span class="op">+</span><span class="op">=</span> <span class="number">1.0</span>;
             <span class="kw">let</span> <span class="ident">an</span> <span class="op">=</span> <span class="ident">a</span> <span class="op">*</span> <span class="ident">c</span>;
             <span class="kw">let</span> <span class="ident">pn5</span> <span class="op">=</span> <span class="ident">b</span> <span class="op">*</span> <span class="ident">pn3</span> <span class="op">-</span> <span class="ident">an</span> <span class="op">*</span> <span class="ident">pn1</span>;
             <span class="kw">let</span> <span class="ident">pn6</span> <span class="op">=</span> <span class="ident">b</span> <span class="op">*</span> <span class="ident">pn4</span> <span class="op">-</span> <span class="ident">an</span> <span class="op">*</span> <span class="ident">pn2</span>;
-            <span class="kw">if</span> <span class="ident">pn6</span> <span class="op">!=</span> <span class="number">0.0</span> {
+            <span class="kw">if</span> <span class="ident">pn6</span> <span class="op">!</span><span class="op">=</span> <span class="number">0.0</span> {
                 <span class="kw">let</span> <span class="ident">rn</span> <span class="op">=</span> <span class="ident">pn5</span> <span class="op">/</span> <span class="ident">pn6</span>;
-                <span class="kw">if</span> (<span class="ident">value</span> <span class="op">-</span> <span class="ident">rn</span>).<span class="ident">abs</span>() <span class="op">&lt;=</span> <span class="ident">TOL</span>.<span class="ident">min</span>(<span class="ident">TOL</span> <span class="op">*</span> <span class="ident">rn</span>) {
+                <span class="kw">if</span> (<span class="ident">value</span> <span class="op">-</span> <span class="ident">rn</span>).<span class="ident">abs</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="ident">TOL</span>.<span class="ident">min</span>(<span class="ident">TOL</span> <span class="op">*</span> <span class="ident">rn</span>) {
                     <span class="kw">break</span>;
                 }
                 <span class="ident">value</span> <span class="op">=</span> <span class="ident">rn</span>;
@@ -556,16 +556,16 @@
             <span class="ident">pn2</span> <span class="op">=</span> <span class="ident">pn4</span>;
             <span class="ident">pn3</span> <span class="op">=</span> <span class="ident">pn5</span>;
             <span class="ident">pn4</span> <span class="op">=</span> <span class="ident">pn6</span>;
-            <span class="kw">if</span> <span class="ident">OFLO</span> <span class="op">&lt;=</span> <span class="ident">pn5</span>.<span class="ident">abs</span>() {
-                <span class="ident">pn1</span> <span class="op">/=</span> <span class="ident">OFLO</span>;
-                <span class="ident">pn2</span> <span class="op">/=</span> <span class="ident">OFLO</span>;
-                <span class="ident">pn3</span> <span class="op">/=</span> <span class="ident">OFLO</span>;
-                <span class="ident">pn4</span> <span class="op">/=</span> <span class="ident">OFLO</span>;
+            <span class="kw">if</span> <span class="ident">OFLO</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">pn5</span>.<span class="ident">abs</span>() {
+                <span class="ident">pn1</span> <span class="op">/</span><span class="op">=</span> <span class="ident">OFLO</span>;
+                <span class="ident">pn2</span> <span class="op">/</span><span class="op">=</span> <span class="ident">OFLO</span>;
+                <span class="ident">pn3</span> <span class="op">/</span><span class="op">=</span> <span class="ident">OFLO</span>;
+                <span class="ident">pn4</span> <span class="op">/</span><span class="op">=</span> <span class="ident">OFLO</span>;
             }
         }
-        <span class="ident">arg</span> <span class="op">+=</span> <span class="ident">value</span>.<span class="ident">ln</span>();
+        <span class="ident">arg</span> <span class="op">+</span><span class="op">=</span> <span class="ident">value</span>.<span class="ident">ln</span>();
 
-        <span class="kw">if</span> <span class="ident">ELIMIT</span> <span class="op">&lt;=</span> <span class="ident">arg</span> {
+        <span class="kw">if</span> <span class="ident">ELIMIT</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">arg</span> {
             <span class="number">1.0</span> <span class="op">-</span> <span class="ident">arg</span>.<span class="ident">exp</span>()
         } <span class="kw">else</span> {
             <span class="number">1.0</span>
@@ -573,15 +573,15 @@
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">ln_gamma</span>(<span class="self">self</span>) <span class="op">-&gt;</span> (<span class="self">Self</span>, <span class="ident">i32</span>) {
+    <span class="kw">fn</span> <span class="ident">ln_gamma</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="self">Self</span>, <span class="ident">i32</span>) {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sign</span>: <span class="ident">i32</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">let</span> <span class="ident">value</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">math</span>::<span class="ident">lgamma</span>(<span class="self">self</span> <span class="kw">as</span> <span class="ident">f64</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">sign</span>) <span class="kw">as</span> <span class="self">Self</span> };
         (<span class="ident">value</span>, <span class="ident">sign</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">trigamma</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">trigamma</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">x</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span> <span class="op">=</span> <span class="kw-2">*</span><span class="self">self</span>;
-        <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;=</span> <span class="number">0.0</span> {
+        <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
             <span class="kw">return</span> (<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span><span class="op">&gt;</span>::<span class="ident">PI</span> <span class="op">*</span> (<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span><span class="op">&gt;</span>::<span class="ident">PI</span> <span class="op">*</span> <span class="ident">x</span>).<span class="ident">sin</span>().<span class="ident">recip</span>()).<span class="ident">powi</span>(<span class="number">2</span>)
                 <span class="op">-</span> (<span class="number">1.0</span> <span class="op">-</span> <span class="ident">x</span>).<span class="ident">trigamma</span>();
         }
@@ -589,15 +589,15 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">psi</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span> <span class="op">=</span> <span class="number">0.0</span>;
         <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;</span> <span class="number">8.0</span> {
             <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> (<span class="number">8.0</span> <span class="op">-</span> <span class="ident">x</span>.<span class="ident">floor</span>()) <span class="kw">as</span> <span class="ident">usize</span>;
-            <span class="ident">psi</span> <span class="op">+=</span> <span class="ident">x</span>.<span class="ident">recip</span>().<span class="ident">powi</span>(<span class="number">2</span>);
+            <span class="ident">psi</span> <span class="op">+</span><span class="op">=</span> <span class="ident">x</span>.<span class="ident">recip</span>().<span class="ident">powi</span>(<span class="number">2</span>);
             <span class="kw">for</span> <span class="ident">v</span> <span class="kw">in</span> <span class="number">1</span>..<span class="ident">n</span> {
-                <span class="ident">psi</span> <span class="op">+=</span> (<span class="ident">x</span> <span class="op">+</span> (<span class="ident">v</span> <span class="kw">as</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span>)).<span class="ident">recip</span>().<span class="ident">powi</span>(<span class="number">2</span>);
+                <span class="ident">psi</span> <span class="op">+</span><span class="op">=</span> (<span class="ident">x</span> <span class="op">+</span> (<span class="ident">v</span> <span class="kw">as</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span>)).<span class="ident">recip</span>().<span class="ident">powi</span>(<span class="number">2</span>);
             }
-            <span class="ident">x</span> <span class="op">+=</span> <span class="ident">n</span> <span class="kw">as</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span>;
+            <span class="ident">x</span> <span class="op">+</span><span class="op">=</span> <span class="ident">n</span> <span class="kw">as</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span>;
         }
         <span class="kw">let</span> <span class="ident">t</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">recip</span>();
         <span class="kw">let</span> <span class="ident">w</span> <span class="op">=</span> <span class="ident">t</span> <span class="op">*</span> <span class="ident">t</span>;
-        <span class="ident">psi</span> <span class="op">+=</span> <span class="ident">t</span> <span class="op">+</span> <span class="number">0.5</span> <span class="op">*</span> <span class="ident">w</span>;
+        <span class="ident">psi</span> <span class="op">+</span><span class="op">=</span> <span class="ident">t</span> <span class="op">+</span> <span class="number">0.5</span> <span class="op">*</span> <span class="ident">w</span>;
         <span class="ident">psi</span> <span class="op">+</span> <span class="ident">t</span>
             <span class="op">*</span> <span class="ident">w</span>
             <span class="op">*</span> <span class="macro">evaluate_polynomial</span><span class="macro">!</span>(
@@ -662,7 +662,7 @@
             <span class="number">9.815062931491536e-01</span>,
         ];
 
-        <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">inc_gamma</span>(<span class="ident">p</span>)).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>();
+        <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">inc_gamma</span>(<span class="ident">p</span>)).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
         <span class="ident">assert</span>::<span class="ident">close</span>(<span class="kw-2">&amp;</span><span class="ident">z</span>, <span class="kw-2">&amp;</span><span class="ident">y</span>, <span class="number">1e-14</span>);
     }
 
@@ -696,7 +696,7 @@
             <span class="number">9.889149370075309e-01</span>,
         ];
 
-        <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">inc_gamma</span>(<span class="ident">p</span>)).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>();
+        <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">inc_gamma</span>(<span class="ident">p</span>)).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
         <span class="ident">assert</span>::<span class="ident">close</span>(<span class="kw-2">&amp;</span><span class="ident">z</span>, <span class="kw-2">&amp;</span><span class="ident">y</span>, <span class="number">1e-12</span>);
     }
 
@@ -738,7 +738,7 @@
             <span class="number">10.341296000533267</span>,
         ];
 
-        <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">trigamma</span>()).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>();
+        <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">trigamma</span>()).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
         <span class="ident">assert</span>::<span class="ident">close</span>(<span class="kw-2">&amp;</span><span class="ident">z</span>, <span class="kw-2">&amp;</span><span class="ident">y</span>, <span class="number">1e-12</span>);
     }
 }

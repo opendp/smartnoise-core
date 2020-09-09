@@ -68,13 +68,13 @@
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">trait</span> <span class="ident">SMultiplyAdd</span> {
     <span class="kw">const</span> <span class="ident">IS_FUSED</span>: <span class="ident">bool</span>;
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">multiply_add</span>(<span class="ident">__m256</span>, <span class="ident">__m256</span>, <span class="ident">__m256</span>) <span class="op">-&gt;</span> <span class="ident">__m256</span>;
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">multiply_add</span>(<span class="ident">__m256</span>, <span class="ident">__m256</span>, <span class="ident">__m256</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">__m256</span>;
 }
 
 <span class="kw">impl</span> <span class="ident">SMultiplyAdd</span> <span class="kw">for</span> <span class="ident">AvxMulAdd</span> {
     <span class="kw">const</span> <span class="ident">IS_FUSED</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="bool-val">false</span>;
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">multiply_add</span>(<span class="ident">a</span>: <span class="ident">__m256</span>, <span class="ident">b</span>: <span class="ident">__m256</span>, <span class="ident">c</span>: <span class="ident">__m256</span>) <span class="op">-&gt;</span> <span class="ident">__m256</span> {
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">multiply_add</span>(<span class="ident">a</span>: <span class="ident">__m256</span>, <span class="ident">b</span>: <span class="ident">__m256</span>, <span class="ident">c</span>: <span class="ident">__m256</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">__m256</span> {
         <span class="ident">_mm256_add_ps</span>(<span class="ident">_mm256_mul_ps</span>(<span class="ident">a</span>, <span class="ident">b</span>), <span class="ident">c</span>)
     }
 }
@@ -82,20 +82,20 @@
 <span class="kw">impl</span> <span class="ident">SMultiplyAdd</span> <span class="kw">for</span> <span class="ident">FusedMulAdd</span> {
     <span class="kw">const</span> <span class="ident">IS_FUSED</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="bool-val">true</span>;
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">multiply_add</span>(<span class="ident">a</span>: <span class="ident">__m256</span>, <span class="ident">b</span>: <span class="ident">__m256</span>, <span class="ident">c</span>: <span class="ident">__m256</span>) <span class="op">-&gt;</span> <span class="ident">__m256</span> {
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">multiply_add</span>(<span class="ident">a</span>: <span class="ident">__m256</span>, <span class="ident">b</span>: <span class="ident">__m256</span>, <span class="ident">c</span>: <span class="ident">__m256</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">__m256</span> {
         <span class="ident">_mm256_fmadd_ps</span>(<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">c</span>)
     }
 }
 
 <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">trait</span> <span class="ident">DMultiplyAdd</span> {
     <span class="kw">const</span> <span class="ident">IS_FUSED</span>: <span class="ident">bool</span>;
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">multiply_add</span>(<span class="ident">__m256d</span>, <span class="ident">__m256d</span>, <span class="ident">__m256d</span>) <span class="op">-&gt;</span> <span class="ident">__m256d</span>;
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">multiply_add</span>(<span class="ident">__m256d</span>, <span class="ident">__m256d</span>, <span class="ident">__m256d</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">__m256d</span>;
 }
 
 <span class="kw">impl</span> <span class="ident">DMultiplyAdd</span> <span class="kw">for</span> <span class="ident">AvxMulAdd</span> {
     <span class="kw">const</span> <span class="ident">IS_FUSED</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="bool-val">false</span>;
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">multiply_add</span>(<span class="ident">a</span>: <span class="ident">__m256d</span>, <span class="ident">b</span>: <span class="ident">__m256d</span>, <span class="ident">c</span>: <span class="ident">__m256d</span>) <span class="op">-&gt;</span> <span class="ident">__m256d</span> {
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">multiply_add</span>(<span class="ident">a</span>: <span class="ident">__m256d</span>, <span class="ident">b</span>: <span class="ident">__m256d</span>, <span class="ident">c</span>: <span class="ident">__m256d</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">__m256d</span> {
         <span class="ident">_mm256_add_pd</span>(<span class="ident">_mm256_mul_pd</span>(<span class="ident">a</span>, <span class="ident">b</span>), <span class="ident">c</span>)
     }
 }
@@ -103,7 +103,7 @@
 <span class="kw">impl</span> <span class="ident">DMultiplyAdd</span> <span class="kw">for</span> <span class="ident">FusedMulAdd</span> {
     <span class="kw">const</span> <span class="ident">IS_FUSED</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="bool-val">true</span>;
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">multiply_add</span>(<span class="ident">a</span>: <span class="ident">__m256d</span>, <span class="ident">b</span>: <span class="ident">__m256d</span>, <span class="ident">c</span>: <span class="ident">__m256d</span>) <span class="op">-&gt;</span> <span class="ident">__m256d</span> {
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">multiply_add</span>(<span class="ident">a</span>: <span class="ident">__m256d</span>, <span class="ident">b</span>: <span class="ident">__m256d</span>, <span class="ident">c</span>: <span class="ident">__m256d</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">__m256d</span> {
         <span class="ident">_mm256_fmadd_pd</span>(<span class="ident">a</span>, <span class="ident">b</span>, <span class="ident">c</span>)
     }
 }

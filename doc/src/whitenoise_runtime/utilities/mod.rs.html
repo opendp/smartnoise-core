@@ -461,12 +461,12 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Return</span>
 <span class="doccomment">/// Number of columns in data.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_num_columns</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_num_columns</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">data</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> {
     <span class="kw">match</span> <span class="ident">data</span>.<span class="ident">ndim</span>() {
-        <span class="number">0</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;data is a scalar&quot;</span>.<span class="ident">into</span>()),
-        <span class="number">1</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="number">1</span>),
-        <span class="number">2</span> <span class="op">=&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">data</span>.<span class="ident">len_of</span>(<span class="ident">Axis</span>(<span class="number">1</span>)) <span class="kw">as</span> <span class="ident">i64</span>),
-        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;data may be at most 2-dimensional&quot;</span>.<span class="ident">into</span>())
+        <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;data is a scalar&quot;</span>.<span class="ident">into</span>()),
+        <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="number">1</span>),
+        <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="ident">data</span>.<span class="ident">len_of</span>(<span class="ident">Axis</span>(<span class="number">1</span>)) <span class="kw">as</span> <span class="ident">i64</span>),
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;data may be at most 2-dimensional&quot;</span>.<span class="ident">into</span>())
     }
 }
 
@@ -494,11 +494,11 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">broadcast_map</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">U</span><span class="op">&gt;</span>(
     <span class="ident">left</span>: <span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
     <span class="ident">right</span>: <span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>,
-    <span class="ident">operator</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">T</span>, <span class="kw-2">&amp;</span><span class="ident">T</span>) <span class="op">-&gt;</span> <span class="ident">U</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">std</span>::<span class="ident">clone</span>::<span class="ident">Clone</span>, <span class="ident">U</span>: <span class="ident">Default</span> {
+    <span class="ident">operator</span>: <span class="kw-2">&amp;</span><span class="ident">dyn</span> <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">T</span>, <span class="kw-2">&amp;</span><span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">U</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">U</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">std</span>::<span class="ident">clone</span>::<span class="ident">Clone</span>, <span class="ident">U</span>: <span class="ident">Default</span> {
     <span class="kw">let</span> <span class="ident">shape</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">left</span>.<span class="ident">ndim</span>().<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">right</span>.<span class="ident">ndim</span>()) {
-        <span class="ident">Ordering</span>::<span class="ident">Less</span> <span class="op">=&gt;</span> <span class="ident">right</span>.<span class="ident">shape</span>(),
-        <span class="ident">Ordering</span>::<span class="ident">Equal</span> <span class="op">=&gt;</span> <span class="kw">if</span> <span class="ident">left</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="ident">right</span>.<span class="ident">len</span>() { <span class="ident">left</span>.<span class="ident">shape</span>() } <span class="kw">else</span> { <span class="ident">right</span>.<span class="ident">shape</span>() },
-        <span class="ident">Ordering</span>::<span class="ident">Greater</span> <span class="op">=&gt;</span> <span class="ident">left</span>.<span class="ident">shape</span>()
+        <span class="ident">Ordering</span>::<span class="ident">Less</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">right</span>.<span class="ident">shape</span>(),
+        <span class="ident">Ordering</span>::<span class="ident">Equal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">if</span> <span class="ident">left</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="ident">right</span>.<span class="ident">len</span>() { <span class="ident">left</span>.<span class="ident">shape</span>() } <span class="kw">else</span> { <span class="ident">right</span>.<span class="ident">shape</span>() },
+        <span class="ident">Ordering</span>::<span class="ident">Greater</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">left</span>.<span class="ident">shape</span>()
     }.<span class="ident">to_vec</span>();
 
 <span class="comment">//    println!(&quot;shape {:?}&quot;, shape);</span>
@@ -569,50 +569,50 @@
     }
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_nd</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">array</span>: <span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">ndim</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_nd</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">array</span>: <span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">ndim</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="kw">match</span> (<span class="ident">ndim</span> <span class="kw">as</span> <span class="ident">i32</span>) <span class="op">-</span> (<span class="ident">array</span>.<span class="ident">ndim</span>() <span class="kw">as</span> <span class="ident">i32</span>) {
-        <span class="number">0</span> <span class="op">=&gt;</span> {}
+        <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> {}
         <span class="comment">// must remove i axes</span>
-        <span class="ident">i</span> <span class="kw">if</span> <span class="ident">i</span> <span class="op">&lt;</span> <span class="number">0</span> <span class="op">=&gt;</span> {
+        <span class="ident">i</span> <span class="kw">if</span> <span class="ident">i</span> <span class="op">&lt;</span> <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> {
             (<span class="number">0</span>..<span class="op">-</span>(<span class="ident">i</span> <span class="kw">as</span> <span class="ident">i32</span>)).<span class="ident">try_for_each</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">array</span>.<span class="ident">shape</span>().<span class="ident">last</span>()
-                .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;ndim may not be negative&quot;</span>))<span class="question-mark">?</span> {
-                <span class="number">1</span> <span class="op">=&gt;</span> {
+                .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;ndim may not be negative&quot;</span>))<span class="question-mark">?</span> {
+                <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> {
                     <span class="ident">array</span>.<span class="ident">index_axis_inplace</span>(<span class="ident">Axis</span>(<span class="ident">array</span>.<span class="ident">ndim</span>() <span class="op">-</span> <span class="number">1</span>), <span class="number">0</span>);
                     <span class="prelude-val">Ok</span>(())
                 },
-                <span class="kw">_</span> <span class="op">=&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;cannot remove non-singleton trailing axis&quot;</span>))
+                <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;cannot remove non-singleton trailing axis&quot;</span>))
             })<span class="question-mark">?</span>
         }
         <span class="comment">// must add i axes</span>
-        <span class="ident">i</span> <span class="kw">if</span> <span class="ident">i</span> <span class="op">&gt;</span> <span class="number">0</span> <span class="op">=&gt;</span> (<span class="number">0</span>..<span class="ident">i</span>).<span class="ident">for_each</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">array</span>.<span class="ident">insert_axis_inplace</span>(<span class="ident">Axis</span>(<span class="ident">array</span>.<span class="ident">ndim</span>()))),
-        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;invalid dimensionality&quot;</span>.<span class="ident">into</span>())
+        <span class="ident">i</span> <span class="kw">if</span> <span class="ident">i</span> <span class="op">&gt;</span> <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="number">0</span>..<span class="ident">i</span>).<span class="ident">for_each</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">array</span>.<span class="ident">insert_axis_inplace</span>(<span class="ident">Axis</span>(<span class="ident">array</span>.<span class="ident">ndim</span>()))),
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;invalid dimensionality&quot;</span>.<span class="ident">into</span>())
     };
 
     <span class="prelude-val">Ok</span>(<span class="ident">array</span>)
 }
 
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">standardize_columns</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Default</span> <span class="op">+</span> <span class="ident">Clone</span><span class="op">&gt;</span>(<span class="ident">array</span>: <span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">column_len</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;&gt;</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">standardize_columns</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Default</span> <span class="op">+</span> <span class="ident">Clone</span><span class="op">&gt;</span>(<span class="ident">array</span>: <span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>, <span class="ident">column_len</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ArrayD</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="prelude-val">Ok</span>(<span class="kw">match</span> <span class="ident">array</span>.<span class="ident">ndim</span>() {
-        <span class="number">0</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;dataset may not be a scalar&quot;</span>.<span class="ident">into</span>()),
-        <span class="number">1</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">column_len</span> {
-            <span class="number">0</span> <span class="op">=&gt;</span> <span class="ident">slow_select</span>(<span class="kw-2">&amp;</span><span class="ident">array</span>, <span class="ident">Axis</span>(<span class="number">1</span>), <span class="kw-2">&amp;</span>[]),
-            <span class="number">1</span> <span class="op">=&gt;</span> <span class="ident">array</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">slow_stack</span>(
+        <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;dataset may not be a scalar&quot;</span>.<span class="ident">into</span>()),
+        <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">column_len</span> {
+            <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">slow_select</span>(<span class="kw-2">&amp;</span><span class="ident">array</span>, <span class="ident">Axis</span>(<span class="number">1</span>), <span class="kw-2">&amp;</span>[]),
+            <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">array</span>,
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">slow_stack</span>(
                 <span class="ident">Axis</span>(<span class="number">1</span>),
                 <span class="kw-2">&amp;</span>[<span class="ident">array</span>.<span class="ident">view</span>(), <span class="ident">ndarray</span>::<span class="ident">Array</span>::<span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">IxDyn</span><span class="op">&gt;</span>::<span class="ident">default</span>(<span class="ident">IxDyn</span>(<span class="kw-2">&amp;</span>[<span class="ident">array</span>.<span class="ident">len</span>(), <span class="ident">column_len</span>])).<span class="ident">view</span>()])<span class="question-mark">?</span>
         },
-        <span class="number">2</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">array</span>.<span class="ident">len_of</span>(<span class="ident">Axis</span>(<span class="number">1</span>)).<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">column_len</span>) {
-            <span class="ident">Ordering</span>::<span class="ident">Less</span> <span class="op">=&gt;</span> <span class="ident">slow_stack</span>(
+        <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">array</span>.<span class="ident">len_of</span>(<span class="ident">Axis</span>(<span class="number">1</span>)).<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">column_len</span>) {
+            <span class="ident">Ordering</span>::<span class="ident">Less</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">slow_stack</span>(
                 <span class="ident">Axis</span>(<span class="number">1</span>),
                 <span class="kw-2">&amp;</span>[<span class="ident">array</span>.<span class="ident">view</span>(), <span class="ident">ndarray</span>::<span class="ident">Array</span>::<span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">IxDyn</span><span class="op">&gt;</span>::<span class="ident">default</span>(<span class="ident">IxDyn</span>(<span class="kw-2">&amp;</span>[
                     <span class="ident">array</span>.<span class="ident">len_of</span>(<span class="ident">Axis</span>(<span class="number">0</span>)),
                     <span class="ident">column_len</span> <span class="op">-</span> <span class="ident">array</span>.<span class="ident">len_of</span>(<span class="ident">Axis</span>(<span class="number">1</span>))])).<span class="ident">view</span>()],
             )<span class="question-mark">?</span>,
-            <span class="ident">Ordering</span>::<span class="ident">Equal</span> <span class="op">=&gt;</span> <span class="ident">array</span>,
-            <span class="ident">Ordering</span>::<span class="ident">Greater</span> <span class="op">=&gt;</span> <span class="ident">slow_select</span>(<span class="kw-2">&amp;</span><span class="ident">array</span>, <span class="ident">Axis</span>(<span class="number">1</span>), <span class="kw-2">&amp;</span>(<span class="number">0</span>..<span class="ident">column_len</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>())
+            <span class="ident">Ordering</span>::<span class="ident">Equal</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">array</span>,
+            <span class="ident">Ordering</span>::<span class="ident">Greater</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">slow_select</span>(<span class="kw-2">&amp;</span><span class="ident">array</span>, <span class="ident">Axis</span>(<span class="number">1</span>), <span class="kw-2">&amp;</span>(<span class="number">0</span>..<span class="ident">column_len</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>())
         },
-        <span class="kw">_</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;array must be 1 or 2-dimensional&quot;</span>.<span class="ident">into</span>())
+        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;array must be 1 or 2-dimensional&quot;</span>.<span class="ident">into</span>())
     })
 }
 
@@ -627,7 +627,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Return</span>
 <span class="doccomment">/// The `String` representation of the bytes.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_bytes</span>(<span class="ident">n_bytes</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_bytes</span>(<span class="ident">n_bytes</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
     <span class="comment">// read random bytes from OpenSSL</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buffer</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>(<span class="number">0_u8</span>; <span class="ident">n_bytes</span>);
     <span class="ident">rand_bytes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">buffer</span>).<span class="ident">unwrap</span>();
@@ -635,7 +635,7 @@
     <span class="comment">// create new buffer of binary representations, rather than u8</span>
     <span class="kw">let</span> <span class="ident">new_buffer</span> <span class="op">=</span> <span class="ident">buffer</span>.<span class="ident">into_iter</span>()
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:08b}&quot;</span>, <span class="ident">v</span>))
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;&gt;</span>();
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>();
 
     <span class="comment">// combine binary representations into single string and subset mantissa, and return</span>
     <span class="ident">new_buffer</span>.<span class="ident">concat</span>()
@@ -657,7 +657,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Return</span>
 <span class="doccomment">/// A string showing the IEEE-754 binary representation of `num`.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">f64_to_binary</span>(<span class="ident">num</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">f64_to_binary</span>(<span class="ident">num</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
     <span class="comment">// decompose num into component parts</span>
     <span class="kw">let</span> (<span class="ident">sign</span>, <span class="ident">exponent</span>, <span class="ident">mantissa</span>) <span class="op">=</span> <span class="ident">num</span>.<span class="ident">decompose_raw</span>();
 
@@ -681,10 +681,10 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Return</span>
 <span class="doccomment">/// * `num`: f64 version of the String</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">binary_to_f64</span>(<span class="ident">binary_string</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">binary_to_f64</span>(<span class="ident">binary_string</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="comment">// get sign and convert to bool as recompose expects</span>
     <span class="kw">let</span> <span class="ident">sign</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">binary_string</span>[<span class="number">0</span>..<span class="number">1</span>];
-    <span class="kw">let</span> <span class="ident">sign_bool</span> <span class="op">=</span> <span class="ident">sign</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>() <span class="op">!=</span> <span class="number">0</span>;
+    <span class="kw">let</span> <span class="ident">sign_bool</span> <span class="op">=</span> <span class="ident">sign</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>().<span class="ident">unwrap</span>() <span class="op">!</span><span class="op">=</span> <span class="number">0</span>;
 
     <span class="comment">// convert exponent to int</span>
     <span class="kw">let</span> <span class="ident">exponent</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">binary_string</span>[<span class="number">1</span>..<span class="number">12</span>];
@@ -706,7 +706,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Return</span>
 <span class="doccomment">/// * `(sign, exponent, mantissa)` - where each is a `String`.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">split_ieee_into_components</span>(<span class="ident">binary_string</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> (<span class="ident">String</span>, <span class="ident">String</span>, <span class="ident">String</span>) {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">split_ieee_into_components</span>(<span class="ident">binary_string</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">String</span>, <span class="ident">String</span>, <span class="ident">String</span>) {
     (<span class="ident">binary_string</span>[<span class="number">0</span>..<span class="number">1</span>].<span class="ident">to_string</span>(), <span class="ident">binary_string</span>[<span class="number">1</span>..<span class="number">12</span>].<span class="ident">to_string</span>(), <span class="ident">binary_string</span>[<span class="number">12</span>..].<span class="ident">to_string</span>())
 }
 
@@ -720,7 +720,7 @@
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Return</span>
 <span class="doccomment">/// Concatenation of sign, exponent, and mantissa.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">combine_components_into_ieee</span>(<span class="ident">sign</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">exponent</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">mantissa</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-&gt;</span> <span class="ident">String</span> {
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">combine_components_into_ieee</span>(<span class="ident">sign</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">exponent</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">mantissa</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">String</span> {
     <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">sign</span>, <span class="ident">exponent</span>, <span class="ident">mantissa</span>].<span class="ident">concat</span>()
 }
 
@@ -736,7 +736,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_from_set</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(
     <span class="ident">candidate_set</span>: <span class="kw-2">&amp;</span>[<span class="ident">T</span>], <span class="ident">weights</span>: <span class="kw-2">&amp;</span>[<span class="ident">whitenoise_validator</span>::<span class="ident">Float</span>],
     <span class="ident">_enforce_constant_time</span>: <span class="ident">bool</span>
-) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Clone</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Clone</span> {
 
     <span class="kw">use</span> <span class="ident">rug</span>::<span class="ident">Float</span>;
 
@@ -762,7 +762,7 @@
     <span class="comment">// sample an element relative to its probability</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">return_index</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
     <span class="kw">for</span> (<span class="ident">i</span>, <span class="ident">cum_prob</span>) <span class="kw">in</span> <span class="ident">cumulative_probability_vec</span>.<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
-        <span class="kw">if</span> <span class="ident">unif</span> <span class="op">&lt;=</span> <span class="ident">cum_prob</span> {
+        <span class="kw">if</span> <span class="ident">unif</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">cum_prob</span> {
             <span class="ident">return_index</span> <span class="op">=</span> <span class="ident">i</span>;
             <span class="kw">break</span>;
         }
@@ -774,7 +774,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">sample_from_set</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(
     <span class="ident">candidate_set</span>: <span class="kw-2">&amp;</span>[<span class="ident">T</span>], <span class="ident">weights</span>: <span class="kw-2">&amp;</span>[<span class="ident">whitenoise_validator</span>::<span class="ident">Float</span>],
     <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>
-) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Clone</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Clone</span> {
 
     <span class="comment">// generate uniform random number on [0,sum(weights))</span>
     <span class="kw">let</span> <span class="ident">sample</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">noise</span>::<span class="ident">sample_uniform</span>(<span class="number">0.</span>, <span class="ident">weights</span>.<span class="ident">iter</span>().<span class="ident">sum</span>(), <span class="ident">enforce_constant_time</span>)<span class="question-mark">?</span>;
@@ -783,9 +783,9 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cumulative</span> <span class="op">=</span> <span class="number">0.</span>;
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">return_index</span>: <span class="ident">usize</span> <span class="op">=</span> <span class="number">0</span>;
     <span class="kw">loop</span> {
-        <span class="ident">cumulative</span> <span class="op">+=</span> <span class="ident">weights</span>[<span class="ident">return_index</span>];
-        <span class="kw">if</span> <span class="ident">cumulative</span> <span class="op">&gt;=</span> <span class="ident">sample</span> { <span class="kw">break</span> }
-        <span class="ident">return_index</span> <span class="op">+=</span> <span class="number">1</span>;
+        <span class="ident">cumulative</span> <span class="op">+</span><span class="op">=</span> <span class="ident">weights</span>[<span class="ident">return_index</span>];
+        <span class="kw">if</span> <span class="ident">cumulative</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">sample</span> { <span class="kw">break</span> }
+        <span class="ident">return_index</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
     }
     <span class="prelude-val">Ok</span>(<span class="ident">candidate_set</span>[<span class="ident">return_index</span>].<span class="ident">clone</span>())
 }
@@ -816,7 +816,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">create_subset</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(
     <span class="ident">set</span>: <span class="kw-2">&amp;</span>[<span class="ident">T</span>], <span class="ident">weights</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">k</span>: <span class="ident">usize</span>,
     <span class="ident">_enforce_constant_time</span>: <span class="ident">bool</span>
-) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Clone</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Clone</span> {
     <span class="kw">if</span> <span class="ident">k</span> <span class="op">&gt;</span> <span class="ident">set</span>.<span class="ident">len</span>() { <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;k must be less than the set length&quot;</span>.<span class="ident">into</span>()); }
 
     <span class="kw">use</span> <span class="ident">rug</span>::<span class="ident">Float</span>;
@@ -836,7 +836,7 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">key_vec</span> <span class="op">=</span> <span class="ident">probabilities</span>.<span class="ident">into_iter</span>()
         .<span class="ident">take</span>(<span class="ident">set</span>.<span class="ident">len</span>()).<span class="ident">enumerate</span>()
         .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">i</span>, <span class="ident">prob</span>)<span class="op">|</span> <span class="prelude-val">Ok</span>((<span class="ident">noise</span>::<span class="ident">sample_uniform_mpfr</span>(<span class="number">0.</span>, <span class="number">1.</span>)<span class="question-mark">?</span>.<span class="ident">pow</span>(<span class="number">1.</span> <span class="op">/</span> <span class="ident">prob</span>), <span class="ident">i</span>)))
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">rug</span>::<span class="ident">Float</span>, <span class="ident">usize</span>)<span class="op">&gt;&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">rug</span>::<span class="ident">Float</span>, <span class="ident">usize</span>)<span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
 
     <span class="comment">// sort key/index tuples by key and identify top k indices</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">top_indices</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">k</span>);
@@ -857,7 +857,7 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">create_subset</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(
     <span class="ident">set</span>: <span class="kw-2">&amp;</span>[<span class="ident">T</span>], <span class="ident">weights</span>: <span class="kw-2">&amp;</span>[<span class="ident">f64</span>], <span class="ident">k</span>: <span class="ident">usize</span>,
     <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>
-) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Clone</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Clone</span> {
     <span class="kw">if</span> <span class="ident">k</span> <span class="op">&gt;</span> <span class="ident">set</span>.<span class="ident">len</span>() { <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;k must be less than the set length&quot;</span>.<span class="ident">into</span>()); }
 
     <span class="comment">// generate sum of weights</span>
@@ -872,7 +872,7 @@
     <span class="comment">// generate key/index tuples</span>
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">key_vec</span> <span class="op">=</span> (<span class="number">0</span>..<span class="ident">set</span>.<span class="ident">len</span>())
         .<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="prelude-val">Ok</span>((<span class="ident">noise</span>::<span class="ident">sample_uniform</span>(<span class="number">0.</span>, <span class="number">1.</span>, <span class="ident">enforce_constant_time</span>)<span class="question-mark">?</span>.<span class="ident">powf</span>(<span class="number">1.</span> <span class="op">/</span> <span class="ident">probabilities</span>[<span class="ident">i</span>]), <span class="ident">i</span>)))
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">f64</span>, <span class="ident">usize</span>)<span class="op">&gt;&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">f64</span>, <span class="ident">usize</span>)<span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
 
     <span class="comment">// sort key/index tuples by key and identify top k indices</span>
     <span class="ident">key_vec</span>.<span class="ident">sort_by</span>(<span class="op">|</span><span class="ident">a</span>, <span class="ident">b</span><span class="op">|</span> <span class="ident">b</span>.<span class="number">0</span>.<span class="ident">partial_cmp</span>(<span class="kw-2">&amp;</span><span class="ident">a</span>.<span class="number">0</span>).<span class="ident">unwrap</span>());

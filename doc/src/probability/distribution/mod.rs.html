@@ -131,13 +131,13 @@
 <span class="doccomment">/// A continuous distribution.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Continuous</span>: <span class="ident">Distribution</span> {
     <span class="doccomment">/// Compute the probability density function.</span>
-    <span class="kw">fn</span> <span class="ident">density</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>;
+    <span class="kw">fn</span> <span class="ident">density</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>;
 }
 
 <span class="doccomment">/// A discrete distribution.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Discrete</span>: <span class="ident">Distribution</span> {
     <span class="doccomment">/// Compute the probability mass function.</span>
-    <span class="kw">fn</span> <span class="ident">mass</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="self">Self</span>::<span class="ident">Value</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>;
+    <span class="kw">fn</span> <span class="ident">mass</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="self">Self</span>::<span class="ident">Value</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>;
 }
 
 <span class="doccomment">/// A distribution.</span>
@@ -146,7 +146,7 @@
     <span class="kw">type</span> <span class="ident">Value</span>;
 
     <span class="doccomment">/// Compute the cumulative distribution function.</span>
-    <span class="kw">fn</span> <span class="ident">distribution</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>;
+    <span class="kw">fn</span> <span class="ident">distribution</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>;
 }
 
 <span class="doccomment">/// A distribution capable of computing the differential entropy.</span>
@@ -154,19 +154,19 @@
     <span class="doccomment">/// Compute the differential entropy.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The entropy is computed in nats.</span>
-    <span class="kw">fn</span> <span class="ident">entropy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>;
+    <span class="kw">fn</span> <span class="ident">entropy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>;
 }
 
 <span class="doccomment">/// A distribution capable of inverting the distribution function.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Inverse</span>: <span class="ident">Distribution</span> {
     <span class="doccomment">/// Compute the inverse of the cumulative distribution function.</span>
-    <span class="kw">fn</span> <span class="ident">inverse</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span>;
+    <span class="kw">fn</span> <span class="ident">inverse</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span>;
 }
 
 <span class="doccomment">/// A distribution capable of computing the excess kurtosis.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Kurtosis</span>: <span class="ident">Skewness</span> {
     <span class="doccomment">/// Compute the excess kurtosis.</span>
-    <span class="kw">fn</span> <span class="ident">kurtosis</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>;
+    <span class="kw">fn</span> <span class="ident">kurtosis</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>;
 }
 
 <span class="doccomment">/// A distribution capable of computing the expected value.</span>
@@ -174,7 +174,7 @@
 <span class="doccomment">/// The trait is applicable when the expected value exists, that is, finite.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Mean</span>: <span class="ident">Distribution</span> {
     <span class="doccomment">/// Compute the expected value.</span>
-    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>;
+    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>;
 }
 
 <span class="doccomment">/// A distribution capable of computing the median.</span>
@@ -182,7 +182,7 @@
 <span class="doccomment">/// The trait is applicable when exactly one median exists.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Median</span>: <span class="ident">Distribution</span> {
     <span class="doccomment">/// Compute the median.</span>
-    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>;
+    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>;
 }
 
 <span class="doccomment">/// A distribution capable of computing the modes.</span>
@@ -190,13 +190,13 @@
 <span class="doccomment">/// The trait is applicable when the number of modes is finite.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Modes</span>: <span class="ident">Distribution</span> {
     <span class="doccomment">/// Compute the modes.</span>
-    <span class="kw">fn</span> <span class="ident">modes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Value</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">modes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Value</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// A distribution capable of drawing samples.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Sample</span>: <span class="ident">Distribution</span> {
     <span class="doccomment">/// Draw a sample.</span>
-    <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">S</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span>
+    <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span>
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">Source</span>;
 }
@@ -204,7 +204,7 @@
 <span class="doccomment">/// A distribution capable of computing the skewness.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Skewness</span>: <span class="ident">Variance</span> {
     <span class="doccomment">/// Compute the skewness.</span>
-    <span class="kw">fn</span> <span class="ident">skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>;
+    <span class="kw">fn</span> <span class="ident">skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>;
 }
 
 <span class="doccomment">/// A distribution capable of computing the variance.</span>
@@ -212,11 +212,11 @@
 <span class="doccomment">/// The trait is applicable when the variance exists, that is, finite.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Variance</span>: <span class="ident">Mean</span> {
     <span class="doccomment">/// Compute the variance.</span>
-    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>;
+    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span>;
 
     <span class="doccomment">/// Compute the standard deviation.</span>
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">deviation</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">deviation</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">variance</span>().<span class="ident">sqrt</span>()
     }
 }

@@ -348,13 +348,13 @@
 <span id="347">347</span>
 <span id="348">348</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. This file may not be copied, modified, or distributed</span>
-<span class="comment">// except according to those terms.</span>
+<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">Dimension</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">dimension</span>::<span class="ident">IntoDimension</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">zip</span>::{<span class="ident">Offset</span>, <span class="ident">Splittable</span>};
@@ -363,20 +363,20 @@
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">NdProducer</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">ArrayBase</span>, <span class="ident">Data</span>};
 
-<span class="doccomment">/// An iterator over the indexes of an array shape.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Iterator element type is `D`.</span>
+<span class="doccomment">/// An iterator over the indexes of an array shape.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Iterator element type is `D`.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">IndicesIter</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span> {
     <span class="ident">dim</span>: <span class="ident">D</span>,
     <span class="ident">index</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>,
 }
 
-<span class="doccomment">/// Create an iterable of the array shape `shape`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// *Note:* prefer higher order methods, arithmetic operations and</span>
-<span class="doccomment">/// non-indexed iteration before using indices.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">indices</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="ident">shape</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">Indices</span><span class="op">&lt;</span><span class="ident">E</span>::<span class="ident">Dim</span><span class="op">&gt;</span>
+<span class="doccomment">/// Create an iterable of the array shape `shape`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// *Note:* prefer higher order methods, arithmetic operations and</span>
+<span class="doccomment">/// non-indexed iteration before using indices.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">indices</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="ident">shape</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Indices</span><span class="op">&lt;</span><span class="ident">E</span>::<span class="ident">Dim</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">E</span>: <span class="ident">IntoDimension</span>,
 {
@@ -387,11 +387,11 @@
     }
 }
 
-<span class="doccomment">/// Return an iterable of the indices of the passed-in array.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// *Note:* prefer higher order methods, arithmetic operations and</span>
-<span class="doccomment">/// non-indexed iteration before using indices.</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">indices_of</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">array</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">Indices</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>
+<span class="doccomment">/// Return an iterable of the indices of the passed-in array.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// *Note:* prefer higher order methods, arithmetic operations and</span>
+<span class="doccomment">/// non-indexed iteration before using indices.</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">indices_of</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">array</span>: <span class="kw-2">&amp;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Indices</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Data</span>,
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
@@ -405,19 +405,19 @@
 {
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">D</span>::<span class="ident">Pattern</span>;
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">index</span> {
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">None</span>,
-            <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">ix</span>) <span class="op">=&gt;</span> <span class="ident">ix</span>.<span class="ident">clone</span>(),
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">None</span>,
+            <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">ix</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ix</span>.<span class="ident">clone</span>(),
         };
         <span class="self">self</span>.<span class="ident">index</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">dim</span>.<span class="ident">next_for</span>(<span class="ident">index</span>.<span class="ident">clone</span>());
         <span class="prelude-val">Some</span>(<span class="ident">index</span>.<span class="ident">into_pattern</span>())
     }
 
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
         <span class="kw">let</span> <span class="ident">l</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">index</span> {
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="number">0</span>,
-            <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">ix</span>) <span class="op">=&gt;</span> {
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
+            <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">ix</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">gone</span> <span class="op">=</span> <span class="self">self</span>
                     .<span class="ident">dim</span>
                     .<span class="ident">default_strides</span>()
@@ -431,23 +431,23 @@
         (<span class="ident">l</span>, <span class="prelude-val">Some</span>(<span class="ident">l</span>))
     }
 
-    <span class="kw">fn</span> <span class="ident">fold</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">init</span>: <span class="ident">B</span>, <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) <span class="op">-&gt;</span> <span class="ident">B</span>
+    <span class="kw">fn</span> <span class="ident">fold</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">F</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">init</span>: <span class="ident">B</span>, <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">B</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">B</span>, <span class="ident">D</span>::<span class="ident">Pattern</span>) <span class="op">-&gt;</span> <span class="ident">B</span>,
+        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">B</span>, <span class="ident">D</span>::<span class="ident">Pattern</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">B</span>,
     {
         <span class="kw">let</span> <span class="ident">IndicesIter</span> { <span class="kw-2">mut</span> <span class="ident">index</span>, <span class="ident">dim</span> } <span class="op">=</span> <span class="self">self</span>;
         <span class="kw">let</span> <span class="ident">ndim</span> <span class="op">=</span> <span class="ident">dim</span>.<span class="ident">ndim</span>();
-        <span class="kw">if</span> <span class="ident">ndim</span> <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="ident">ndim</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="kw">return</span> <span class="kw">match</span> <span class="ident">index</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">ix</span>) <span class="op">=&gt;</span> <span class="ident">f</span>(<span class="ident">init</span>, <span class="ident">ix</span>.<span class="ident">into_pattern</span>()),
-                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="ident">init</span>,
+                <span class="prelude-val">Some</span>(<span class="ident">ix</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>(<span class="ident">init</span>, <span class="ident">ix</span>.<span class="ident">into_pattern</span>()),
+                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">init</span>,
             };
         }
         <span class="kw">let</span> <span class="ident">inner_axis</span> <span class="op">=</span> <span class="ident">ndim</span> <span class="op">-</span> <span class="number">1</span>;
         <span class="kw">let</span> <span class="ident">inner_len</span> <span class="op">=</span> <span class="ident">dim</span>[<span class="ident">inner_axis</span>];
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">acc</span> <span class="op">=</span> <span class="ident">init</span>;
         <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw-2">mut</span> <span class="ident">ix</span>) <span class="op">=</span> <span class="ident">index</span> {
-            <span class="comment">// unroll innermost axis</span>
+            <span class="comment">// unroll innermost axis</span>
             <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="ident">ix</span>[<span class="ident">inner_axis</span>]..<span class="ident">inner_len</span> {
                 <span class="ident">ix</span>[<span class="ident">inner_axis</span>] <span class="op">=</span> <span class="ident">i</span>;
                 <span class="ident">acc</span> <span class="op">=</span> <span class="ident">f</span>(<span class="ident">acc</span>, <span class="ident">ix</span>.<span class="ident">clone</span>().<span class="ident">into_pattern</span>());
@@ -466,9 +466,9 @@
 {
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">D</span>::<span class="ident">Pattern</span>;
     <span class="kw">type</span> <span class="ident">IntoIter</span> <span class="op">=</span> <span class="ident">IndicesIter</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">IntoIter</span> {
+    <span class="kw">fn</span> <span class="ident">into_iter</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">IntoIter</span> {
         <span class="kw">let</span> <span class="ident">sz</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">dim</span>.<span class="ident">size</span>();
-        <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">sz</span> <span class="op">!=</span> <span class="number">0</span> { <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">start</span>) } <span class="kw">else</span> { <span class="prelude-val">None</span> };
+        <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">sz</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> { <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">start</span>) } <span class="kw">else</span> { <span class="prelude-val">None</span> };
         <span class="ident">IndicesIter</span> {
             <span class="ident">index</span>,
             <span class="ident">dim</span>: <span class="self">self</span>.<span class="ident">dim</span>,
@@ -476,9 +476,9 @@
     }
 }
 
-<span class="doccomment">/// Indices producer and iterable.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `Indices` is an `NdProducer` that produces the indices of an array shape.</span>
+<span class="doccomment">/// Indices producer and iterable.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `Indices` is an `NdProducer` that produces the indices of an array shape.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Indices</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
@@ -497,11 +497,11 @@
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span> <span class="op">+</span> <span class="ident">Copy</span>,
 {
-    <span class="comment">// stride: The axis to increment</span>
+    <span class="comment">// stride: The axis to increment</span>
     <span class="kw">type</span> <span class="ident">Stride</span> <span class="op">=</span> <span class="ident">usize</span>;
 
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">stride_offset</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">stride</span>: <span class="self">Self</span>::<span class="ident">Stride</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">index</span>[<span class="ident">stride</span>] <span class="op">+=</span> <span class="ident">index</span>;
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">stride_offset</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">stride</span>: <span class="self">Self</span>::<span class="ident">Stride</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+        <span class="self">self</span>.<span class="ident">index</span>[<span class="ident">stride</span>] <span class="op">+</span><span class="op">=</span> <span class="ident">index</span>;
         <span class="self">self</span>
     }
     <span class="macro">private_impl</span><span class="macro">!</span> {}
@@ -516,23 +516,23 @@
     <span class="macro">private_impl</span><span class="macro">!</span> {}
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">raw_dim</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Dim</span> {
+    <span class="kw">fn</span> <span class="ident">raw_dim</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Dim</span> {
         <span class="self">self</span>.<span class="ident">dim</span>
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">equal_dim</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">dim</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Dim</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">equal_dim</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">dim</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Dim</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">dim</span>.<span class="ident">equal</span>(<span class="ident">dim</span>)
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Ptr</span> {
+    <span class="kw">fn</span> <span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Ptr</span> {
         <span class="ident">IndexPtr</span> { <span class="ident">index</span>: <span class="self">self</span>.<span class="ident">start</span> }
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">layout</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Layout</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">dim</span>.<span class="ident">ndim</span>() <span class="op">&lt;=</span> <span class="number">1</span> {
+    <span class="kw">fn</span> <span class="ident">layout</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Layout</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">dim</span>.<span class="ident">ndim</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="number">1</span> {
             <span class="ident">Layout</span>::<span class="ident">one_dimensional</span>()
         } <span class="kw">else</span> {
             <span class="ident">Layout</span>::<span class="ident">none</span>()
@@ -540,33 +540,33 @@
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">as_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ptr</span>: <span class="self">Self</span>::<span class="ident">Ptr</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Item</span> {
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">as_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ptr</span>: <span class="self">Self</span>::<span class="ident">Ptr</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Item</span> {
         <span class="ident">ptr</span>.<span class="ident">index</span>.<span class="ident">into_pattern</span>()
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">uget_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Dim</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Ptr</span> {
+    <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">uget_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Dim</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Ptr</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">index</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">i</span>;
-        <span class="ident">index</span> <span class="op">+=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">start</span>;
+        <span class="ident">index</span> <span class="op">+</span><span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">start</span>;
         <span class="ident">IndexPtr</span> { <span class="ident">index</span> }
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">stride_of</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Stride</span> {
+    <span class="kw">fn</span> <span class="ident">stride_of</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Stride</span> {
         <span class="ident">axis</span>.<span class="ident">index</span>()
     }
 
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">contiguous_stride</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Stride</span> {
+    <span class="kw">fn</span> <span class="ident">contiguous_stride</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Stride</span> {
         <span class="number">0</span>
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="kw">fn</span> <span class="ident">split_at</span>(<span class="self">self</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> (<span class="self">Self</span>, <span class="self">Self</span>) {
+    <span class="kw">fn</span> <span class="ident">split_at</span>(<span class="self">self</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="self">Self</span>, <span class="self">Self</span>) {
         <span class="kw">let</span> <span class="ident">start_a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">start</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">start_b</span> <span class="op">=</span> <span class="ident">start_a</span>;
         <span class="kw">let</span> (<span class="ident">a</span>, <span class="ident">b</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">dim</span>.<span class="ident">split_at</span>(<span class="ident">axis</span>, <span class="ident">index</span>);
-        <span class="ident">start_b</span>[<span class="ident">axis</span>.<span class="ident">index</span>()] <span class="op">+=</span> <span class="ident">index</span>;
+        <span class="ident">start_b</span>[<span class="ident">axis</span>.<span class="ident">index</span>()] <span class="op">+</span><span class="op">=</span> <span class="ident">index</span>;
         (
             <span class="ident">Indices</span> {
                 <span class="ident">start</span>: <span class="ident">start_a</span>,
@@ -580,9 +580,9 @@
     }
 }
 
-<span class="doccomment">/// An iterator over the indexes of an array shape.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Iterator element type is `D`.</span>
+<span class="doccomment">/// An iterator over the indexes of an array shape.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Iterator element type is `D`.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">IndicesIterF</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span> {
     <span class="ident">dim</span>: <span class="ident">D</span>,
@@ -590,14 +590,14 @@
     <span class="ident">has_remaining</span>: <span class="ident">bool</span>,
 }
 
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">indices_iter_f</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="ident">shape</span>: <span class="ident">E</span>) <span class="op">-&gt;</span> <span class="ident">IndicesIterF</span><span class="op">&lt;</span><span class="ident">E</span>::<span class="ident">Dim</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">indices_iter_f</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="ident">shape</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">IndicesIterF</span><span class="op">&lt;</span><span class="ident">E</span>::<span class="ident">Dim</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">E</span>: <span class="ident">IntoDimension</span>,
 {
     <span class="kw">let</span> <span class="ident">dim</span> <span class="op">=</span> <span class="ident">shape</span>.<span class="ident">into_dimension</span>();
     <span class="kw">let</span> <span class="ident">zero</span> <span class="op">=</span> <span class="ident">E</span>::<span class="ident">Dim</span>::<span class="ident">zeros</span>(<span class="ident">dim</span>.<span class="ident">ndim</span>());
     <span class="ident">IndicesIterF</span> {
-        <span class="ident">has_remaining</span>: <span class="ident">dim</span>.<span class="ident">size_checked</span>() <span class="op">!=</span> <span class="prelude-val">Some</span>(<span class="number">0</span>),
+        <span class="ident">has_remaining</span>: <span class="ident">dim</span>.<span class="ident">size_checked</span>() <span class="op">!</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="number">0</span>),
         <span class="ident">index</span>: <span class="ident">zero</span>,
         <span class="ident">dim</span>,
     }
@@ -609,7 +609,7 @@
 {
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">D</span>::<span class="ident">Pattern</span>;
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">has_remaining</span> {
             <span class="prelude-val">None</span>
         } <span class="kw">else</span> {
@@ -619,7 +619,7 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
         <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">has_remaining</span> {
             <span class="kw">return</span> (<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>));
         }
@@ -649,7 +649,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">dim</span>.<span class="number">0</span> <span class="op">*</span> <span class="ident">dim</span>.<span class="number">1</span>;
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">it</span>.<span class="ident">len</span>(), <span class="ident">len</span>);
         <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span> <span class="ident">it</span>.<span class="ident">next</span>() {
-            <span class="ident">len</span> <span class="op">-=</span> <span class="number">1</span>;
+            <span class="ident">len</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
             <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">it</span>.<span class="ident">len</span>(), <span class="ident">len</span>);
         }
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">len</span>, <span class="number">0</span>);
@@ -658,7 +658,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_indices_iter_c_fold</span>() {
         <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">run_test</span> {
-            (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">dim</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> {
+            (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">dim</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">for</span> <span class="ident">num_consume</span> <span class="kw">in</span> <span class="number">0</span>..<span class="number">3</span> {
                     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> <span class="op">=</span> <span class="ident">indices</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">dim</span>).<span class="ident">into_iter</span>();
                     <span class="kw">for</span> <span class="kw">_</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">num_consume</span> {
@@ -690,7 +690,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">dim</span>.<span class="number">0</span> <span class="op">*</span> <span class="ident">dim</span>.<span class="number">1</span>;
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">it</span>.<span class="ident">len</span>(), <span class="ident">len</span>);
         <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="kw">_</span>) <span class="op">=</span> <span class="ident">it</span>.<span class="ident">next</span>() {
-            <span class="ident">len</span> <span class="op">-=</span> <span class="number">1</span>;
+            <span class="ident">len</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
             <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">it</span>.<span class="ident">len</span>(), <span class="ident">len</span>);
         }
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">len</span>, <span class="number">0</span>);

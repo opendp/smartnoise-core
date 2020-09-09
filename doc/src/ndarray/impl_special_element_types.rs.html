@@ -67,13 +67,13 @@
 <span id="66">66</span>
 <span id="67">67</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">// Copyright 2020 bluss and ndarray developers.</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. This file may not be copied, modified, or distributed</span>
-<span class="comment">// except according to those terms.</span>
+<span class="comment">// Copyright 2020 bluss and ndarray developers.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">size_of</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">mem</span>::<span class="ident">ManuallyDrop</span>;
@@ -83,34 +83,34 @@
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">RawDataSubst</span>;
 
 
-<span class="doccomment">/// Methods specific to arrays with `MaybeUninit` elements.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ***See also all methods for [`ArrayBase`]***</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`ArrayBase`]: struct.ArrayBase.html</span>
+<span class="doccomment">/// Methods specific to arrays with `MaybeUninit` elements.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ***See also all methods for [`ArrayBase`]***</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`ArrayBase`]: struct.ArrayBase.html</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-    <span class="ident">S</span>: <span class="ident">RawDataSubst</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">Elem</span><span class="op">=</span><span class="ident">MaybeUninit</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;&gt;</span>,
+    <span class="ident">S</span>: <span class="ident">RawDataSubst</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">Elem</span><span class="op">=</span><span class="ident">MaybeUninit</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="doccomment">/// **Promise** that the array&#39;s elements are all fully initialized, and convert</span>
-    <span class="doccomment">/// the array from element type `MaybeUninit&lt;A&gt;` to `A`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// For example, it can convert an `Array&lt;MaybeUninit&lt;f64&gt;, D&gt;` to `Array&lt;f64, D&gt;`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ## Safety</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Safe to use if all the array&#39;s elements have been initialized.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Note that for owned and shared ownership arrays, the promise must include all of the</span>
-    <span class="doccomment">/// array&#39;s storage; it is for example possible to slice these in place, but that must</span>
-    <span class="doccomment">/// only be done after all elements have been initialized.</span>
-    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">assume_init</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">ArrayBase</span><span class="op">&lt;&lt;</span><span class="ident">S</span> <span class="kw">as</span> <span class="ident">RawDataSubst</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;&gt;</span>::<span class="ident">Output</span>, <span class="ident">D</span><span class="op">&gt;</span> {
-        <span class="comment">// NOTE: Fully initialized includes elements not reachable in current slicing/view.</span>
+    <span class="doccomment">/// **Promise** that the array&#39;s elements are all fully initialized, and convert</span>
+    <span class="doccomment">/// the array from element type `MaybeUninit&lt;A&gt;` to `A`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// For example, it can convert an `Array&lt;MaybeUninit&lt;f64&gt;, D&gt;` to `Array&lt;f64, D&gt;`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ## Safety</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Safe to use if all the array&#39;s elements have been initialized.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Note that for owned and shared ownership arrays, the promise must include all of the</span>
+    <span class="doccomment">/// array&#39;s storage; it is for example possible to slice these in place, but that must</span>
+    <span class="doccomment">/// only be done after all elements have been initialized.</span>
+    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">assume_init</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="op">&lt;</span><span class="ident">S</span> <span class="kw">as</span> <span class="ident">RawDataSubst</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">Output</span>, <span class="ident">D</span><span class="op">&gt;</span> {
+        <span class="comment">// NOTE: Fully initialized includes elements not reachable in current slicing/view.</span>
 
         <span class="kw">let</span> <span class="ident">ArrayBase</span> { <span class="ident">data</span>, <span class="ident">ptr</span>, <span class="ident">dim</span>, <span class="ident">strides</span> } <span class="op">=</span> <span class="self">self</span>;
 
-        <span class="comment">// transmute from storage of MaybeUninit&lt;A&gt; to storage of A</span>
+        <span class="comment">// transmute from storage of MaybeUninit&lt;A&gt; to storage of A</span>
         <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">unlimited_transmute</span>::<span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">S</span>::<span class="ident">Output</span><span class="op">&gt;</span>(<span class="ident">data</span>);
         <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="ident">ptr</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>();
 
@@ -123,13 +123,13 @@
     }
 }
 
-<span class="doccomment">/// Transmute from A to B.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Like transmute, but does not have the compile-time size check which blocks</span>
-<span class="doccomment">/// using regular transmute for &quot;S to S::Output&quot;.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// **Panics** if the size of A and B are different.</span>
-<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unlimited_transmute</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>(<span class="ident">data</span>: <span class="ident">A</span>) <span class="op">-&gt;</span> <span class="ident">B</span> {
+<span class="doccomment">/// Transmute from A to B.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Like transmute, but does not have the compile-time size check which blocks</span>
+<span class="doccomment">/// using regular transmute for &quot;S to S::Output&quot;.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// **Panics** if the size of A and B are different.</span>
+<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">unlimited_transmute</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span><span class="op">&gt;</span>(<span class="ident">data</span>: <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">B</span> {
     <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(), <span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>());
     <span class="kw">let</span> <span class="ident">old_data</span> <span class="op">=</span> <span class="ident">ManuallyDrop</span>::<span class="ident">new</span>(<span class="ident">data</span>);
     (<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">old_data</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">A</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">B</span>).<span class="ident">read</span>()

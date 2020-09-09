@@ -235,7 +235,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Dh</span><span class="op">&lt;</span><span class="ident">Params</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_params</span>(<span class="ident">p</span>: <span class="ident">BigNum</span>, <span class="ident">g</span>: <span class="ident">BigNum</span>, <span class="ident">q</span>: <span class="ident">BigNum</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Dh</span><span class="op">&lt;</span><span class="ident">Params</span><span class="op">&gt;</span>, <span class="ident">ErrorStack</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_params</span>(<span class="ident">p</span>: <span class="ident">BigNum</span>, <span class="ident">g</span>: <span class="ident">BigNum</span>, <span class="ident">q</span>: <span class="ident">BigNum</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Dh</span><span class="op">&lt;</span><span class="ident">Params</span><span class="op">&gt;</span>, <span class="ident">ErrorStack</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> {
             <span class="kw">let</span> <span class="ident">dh</span> <span class="op">=</span> <span class="ident">Dh</span>::<span class="ident">from_ptr</span>(<span class="ident">cvt_p</span>(<span class="ident">ffi</span>::<span class="ident">DH_new</span>())<span class="question-mark">?</span>);
             <span class="ident">cvt</span>(<span class="ident">DH_set0_pqg</span>(<span class="ident">dh</span>.<span class="number">0</span>, <span class="ident">p</span>.<span class="ident">as_ptr</span>(), <span class="ident">q</span>.<span class="ident">as_ptr</span>(), <span class="ident">g</span>.<span class="ident">as_ptr</span>()))<span class="question-mark">?</span>;
@@ -270,7 +270,7 @@
 
     <span class="doccomment">/// Requires OpenSSL 1.0.2 or newer.</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">ossl102</span>, <span class="ident">ossl110</span>))]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_1024_160</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Dh</span><span class="op">&lt;</span><span class="ident">Params</span><span class="op">&gt;</span>, <span class="ident">ErrorStack</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_1024_160</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Dh</span><span class="op">&lt;</span><span class="ident">Params</span><span class="op">&gt;</span>, <span class="ident">ErrorStack</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> {
             <span class="ident">ffi</span>::<span class="ident">init</span>();
             <span class="ident">cvt_p</span>(<span class="ident">ffi</span>::<span class="ident">DH_get_1024_160</span>()).<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">Dh</span>::<span class="ident">from_ptr</span>(<span class="ident">p</span>))
@@ -279,7 +279,7 @@
 
     <span class="doccomment">/// Requires OpenSSL 1.0.2 or newer.</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">ossl102</span>, <span class="ident">ossl110</span>))]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_2048_224</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Dh</span><span class="op">&lt;</span><span class="ident">Params</span><span class="op">&gt;</span>, <span class="ident">ErrorStack</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_2048_224</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Dh</span><span class="op">&lt;</span><span class="ident">Params</span><span class="op">&gt;</span>, <span class="ident">ErrorStack</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> {
             <span class="ident">ffi</span>::<span class="ident">init</span>();
             <span class="ident">cvt_p</span>(<span class="ident">ffi</span>::<span class="ident">DH_get_2048_224</span>()).<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">Dh</span>::<span class="ident">from_ptr</span>(<span class="ident">p</span>))
@@ -288,7 +288,7 @@
 
     <span class="doccomment">/// Requires OpenSSL 1.0.2 or newer.</span>
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">ossl102</span>, <span class="ident">ossl110</span>))]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_2048_256</span>() <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Dh</span><span class="op">&lt;</span><span class="ident">Params</span><span class="op">&gt;</span>, <span class="ident">ErrorStack</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_2048_256</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Dh</span><span class="op">&lt;</span><span class="ident">Params</span><span class="op">&gt;</span>, <span class="ident">ErrorStack</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> {
             <span class="ident">ffi</span>::<span class="ident">init</span>();
             <span class="ident">cvt_p</span>(<span class="ident">ffi</span>::<span class="ident">DH_get_2048_256</span>()).<span class="ident">map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">Dh</span>::<span class="ident">from_ptr</span>(<span class="ident">p</span>))
@@ -306,7 +306,7 @@
             <span class="ident">p</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">ffi</span>::<span class="ident">BIGNUM</span>,
             <span class="ident">q</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">ffi</span>::<span class="ident">BIGNUM</span>,
             <span class="ident">g</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">ffi</span>::<span class="ident">BIGNUM</span>,
-        ) <span class="op">-&gt;</span> ::<span class="ident">libc</span>::<span class="ident">c_int</span> {
+        ) <span class="op">-</span><span class="op">&gt;</span> ::<span class="ident">libc</span>::<span class="ident">c_int</span> {
             (<span class="kw-2">*</span><span class="ident">dh</span>).<span class="ident">p</span> <span class="op">=</span> <span class="ident">p</span>;
             (<span class="kw-2">*</span><span class="ident">dh</span>).<span class="ident">q</span> <span class="op">=</span> <span class="ident">q</span>;
             (<span class="kw-2">*</span><span class="ident">dh</span>).<span class="ident">g</span> <span class="op">=</span> <span class="ident">g</span>;

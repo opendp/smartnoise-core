@@ -115,11 +115,11 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">slice</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">extension</span>::<span class="ident">nonnull</span>;
 
-<span class="doccomment">/// Array&#39;s representation.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// *Don’t use this type directly—use the type alias</span>
-<span class="doccomment">/// [`Array`](type.Array.html) for the array type!*</span>
-<span class="comment">// Like a Vec, but with non-unique ownership semantics</span>
+<span class="doccomment">/// Array&#39;s representation.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// *Don’t use this type directly—use the type alias</span>
+<span class="doccomment">/// [`Array`](type.Array.html) for the array type!*</span>
+<span class="comment">// Like a Vec, but with non-unique ownership semantics</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">OwnedRepr</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
     <span class="ident">ptr</span>: <span class="ident">NonNull</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>,
@@ -128,7 +128,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> <span class="ident">OwnedRepr</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">v</span> <span class="op">=</span> <span class="ident">ManuallyDrop</span>::<span class="ident">new</span>(<span class="ident">v</span>);
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="ident">v</span>.<span class="ident">len</span>();
         <span class="kw">let</span> <span class="ident">capacity</span> <span class="op">=</span> <span class="ident">v</span>.<span class="ident">capacity</span>();
@@ -140,27 +140,27 @@
         }
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">into_vec</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">into_vec</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
         <span class="ident">ManuallyDrop</span>::<span class="ident">new</span>(<span class="self">self</span>).<span class="ident">take_as_vec</span>()
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">as_slice</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">A</span>] {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">as_slice</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">A</span>] {
         <span class="kw">unsafe</span> {
             <span class="ident">slice</span>::<span class="ident">from_raw_parts</span>(<span class="self">self</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>(), <span class="self">self</span>.<span class="ident">len</span>)
         }
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> { <span class="self">self</span>.<span class="ident">len</span> }
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> { <span class="self">self</span>.<span class="ident">len</span> }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">A</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">A</span> {
         <span class="self">self</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>()
     }
 
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">as_nonnull_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">NonNull</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">as_nonnull_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">NonNull</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">ptr</span>
     }
 
-    <span class="kw">fn</span> <span class="ident">take_as_vec</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">take_as_vec</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">capacity</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">capacity</span>;
         <span class="kw">let</span> <span class="ident">len</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">len</span>;
         <span class="self">self</span>.<span class="ident">len</span> <span class="op">=</span> <span class="number">0</span>;
@@ -174,7 +174,7 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">OwnedRepr</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
     <span class="kw">where</span> <span class="ident">A</span>: <span class="ident">Clone</span>
 {
-    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="self">Self</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">as_slice</span>().<span class="ident">to_owned</span>())
     }
 
@@ -195,19 +195,19 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> <span class="ident">Drop</span> <span class="kw">for</span> <span class="ident">OwnedRepr</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
     <span class="kw">fn</span> <span class="ident">drop</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">capacity</span> <span class="op">&gt;</span> <span class="number">0</span> {
-            <span class="comment">// correct because: If the elements don&#39;t need dropping, an</span>
-            <span class="comment">// empty Vec is ok. Only the Vec&#39;s allocation needs dropping.</span>
-            <span class="comment">//</span>
-            <span class="comment">// implemented because: in some places in ndarray</span>
-            <span class="comment">// where A: Copy (hence does not need drop) we use uninitialized elements in</span>
-            <span class="comment">// vectors. Setting the length to 0 avoids that the vector tries to</span>
-            <span class="comment">// drop, slice or otherwise produce values of these elements.</span>
-            <span class="comment">// (The details of the validity letting this happen with nonzero len, are</span>
-            <span class="comment">// under discussion as of this writing.)</span>
+            <span class="comment">// correct because: If the elements don&#39;t need dropping, an</span>
+            <span class="comment">// empty Vec is ok. Only the Vec&#39;s allocation needs dropping.</span>
+            <span class="comment">//</span>
+            <span class="comment">// implemented because: in some places in ndarray</span>
+            <span class="comment">// where A: Copy (hence does not need drop) we use uninitialized elements in</span>
+            <span class="comment">// vectors. Setting the length to 0 avoids that the vector tries to</span>
+            <span class="comment">// drop, slice or otherwise produce values of these elements.</span>
+            <span class="comment">// (The details of the validity letting this happen with nonzero len, are</span>
+            <span class="comment">// under discussion as of this writing.)</span>
             <span class="kw">if</span> <span class="op">!</span><span class="ident">mem</span>::<span class="ident">needs_drop</span>::<span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>() {
                 <span class="self">self</span>.<span class="ident">len</span> <span class="op">=</span> <span class="number">0</span>;
             }
-            <span class="comment">// drop as a Vec.</span>
+            <span class="comment">// drop as a Vec.</span>
             <span class="self">self</span>.<span class="ident">take_as_vec</span>();
         }
     }

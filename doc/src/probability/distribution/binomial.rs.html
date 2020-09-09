@@ -548,7 +548,7 @@
     <span class="doccomment">/// `p`.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// It should hold that `p &gt;= 0` and `p &lt;= 1`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">p</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">p</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="macro">should</span><span class="macro">!</span>(<span class="number">0.0</span> <span class="op">&lt;</span> <span class="ident">p</span> <span class="op">&amp;&amp;</span> <span class="ident">p</span> <span class="op">&lt;</span> <span class="number">1.0</span>);
         <span class="kw">let</span> <span class="ident">q</span> <span class="op">=</span> <span class="number">1.0</span> <span class="op">-</span> <span class="ident">p</span>;
         <span class="kw">let</span> <span class="ident">np</span> <span class="op">=</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">*</span> <span class="ident">p</span>;
@@ -568,7 +568,7 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// It should hold that if `q &gt;= 0` or `q &lt;= 1`. This constructor is</span>
     <span class="doccomment">/// preferable when `q` is very small.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_failure</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">q</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_failure</span>(<span class="ident">n</span>: <span class="ident">usize</span>, <span class="ident">q</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="macro">should</span><span class="macro">!</span>(<span class="number">0.0</span> <span class="op">&lt;</span> <span class="ident">q</span> <span class="op">&amp;&amp;</span> <span class="ident">q</span> <span class="op">&lt;</span> <span class="number">1.0</span>);
         <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="number">1.0</span> <span class="op">-</span> <span class="ident">q</span>;
         <span class="kw">let</span> <span class="ident">np</span> <span class="op">=</span> <span class="ident">n</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">*</span> <span class="ident">p</span>;
@@ -585,19 +585,19 @@
 
     <span class="doccomment">/// Return the number of trials.</span>
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">n</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">n</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">n</span>
     }
 
     <span class="doccomment">/// Return the success probability.</span>
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">p</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">p</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">p</span>
     }
 
     <span class="doccomment">/// Return the failure probability.</span>
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">q</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">q</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">q</span>
     }
 }
@@ -612,20 +612,20 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// 1. C. Loader, “Fast and Accurate Computation of Binomial Probabilities,”</span>
     <span class="doccomment">///    2000.</span>
-    <span class="kw">fn</span> <span class="ident">mass</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">mass</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">f64</span>::<span class="ident">consts</span>::<span class="ident">PI</span>;
 
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">p</span> <span class="op">==</span> <span class="number">0.0</span> {
-            <span class="kw">return</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">==</span> <span class="number">0</span> { <span class="number">1.0</span> } <span class="kw">else</span> { <span class="number">0.0</span> };
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">p</span> <span class="op">=</span><span class="op">=</span> <span class="number">0.0</span> {
+            <span class="kw">return</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> { <span class="number">1.0</span> } <span class="kw">else</span> { <span class="number">0.0</span> };
         }
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">p</span> <span class="op">==</span> <span class="number">1.0</span> {
-            <span class="kw">return</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">n</span> { <span class="number">1.0</span> } <span class="kw">else</span> { <span class="number">0.0</span> };
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">p</span> <span class="op">=</span><span class="op">=</span> <span class="number">1.0</span> {
+            <span class="kw">return</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">n</span> { <span class="number">1.0</span> } <span class="kw">else</span> { <span class="number">0.0</span> };
         }
 
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">n</span> <span class="kw">as</span> <span class="ident">f64</span>;
-        <span class="kw">if</span> <span class="ident">x</span> <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             (<span class="ident">n</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">q</span>.<span class="ident">ln</span>()).<span class="ident">exp</span>()
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">n</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">n</span> {
             (<span class="ident">n</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">p</span>.<span class="ident">ln</span>()).<span class="ident">exp</span>()
         } <span class="kw">else</span> {
             <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">x</span> <span class="kw">as</span> <span class="ident">f64</span>;
@@ -646,16 +646,16 @@
     <span class="doccomment">/// Compute the cumulative distribution function.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// The implementation is based on the incomplete beta function.</span>
-    <span class="kw">fn</span> <span class="ident">distribution</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">distribution</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">x</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">use</span> <span class="ident">special</span>::<span class="ident">Beta</span>;
         <span class="kw">if</span> <span class="ident">x</span> <span class="op">&lt;</span> <span class="number">0.0</span> {
             <span class="kw">return</span> <span class="number">0.0</span>;
         }
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="ident">x</span> <span class="kw">as</span> <span class="ident">usize</span>;
-        <span class="kw">if</span> <span class="ident">x</span> <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="kw">return</span> <span class="self">self</span>.<span class="ident">q</span>.<span class="ident">powi</span>(<span class="self">self</span>.<span class="ident">n</span> <span class="kw">as</span> <span class="ident">i32</span>);
         }
-        <span class="kw">if</span> <span class="ident">x</span> <span class="op">&gt;=</span> <span class="self">self</span>.<span class="ident">n</span> {
+        <span class="kw">if</span> <span class="ident">x</span> <span class="op">&gt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">n</span> {
             <span class="kw">return</span> <span class="number">1.0</span>;
         }
         <span class="kw">let</span> (<span class="ident">p</span>, <span class="ident">q</span>) <span class="op">=</span> ((<span class="self">self</span>.<span class="ident">n</span> <span class="op">-</span> <span class="ident">x</span>) <span class="kw">as</span> <span class="ident">f64</span>, (<span class="ident">x</span> <span class="op">+</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">f64</span>);
@@ -664,7 +664,7 @@
 }
 
 <span class="kw">impl</span> <span class="ident">distribution</span>::<span class="ident">Entropy</span> <span class="kw">for</span> <span class="ident">Binomial</span> {
-    <span class="kw">fn</span> <span class="ident">entropy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">entropy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">use</span> <span class="ident">distribution</span>::<span class="ident">Discrete</span>;
         <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">f64</span>::<span class="ident">consts</span>::<span class="ident">PI</span>;
 
@@ -689,48 +689,48 @@
     <span class="doccomment">/// 1. S. Moorhead, “Efficient evaluation of the inverse binomial cumulative</span>
     <span class="doccomment">///    distribution function where the number of trials is large,” Oxford</span>
     <span class="doccomment">///    University, 2013.</span>
-    <span class="kw">fn</span> <span class="ident">inverse</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">p</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">fn</span> <span class="ident">inverse</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">p</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="kw">use</span> <span class="ident">distribution</span>::{<span class="ident">Discrete</span>, <span class="ident">Distribution</span>, <span class="ident">Modes</span>};
 
-        <span class="macro">should</span><span class="macro">!</span>(<span class="number">0.0</span> <span class="op">&lt;=</span> <span class="ident">p</span> <span class="op">&amp;&amp;</span> <span class="ident">p</span> <span class="op">&lt;=</span> <span class="number">1.0</span>);
+        <span class="macro">should</span><span class="macro">!</span>(<span class="number">0.0</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">p</span> <span class="op">&amp;&amp;</span> <span class="ident">p</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1.0</span>);
 
         <span class="comment">// Rename p as to not be confused with self.p.</span>
         <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="ident">p</span>;
 
         <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">buttom_up_sum</span>(
-            (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">prod_term</span>: <span class="ident">expr</span>) <span class="op">=&gt;</span> ({
+            (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">prod_term</span>: <span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> ({
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k</span> <span class="op">=</span> <span class="number">1</span>;
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">q</span>.<span class="ident">powi</span>(<span class="self">self</span>.<span class="ident">n</span> <span class="kw">as</span> <span class="ident">i32</span>);
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sum</span> <span class="op">=</span> <span class="ident">a</span> <span class="op">-</span> <span class="ident">u</span>;
                 <span class="kw">while</span> <span class="ident">sum</span> <span class="op">&lt;</span> <span class="number">0.0</span> {
-                    <span class="ident">a</span> <span class="op">*=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prod_term</span>(<span class="ident">k</span>);
-                    <span class="ident">sum</span> <span class="op">+=</span> <span class="ident">a</span>;
-                    <span class="ident">k</span> <span class="op">+=</span> <span class="number">1</span>;
+                    <span class="ident">a</span> <span class="kw-2">*</span><span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prod_term</span>(<span class="ident">k</span>);
+                    <span class="ident">sum</span> <span class="op">+</span><span class="op">=</span> <span class="ident">a</span>;
+                    <span class="ident">k</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                 }
                 <span class="ident">k</span> <span class="op">-</span> <span class="number">1</span>
             });
         );
         <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">top_down_sum</span>(
-            (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">prod_term</span>: <span class="ident">expr</span>) <span class="op">=&gt;</span> ({
+            (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">prod_term</span>: <span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> ({
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">k</span> <span class="op">=</span> <span class="number">1</span>;
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">p</span>.<span class="ident">powi</span>(<span class="self">self</span>.<span class="ident">n</span> <span class="kw">as</span> <span class="ident">i32</span>);
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">sum</span> <span class="op">=</span> (<span class="number">1.0</span> <span class="op">-</span> <span class="ident">u</span>) <span class="op">-</span> <span class="ident">a</span>;
-                <span class="kw">while</span> <span class="ident">sum</span> <span class="op">&gt;=</span> <span class="number">0.0</span> {
-                    <span class="ident">a</span> <span class="op">*=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prod_term</span>(<span class="ident">k</span>);
-                    <span class="ident">sum</span> <span class="op">-=</span> <span class="ident">a</span>;
-                    <span class="ident">k</span> <span class="op">+=</span> <span class="number">1</span>;
+                <span class="kw">while</span> <span class="ident">sum</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0.0</span> {
+                    <span class="ident">a</span> <span class="kw-2">*</span><span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prod_term</span>(<span class="ident">k</span>);
+                    <span class="ident">sum</span> <span class="op">-</span><span class="op">=</span> <span class="ident">a</span>;
+                    <span class="ident">k</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
                 }
                 <span class="self">self</span>.<span class="ident">n</span> <span class="op">-</span> <span class="ident">k</span> <span class="op">+</span> <span class="number">1</span>
             });
         );
 
-        <span class="kw">if</span> <span class="ident">u</span> <span class="op">==</span> <span class="number">1.0</span> {
+        <span class="kw">if</span> <span class="ident">u</span> <span class="op">=</span><span class="op">=</span> <span class="number">1.0</span> {
             <span class="self">self</span>.<span class="ident">n</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">u</span> <span class="op">==</span> <span class="number">0.0</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">u</span> <span class="op">=</span><span class="op">=</span> <span class="number">0.0</span> {
             <span class="number">0</span>
         } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">n</span> <span class="op">&lt;</span> <span class="number">1000</span> {
             <span class="comment">// Find if top-down or bottom-up summation is better.</span>
-            <span class="kw">if</span> <span class="ident">u</span> <span class="op">&lt;=</span> <span class="self">self</span>.<span class="ident">distribution</span>((<span class="self">self</span>.<span class="ident">n</span> <span class="op">/</span> <span class="number">2</span>) <span class="kw">as</span> <span class="ident">f64</span>) {
+            <span class="kw">if</span> <span class="ident">u</span> <span class="op">&lt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">distribution</span>((<span class="self">self</span>.<span class="ident">n</span> <span class="op">/</span> <span class="number">2</span>) <span class="kw">as</span> <span class="ident">f64</span>) {
                 <span class="macro">buttom_up_sum</span><span class="macro">!</span>(<span class="op">|</span><span class="ident">k</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">p</span> <span class="op">/</span> <span class="self">self</span>.<span class="ident">q</span> <span class="op">*</span> ((<span class="self">self</span>.<span class="ident">n</span> <span class="op">-</span> <span class="ident">k</span> <span class="op">+</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">f64</span> <span class="op">/</span> <span class="ident">k</span> <span class="kw">as</span> <span class="ident">f64</span>))
             } <span class="kw">else</span> {
                 <span class="macro">top_down_sum</span><span class="macro">!</span>(<span class="op">|</span><span class="ident">k</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">q</span> <span class="op">/</span> <span class="self">self</span>.<span class="ident">p</span> <span class="op">*</span> ((<span class="self">self</span>.<span class="ident">n</span> <span class="op">-</span> <span class="ident">k</span> <span class="op">+</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">f64</span> <span class="op">/</span> <span class="ident">k</span> <span class="kw">as</span> <span class="ident">f64</span>))
@@ -756,30 +756,30 @@
 
 <span class="kw">impl</span> <span class="ident">distribution</span>::<span class="ident">Kurtosis</span> <span class="kw">for</span> <span class="ident">Binomial</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">kurtosis</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">kurtosis</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         (<span class="number">1.0</span> <span class="op">-</span> <span class="number">6.0</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">p</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">q</span>) <span class="op">/</span> <span class="self">self</span>.<span class="ident">npq</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">distribution</span>::<span class="ident">Mean</span> <span class="kw">for</span> <span class="ident">Binomial</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">np</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">distribution</span>::<span class="ident">Median</span> <span class="kw">for</span> <span class="ident">Binomial</span> {
-    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="kw">use</span> <span class="ident">distribution</span>::<span class="ident">Inverse</span>;
         <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">f64</span>::<span class="ident">consts</span>::<span class="ident">LN_2</span>;
 
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">np</span>.<span class="ident">fract</span>() <span class="op">==</span> <span class="number">0.0</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">np</span>.<span class="ident">fract</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0.0</span> {
             <span class="self">self</span>.<span class="ident">np</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">p</span> <span class="op">==</span> <span class="number">0.5</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">n</span> <span class="op">%</span> <span class="number">2</span> <span class="op">!=</span> <span class="number">0</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">p</span> <span class="op">=</span><span class="op">=</span> <span class="number">0.5</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">n</span> <span class="op">%</span> <span class="number">2</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
             <span class="self">self</span>.<span class="ident">np</span>
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">p</span> <span class="op">&lt;=</span> <span class="number">1.0</span> <span class="op">-</span> <span class="ident">LN_2</span>
-            <span class="op">||</span> <span class="self">self</span>.<span class="ident">p</span> <span class="op">&gt;=</span> <span class="ident">LN_2</span>
-            <span class="op">||</span> (<span class="self">self</span>.<span class="ident">np</span>.<span class="ident">round</span>() <span class="op">-</span> <span class="self">self</span>.<span class="ident">np</span>).<span class="ident">abs</span>() <span class="op">&lt;=</span> <span class="self">self</span>.<span class="ident">p</span>.<span class="ident">min</span>(<span class="self">self</span>.<span class="ident">q</span>)
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">p</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1.0</span> <span class="op">-</span> <span class="ident">LN_2</span>
+            <span class="op">|</span><span class="op">|</span> <span class="self">self</span>.<span class="ident">p</span> <span class="op">&gt;</span><span class="op">=</span> <span class="ident">LN_2</span>
+            <span class="op">|</span><span class="op">|</span> (<span class="self">self</span>.<span class="ident">np</span>.<span class="ident">round</span>() <span class="op">-</span> <span class="self">self</span>.<span class="ident">np</span>).<span class="ident">abs</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">p</span>.<span class="ident">min</span>(<span class="self">self</span>.<span class="ident">q</span>)
         {
             <span class="self">self</span>.<span class="ident">np</span>.<span class="ident">round</span>()
         } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">n</span> <span class="op">&gt;</span> <span class="number">1000</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">npq</span> <span class="op">&gt;</span> <span class="number">80.0</span> {
@@ -792,13 +792,13 @@
 }
 
 <span class="kw">impl</span> <span class="ident">distribution</span>::<span class="ident">Modes</span> <span class="kw">for</span> <span class="ident">Binomial</span> {
-    <span class="kw">fn</span> <span class="ident">modes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">modes</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">r</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">p</span> <span class="op">*</span> (<span class="self">self</span>.<span class="ident">n</span> <span class="op">+</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">f64</span>;
-        <span class="kw">if</span> <span class="ident">r</span> <span class="op">==</span> <span class="number">0.0</span> {
+        <span class="kw">if</span> <span class="ident">r</span> <span class="op">=</span><span class="op">=</span> <span class="number">0.0</span> {
             <span class="macro">vec</span><span class="macro">!</span>[<span class="number">0</span>]
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">p</span> <span class="op">==</span> <span class="number">1.0</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">p</span> <span class="op">=</span><span class="op">=</span> <span class="number">1.0</span> {
             <span class="macro">vec</span><span class="macro">!</span>[<span class="self">self</span>.<span class="ident">n</span>]
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">r</span>.<span class="ident">fract</span>() <span class="op">!=</span> <span class="number">0.0</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">r</span>.<span class="ident">fract</span>() <span class="op">!</span><span class="op">=</span> <span class="number">0.0</span> {
             <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">r</span>.<span class="ident">floor</span>() <span class="kw">as</span> <span class="ident">usize</span>]
         } <span class="kw">else</span> {
             <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">r</span> <span class="kw">as</span> <span class="ident">usize</span> <span class="op">-</span> <span class="number">1</span>, <span class="ident">r</span> <span class="kw">as</span> <span class="ident">usize</span>]
@@ -808,7 +808,7 @@
 
 <span class="kw">impl</span> <span class="ident">distribution</span>::<span class="ident">Sample</span> <span class="kw">for</span> <span class="ident">Binomial</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">S</span>) <span class="op">-&gt;</span> <span class="ident">usize</span>
+    <span class="kw">fn</span> <span class="ident">sample</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">source</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span>
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">Source</span>,
     {
@@ -819,20 +819,20 @@
 
 <span class="kw">impl</span> <span class="ident">distribution</span>::<span class="ident">Skewness</span> <span class="kw">for</span> <span class="ident">Binomial</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         (<span class="number">1.0</span> <span class="op">-</span> <span class="number">2.0</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">p</span>) <span class="op">/</span> <span class="self">self</span>.<span class="ident">npq</span>.<span class="ident">sqrt</span>()
     }
 }
 
 <span class="kw">impl</span> <span class="ident">distribution</span>::<span class="ident">Variance</span> <span class="kw">for</span> <span class="ident">Binomial</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
         <span class="self">self</span>.<span class="ident">npq</span>
     }
 }
 
 <span class="comment">// See [Moorhead, 2013, pp. 7].</span>
-<span class="kw">fn</span> <span class="ident">approximate_by_normal</span>(<span class="ident">p</span>: <span class="ident">f64</span>, <span class="ident">np</span>: <span class="ident">f64</span>, <span class="ident">v</span>: <span class="ident">f64</span>, <span class="ident">u</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">fn</span> <span class="ident">approximate_by_normal</span>(<span class="ident">p</span>: <span class="ident">f64</span>, <span class="ident">np</span>: <span class="ident">f64</span>, <span class="ident">v</span>: <span class="ident">f64</span>, <span class="ident">u</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="kw">use</span> <span class="ident">distribution</span>::<span class="ident">gaussian</span>;
 
     <span class="kw">let</span> <span class="ident">w</span> <span class="op">=</span> <span class="ident">gaussian</span>::<span class="ident">inverse</span>(<span class="ident">u</span>);
@@ -874,7 +874,7 @@
 }
 
 <span class="comment">// strilerr(n) = ln(n!) - ln(sqrt(2π * n) * (n / e)^n)</span>
-<span class="kw">fn</span> <span class="ident">stirlerr</span>(<span class="ident">n</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">fn</span> <span class="ident">stirlerr</span>(<span class="ident">n</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="kw">const</span> <span class="ident">S0</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">1.0</span> <span class="op">/</span> <span class="number">12.0</span>;
     <span class="kw">const</span> <span class="ident">S1</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">1.0</span> <span class="op">/</span> <span class="number">360.0</span>;
     <span class="kw">const</span> <span class="ident">S2</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">1.0</span> <span class="op">/</span> <span class="number">1260.0</span>;
@@ -919,7 +919,7 @@
 }
 
 <span class="comment">// ln(np * D₀) = x * ln(x / np) + np - x</span>
-<span class="kw">fn</span> <span class="ident">ln_d0</span>(<span class="ident">x</span>: <span class="ident">f64</span>, <span class="ident">np</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">f64</span> {
+<span class="kw">fn</span> <span class="ident">ln_d0</span>(<span class="ident">x</span>: <span class="ident">f64</span>, <span class="ident">np</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="kw">if</span> (<span class="ident">x</span> <span class="op">-</span> <span class="ident">np</span>).<span class="ident">abs</span>() <span class="op">&lt;</span> <span class="number">0.1</span> <span class="op">*</span> (<span class="ident">x</span> <span class="op">+</span> <span class="ident">np</span>) {
         <span class="comment">// ε = (n / np) is close to 1. Use a series expansion.</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> (<span class="ident">x</span> <span class="op">-</span> <span class="ident">np</span>).<span class="ident">powi</span>(<span class="number">2</span>) <span class="op">/</span> (<span class="ident">x</span> <span class="op">+</span> <span class="ident">np</span>);
@@ -927,13 +927,13 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ej</span> <span class="op">=</span> <span class="number">2.0</span> <span class="op">*</span> <span class="ident">x</span> <span class="op">*</span> <span class="ident">v</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">j</span> <span class="op">=</span> <span class="number">1</span>;
         <span class="kw">loop</span> {
-            <span class="ident">ej</span> <span class="op">*=</span> <span class="ident">v</span> <span class="op">*</span> <span class="ident">v</span>;
+            <span class="ident">ej</span> <span class="kw-2">*</span><span class="op">=</span> <span class="ident">v</span> <span class="op">*</span> <span class="ident">v</span>;
             <span class="kw">let</span> <span class="ident">s1</span> <span class="op">=</span> <span class="ident">s</span> <span class="op">+</span> <span class="ident">ej</span> <span class="op">/</span> (<span class="number">2</span> <span class="op">*</span> <span class="ident">j</span> <span class="op">+</span> <span class="number">1</span>) <span class="kw">as</span> <span class="ident">f64</span>;
-            <span class="kw">if</span> <span class="ident">s1</span> <span class="op">==</span> <span class="ident">s</span> {
+            <span class="kw">if</span> <span class="ident">s1</span> <span class="op">=</span><span class="op">=</span> <span class="ident">s</span> {
                 <span class="kw">return</span> <span class="ident">s1</span>;
             }
             <span class="ident">s</span> <span class="op">=</span> <span class="ident">s1</span>;
-            <span class="ident">j</span> <span class="op">+=</span> <span class="number">1</span>;
+            <span class="ident">j</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
         }
     }
     <span class="ident">x</span> <span class="op">*</span> (<span class="ident">x</span> <span class="op">/</span> <span class="ident">np</span>).<span class="ident">ln</span>() <span class="op">+</span> <span class="ident">np</span> <span class="op">-</span> <span class="ident">x</span>
@@ -945,7 +945,7 @@
     <span class="kw">use</span> <span class="ident">prelude</span>::<span class="kw-2">*</span>;
 
     <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">new</span> {
-        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">p</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> {
+        (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">p</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
             <span class="ident">Binomial</span>::<span class="ident">new</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">p</span>)
         };
     }
@@ -968,12 +968,12 @@
 
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> (<span class="op">-</span><span class="number">1</span>..<span class="number">9</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">d</span>.<span class="ident">distribution</span>(<span class="number">2.0</span> <span class="op">*</span> <span class="ident">i</span> <span class="kw">as</span> <span class="ident">f64</span>))
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>();
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
         <span class="ident">assert</span>::<span class="ident">close</span>(<span class="kw-2">&amp;</span><span class="ident">x</span>, <span class="kw-2">&amp;</span><span class="ident">p</span>, <span class="number">1e-14</span>);
 
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> (<span class="op">-</span><span class="number">1</span>..<span class="number">9</span>)
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">d</span>.<span class="ident">distribution</span>(<span class="number">2.0</span> <span class="op">*</span> <span class="ident">i</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">+</span> <span class="number">0.5</span>))
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>();
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
         <span class="ident">assert</span>::<span class="ident">close</span>(<span class="kw-2">&amp;</span><span class="ident">x</span>, <span class="kw-2">&amp;</span><span class="ident">p</span>, <span class="number">1e-14</span>);
     }
 
@@ -1021,7 +1021,7 @@
         ];
 
         <span class="ident">assert</span>::<span class="ident">close</span>(
-            <span class="kw-2">&amp;</span>(<span class="number">0</span>..<span class="number">9</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">d</span>.<span class="ident">mass</span>(<span class="number">2</span> <span class="op">*</span> <span class="ident">i</span>)).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>(),
+            <span class="kw-2">&amp;</span>(<span class="number">0</span>..<span class="number">9</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="ident">d</span>.<span class="ident">mass</span>(<span class="number">2</span> <span class="op">*</span> <span class="ident">i</span>)).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(),
             <span class="kw-2">&amp;</span><span class="ident">p</span>,
             <span class="number">1e-14</span>,
         );

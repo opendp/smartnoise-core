@@ -509,7 +509,7 @@
     <span class="doccomment">/// [1]: http://people.sc.fsu.edu/~jburkardt/c_src/asa109/asa109.html</span>
     <span class="doccomment">/// [2]: http://www.jstor.org/stable/2346797</span>
     <span class="doccomment">/// [3]: http://www.jstor.org/stable/2346887</span>
-    <span class="kw">fn</span> <span class="ident">inc_beta</span>(<span class="self">self</span>, <span class="ident">p</span>: <span class="self">Self</span>, <span class="ident">q</span>: <span class="self">Self</span>, <span class="ident">ln_beta</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">inc_beta</span>(<span class="self">self</span>, <span class="ident">p</span>: <span class="self">Self</span>, <span class="ident">q</span>: <span class="self">Self</span>, <span class="ident">ln_beta</span>: <span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Compute the inverse of the regularized incomplete beta function.</span>
     <span class="doccomment">///</span>
@@ -520,14 +520,14 @@
     <span class="doccomment">/// [1]: http://people.sc.fsu.edu/~jburkardt/c_src/asa109/asa109.html</span>
     <span class="doccomment">/// [2]: http://www.jstor.org/stable/2346798</span>
     <span class="doccomment">/// [3]: http://www.jstor.org/stable/2346887</span>
-    <span class="kw">fn</span> <span class="ident">inv_inc_beta</span>(<span class="self">self</span>, <span class="ident">p</span>: <span class="self">Self</span>, <span class="ident">q</span>: <span class="self">Self</span>, <span class="ident">ln_beta</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">inv_inc_beta</span>(<span class="self">self</span>, <span class="ident">p</span>: <span class="self">Self</span>, <span class="ident">q</span>: <span class="self">Self</span>, <span class="ident">ln_beta</span>: <span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="doccomment">/// Compute the natural logarithm of the beta function.</span>
-    <span class="kw">fn</span> <span class="ident">ln_beta</span>(<span class="self">self</span>, <span class="ident">other</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>;
+    <span class="kw">fn</span> <span class="ident">ln_beta</span>(<span class="self">self</span>, <span class="ident">other</span>: <span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 }
 
-<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">implement</span> { (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span>:<span class="ident">ident</span>) <span class="op">=&gt;</span> { <span class="kw">impl</span> <span class="ident">Beta</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span> {
-    <span class="kw">fn</span> <span class="ident">inc_beta</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">p</span>: <span class="self">Self</span>, <span class="kw-2">mut</span> <span class="ident">q</span>: <span class="self">Self</span>, <span class="ident">ln_beta</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">implement</span> { (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span>:<span class="ident">ident</span>) <span class="op">=</span><span class="op">&gt;</span> { <span class="kw">impl</span> <span class="ident">Beta</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span> {
+    <span class="kw">fn</span> <span class="ident">inc_beta</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">p</span>: <span class="self">Self</span>, <span class="kw-2">mut</span> <span class="ident">q</span>: <span class="self">Self</span>, <span class="ident">ln_beta</span>: <span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="comment">// Algorithm AS 63</span>
         <span class="comment">// http://www.jstor.org/stable/2346797</span>
         <span class="comment">//</span>
@@ -564,12 +564,12 @@
         <span class="kw">const</span> <span class="ident">ACU</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span> <span class="op">=</span> <span class="number">0.1e-14</span>;
 
         <span class="kw">let</span> <span class="ident">x</span> <span class="op">=</span> <span class="self">self</span>;
-        <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">x</span> <span class="op">&gt;=</span> <span class="number">0.0</span> <span class="op">&amp;&amp;</span> <span class="ident">x</span> <span class="op">&lt;=</span> <span class="number">1.0</span> <span class="op">&amp;&amp;</span> <span class="ident">p</span> <span class="op">&gt;</span> <span class="number">0.0</span> <span class="op">&amp;&amp;</span> <span class="ident">q</span> <span class="op">&gt;</span> <span class="number">0.0</span>);
+        <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">x</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0.0</span> <span class="op">&amp;&amp;</span> <span class="ident">x</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1.0</span> <span class="op">&amp;&amp;</span> <span class="ident">p</span> <span class="op">&gt;</span> <span class="number">0.0</span> <span class="op">&amp;&amp;</span> <span class="ident">q</span> <span class="op">&gt;</span> <span class="number">0.0</span>);
 
-        <span class="kw">if</span> <span class="ident">x</span> <span class="op">==</span> <span class="number">0.0</span> {
+        <span class="kw">if</span> <span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="number">0.0</span> {
             <span class="kw">return</span> <span class="number">0.0</span>;
         }
-        <span class="kw">if</span> <span class="ident">x</span> <span class="op">==</span> <span class="number">1.0</span> {
+        <span class="kw">if</span> <span class="ident">x</span> <span class="op">=</span><span class="op">=</span> <span class="number">1.0</span> {
             <span class="kw">return</span> <span class="number">1.0</span>;
         }
 
@@ -597,7 +597,7 @@
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">rx</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ns</span> <span class="op">=</span> (<span class="ident">q</span> <span class="op">+</span> <span class="ident">qbase</span> <span class="op">*</span> <span class="ident">psq</span>) <span class="kw">as</span> <span class="ident">isize</span>;
-        <span class="kw">if</span> <span class="ident">ns</span> <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="ident">ns</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="ident">rx</span> <span class="op">=</span> <span class="ident">pbase</span>;
         } <span class="kw">else</span> {
             <span class="ident">rx</span> <span class="op">=</span> <span class="ident">pbase</span> <span class="op">/</span> <span class="ident">qbase</span>;
@@ -609,24 +609,24 @@
         <span class="kw">loop</span> {
             <span class="ident">term</span> <span class="op">=</span> <span class="ident">term</span> <span class="op">*</span> <span class="ident">temp</span> <span class="op">*</span> <span class="ident">rx</span> <span class="op">/</span> (<span class="ident">p</span> <span class="op">+</span> <span class="ident">ai</span>);
 
-            <span class="ident">a</span> <span class="op">+=</span> <span class="ident">term</span>;
+            <span class="ident">a</span> <span class="op">+</span><span class="op">=</span> <span class="ident">term</span>;
 
             <span class="ident">temp</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">term</span> <span class="op">&lt;</span> <span class="number">0.0</span> { <span class="op">-</span><span class="ident">term</span> } <span class="kw">else</span> { <span class="ident">term</span> };
-            <span class="kw">if</span> <span class="ident">temp</span> <span class="op">&lt;=</span> <span class="ident">ACU</span> <span class="op">&amp;&amp;</span> <span class="ident">temp</span> <span class="op">&lt;=</span> <span class="ident">ACU</span> <span class="op">*</span> <span class="ident">a</span> {
+            <span class="kw">if</span> <span class="ident">temp</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">ACU</span> <span class="op">&amp;&amp;</span> <span class="ident">temp</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">ACU</span> <span class="op">*</span> <span class="ident">a</span> {
                 <span class="kw">break</span>;
             }
 
-            <span class="ident">ai</span> <span class="op">+=</span> <span class="number">1.0</span>;
-            <span class="ident">ns</span> <span class="op">-=</span> <span class="number">1</span>;
+            <span class="ident">ai</span> <span class="op">+</span><span class="op">=</span> <span class="number">1.0</span>;
+            <span class="ident">ns</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
 
             <span class="kw">if</span> <span class="number">0</span> <span class="op">&lt;</span> <span class="ident">ns</span> {
                 <span class="ident">temp</span> <span class="op">=</span> <span class="ident">q</span> <span class="op">-</span> <span class="ident">ai</span>;
-            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">ns</span> <span class="op">==</span> <span class="number">0</span> {
+            } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">ns</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
                 <span class="ident">temp</span> <span class="op">=</span> <span class="ident">q</span> <span class="op">-</span> <span class="ident">ai</span>;
                 <span class="ident">rx</span> <span class="op">=</span> <span class="ident">pbase</span>;
             } <span class="kw">else</span> {
                 <span class="ident">temp</span> <span class="op">=</span> <span class="ident">psq</span>;
-                <span class="ident">psq</span> <span class="op">+=</span> <span class="number">1.0</span>;
+                <span class="ident">psq</span> <span class="op">+</span><span class="op">=</span> <span class="number">1.0</span>;
             }
         }
 
@@ -641,7 +641,7 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">inv_inc_beta</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">p</span>: <span class="self">Self</span>, <span class="kw-2">mut</span> <span class="ident">q</span>: <span class="self">Self</span>, <span class="ident">ln_beta</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">inv_inc_beta</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">p</span>: <span class="self">Self</span>, <span class="kw-2">mut</span> <span class="ident">q</span>: <span class="self">Self</span>, <span class="ident">ln_beta</span>: <span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="comment">// Algorithm AS 64</span>
         <span class="comment">// http://www.jstor.org/stable/2346798</span>
         <span class="comment">//</span>
@@ -683,12 +683,12 @@
         <span class="kw">const</span> <span class="ident">FPU</span>: <span class="macro-nonterminal">$</span><span class="macro-nonterminal">kind</span> <span class="op">=</span> <span class="number">1e-30</span>; <span class="comment">// 10^SAE</span>
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">a</span> <span class="op">=</span> <span class="self">self</span>;
-        <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">&gt;=</span> <span class="number">0.0</span> <span class="op">&amp;&amp;</span> <span class="ident">a</span> <span class="op">&lt;=</span> <span class="number">1.0</span> <span class="op">&amp;&amp;</span> <span class="ident">p</span> <span class="op">&gt;</span> <span class="number">0.0</span> <span class="op">&amp;&amp;</span> <span class="ident">q</span> <span class="op">&gt;</span> <span class="number">0.0</span>);
+        <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="ident">a</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">0.0</span> <span class="op">&amp;&amp;</span> <span class="ident">a</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1.0</span> <span class="op">&amp;&amp;</span> <span class="ident">p</span> <span class="op">&gt;</span> <span class="number">0.0</span> <span class="op">&amp;&amp;</span> <span class="ident">q</span> <span class="op">&gt;</span> <span class="number">0.0</span>);
 
-        <span class="kw">if</span> <span class="ident">a</span> <span class="op">==</span> <span class="number">0.0</span> {
+        <span class="kw">if</span> <span class="ident">a</span> <span class="op">=</span><span class="op">=</span> <span class="number">0.0</span> {
             <span class="kw">return</span> <span class="number">0.0</span>;
         }
-        <span class="kw">if</span> <span class="ident">a</span> <span class="op">==</span> <span class="number">1.0</span> {
+        <span class="kw">if</span> <span class="ident">a</span> <span class="op">=</span><span class="op">=</span> <span class="number">1.0</span> {
             <span class="kw">return</span> <span class="number">1.0</span>;
         }
 
@@ -723,11 +723,11 @@
         } <span class="kw">else</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">t</span> <span class="op">=</span> <span class="number">1.0</span> <span class="op">/</span> (<span class="number">9.0</span> <span class="op">*</span> <span class="ident">q</span>);
             <span class="ident">t</span> <span class="op">=</span> <span class="number">2.0</span> <span class="op">*</span> <span class="ident">q</span> <span class="op">*</span> (<span class="number">1.0</span> <span class="op">-</span> <span class="ident">t</span> <span class="op">+</span> <span class="ident">y</span> <span class="op">*</span> <span class="ident">t</span>.<span class="ident">sqrt</span>()).<span class="ident">powf</span>(<span class="number">3.0</span>);
-            <span class="kw">if</span> <span class="ident">t</span> <span class="op">&lt;=</span> <span class="number">0.0</span> {
+            <span class="kw">if</span> <span class="ident">t</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
                 <span class="ident">x</span> <span class="op">=</span> <span class="number">1.0</span> <span class="op">-</span> ((((<span class="number">1.0</span> <span class="op">-</span> <span class="ident">a</span>) <span class="op">*</span> <span class="ident">q</span>).<span class="ident">ln</span>() <span class="op">+</span> <span class="ident">ln_beta</span>) <span class="op">/</span> <span class="ident">q</span>).<span class="ident">exp</span>();
             } <span class="kw">else</span> {
                 <span class="ident">t</span> <span class="op">=</span> <span class="number">2.0</span> <span class="op">*</span> (<span class="number">2.0</span> <span class="op">*</span> <span class="ident">p</span> <span class="op">+</span> <span class="ident">q</span> <span class="op">-</span> <span class="number">1.0</span>) <span class="op">/</span> <span class="ident">t</span>;
-                <span class="kw">if</span> <span class="ident">t</span> <span class="op">&lt;=</span> <span class="number">1.0</span> {
+                <span class="kw">if</span> <span class="ident">t</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1.0</span> {
                     <span class="ident">x</span> <span class="op">=</span> (((<span class="ident">a</span> <span class="op">*</span> <span class="ident">p</span>).<span class="ident">ln</span>() <span class="op">+</span> <span class="ident">ln_beta</span>) <span class="op">/</span> <span class="ident">p</span>).<span class="ident">exp</span>();
                 } <span class="kw">else</span> {
                     <span class="ident">x</span> <span class="op">=</span> <span class="number">1.0</span> <span class="op">-</span> <span class="number">2.0</span> <span class="op">/</span> (<span class="ident">t</span> <span class="op">+</span> <span class="number">1.0</span>);
@@ -759,7 +759,7 @@
 
             <span class="comment">// Remark AS R83</span>
             <span class="comment">// http://www.jstor.org/stable/2347779</span>
-            <span class="kw">if</span> <span class="ident">y</span> <span class="op">*</span> <span class="ident">yprev</span> <span class="op">&lt;=</span> <span class="number">0.0</span> {
+            <span class="kw">if</span> <span class="ident">y</span> <span class="op">*</span> <span class="ident">yprev</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.0</span> {
                 <span class="ident">prev</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">sq</span> <span class="op">&gt;</span> <span class="ident">FPU</span> { <span class="ident">sq</span> } <span class="kw">else</span> { <span class="ident">FPU</span> };
             }
 
@@ -773,26 +773,26 @@
 
                     <span class="kw">if</span> <span class="ident">sq</span> <span class="op">&lt;</span> <span class="ident">prev</span> {
                         <span class="ident">tx</span> <span class="op">=</span> <span class="ident">x</span> <span class="op">-</span> <span class="ident">adj</span>;
-                        <span class="kw">if</span> <span class="number">0.0</span> <span class="op">&lt;=</span> <span class="ident">tx</span> <span class="op">&amp;&amp;</span> <span class="ident">tx</span> <span class="op">&lt;=</span> <span class="number">1.0</span> {
+                        <span class="kw">if</span> <span class="number">0.0</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">tx</span> <span class="op">&amp;&amp;</span> <span class="ident">tx</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">1.0</span> {
                             <span class="kw">break</span>;
                         }
                     }
-                    <span class="ident">g</span> <span class="op">/=</span> <span class="number">3.0</span>;
+                    <span class="ident">g</span> <span class="op">/</span><span class="op">=</span> <span class="number">3.0</span>;
                 }
 
-                <span class="kw">if</span> <span class="ident">prev</span> <span class="op">&lt;=</span> <span class="ident">acu</span> <span class="op">||</span> <span class="ident">y</span> <span class="op">*</span> <span class="ident">y</span> <span class="op">&lt;=</span> <span class="ident">acu</span> {
+                <span class="kw">if</span> <span class="ident">prev</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">acu</span> <span class="op">|</span><span class="op">|</span> <span class="ident">y</span> <span class="op">*</span> <span class="ident">y</span> <span class="op">&lt;</span><span class="op">=</span> <span class="ident">acu</span> {
                     <span class="ident">x</span> <span class="op">=</span> <span class="ident">tx</span>;
                     <span class="kw">break</span> <span class="lifetime">&#39;outer</span>;
                 }
 
-                <span class="kw">if</span> <span class="ident">tx</span> <span class="op">!=</span> <span class="number">0.0</span> <span class="op">&amp;&amp;</span> <span class="ident">tx</span> <span class="op">!=</span> <span class="number">1.0</span> {
+                <span class="kw">if</span> <span class="ident">tx</span> <span class="op">!</span><span class="op">=</span> <span class="number">0.0</span> <span class="op">&amp;&amp;</span> <span class="ident">tx</span> <span class="op">!</span><span class="op">=</span> <span class="number">1.0</span> {
                     <span class="kw">break</span>;
                 }
 
-                <span class="ident">g</span> <span class="op">/=</span> <span class="number">3.0</span>;
+                <span class="ident">g</span> <span class="op">/</span><span class="op">=</span> <span class="number">3.0</span>;
             }
 
-            <span class="kw">if</span> <span class="ident">tx</span> <span class="op">==</span> <span class="ident">x</span> {
+            <span class="kw">if</span> <span class="ident">tx</span> <span class="op">=</span><span class="op">=</span> <span class="ident">x</span> {
                 <span class="kw">break</span>;
             }
 
@@ -807,7 +807,7 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">ln_beta</span>(<span class="self">self</span>, <span class="ident">other</span>: <span class="self">Self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">ln_beta</span>(<span class="self">self</span>, <span class="ident">other</span>: <span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="macro">debug_assert</span><span class="macro">!</span>(<span class="self">self</span> <span class="op">&gt;</span> <span class="number">0.0</span> <span class="op">&amp;&amp;</span> <span class="ident">other</span> <span class="op">&gt;</span> <span class="number">0.0</span>);
         <span class="self">self</span>.<span class="ident">ln_gamma</span>().<span class="number">0</span> <span class="op">+</span> <span class="ident">other</span>.<span class="ident">ln_gamma</span>().<span class="number">0</span> <span class="op">-</span> (<span class="self">self</span> <span class="op">+</span> <span class="ident">other</span>).<span class="ident">ln_gamma</span>().<span class="number">0</span>
     }
@@ -857,7 +857,7 @@
         <span class="kw">let</span> <span class="ident">y</span> <span class="op">=</span> <span class="ident">x</span>
             .<span class="ident">iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">inc_beta</span>(<span class="ident">p</span>, <span class="ident">q</span>, <span class="ident">ln_beta</span>))
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>();
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
         <span class="ident">assert</span>::<span class="ident">close</span>(<span class="kw-2">&amp;</span><span class="ident">y</span>, <span class="kw-2">&amp;</span><span class="ident">a</span>, <span class="number">1e-14</span>);
     }
 
@@ -896,7 +896,7 @@
         <span class="kw">let</span> <span class="ident">y</span> <span class="op">=</span> <span class="ident">x</span>
             .<span class="ident">iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>.<span class="ident">inc_beta</span>(<span class="ident">p</span>, <span class="ident">q</span>, <span class="ident">ln_beta</span>))
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>();
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
         <span class="ident">assert</span>::<span class="ident">close</span>(<span class="kw-2">&amp;</span><span class="ident">y</span>, <span class="kw-2">&amp;</span><span class="ident">a</span>, <span class="number">1e-14</span>);
     }
 
@@ -935,7 +935,7 @@
         <span class="kw">let</span> <span class="ident">y</span> <span class="op">=</span> <span class="ident">a</span>
             .<span class="ident">iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">inv_inc_beta</span>(<span class="ident">p</span>, <span class="ident">q</span>, <span class="ident">ln_beta</span>))
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>();
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
         <span class="ident">assert</span>::<span class="ident">close</span>(<span class="kw-2">&amp;</span><span class="ident">y</span>, <span class="kw-2">&amp;</span><span class="ident">x</span>, <span class="number">1e-14</span>);
     }
 
@@ -974,7 +974,7 @@
         <span class="kw">let</span> <span class="ident">y</span> <span class="op">=</span> <span class="ident">a</span>
             .<span class="ident">iter</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">inv_inc_beta</span>(<span class="ident">p</span>, <span class="ident">q</span>, <span class="ident">ln_beta</span>))
-            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>();
+            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
         <span class="ident">assert</span>::<span class="ident">close</span>(<span class="kw-2">&amp;</span><span class="ident">y</span>, <span class="kw-2">&amp;</span><span class="ident">x</span>, <span class="number">1e-14</span>);
     }
 
@@ -988,7 +988,7 @@
             <span class="op">-</span><span class="number">0.2231435513142098</span>,
         ];
 
-        <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="ident">p</span>, <span class="ident">q</span>)<span class="op">|</span> <span class="ident">p</span>.<span class="ident">ln_beta</span>(<span class="ident">q</span>)).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;&gt;</span>();
+        <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> <span class="ident">x</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="op">|</span><span class="kw-2">&amp;</span>(<span class="ident">p</span>, <span class="ident">q</span>)<span class="op">|</span> <span class="ident">p</span>.<span class="ident">ln_beta</span>(<span class="ident">q</span>)).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>();
         <span class="ident">assert</span>::<span class="ident">close</span>(<span class="kw-2">&amp;</span><span class="ident">z</span>, <span class="kw-2">&amp;</span><span class="ident">y</span>, <span class="number">1e-14</span>);
     }
 }

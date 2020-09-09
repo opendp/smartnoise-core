@@ -749,7 +749,7 @@
 <span class="doccomment">/// }</span>
 <span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">start</span>: <span class="ident">A</span>, <span class="ident">stop</span>: <span class="ident">A</span>) <span class="op">-&gt;</span> <span class="ident">Range</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">start</span>: <span class="ident">A</span>, <span class="ident">stop</span>: <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Range</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">A</span>: <span class="ident">Add</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">Output</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">PartialOrd</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">One</span>,
 {
@@ -762,25 +762,25 @@
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">has_i128</span>)]</span>
-<span class="kw">fn</span> <span class="ident">unsigned</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ToPrimitive</span><span class="op">&gt;</span>(<span class="ident">x</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u128</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">unsigned</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ToPrimitive</span><span class="op">&gt;</span>(<span class="ident">x</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u128</span><span class="op">&gt;</span> {
     <span class="kw">match</span> <span class="ident">x</span>.<span class="ident">to_u128</span>() {
-        <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">x</span>.<span class="ident">to_i128</span>() {
-            <span class="prelude-val">Some</span>(<span class="ident">i</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">i</span> <span class="kw">as</span> <span class="ident">u128</span>),
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">x</span>.<span class="ident">to_i128</span>() {
+            <span class="prelude-val">Some</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">i</span> <span class="kw">as</span> <span class="ident">u128</span>),
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
         },
-        <span class="prelude-val">Some</span>(<span class="ident">u</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">u</span>),
+        <span class="prelude-val">Some</span>(<span class="ident">u</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">u</span>),
     }
 }
 
 <span class="attribute">#[<span class="ident">inline</span>]</span>
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">has_i128</span>))]</span>
-<span class="kw">fn</span> <span class="ident">unsigned</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ToPrimitive</span><span class="op">&gt;</span>(<span class="ident">x</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
+<span class="kw">fn</span> <span class="ident">unsigned</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ToPrimitive</span><span class="op">&gt;</span>(<span class="ident">x</span>: <span class="kw-2">&amp;</span><span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
     <span class="kw">match</span> <span class="ident">x</span>.<span class="ident">to_u64</span>() {
-        <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">x</span>.<span class="ident">to_i64</span>() {
-            <span class="prelude-val">Some</span>(<span class="ident">i</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">i</span> <span class="kw">as</span> <span class="ident">u64</span>),
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">x</span>.<span class="ident">to_i64</span>() {
+            <span class="prelude-val">Some</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">i</span> <span class="kw">as</span> <span class="ident">u64</span>),
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
         },
-        <span class="prelude-val">Some</span>(<span class="ident">u</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">u</span>),
+        <span class="prelude-val">Some</span>(<span class="ident">u</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">u</span>),
     }
 }
 
@@ -792,7 +792,7 @@
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">A</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">stop</span> {
             <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">state</span>.<span class="ident">clone</span>();
             <span class="self">self</span>.<span class="ident">state</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">state</span>.<span class="ident">clone</span>() <span class="op">+</span> <span class="self">self</span>.<span class="ident">one</span>.<span class="ident">clone</span>();
@@ -803,9 +803,9 @@
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
         <span class="comment">// Check for empty ranges first.</span>
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">&gt;=</span> <span class="self">self</span>.<span class="ident">stop</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">&gt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">stop</span> {
             <span class="kw">return</span> (<span class="number">0</span>, <span class="prelude-val">Some</span>(<span class="number">0</span>));
         }
 
@@ -816,8 +816,8 @@
                 <span class="comment">// We&#39;ve lost signs, but we already know state &lt; stop, so</span>
                 <span class="comment">// a `wrapping_sub` will give the correct unsigned delta.</span>
                 <span class="kw">return</span> <span class="kw">match</span> <span class="ident">b</span>.<span class="ident">wrapping_sub</span>(<span class="ident">a</span>).<span class="ident">to_usize</span>() {
-                    <span class="prelude-val">Some</span>(<span class="ident">len</span>) <span class="op">=&gt;</span> (<span class="ident">len</span>, <span class="prelude-val">Some</span>(<span class="ident">len</span>)),
-                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> (<span class="ident">usize</span>::<span class="ident">MAX</span>, <span class="prelude-val">None</span>),
+                    <span class="prelude-val">Some</span>(<span class="ident">len</span>) <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">len</span>, <span class="prelude-val">Some</span>(<span class="ident">len</span>)),
+                    <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> (<span class="ident">usize</span>::<span class="ident">MAX</span>, <span class="prelude-val">None</span>),
                 };
             }
         }
@@ -834,7 +834,7 @@
     <span class="ident">A</span>: <span class="ident">Integer</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">ToPrimitive</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">next_back</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next_back</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">stop</span> <span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">state</span> {
             <span class="self">self</span>.<span class="ident">stop</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stop</span>.<span class="ident">clone</span>() <span class="op">-</span> <span class="self">self</span>.<span class="ident">one</span>.<span class="ident">clone</span>();
             <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">stop</span>.<span class="ident">clone</span>())
@@ -853,7 +853,7 @@
 
 <span class="doccomment">/// Return an iterator over the range [start, stop]</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range_inclusive</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">start</span>: <span class="ident">A</span>, <span class="ident">stop</span>: <span class="ident">A</span>) <span class="op">-&gt;</span> <span class="ident">RangeInclusive</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range_inclusive</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">start</span>: <span class="ident">A</span>, <span class="ident">stop</span>: <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RangeInclusive</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">A</span>: <span class="ident">Add</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">Output</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">PartialOrd</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">One</span>,
 {
@@ -870,11 +870,11 @@
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">A</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">next</span>() {
-            <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">x</span>),
-            <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
-                <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">done</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">state</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">stop</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">x</span>),
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">done</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">state</span> <span class="op">=</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">stop</span> {
                     <span class="self">self</span>.<span class="ident">done</span> <span class="op">=</span> <span class="bool-val">true</span>;
                     <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">range</span>.<span class="ident">stop</span>.<span class="ident">clone</span>())
                 } <span class="kw">else</span> {
@@ -885,15 +885,15 @@
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
         <span class="kw">let</span> (<span class="ident">lo</span>, <span class="ident">hi</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">size_hint</span>();
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">done</span> {
             (<span class="ident">lo</span>, <span class="ident">hi</span>)
         } <span class="kw">else</span> {
             <span class="kw">let</span> <span class="ident">lo</span> <span class="op">=</span> <span class="ident">lo</span>.<span class="ident">saturating_add</span>(<span class="number">1</span>);
             <span class="kw">let</span> <span class="ident">hi</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">hi</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=&gt;</span> <span class="ident">x</span>.<span class="ident">checked_add</span>(<span class="number">1</span>),
-                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
+                <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">x</span>.<span class="ident">checked_add</span>(<span class="number">1</span>),
+                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
             };
             (<span class="ident">lo</span>, <span class="ident">hi</span>)
         }
@@ -905,12 +905,12 @@
     <span class="ident">A</span>: <span class="ident">Sub</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">Output</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Integer</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">ToPrimitive</span>,
 {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">next_back</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next_back</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">stop</span> <span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">state</span> {
             <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">stop</span>.<span class="ident">clone</span>();
             <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">stop</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">stop</span>.<span class="ident">clone</span>() <span class="op">-</span> <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">one</span>.<span class="ident">clone</span>();
             <span class="prelude-val">Some</span>(<span class="ident">result</span>)
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">done</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">state</span> <span class="op">==</span> <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">stop</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">done</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">state</span> <span class="op">=</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">range</span>.<span class="ident">stop</span> {
             <span class="self">self</span>.<span class="ident">done</span> <span class="op">=</span> <span class="bool-val">true</span>;
             <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">range</span>.<span class="ident">stop</span>.<span class="ident">clone</span>())
         } <span class="kw">else</span> {
@@ -930,7 +930,7 @@
 
 <span class="doccomment">/// Return an iterator over the range [start, stop) by `step`. It handles overflow by stopping.</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range_step</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">start</span>: <span class="ident">A</span>, <span class="ident">stop</span>: <span class="ident">A</span>, <span class="ident">step</span>: <span class="ident">A</span>) <span class="op">-&gt;</span> <span class="ident">RangeStep</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range_step</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">start</span>: <span class="ident">A</span>, <span class="ident">stop</span>: <span class="ident">A</span>, <span class="ident">step</span>: <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RangeStep</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">A</span>: <span class="ident">CheckedAdd</span> <span class="op">+</span> <span class="ident">PartialOrd</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Zero</span>,
 {
@@ -950,12 +950,12 @@
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">A</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> (<span class="self">self</span>.<span class="ident">rev</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">stop</span>) <span class="op">||</span> (<span class="op">!</span><span class="self">self</span>.<span class="ident">rev</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">stop</span>) {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> (<span class="self">self</span>.<span class="ident">rev</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">stop</span>) <span class="op">|</span><span class="op">|</span> (<span class="op">!</span><span class="self">self</span>.<span class="ident">rev</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">&lt;</span> <span class="self">self</span>.<span class="ident">stop</span>) {
             <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">state</span>.<span class="ident">clone</span>();
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">state</span>.<span class="ident">checked_add</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">step</span>) {
-                <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">=</span> <span class="ident">x</span>,
-                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stop</span>.<span class="ident">clone</span>(),
+                <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">=</span> <span class="ident">x</span>,
+                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">stop</span>.<span class="ident">clone</span>(),
             }
             <span class="prelude-val">Some</span>(<span class="ident">result</span>)
         } <span class="kw">else</span> {
@@ -976,7 +976,7 @@
 
 <span class="doccomment">/// Return an iterator over the range [start, stop] by `step`. It handles overflow by stopping.</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range_step_inclusive</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">start</span>: <span class="ident">A</span>, <span class="ident">stop</span>: <span class="ident">A</span>, <span class="ident">step</span>: <span class="ident">A</span>) <span class="op">-&gt;</span> <span class="ident">RangeStepInclusive</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range_step_inclusive</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">start</span>: <span class="ident">A</span>, <span class="ident">stop</span>: <span class="ident">A</span>, <span class="ident">step</span>: <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RangeStepInclusive</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">A</span>: <span class="ident">CheckedAdd</span> <span class="op">+</span> <span class="ident">PartialOrd</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Zero</span>,
 {
@@ -997,14 +997,14 @@
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">A</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">done</span>
-            <span class="op">&amp;&amp;</span> ((<span class="self">self</span>.<span class="ident">rev</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">&gt;=</span> <span class="self">self</span>.<span class="ident">stop</span>) <span class="op">||</span> (<span class="op">!</span><span class="self">self</span>.<span class="ident">rev</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">&lt;=</span> <span class="self">self</span>.<span class="ident">stop</span>))
+            <span class="op">&amp;&amp;</span> ((<span class="self">self</span>.<span class="ident">rev</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">&gt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">stop</span>) <span class="op">|</span><span class="op">|</span> (<span class="op">!</span><span class="self">self</span>.<span class="ident">rev</span> <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">&lt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">stop</span>))
         {
             <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">state</span>.<span class="ident">clone</span>();
             <span class="kw">match</span> <span class="self">self</span>.<span class="ident">state</span>.<span class="ident">checked_add</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">step</span>) {
-                <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">=</span> <span class="ident">x</span>,
-                <span class="prelude-val">None</span> <span class="op">=&gt;</span> <span class="self">self</span>.<span class="ident">done</span> <span class="op">=</span> <span class="bool-val">true</span>,
+                <span class="prelude-val">Some</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">state</span> <span class="op">=</span> <span class="ident">x</span>,
+                <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">done</span> <span class="op">=</span> <span class="bool-val">true</span>,
             }
             <span class="prelude-val">Some</span>(<span class="ident">result</span>)
         } <span class="kw">else</span> {
@@ -1027,7 +1027,7 @@
 <span class="doccomment">/// it might panic in debug mode or wrap around in release mode.</span>
 <span class="doccomment">/// **This behavior is not guaranteed and may change at any time.**</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range_from</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">start</span>: <span class="ident">A</span>) <span class="op">-&gt;</span> <span class="ident">RangeFrom</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range_from</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">start</span>: <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RangeFrom</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">A</span>: <span class="ident">Add</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">Output</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">One</span>,
 {
@@ -1044,14 +1044,14 @@
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">A</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">state</span>.<span class="ident">clone</span>();
         <span class="self">self</span>.<span class="ident">state</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">state</span>.<span class="ident">clone</span>() <span class="op">+</span> <span class="self">self</span>.<span class="ident">one</span>.<span class="ident">clone</span>();
         <span class="prelude-val">Some</span>(<span class="ident">result</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
         (<span class="ident">usize</span>::<span class="ident">MAX</span>, <span class="prelude-val">None</span>)
     }
 }
@@ -1070,7 +1070,7 @@
 <span class="doccomment">/// it might panic in debug mode or wrap around in release mode.</span>
 <span class="doccomment">/// **This behavior is not guaranteed and may change at any time.**</span>
 <span class="attribute">#[<span class="ident">inline</span>]</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range_step_from</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">start</span>: <span class="ident">A</span>, <span class="ident">step</span>: <span class="ident">A</span>) <span class="op">-&gt;</span> <span class="ident">RangeStepFrom</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range_step_from</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="ident">start</span>: <span class="ident">A</span>, <span class="ident">step</span>: <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RangeStepFrom</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">A</span>: <span class="ident">Add</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">Output</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Clone</span>,
 {
@@ -1087,14 +1087,14 @@
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">A</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">result</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">state</span>.<span class="ident">clone</span>();
         <span class="self">self</span>.<span class="ident">state</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">state</span>.<span class="ident">clone</span>() <span class="op">+</span> <span class="self">self</span>.<span class="ident">step</span>.<span class="ident">clone</span>();
         <span class="prelude-val">Some</span>(<span class="ident">result</span>)
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
+    <span class="kw">fn</span> <span class="ident">size_hint</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">usize</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>) {
         (<span class="ident">usize</span>::<span class="ident">MAX</span>, <span class="prelude-val">None</span>)
     }
 }
@@ -1113,10 +1113,10 @@
         <span class="kw">struct</span> <span class="ident">Foo</span>;
 
         <span class="kw">impl</span> <span class="ident">ToPrimitive</span> <span class="kw">for</span> <span class="ident">Foo</span> {
-            <span class="kw">fn</span> <span class="ident">to_i64</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> {
+            <span class="kw">fn</span> <span class="ident">to_i64</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">i64</span><span class="op">&gt;</span> {
                 <span class="prelude-val">None</span>
             }
-            <span class="kw">fn</span> <span class="ident">to_u64</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
+            <span class="kw">fn</span> <span class="ident">to_u64</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
                 <span class="prelude-val">None</span>
             }
         }
@@ -1124,25 +1124,25 @@
         <span class="kw">impl</span> <span class="ident">Add</span><span class="op">&lt;</span><span class="ident">Foo</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Foo</span> {
             <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Foo</span>;
 
-            <span class="kw">fn</span> <span class="ident">add</span>(<span class="self">self</span>, <span class="kw">_</span>: <span class="ident">Foo</span>) <span class="op">-&gt;</span> <span class="ident">Foo</span> {
+            <span class="kw">fn</span> <span class="ident">add</span>(<span class="self">self</span>, <span class="kw">_</span>: <span class="ident">Foo</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Foo</span> {
                 <span class="ident">Foo</span>
             }
         }
 
         <span class="kw">impl</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">Foo</span> {
-            <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">Foo</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+            <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">Foo</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
                 <span class="bool-val">true</span>
             }
         }
 
         <span class="kw">impl</span> <span class="ident">PartialOrd</span> <span class="kw">for</span> <span class="ident">Foo</span> {
-            <span class="kw">fn</span> <span class="ident">partial_cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">Foo</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Ordering</span><span class="op">&gt;</span> {
+            <span class="kw">fn</span> <span class="ident">partial_cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">Foo</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Ordering</span><span class="op">&gt;</span> {
                 <span class="prelude-val">None</span>
             }
         }
 
         <span class="kw">impl</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">Foo</span> {
-            <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Foo</span> {
+            <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Foo</span> {
                 <span class="ident">Foo</span>
             }
         }
@@ -1150,13 +1150,13 @@
         <span class="kw">impl</span> <span class="ident">Mul</span><span class="op">&lt;</span><span class="ident">Foo</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Foo</span> {
             <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Foo</span>;
 
-            <span class="kw">fn</span> <span class="ident">mul</span>(<span class="self">self</span>, <span class="kw">_</span>: <span class="ident">Foo</span>) <span class="op">-&gt;</span> <span class="ident">Foo</span> {
+            <span class="kw">fn</span> <span class="ident">mul</span>(<span class="self">self</span>, <span class="kw">_</span>: <span class="ident">Foo</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Foo</span> {
                 <span class="ident">Foo</span>
             }
         }
 
         <span class="kw">impl</span> <span class="ident">One</span> <span class="kw">for</span> <span class="ident">Foo</span> {
-            <span class="kw">fn</span> <span class="ident">one</span>() <span class="op">-&gt;</span> <span class="ident">Foo</span> {
+            <span class="kw">fn</span> <span class="ident">one</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Foo</span> {
                 <span class="ident">Foo</span>
             }
         }

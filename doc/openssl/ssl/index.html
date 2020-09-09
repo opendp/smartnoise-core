@@ -42,14 +42,14 @@ configuration of the OpenSSL primitives for you.</p>
 
 <span class="kw">for</span> <span class="ident">stream</span> <span class="kw">in</span> <span class="ident">listener</span>.<span class="ident">incoming</span>() {
     <span class="kw">match</span> <span class="ident">stream</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">stream</span>) <span class="op">=&gt;</span> {
+        <span class="prelude-val">Ok</span>(<span class="ident">stream</span>) <span class="op">=</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">acceptor</span> <span class="op">=</span> <span class="ident">acceptor</span>.<span class="ident">clone</span>();
-            <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">||</span> {
+            <span class="ident">thread</span>::<span class="ident">spawn</span>(<span class="kw">move</span> <span class="op">|</span><span class="op">|</span> {
                 <span class="kw">let</span> <span class="ident">stream</span> <span class="op">=</span> <span class="ident">acceptor</span>.<span class="ident">accept</span>(<span class="ident">stream</span>).<span class="ident">unwrap</span>();
                 <span class="ident">handle_client</span>(<span class="ident">stream</span>);
             });
         }
-        <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=&gt;</span> { <span class="comment">/* connection failed */</span> }
+        <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span><span class="op">&gt;</span> { <span class="comment">/* connection failed */</span> }
     }
 }</pre></div>
 </div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>

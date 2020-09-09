@@ -2014,19 +2014,19 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">transparent</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">inner</span>: <span class="ident">randstate_t</span>,
-    <span class="ident">phantom</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>,
+    <span class="ident">phantom</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
         <span class="ident">RandState</span>::<span class="ident">new</span>()
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">uninit</span>();
             <span class="ident">gmp</span>::<span class="ident">randinit_set</span>(<span class="ident">inner</span>.<span class="ident">as_mut_ptr</span>(), <span class="self">self</span>.<span class="ident">as_raw</span>());
@@ -2072,7 +2072,7 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`new_mersenne_twister`]: #method.new_mersenne_twister</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
         <span class="ident">RandState</span>::<span class="ident">new_mersenne_twister</span>()
     }
 
@@ -2088,7 +2088,7 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">/// let u = rand.bits(32);</span>
     <span class="doccomment">/// println!(&quot;32 random bits: {:032b}&quot;, u);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_mersenne_twister</span>() <span class="op">-&gt;</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_mersenne_twister</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">uninit</span>();
             <span class="ident">gmp</span>::<span class="ident">randinit_mt</span>(<span class="ident">inner</span>.<span class="ident">as_mut_ptr</span>());
@@ -2120,7 +2120,7 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">/// let u = rand.bits(32);</span>
     <span class="doccomment">/// println!(&quot;32 random bits: {:032b}&quot;, u);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_linear_congruential</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>, <span class="ident">c</span>: <span class="ident">u32</span>, <span class="ident">m</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_linear_congruential</span>(<span class="ident">a</span>: <span class="kw-2">&amp;</span><span class="ident">Integer</span>, <span class="ident">c</span>: <span class="ident">u32</span>, <span class="ident">m</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">uninit</span>();
             <span class="ident">gmp</span>::<span class="ident">randinit_lc_2exp</span>(<span class="ident">inner</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">a</span>.<span class="ident">as_raw</span>(), <span class="ident">c</span>.<span class="ident">into</span>(), <span class="ident">m</span>.<span class="ident">into</span>());
@@ -2156,10 +2156,10 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`None`]: https://doc.rust-lang.org/nightly/core/option/enum.Option.html#variant.None</span>
     <span class="doccomment">/// [`new_linear_congruential`]: #method.new_linear_congruential</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_linear_congruential_size</span>(<span class="ident">size</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_linear_congruential_size</span>(<span class="ident">size</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">uninit</span>();
-            <span class="kw">if</span> <span class="ident">gmp</span>::<span class="ident">randinit_lc_2exp_size</span>(<span class="ident">inner</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">size</span>.<span class="ident">into</span>()) <span class="op">!=</span> <span class="number">0</span> {
+            <span class="kw">if</span> <span class="ident">gmp</span>::<span class="ident">randinit_lc_2exp_size</span>(<span class="ident">inner</span>.<span class="ident">as_mut_ptr</span>(), <span class="ident">size</span>.<span class="ident">into</span>()) <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
                 <span class="prelude-val">Some</span>(<span class="ident">RandState</span> {
                     <span class="ident">inner</span>: <span class="ident">inner</span>.<span class="ident">assume_init</span>(),
                     <span class="ident">phantom</span>: <span class="ident">PhantomData</span>,
@@ -2202,9 +2202,9 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">/// [`None`]: https://doc.rust-lang.org/nightly/core/option/enum.Option.html#variant.None</span>
     <span class="doccomment">/// [`RandGen`]: trait.RandGen.html</span>
     <span class="doccomment">/// [`boxed_clone`]: trait.RandGen.html#method.boxed_clone</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_custom</span>(<span class="ident">custom</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">RandGen</span>) <span class="op">-&gt;</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>::<span class="ident">new</span>(<span class="ident">custom</span>);
-        <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> <span class="ident">NonNull</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>::<span class="ident">from</span>(<span class="ident">Box</span>::<span class="ident">leak</span>(<span class="ident">b</span>));
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_custom</span>(<span class="ident">custom</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">RandGen</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>::<span class="ident">new</span>(<span class="ident">custom</span>);
+        <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> <span class="ident">NonNull</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>::<span class="ident">from</span>(<span class="ident">Box</span>::<span class="ident">leak</span>(<span class="ident">b</span>));
         <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">randstate_t</span> {
             <span class="ident">seed</span>: <span class="ident">randseed_t</span> {
                 <span class="ident">alloc</span>: <span class="ident">MaybeUninit</span>::<span class="ident">uninit</span>(),
@@ -2252,9 +2252,9 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">/// [`None`]: https://doc.rust-lang.org/nightly/core/option/enum.Option.html#variant.None</span>
     <span class="doccomment">/// [`RandGen`]: trait.RandGen.html</span>
     <span class="doccomment">/// [`boxed_clone`]: trait.RandGen.html#method.boxed_clone</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_custom_boxed</span>(<span class="ident">custom</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;&gt;</span>::<span class="ident">new</span>(<span class="ident">custom</span>);
-        <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> <span class="ident">NonNull</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;&gt;</span>::<span class="ident">from</span>(<span class="ident">Box</span>::<span class="ident">leak</span>(<span class="ident">b</span>));
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_custom_boxed</span>(<span class="ident">custom</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">new</span>(<span class="ident">custom</span>);
+        <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> <span class="ident">NonNull</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">from</span>(<span class="ident">Box</span>::<span class="ident">leak</span>(<span class="ident">b</span>));
         <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">randstate_t</span> {
             <span class="ident">seed</span>: <span class="ident">randseed_t</span> {
                 <span class="ident">alloc</span>: <span class="ident">MaybeUninit</span>::<span class="ident">uninit</span>(),
@@ -2302,7 +2302,7 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`randstate_t`]: https://docs.rs/gmp-mpfr-sys/~1.3/gmp_mpfr_sys/gmp/struct.randstate_t.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_raw</span>(<span class="ident">raw</span>: <span class="ident">randstate_t</span>) <span class="op">-&gt;</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_raw</span>(<span class="ident">raw</span>: <span class="ident">randstate_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
         <span class="ident">RandState</span> {
             <span class="ident">inner</span>: <span class="ident">raw</span>,
             <span class="ident">phantom</span>: <span class="ident">PhantomData</span>,
@@ -2343,7 +2343,7 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">/// [`new_custom`]: #method.new_custom</span>
     <span class="doccomment">/// [`randstate_t`]: https://docs.rs/gmp-mpfr-sys/~1.3/gmp_mpfr_sys/gmp/struct.randstate_t.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_raw</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">randstate_t</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_raw</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">randstate_t</span> {
         <span class="macro">assert</span><span class="macro">!</span>(
             <span class="op">!</span><span class="ident">ptr</span>::<span class="ident">eq</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">algdata</span>, <span class="kw-2">&amp;</span><span class="ident">CUSTOM_FUNCS</span>)
                 <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">ptr</span>::<span class="ident">eq</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">algdata</span>, <span class="kw-2">&amp;</span><span class="ident">THREAD_CUSTOM_FUNCS</span>),
@@ -2374,7 +2374,7 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`randstate_t`]: https://docs.rs/gmp-mpfr-sys/~1.3/gmp_mpfr_sys/gmp/struct.randstate_t.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">randstate_t</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">randstate_t</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span>
     }
 
@@ -2401,7 +2401,7 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`randstate_t`]: https://docs.rs/gmp-mpfr-sys/~1.3/gmp_mpfr_sys/gmp/struct.randstate_t.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_raw_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_raw_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span> {
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">inner</span>
     }
 
@@ -2441,13 +2441,13 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">/// [`new_custom_boxed`]: #method.new_custom_boxed</span>
     <span class="doccomment">/// [`new_custom`]: #method.new_custom</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_custom_boxed</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>, <span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_custom_boxed</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>, <span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="op">!</span><span class="ident">ptr</span>::<span class="ident">eq</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">algdata</span>, <span class="kw-2">&amp;</span><span class="ident">CUSTOM_BOXED_FUNCS</span>) {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>);
         }
         <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">ManuallyDrop</span>::<span class="ident">new</span>(<span class="self">self</span>);
-        <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> <span class="ident">m</span>.<span class="ident">inner</span>.<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;&gt;</span>().<span class="ident">as_ptr</span>();
-        <span class="kw">let</span> <span class="ident">boxed_box</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;&gt;</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">Box</span>::<span class="ident">from_raw</span>(<span class="ident">r_ptr</span>) };
+        <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> <span class="ident">m</span>.<span class="ident">inner</span>.<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
+        <span class="kw">let</span> <span class="ident">boxed_box</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">Box</span>::<span class="ident">from_raw</span>(<span class="ident">r_ptr</span>) };
         <span class="prelude-val">Ok</span>(<span class="kw-2">*</span><span class="ident">boxed_box</span>)
     }
 
@@ -2492,8 +2492,8 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">/// println!(&quot;16 random bits: {:016b}&quot;, u);</span>
     <span class="doccomment">/// ```</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bits</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">bits</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">bits</span> <span class="op">&lt;=</span> <span class="number">32</span>, <span class="string">&quot;bits out of range&quot;</span>);
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bits</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">bits</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">bits</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">32</span>, <span class="string">&quot;bits out of range&quot;</span>);
         <span class="kw">unsafe</span> { <span class="ident">gmp</span>::<span class="ident">urandomb_ui</span>(<span class="self">self</span>.<span class="ident">as_raw_mut</span>(), <span class="ident">bits</span>.<span class="ident">into</span>()) }.<span class="ident">cast</span>()
     }
 
@@ -2519,7 +2519,7 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`bits`]: #method.bits</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">below</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">bound</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">below</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">bound</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="macro">assert_ne</span><span class="macro">!</span>(<span class="ident">bound</span>, <span class="number">0</span>, <span class="string">&quot;cannot be below zero&quot;</span>);
         <span class="kw">unsafe</span> { <span class="ident">gmp</span>::<span class="ident">urandomm_ui</span>(<span class="self">self</span>.<span class="ident">as_raw_mut</span>(), <span class="ident">bound</span>.<span class="ident">into</span>()) }.<span class="ident">cast</span>()
     }
@@ -2554,12 +2554,12 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">transparent</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ThreadRandState</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="ident">inner</span>: <span class="ident">randstate_t</span>,
-    <span class="ident">phantom</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>,
+    <span class="ident">phantom</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">ThreadRandState</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">ThreadRandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ThreadRandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">uninit</span>();
             <span class="ident">gmp</span>::<span class="ident">randinit_set</span>(<span class="ident">inner</span>.<span class="ident">as_mut_ptr</span>(), <span class="self">self</span>.<span class="ident">as_raw</span>());
@@ -2621,9 +2621,9 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">/// [`Sync`]: https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html</span>
     <span class="doccomment">/// [`ThreadRandGen`]: trait.ThreadRandGen.html</span>
     <span class="doccomment">/// [`new_custom`]: struct.RandState.html#method.new_custom</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_custom</span>(<span class="ident">custom</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">ThreadRandGen</span>) <span class="op">-&gt;</span> <span class="ident">ThreadRandState</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>::<span class="ident">new</span>(<span class="ident">custom</span>);
-        <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> <span class="ident">NonNull</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>::<span class="ident">from</span>(<span class="ident">Box</span>::<span class="ident">leak</span>(<span class="ident">b</span>));
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_custom</span>(<span class="ident">custom</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">ThreadRandGen</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ThreadRandState</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>::<span class="ident">new</span>(<span class="ident">custom</span>);
+        <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> <span class="ident">NonNull</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>::<span class="ident">from</span>(<span class="ident">Box</span>::<span class="ident">leak</span>(<span class="ident">b</span>));
         <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">randstate_t</span> {
             <span class="ident">seed</span>: <span class="ident">randseed_t</span> {
                 <span class="ident">alloc</span>: <span class="ident">MaybeUninit</span>::<span class="ident">uninit</span>(),
@@ -2674,9 +2674,9 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">/// [`Sync`]: https://doc.rust-lang.org/nightly/core/marker/trait.Sync.html</span>
     <span class="doccomment">/// [`ThreadRandGen`]: trait.ThreadRandGen.html</span>
     <span class="doccomment">/// [`new_custom_boxed`]: struct.RandState.html#method.new_custom_boxed</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_custom_boxed</span>(<span class="ident">custom</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">ThreadRandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;&gt;</span>::<span class="ident">new</span>(<span class="ident">custom</span>);
-        <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> <span class="ident">NonNull</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;&gt;</span>::<span class="ident">from</span>(<span class="ident">Box</span>::<span class="ident">leak</span>(<span class="ident">b</span>));
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_custom_boxed</span>(<span class="ident">custom</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ThreadRandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">new</span>(<span class="ident">custom</span>);
+        <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> <span class="ident">NonNull</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">from</span>(<span class="ident">Box</span>::<span class="ident">leak</span>(<span class="ident">b</span>));
         <span class="kw">let</span> <span class="ident">inner</span> <span class="op">=</span> <span class="ident">randstate_t</span> {
             <span class="ident">seed</span>: <span class="ident">randseed_t</span> {
                 <span class="ident">alloc</span>: <span class="ident">MaybeUninit</span>::<span class="ident">uninit</span>(),
@@ -2733,7 +2733,7 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">/// [`from_raw`]: struct.RandState.html#method.from_raw</span>
     <span class="doccomment">/// [`randstate_t`]: https://docs.rs/gmp-mpfr-sys/~1.3/gmp_mpfr_sys/gmp/struct.randstate_t.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_raw</span>(<span class="ident">raw</span>: <span class="ident">randstate_t</span>) <span class="op">-&gt;</span> <span class="ident">ThreadRandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_raw</span>(<span class="ident">raw</span>: <span class="ident">randstate_t</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ThreadRandState</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span><span class="op">&gt;</span> {
         <span class="ident">ThreadRandState</span> {
             <span class="ident">inner</span>: <span class="ident">raw</span>,
             <span class="ident">phantom</span>: <span class="ident">PhantomData</span>,
@@ -2792,7 +2792,7 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">/// [`new_custom`]: #method.new_custom</span>
     <span class="doccomment">/// [`randstate_t`]: https://docs.rs/gmp-mpfr-sys/~1.3/gmp_mpfr_sys/gmp/struct.randstate_t.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_raw</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">randstate_t</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_raw</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">randstate_t</span> {
         <span class="macro">assert</span><span class="macro">!</span>(
             <span class="op">!</span><span class="ident">ptr</span>::<span class="ident">eq</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">algdata</span>, <span class="kw-2">&amp;</span><span class="ident">CUSTOM_FUNCS</span>)
                 <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">ptr</span>::<span class="ident">eq</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">algdata</span>, <span class="kw-2">&amp;</span><span class="ident">THREAD_CUSTOM_FUNCS</span>),
@@ -2836,7 +2836,7 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">/// [`as_raw`]: struct.RandState.html#method.as_raw</span>
     <span class="doccomment">/// [`randstate_t`]: https://docs.rs/gmp-mpfr-sys/~1.3/gmp_mpfr_sys/gmp/struct.randstate_t.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">randstate_t</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">randstate_t</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span>
     }
 
@@ -2877,7 +2877,7 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">/// [`as_raw_mut`]: struct.RandState.html#method.as_raw_mut</span>
     <span class="doccomment">/// [`randstate_t`]: https://docs.rs/gmp-mpfr-sys/~1.3/gmp_mpfr_sys/gmp/struct.randstate_t.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_raw_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_raw_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span> {
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">inner</span>
     }
 
@@ -2922,13 +2922,13 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">/// [`new_custom_boxed`]: #method.new_custom_boxed</span>
     <span class="doccomment">/// [`new_custom`]: #method.new_custom</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_custom_boxed</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>, <span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_custom_boxed</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>, <span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="op">!</span><span class="ident">ptr</span>::<span class="ident">eq</span>(<span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">algdata</span>, <span class="kw-2">&amp;</span><span class="ident">THREAD_CUSTOM_BOXED_FUNCS</span>) {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="self">self</span>);
         }
         <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">ManuallyDrop</span>::<span class="ident">new</span>(<span class="self">self</span>);
-        <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> <span class="ident">m</span>.<span class="ident">inner</span>.<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;&gt;</span>().<span class="ident">as_ptr</span>();
-        <span class="kw">let</span> <span class="ident">boxed_box</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;&gt;</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">Box</span>::<span class="ident">from_raw</span>(<span class="ident">r_ptr</span>) };
+        <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> <span class="ident">m</span>.<span class="ident">inner</span>.<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
+        <span class="kw">let</span> <span class="ident">boxed_box</span>: <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="ident">Box</span>::<span class="ident">from_raw</span>(<span class="ident">r_ptr</span>) };
         <span class="prelude-val">Ok</span>(<span class="kw-2">*</span><span class="ident">boxed_box</span>)
     }
 
@@ -3005,8 +3005,8 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">/// [`RandState`]: struct.RandState.html</span>
     <span class="doccomment">/// [`bits`]: struct.RandState.html#method.bits</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bits</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">bits</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
-        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">bits</span> <span class="op">&lt;=</span> <span class="number">32</span>, <span class="string">&quot;bits out of range&quot;</span>);
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">bits</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">bits</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
+        <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">bits</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">32</span>, <span class="string">&quot;bits out of range&quot;</span>);
         <span class="kw">unsafe</span> { <span class="ident">gmp</span>::<span class="ident">urandomb_ui</span>(<span class="self">self</span>.<span class="ident">as_raw_mut</span>(), <span class="ident">bits</span>.<span class="ident">into</span>()) }.<span class="ident">cast</span>()
     }
 
@@ -3040,7 +3040,7 @@ println!(&quot;32 random bits: {:032b}&quot;, u);
     <span class="doccomment">/// [`RandState`]: struct.RandState.html</span>
     <span class="doccomment">/// [`below`]: struct.RandState.html#method.below</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">below</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">bound</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">below</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">bound</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="macro">assert_ne</span><span class="macro">!</span>(<span class="ident">bound</span>, <span class="number">0</span>, <span class="string">&quot;cannot be below zero&quot;</span>);
         <span class="kw">unsafe</span> { <span class="ident">gmp</span>::<span class="ident">urandomm_ui</span>(<span class="self">self</span>.<span class="ident">as_raw_mut</span>(), <span class="ident">bound</span>.<span class="ident">into</span>()) }.<span class="ident">cast</span>()
     }
@@ -3108,7 +3108,7 @@ assert_eq!(state.bits(32), 0xC0B1_8CCF);
     <span class="doccomment">/// assert_eq!(rand.gen(), 0xC0B1_8CCF);</span>
     <span class="doccomment">/// assert_eq!(rand.seed, 0xC0B1_8CCF_4E25_2D17);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span>;
+    <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span>;
 
     <span class="doccomment">/// Gets up to 32 random bits.</span>
     <span class="doccomment">///</span>
@@ -3167,12 +3167,12 @@ assert_eq!(state.bits(32), 0xC0B1_8CCF);
     <span class="doccomment">/// ```</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`gen`]: #tymethod.gen</span>
-    <span class="kw">fn</span> <span class="ident">gen_bits</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">bits</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">gen_bits</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">bits</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="kw">let</span> <span class="ident">gen</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">gen</span>();
         <span class="kw">match</span> <span class="ident">bits</span> {
-            <span class="number">0</span> <span class="op">=&gt;</span> <span class="number">0</span>,
-            <span class="number">1</span>..<span class="op">=</span><span class="number">31</span> <span class="op">=&gt;</span> <span class="ident">gen</span> <span class="op">&gt;&gt;</span> (<span class="number">32</span> <span class="op">-</span> <span class="ident">bits</span>),
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">gen</span>,
+            <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
+            <span class="number">1</span>..<span class="op">=</span><span class="number">31</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">gen</span> <span class="op">&gt;</span><span class="op">&gt;</span> (<span class="number">32</span> <span class="op">-</span> <span class="ident">bits</span>),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">gen</span>,
         }
     }
 
@@ -3257,7 +3257,7 @@ assert_eq!(state.bits(32), 0xC0B1_8CCF);
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`None`]: https://doc.rust-lang.org/nightly/core/option/enum.Option.html#variant.None</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">boxed_clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">boxed_clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="prelude-val">None</span>
     }
 }
@@ -3328,7 +3328,7 @@ impl RandGen for Generator {
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`RandGen`]: trait.RandGen.html</span>
     <span class="doccomment">/// [`gen`]: trait.RandGen.html#tymethod.gen</span>
-    <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span>;
+    <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span>;
 
     <span class="doccomment">/// Gets up to 32 random bits.</span>
     <span class="doccomment">///</span>
@@ -3345,12 +3345,12 @@ impl RandGen for Generator {
     <span class="doccomment">/// [`RandGen`]: trait.RandGen.html</span>
     <span class="doccomment">/// [`gen_bits`]: trait.RandGen.html#method.gen_bits</span>
     <span class="doccomment">/// [`gen`]: #tymethod.gen</span>
-    <span class="kw">fn</span> <span class="ident">gen_bits</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">bits</span>: <span class="ident">u32</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">fn</span> <span class="ident">gen_bits</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">bits</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="kw">let</span> <span class="ident">gen</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">gen</span>();
         <span class="kw">match</span> <span class="ident">bits</span> {
-            <span class="number">0</span> <span class="op">=&gt;</span> <span class="number">0</span>,
-            <span class="number">1</span>..<span class="op">=</span><span class="number">32</span> <span class="op">=&gt;</span> <span class="ident">gen</span> <span class="op">&gt;&gt;</span> (<span class="number">32</span> <span class="op">-</span> <span class="ident">bits</span>),
-            <span class="kw">_</span> <span class="op">=&gt;</span> <span class="ident">gen</span>,
+            <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
+            <span class="number">1</span>..<span class="op">=</span><span class="number">32</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">gen</span> <span class="op">&gt;</span><span class="op">&gt;</span> (<span class="number">32</span> <span class="op">-</span> <span class="ident">bits</span>),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">gen</span>,
         }
     }
 
@@ -3386,7 +3386,7 @@ impl RandGen for Generator {
     <span class="doccomment">/// [`RandGen`]: trait.RandGen.html</span>
     <span class="doccomment">/// [`boxed_clone`]: trait.RandGen.html#method.boxed_clone</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">boxed_clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">boxed_clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="prelude-val">None</span>
     }
 }
@@ -3415,47 +3415,47 @@ impl RandGen for Generator {
 }
 
 <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">custom_seed</span>(<span class="ident">rstate</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>, <span class="ident">seed</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpz_t</span>) {
-    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
+    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
     (<span class="kw-2">*</span><span class="ident">r_ptr</span>).<span class="ident">seed</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="macro">cast_ptr</span><span class="macro">!</span>(<span class="ident">seed</span>, <span class="ident">Integer</span>));
 }
 
 <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">custom_get</span>(<span class="ident">rstate</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>, <span class="ident">dest</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>, <span class="ident">nbits</span>: <span class="ident">c_ulong</span>) {
-    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
+    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
     <span class="ident">gen_bits</span>(<span class="kw-2">*</span><span class="ident">r_ptr</span>, <span class="ident">dest</span>, <span class="ident">nbits</span>);
 }
 
 <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">custom_clear</span>(<span class="ident">rstate</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>) {
-    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
+    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
     <span class="ident">drop</span>(<span class="ident">Box</span>::<span class="ident">from_raw</span>(<span class="ident">r_ptr</span>));
 }
 
 <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">custom_iset</span>(<span class="ident">dst</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>, <span class="ident">src</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">randstate_t</span>) {
-    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">src</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
+    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">src</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
     <span class="ident">gen_copy</span>(<span class="kw-2">*</span><span class="ident">r_ptr</span>, <span class="ident">dst</span>);
 }
 
 <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">custom_boxed_seed</span>(<span class="ident">rstate</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>, <span class="ident">seed</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpz_t</span>) {
-    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;&gt;</span>().<span class="ident">as_ptr</span>();
+    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
     (<span class="kw-2">*</span><span class="ident">r_ptr</span>).<span class="ident">seed</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="macro">cast_ptr</span><span class="macro">!</span>(<span class="ident">seed</span>, <span class="ident">Integer</span>));
 }
 
 <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">custom_boxed_get</span>(<span class="ident">rstate</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>, <span class="ident">dest</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>, <span class="ident">nbits</span>: <span class="ident">c_ulong</span>) {
-    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;&gt;</span>().<span class="ident">as_ptr</span>();
+    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
     <span class="ident">gen_bits</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">r_ptr</span>, <span class="ident">dest</span>, <span class="ident">nbits</span>);
 }
 
 <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">custom_boxed_clear</span>(<span class="ident">rstate</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>) {
-    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;&gt;</span>().<span class="ident">as_ptr</span>();
+    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
     <span class="ident">drop</span>(<span class="ident">Box</span>::<span class="ident">from_raw</span>(<span class="ident">r_ptr</span>));
 }
 
 <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">custom_boxed_iset</span>(<span class="ident">dst</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>, <span class="ident">src</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">randstate_t</span>) {
-    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">src</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;&gt;</span>().<span class="ident">as_ptr</span>();
+    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">src</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
     <span class="ident">gen_copy</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">r_ptr</span>, <span class="ident">dst</span>);
 }
 
 <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">thread_custom_seed</span>(<span class="ident">rstate</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>, <span class="ident">seed</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpz_t</span>) {
-    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
+    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
     (<span class="kw-2">*</span><span class="ident">r_ptr</span>).<span class="ident">seed</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="macro">cast_ptr</span><span class="macro">!</span>(<span class="ident">seed</span>, <span class="ident">Integer</span>));
 }
 
@@ -3464,22 +3464,22 @@ impl RandGen for Generator {
     <span class="ident">dest</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>,
     <span class="ident">nbits</span>: <span class="ident">c_ulong</span>,
 ) {
-    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
+    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
     <span class="ident">thread_gen_bits</span>(<span class="kw-2">*</span><span class="ident">r_ptr</span>, <span class="ident">dest</span>, <span class="ident">nbits</span>);
 }
 
 <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">thread_custom_clear</span>(<span class="ident">rstate</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>) {
-    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
+    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
     <span class="ident">drop</span>(<span class="ident">Box</span>::<span class="ident">from_raw</span>(<span class="ident">r_ptr</span>));
 }
 
 <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">thread_custom_iset</span>(<span class="ident">dst</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>, <span class="ident">src</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">randstate_t</span>) {
-    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">src</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
+    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">src</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
     <span class="ident">thread_gen_copy</span>(<span class="kw-2">*</span><span class="ident">r_ptr</span>, <span class="ident">dst</span>);
 }
 
 <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">thread_custom_boxed_seed</span>(<span class="ident">rstate</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>, <span class="ident">seed</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">mpz_t</span>) {
-    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;&gt;</span>().<span class="ident">as_ptr</span>();
+    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
     (<span class="kw-2">*</span><span class="ident">r_ptr</span>).<span class="ident">seed</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="macro">cast_ptr</span><span class="macro">!</span>(<span class="ident">seed</span>, <span class="ident">Integer</span>));
 }
 
@@ -3488,61 +3488,61 @@ impl RandGen for Generator {
     <span class="ident">dest</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>,
     <span class="ident">nbits</span>: <span class="ident">c_ulong</span>,
 ) {
-    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;&gt;</span>().<span class="ident">as_ptr</span>();
+    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
     <span class="ident">thread_gen_bits</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">r_ptr</span>, <span class="ident">dest</span>, <span class="ident">nbits</span>);
 }
 
 <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">thread_custom_boxed_clear</span>(<span class="ident">rstate</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>) {
-    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;&gt;</span>().<span class="ident">as_ptr</span>();
+    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">rstate</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
     <span class="ident">drop</span>(<span class="ident">Box</span>::<span class="ident">from_raw</span>(<span class="ident">r_ptr</span>));
 }
 
 <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">thread_custom_boxed_iset</span>(<span class="ident">dst</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>, <span class="ident">src</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">randstate_t</span>) {
-    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">src</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;&gt;</span>().<span class="ident">as_ptr</span>();
+    <span class="kw">let</span> <span class="ident">r_ptr</span> <span class="op">=</span> (<span class="kw-2">*</span><span class="ident">src</span>).<span class="ident">seed</span>.<span class="ident">d</span>.<span class="ident">cast</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>().<span class="ident">as_ptr</span>();
     <span class="ident">thread_gen_copy</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">r_ptr</span>, <span class="ident">dst</span>);
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_64</span>)]</span>
-<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">gen_bits</span>(<span class="ident">gen</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">RandGen</span>, <span class="ident">dest</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>, <span class="ident">nbits</span>: <span class="ident">c_ulong</span>) {
+<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">gen_bits</span>(<span class="ident">gen</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">RandGen</span>, <span class="ident">dest</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>, <span class="ident">nbits</span>: <span class="ident">c_ulong</span>) {
     <span class="kw">let</span> (<span class="ident">limbs</span>, <span class="ident">rest</span>) <span class="op">=</span> (<span class="ident">nbits</span> <span class="op">/</span> <span class="number">64</span>, <span class="ident">nbits</span> <span class="op">%</span> <span class="number">64</span>);
     <span class="kw">let</span> <span class="ident">limbs</span> <span class="op">=</span> <span class="ident">limbs</span>.<span class="ident">unwrapped_as</span>::<span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span>();
     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">limbs</span> {
-        <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">gen</span>.<span class="ident">gen</span>()) <span class="op">|</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">gen</span>.<span class="ident">gen</span>()) <span class="op">&lt;&lt;</span> <span class="number">32</span>;
+        <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">gen</span>.<span class="ident">gen</span>()) <span class="op">|</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">gen</span>.<span class="ident">gen</span>()) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">32</span>;
         <span class="kw-2">*</span><span class="ident">dest</span>.<span class="ident">offset</span>(<span class="ident">i</span>) <span class="op">=</span> <span class="ident">n</span>.<span class="ident">unwrapped_cast</span>();
     }
-    <span class="kw">if</span> <span class="ident">rest</span> <span class="op">&gt;=</span> <span class="number">32</span> {
+    <span class="kw">if</span> <span class="ident">rest</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">32</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">gen</span>.<span class="ident">gen</span>());
         <span class="kw">if</span> <span class="ident">rest</span> <span class="op">&gt;</span> <span class="number">32</span> {
-            <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="op">!</span>(<span class="op">!</span><span class="number">0</span> <span class="op">&lt;&lt;</span> (<span class="ident">rest</span> <span class="op">-</span> <span class="number">32</span>));
-            <span class="ident">n</span> <span class="op">|=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">gen</span>.<span class="ident">gen_bits</span>((<span class="ident">rest</span> <span class="op">-</span> <span class="number">32</span>).<span class="ident">unwrapped_cast</span>()) <span class="op">&amp;</span> <span class="ident">mask</span>) <span class="op">&lt;&lt;</span> <span class="number">32</span>;
+            <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="op">!</span>(<span class="op">!</span><span class="number">0</span> <span class="op">&lt;</span><span class="op">&lt;</span> (<span class="ident">rest</span> <span class="op">-</span> <span class="number">32</span>));
+            <span class="ident">n</span> <span class="op">|</span><span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">gen</span>.<span class="ident">gen_bits</span>((<span class="ident">rest</span> <span class="op">-</span> <span class="number">32</span>).<span class="ident">unwrapped_cast</span>()) <span class="op">&amp;</span> <span class="ident">mask</span>) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">32</span>;
         }
         <span class="kw-2">*</span><span class="ident">dest</span>.<span class="ident">offset</span>(<span class="ident">limbs</span>) <span class="op">=</span> <span class="ident">n</span>.<span class="ident">unwrapped_cast</span>();
     } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">rest</span> <span class="op">&gt;</span> <span class="number">0</span> {
-        <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="op">!</span>(<span class="op">!</span><span class="number">0</span> <span class="op">&lt;&lt;</span> <span class="ident">rest</span>);
+        <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="op">!</span>(<span class="op">!</span><span class="number">0</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">rest</span>);
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">gen</span>.<span class="ident">gen_bits</span>(<span class="ident">rest</span>.<span class="ident">unwrapped_cast</span>()) <span class="op">&amp;</span> <span class="ident">mask</span>);
         <span class="kw-2">*</span><span class="ident">dest</span>.<span class="ident">offset</span>(<span class="ident">limbs</span>) <span class="op">=</span> <span class="ident">n</span>.<span class="ident">unwrapped_cast</span>();
     }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_32</span>)]</span>
-<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">gen_bits</span>(<span class="ident">gen</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">RandGen</span>, <span class="ident">dest</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>, <span class="ident">nbits</span>: <span class="ident">c_ulong</span>) {
+<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">gen_bits</span>(<span class="ident">gen</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">RandGen</span>, <span class="ident">dest</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>, <span class="ident">nbits</span>: <span class="ident">c_ulong</span>) {
     <span class="kw">let</span> (<span class="ident">limbs</span>, <span class="ident">rest</span>) <span class="op">=</span> (<span class="ident">nbits</span> <span class="op">/</span> <span class="number">32</span>, <span class="ident">nbits</span> <span class="op">%</span> <span class="number">32</span>);
     <span class="kw">let</span> <span class="ident">limbs</span> <span class="op">=</span> <span class="ident">limbs</span>.<span class="ident">unwrapped_as</span>::<span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span>();
     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">limbs</span> {
         <span class="kw-2">*</span><span class="ident">dest</span>.<span class="ident">offset</span>(<span class="ident">i</span>) <span class="op">=</span> <span class="ident">gen</span>.<span class="ident">gen</span>().<span class="ident">unwrapped_cast</span>();
     }
     <span class="kw">if</span> <span class="ident">rest</span> <span class="op">&gt;</span> <span class="number">0</span> {
-        <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="op">!</span>(<span class="op">!</span><span class="number">0</span> <span class="op">&lt;&lt;</span> <span class="ident">rest</span>);
+        <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="op">!</span>(<span class="op">!</span><span class="number">0</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">rest</span>);
         <span class="kw-2">*</span><span class="ident">dest</span>.<span class="ident">offset</span>(<span class="ident">limbs</span>) <span class="op">=</span> (<span class="ident">gen</span>.<span class="ident">gen_bits</span>(<span class="ident">rest</span>.<span class="ident">unwrapped_cast</span>()) <span class="op">&amp;</span> <span class="ident">mask</span>).<span class="ident">unwrapped_cast</span>();
     }
 }
 
-<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">gen_copy</span>(<span class="ident">gen</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">RandGen</span>, <span class="ident">dst</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>) {
+<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">gen_copy</span>(<span class="ident">gen</span>: <span class="kw-2">&amp;</span><span class="ident">dyn</span> <span class="ident">RandGen</span>, <span class="ident">dst</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>) {
     <span class="comment">// Do not panic here if boxed_clone returns None, as panics cannot</span>
     <span class="comment">// cross FFI boundaries. Instead, set dst_ptr.seed.d to null.</span>
     <span class="kw">let</span> (<span class="ident">dst_r_ptr</span>, <span class="ident">funcs</span>) <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">other</span>) <span class="op">=</span> <span class="ident">gen</span>.<span class="ident">boxed_clone</span>() {
-        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;&gt;</span>::<span class="ident">new</span>(<span class="ident">other</span>);
-        <span class="kw">let</span> <span class="ident">dst_r_ptr</span> <span class="op">=</span> <span class="ident">NonNull</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;&gt;</span>::<span class="ident">from</span>(<span class="ident">Box</span>::<span class="ident">leak</span>(<span class="ident">b</span>));
+        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">new</span>(<span class="ident">other</span>);
+        <span class="kw">let</span> <span class="ident">dst_r_ptr</span> <span class="op">=</span> <span class="ident">NonNull</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">from</span>(<span class="ident">Box</span>::<span class="ident">leak</span>(<span class="ident">b</span>));
         (<span class="ident">dst_r_ptr</span>, <span class="kw-2">&amp;</span><span class="ident">CUSTOM_BOXED_FUNCS</span>)
     } <span class="kw">else</span> {
         (<span class="ident">NonNull</span>::<span class="ident">dangling</span>(), <span class="kw-2">&amp;</span><span class="ident">ABORT_FUNCS</span>)
@@ -3559,46 +3559,46 @@ impl RandGen for Generator {
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_64</span>)]</span>
-<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">thread_gen_bits</span>(<span class="ident">gen</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">ThreadRandGen</span>, <span class="ident">dest</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>, <span class="ident">nbits</span>: <span class="ident">c_ulong</span>) {
+<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">thread_gen_bits</span>(<span class="ident">gen</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">ThreadRandGen</span>, <span class="ident">dest</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>, <span class="ident">nbits</span>: <span class="ident">c_ulong</span>) {
     <span class="kw">let</span> (<span class="ident">limbs</span>, <span class="ident">rest</span>) <span class="op">=</span> (<span class="ident">nbits</span> <span class="op">/</span> <span class="number">64</span>, <span class="ident">nbits</span> <span class="op">%</span> <span class="number">64</span>);
     <span class="kw">let</span> <span class="ident">limbs</span> <span class="op">=</span> <span class="ident">limbs</span>.<span class="ident">unwrapped_as</span>::<span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span>();
     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">limbs</span> {
-        <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">gen</span>.<span class="ident">gen</span>()) <span class="op">|</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">gen</span>.<span class="ident">gen</span>()) <span class="op">&lt;&lt;</span> <span class="number">32</span>;
+        <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">gen</span>.<span class="ident">gen</span>()) <span class="op">|</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">gen</span>.<span class="ident">gen</span>()) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">32</span>;
         <span class="kw-2">*</span><span class="ident">dest</span>.<span class="ident">offset</span>(<span class="ident">i</span>) <span class="op">=</span> <span class="ident">n</span>.<span class="ident">unwrapped_cast</span>();
     }
-    <span class="kw">if</span> <span class="ident">rest</span> <span class="op">&gt;=</span> <span class="number">32</span> {
+    <span class="kw">if</span> <span class="ident">rest</span> <span class="op">&gt;</span><span class="op">=</span> <span class="number">32</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">gen</span>.<span class="ident">gen</span>());
         <span class="kw">if</span> <span class="ident">rest</span> <span class="op">&gt;</span> <span class="number">32</span> {
-            <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="op">!</span>(<span class="op">!</span><span class="number">0</span> <span class="op">&lt;&lt;</span> (<span class="ident">rest</span> <span class="op">-</span> <span class="number">32</span>));
-            <span class="ident">n</span> <span class="op">|=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">gen</span>.<span class="ident">gen_bits</span>((<span class="ident">rest</span> <span class="op">-</span> <span class="number">32</span>).<span class="ident">unwrapped_cast</span>()) <span class="op">&amp;</span> <span class="ident">mask</span>) <span class="op">&lt;&lt;</span> <span class="number">32</span>;
+            <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="op">!</span>(<span class="op">!</span><span class="number">0</span> <span class="op">&lt;</span><span class="op">&lt;</span> (<span class="ident">rest</span> <span class="op">-</span> <span class="number">32</span>));
+            <span class="ident">n</span> <span class="op">|</span><span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">gen</span>.<span class="ident">gen_bits</span>((<span class="ident">rest</span> <span class="op">-</span> <span class="number">32</span>).<span class="ident">unwrapped_cast</span>()) <span class="op">&amp;</span> <span class="ident">mask</span>) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">32</span>;
         }
         <span class="kw-2">*</span><span class="ident">dest</span>.<span class="ident">offset</span>(<span class="ident">limbs</span>) <span class="op">=</span> <span class="ident">n</span>.<span class="ident">unwrapped_cast</span>();
     } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">rest</span> <span class="op">&gt;</span> <span class="number">0</span> {
-        <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="op">!</span>(<span class="op">!</span><span class="number">0</span> <span class="op">&lt;&lt;</span> <span class="ident">rest</span>);
+        <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="op">!</span>(<span class="op">!</span><span class="number">0</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">rest</span>);
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">gen</span>.<span class="ident">gen_bits</span>(<span class="ident">rest</span>.<span class="ident">unwrapped_cast</span>()) <span class="op">&amp;</span> <span class="ident">mask</span>);
         <span class="kw-2">*</span><span class="ident">dest</span>.<span class="ident">offset</span>(<span class="ident">limbs</span>) <span class="op">=</span> <span class="ident">n</span>.<span class="ident">unwrapped_cast</span>();
     }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_32</span>)]</span>
-<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">thread_gen_bits</span>(<span class="ident">gen</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw">dyn</span> <span class="ident">ThreadRandGen</span>, <span class="ident">dest</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>, <span class="ident">nbits</span>: <span class="ident">c_ulong</span>) {
+<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">thread_gen_bits</span>(<span class="ident">gen</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">dyn</span> <span class="ident">ThreadRandGen</span>, <span class="ident">dest</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">limb_t</span>, <span class="ident">nbits</span>: <span class="ident">c_ulong</span>) {
     <span class="kw">let</span> (<span class="ident">limbs</span>, <span class="ident">rest</span>) <span class="op">=</span> (<span class="ident">nbits</span> <span class="op">/</span> <span class="number">32</span>, <span class="ident">nbits</span> <span class="op">%</span> <span class="number">32</span>);
     <span class="kw">let</span> <span class="ident">limbs</span> <span class="op">=</span> <span class="ident">limbs</span>.<span class="ident">unwrapped_as</span>::<span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span>();
     <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">limbs</span> {
         <span class="kw-2">*</span><span class="ident">dest</span>.<span class="ident">offset</span>(<span class="ident">i</span>) <span class="op">=</span> <span class="ident">gen</span>.<span class="ident">gen</span>().<span class="ident">unwrapped_cast</span>();
     }
     <span class="kw">if</span> <span class="ident">rest</span> <span class="op">&gt;</span> <span class="number">0</span> {
-        <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="op">!</span>(<span class="op">!</span><span class="number">0</span> <span class="op">&lt;&lt;</span> <span class="ident">rest</span>);
+        <span class="kw">let</span> <span class="ident">mask</span> <span class="op">=</span> <span class="op">!</span>(<span class="op">!</span><span class="number">0</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">rest</span>);
         <span class="kw-2">*</span><span class="ident">dest</span>.<span class="ident">offset</span>(<span class="ident">limbs</span>) <span class="op">=</span> (<span class="ident">gen</span>.<span class="ident">gen_bits</span>(<span class="ident">rest</span>.<span class="ident">unwrapped_cast</span>()) <span class="op">&amp;</span> <span class="ident">mask</span>).<span class="ident">unwrapped_cast</span>();
     }
 }
 
-<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">thread_gen_copy</span>(<span class="ident">gen</span>: <span class="kw-2">&amp;</span><span class="kw">dyn</span> <span class="ident">ThreadRandGen</span>, <span class="ident">dst</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>) {
+<span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">thread_gen_copy</span>(<span class="ident">gen</span>: <span class="kw-2">&amp;</span><span class="ident">dyn</span> <span class="ident">ThreadRandGen</span>, <span class="ident">dst</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">randstate_t</span>) {
     <span class="comment">// Do not panic here if boxed_clone returns None, as panics cannot</span>
     <span class="comment">// cross FFI boundaries. Instead, set dst_ptr.seed.d to null.</span>
     <span class="kw">let</span> (<span class="ident">dst_r_ptr</span>, <span class="ident">funcs</span>) <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">other</span>) <span class="op">=</span> <span class="ident">gen</span>.<span class="ident">boxed_clone</span>() {
-        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;&gt;</span>::<span class="ident">new</span>(<span class="ident">other</span>);
-        <span class="kw">let</span> <span class="ident">dst_r_ptr</span> <span class="op">=</span> <span class="ident">NonNull</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;&gt;</span>::<span class="ident">from</span>(<span class="ident">Box</span>::<span class="ident">leak</span>(<span class="ident">b</span>));
+        <span class="kw">let</span> <span class="ident">b</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">new</span>(<span class="ident">other</span>);
+        <span class="kw">let</span> <span class="ident">dst_r_ptr</span> <span class="op">=</span> <span class="ident">NonNull</span>::<span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">from</span>(<span class="ident">Box</span>::<span class="ident">leak</span>(<span class="ident">b</span>));
         (<span class="ident">dst_r_ptr</span>, <span class="kw-2">&amp;</span><span class="ident">THREAD_CUSTOM_BOXED_FUNCS</span>)
     } <span class="kw">else</span> {
         (<span class="ident">NonNull</span>::<span class="ident">dangling</span>(), <span class="kw-2">&amp;</span><span class="ident">ABORT_FUNCS</span>)
@@ -3671,7 +3671,7 @@ impl RandGen for Generator {
     <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">transparent</span>)]</span>
     <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Private</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">randstate_t</span>);
     <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">SealedMutRandState</span> {
-        <span class="kw">fn</span> <span class="ident">private</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Private</span>;
+        <span class="kw">fn</span> <span class="ident">private</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Private</span>;
     }
 }
 <span class="kw">use</span> <span class="self">self</span>::<span class="ident">hide</span>::{<span class="ident">Private</span>, <span class="ident">SealedMutRandState</span>};
@@ -3679,14 +3679,14 @@ impl RandGen for Generator {
 <span class="kw">impl</span> <span class="ident">MutRandState</span> <span class="kw">for</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {}
 <span class="kw">impl</span> <span class="ident">SealedMutRandState</span> <span class="kw">for</span> <span class="ident">RandState</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">private</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Private</span> {
+    <span class="kw">fn</span> <span class="ident">private</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Private</span> {
         <span class="ident">Private</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">inner</span>)
     }
 }
 <span class="kw">impl</span> <span class="ident">MutRandState</span> <span class="kw">for</span> <span class="ident">ThreadRandState</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {}
 <span class="kw">impl</span> <span class="ident">SealedMutRandState</span> <span class="kw">for</span> <span class="ident">ThreadRandState</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">private</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Private</span> {
+    <span class="kw">fn</span> <span class="ident">private</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Private</span> {
         <span class="ident">Private</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">inner</span>)
     }
 }
@@ -3703,14 +3703,14 @@ impl RandGen for Generator {
     }
 
     <span class="kw">impl</span> <span class="ident">RandGen</span> <span class="kw">for</span> <span class="ident">SimpleGenerator</span> {
-        <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+        <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
             <span class="self">self</span>.<span class="ident">seed</span> <span class="op">=</span> <span class="self">self</span>
                 .<span class="ident">seed</span>
                 .<span class="ident">wrapping_mul</span>(<span class="number">6_364_136_223_846_793_005</span>)
                 .<span class="ident">wrapping_add</span>(<span class="number">1</span>);
-            (<span class="self">self</span>.<span class="ident">seed</span> <span class="op">&gt;&gt;</span> <span class="number">32</span>).<span class="ident">cast</span>()
+            (<span class="self">self</span>.<span class="ident">seed</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">32</span>).<span class="ident">cast</span>()
         }
-        <span class="kw">fn</span> <span class="ident">boxed_clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">boxed_clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">RandGen</span><span class="op">&gt;</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">other</span> <span class="op">=</span> <span class="ident">SimpleGenerator</span> { <span class="ident">seed</span>: <span class="self">self</span>.<span class="ident">seed</span> };
             <span class="kw">let</span> <span class="ident">boxed</span> <span class="op">=</span> <span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">other</span>);
             <span class="prelude-val">Some</span>(<span class="ident">boxed</span>)
@@ -3745,7 +3745,7 @@ impl RandGen for Generator {
     <span class="kw">struct</span> <span class="ident">NoCloneGenerator</span>;
 
     <span class="kw">impl</span> <span class="ident">RandGen</span> <span class="kw">for</span> <span class="ident">NoCloneGenerator</span> {
-        <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+        <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
             <span class="number">0</span>
         }
     }
@@ -3773,14 +3773,14 @@ impl RandGen for Generator {
     }
 
     <span class="kw">impl</span> <span class="ident">ThreadRandGen</span> <span class="kw">for</span> <span class="ident">ThreadSimpleGenerator</span> {
-        <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+        <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
             <span class="self">self</span>.<span class="ident">seed</span> <span class="op">=</span> <span class="self">self</span>
                 .<span class="ident">seed</span>
                 .<span class="ident">wrapping_mul</span>(<span class="number">6_364_136_223_846_793_005</span>)
                 .<span class="ident">wrapping_add</span>(<span class="number">1</span>);
-            (<span class="self">self</span>.<span class="ident">seed</span> <span class="op">&gt;&gt;</span> <span class="number">32</span>).<span class="ident">cast</span>()
+            (<span class="self">self</span>.<span class="ident">seed</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">32</span>).<span class="ident">cast</span>()
         }
-        <span class="kw">fn</span> <span class="ident">boxed_clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;&gt;</span> {
+        <span class="kw">fn</span> <span class="ident">boxed_clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="ident">dyn</span> <span class="ident">ThreadRandGen</span><span class="op">&gt;</span><span class="op">&gt;</span> {
             <span class="kw">let</span> <span class="ident">other</span> <span class="op">=</span> <span class="ident">ThreadSimpleGenerator</span> {
                 <span class="ident">_dummy</span>: <span class="ident">ptr</span>::<span class="ident">null</span>(),
                 <span class="ident">seed</span>: <span class="self">self</span>.<span class="ident">seed</span>,
@@ -3821,7 +3821,7 @@ impl RandGen for Generator {
     <span class="kw">struct</span> <span class="ident">ThreadNoCloneGenerator</span>;
 
     <span class="kw">impl</span> <span class="ident">ThreadRandGen</span> <span class="kw">for</span> <span class="ident">ThreadNoCloneGenerator</span> {
-        <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u32</span> {
+        <span class="kw">fn</span> <span class="ident">gen</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
             <span class="number">0</span>
         }
     }

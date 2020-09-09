@@ -224,7 +224,7 @@
     <span class="doccomment">/// assert_eq!(y.order_statistic(2), 0.0);</span>
     <span class="doccomment">/// assert!(y != [0.0, 3.0, -2.0]);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">order_statistic</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">order</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">order_statistic</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">order</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 
     <span class="doccomment">/// Returns the median value from the data</span>
     <span class="doccomment">///</span>
@@ -243,7 +243,7 @@
     <span class="doccomment">/// let mut y = [0.0, 3.0, -2.0];</span>
     <span class="doccomment">/// assert_eq!(y.median(), 0.0);</span>
     <span class="doccomment">/// assert!(y != [0.0, 3.0, -2.0]);</span>
-    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 
     <span class="doccomment">/// Estimates the tau-th quantile from the data. The tau-th quantile</span>
     <span class="doccomment">/// is the data value where the cumulative distribution function crosses</span>
@@ -269,7 +269,7 @@
     <span class="doccomment">/// assert_eq!(y.quantile(0.5), 0.0);</span>
     <span class="doccomment">/// assert!(y != [0.0, 3.0, -2.0]);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">quantile</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">tau</span>: <span class="ident">f64</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">quantile</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">tau</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 
     <span class="doccomment">/// Estimates the p-Percentile value from the data.</span>
     <span class="doccomment">///</span>
@@ -295,7 +295,7 @@
     <span class="doccomment">/// assert!(y.percentile(105).is_nan());</span>
     <span class="doccomment">/// assert!(y != [1.0, 5.0, 3.0, 4.0, 10.0, 9.0, 6.0, 7.0, 8.0, 2.0]);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">percentile</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">p</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">percentile</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">p</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 
     <span class="doccomment">/// Estimates the first quartile value from the data.</span>
     <span class="doccomment">///</span>
@@ -320,7 +320,7 @@
     <span class="doccomment">/// assert!(y != [2.0, 1.0, 3.0, 4.0]);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">lower_quartile</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">lower_quartile</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 
     <span class="doccomment">/// Estimates the third quartile value from the data.</span>
     <span class="doccomment">///</span>
@@ -345,7 +345,7 @@
     <span class="doccomment">/// assert!(y != [2.0, 1.0, 3.0, 4.0]);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">upper_quartile</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">upper_quartile</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 
     <span class="doccomment">/// Estimates the inter-quartile range from the data.</span>
     <span class="doccomment">///</span>
@@ -370,7 +370,7 @@
     <span class="doccomment">/// assert!(y != [2.0, 1.0, 3.0, 4.0]);</span>
     <span class="doccomment">/// # }</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">interquartile_range</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">interquartile_range</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 
     <span class="doccomment">/// Evaluates the rank of each entry of the data.</span>
     <span class="doccomment">///</span>
@@ -388,7 +388,7 @@
     <span class="doccomment">/// assert_eq!((&amp;mut y.clone()).ranks(RankTieBreaker::Min), [1.0, 4.0, 2.0,</span>
     <span class="doccomment">/// 2.0]);</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">ranks</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">tie_breaker</span>: <span class="ident">RankTieBreaker</span>) <span class="op">-&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">ranks</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">tie_breaker</span>: <span class="ident">RankTieBreaker</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "statrs";</script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>

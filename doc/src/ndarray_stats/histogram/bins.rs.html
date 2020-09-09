@@ -446,7 +446,7 @@
     <span class="ident">edges</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Ord</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">Edges</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Ord</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Edges</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Get an `Edges` instance from a `Vec&lt;A&gt;`:</span>
     <span class="doccomment">/// the vector will be sorted in increasing order</span>
     <span class="doccomment">/// using an unstable sorting algorithm and duplicates</span>
@@ -465,7 +465,7 @@
     <span class="doccomment">///     15</span>
     <span class="doccomment">/// );</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw-2">mut</span> <span class="ident">edges</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="kw-2">mut</span> <span class="ident">edges</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="comment">// sort the array in-place</span>
         <span class="ident">edges</span>.<span class="ident">sort_unstable</span>();
         <span class="comment">// remove duplicates</span>
@@ -474,7 +474,7 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Clone</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Array1</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">Edges</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>: <span class="ident">Ord</span> <span class="op">+</span> <span class="ident">Clone</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">Array1</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Edges</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Get an `Edges` instance from a `Array1&lt;A&gt;`:</span>
     <span class="doccomment">/// the array elements will be sorted in increasing order</span>
     <span class="doccomment">/// using an unstable sorting algorithm and duplicates will be removed.</span>
@@ -491,7 +491,7 @@
     <span class="doccomment">///     10</span>
     <span class="doccomment">/// );</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">edges</span>: <span class="ident">Array1</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">edges</span>: <span class="ident">Array1</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">edges</span> <span class="op">=</span> <span class="ident">edges</span>.<span class="ident">to_vec</span>();
         <span class="self">Self</span>::<span class="ident">from</span>(<span class="ident">edges</span>)
     }
@@ -515,7 +515,7 @@
     <span class="doccomment">///     5</span>
     <span class="doccomment">/// );</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Output</span> {
+    <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">i</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Output</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">edges</span>[<span class="ident">i</span>]
     }
 }
@@ -535,7 +535,7 @@
     <span class="doccomment">///     3</span>
     <span class="doccomment">/// );</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">edges</span>.<span class="ident">len</span>()
     }
 
@@ -554,7 +554,7 @@
     <span class="doccomment">///     array![0, 3, 5].view()</span>
     <span class="doccomment">/// );</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_array_view</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">ArrayView1</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">as_array_view</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArrayView1</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">A</span><span class="op">&gt;</span> {
         <span class="ident">ArrayView1</span>::<span class="ident">from</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">edges</span>)
     }
 
@@ -578,21 +578,21 @@
     <span class="doccomment">///     None</span>
     <span class="doccomment">/// );</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">indices_of</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">A</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">indices_of</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="ident">usize</span>)<span class="op">&gt;</span> {
         <span class="comment">// binary search for the correct bin</span>
         <span class="kw">let</span> <span class="ident">n_edges</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">len</span>();
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">edges</span>.<span class="ident">binary_search</span>(<span class="ident">value</span>) {
-            <span class="prelude-val">Ok</span>(<span class="ident">i</span>) <span class="kw">if</span> <span class="ident">i</span> <span class="op">==</span> <span class="ident">n_edges</span> <span class="op">-</span> <span class="number">1</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
-            <span class="prelude-val">Ok</span>(<span class="ident">i</span>) <span class="op">=&gt;</span> <span class="prelude-val">Some</span>((<span class="ident">i</span>, <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>)),
-            <span class="prelude-val">Err</span>(<span class="ident">i</span>) <span class="op">=&gt;</span> <span class="kw">match</span> <span class="ident">i</span> {
-                <span class="number">0</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
-                <span class="ident">j</span> <span class="kw">if</span> <span class="ident">j</span> <span class="op">==</span> <span class="ident">n_edges</span> <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
-                <span class="ident">j</span> <span class="op">=&gt;</span> <span class="prelude-val">Some</span>((<span class="ident">j</span> <span class="op">-</span> <span class="number">1</span>, <span class="ident">j</span>)),
+            <span class="prelude-val">Ok</span>(<span class="ident">i</span>) <span class="kw">if</span> <span class="ident">i</span> <span class="op">=</span><span class="op">=</span> <span class="ident">n_edges</span> <span class="op">-</span> <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+            <span class="prelude-val">Ok</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>((<span class="ident">i</span>, <span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>)),
+            <span class="prelude-val">Err</span>(<span class="ident">i</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">i</span> {
+                <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                <span class="ident">j</span> <span class="kw">if</span> <span class="ident">j</span> <span class="op">=</span><span class="op">=</span> <span class="ident">n_edges</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+                <span class="ident">j</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>((<span class="ident">j</span> <span class="op">-</span> <span class="number">1</span>, <span class="ident">j</span>)),
             },
         }
     }
 
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">A</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">A</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">edges</span>.<span class="ident">iter</span>()
     }
 }
@@ -630,7 +630,7 @@
     <span class="doccomment">/// Given a collection of [`Edges`], it returns the corresponding `Bins` instance.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`Edges`]: struct.Edges.html</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">edges</span>: <span class="ident">Edges</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">edges</span>: <span class="ident">Edges</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">Bins</span> { <span class="ident">edges</span> }
     }
 
@@ -649,10 +649,10 @@
     <span class="doccomment">///     2</span>
     <span class="doccomment">/// );</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">usize</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">edges</span>.<span class="ident">len</span>() {
-            <span class="number">0</span> <span class="op">=&gt;</span> <span class="number">0</span>,
-            <span class="ident">n</span> <span class="op">=&gt;</span> <span class="ident">n</span> <span class="op">-</span> <span class="number">1</span>,
+            <span class="number">0</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">0</span>,
+            <span class="ident">n</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">n</span> <span class="op">-</span> <span class="number">1</span>,
         }
     }
 
@@ -677,7 +677,7 @@
     <span class="doccomment">///     0..2</span>
     <span class="doccomment">/// );</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index_of</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">A</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index_of</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">edges</span>.<span class="ident">indices_of</span>(<span class="ident">value</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">t</span><span class="op">|</span> <span class="ident">t</span>.<span class="number">0</span>)
     }
 
@@ -702,7 +702,7 @@
     <span class="doccomment">///     None</span>
     <span class="doccomment">/// );</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range_of</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">A</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Range</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;&gt;</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">range_of</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Range</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">A</span>: <span class="ident">Clone</span>,
     {
@@ -729,7 +729,7 @@
     <span class="doccomment">///     5..10</span>
     <span class="doccomment">/// );</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="ident">Range</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Range</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">A</span>: <span class="ident">Clone</span>,
     {
@@ -752,7 +752,7 @@
     <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">iter</span>::<span class="ident">FromIterator</span>;
 
     <span class="attribute">#[<span class="ident">quickcheck</span>]</span>
-    <span class="kw">fn</span> <span class="ident">check_sorted_from_vec</span>(<span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">check_sorted_from_vec</span>(<span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">let</span> <span class="ident">edges</span> <span class="op">=</span> <span class="ident">Edges</span>::<span class="ident">from</span>(<span class="ident">v</span>);
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">edges</span>.<span class="ident">len</span>();
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">1</span>..<span class="ident">n</span> {
@@ -764,7 +764,7 @@
     }
 
     <span class="attribute">#[<span class="ident">quickcheck</span>]</span>
-    <span class="kw">fn</span> <span class="ident">check_sorted_from_array</span>(<span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">check_sorted_from_array</span>(<span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">let</span> <span class="ident">a</span> <span class="op">=</span> <span class="ident">Array1</span>::<span class="ident">from</span>(<span class="ident">v</span>);
         <span class="kw">let</span> <span class="ident">edges</span> <span class="op">=</span> <span class="ident">Edges</span>::<span class="ident">from</span>(<span class="ident">a</span>);
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">edges</span>.<span class="ident">len</span>();
@@ -777,10 +777,10 @@
     }
 
     <span class="attribute">#[<span class="ident">quickcheck</span>]</span>
-    <span class="kw">fn</span> <span class="ident">edges_are_right_exclusive</span>(<span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">edges_are_right_exclusive</span>(<span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">let</span> <span class="ident">edges</span> <span class="op">=</span> <span class="ident">Edges</span>::<span class="ident">from</span>(<span class="ident">v</span>);
         <span class="kw">let</span> <span class="ident">view</span> <span class="op">=</span> <span class="ident">edges</span>.<span class="ident">as_array_view</span>();
-        <span class="kw">if</span> <span class="ident">view</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="ident">view</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="bool-val">true</span>
         } <span class="kw">else</span> {
             <span class="kw">let</span> <span class="ident">last</span> <span class="op">=</span> <span class="ident">view</span>[<span class="ident">view</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>];
@@ -789,13 +789,13 @@
     }
 
     <span class="attribute">#[<span class="ident">quickcheck</span>]</span>
-    <span class="kw">fn</span> <span class="ident">edges_are_left_inclusive</span>(<span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">edges_are_left_inclusive</span>(<span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">let</span> <span class="ident">edges</span> <span class="op">=</span> <span class="ident">Edges</span>::<span class="ident">from</span>(<span class="ident">v</span>);
         <span class="kw">match</span> <span class="ident">edges</span>.<span class="ident">len</span>() {
-            <span class="number">1</span> <span class="op">=&gt;</span> <span class="bool-val">true</span>,
-            <span class="kw">_</span> <span class="op">=&gt;</span> {
+            <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">view</span> <span class="op">=</span> <span class="ident">edges</span>.<span class="ident">as_array_view</span>();
-                <span class="kw">if</span> <span class="ident">view</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">0</span> {
+                <span class="kw">if</span> <span class="ident">view</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
                     <span class="bool-val">true</span>
                 } <span class="kw">else</span> {
                     <span class="kw">let</span> <span class="ident">first</span> <span class="op">=</span> <span class="ident">view</span>[<span class="number">0</span>];
@@ -806,12 +806,12 @@
     }
 
     <span class="attribute">#[<span class="ident">quickcheck</span>]</span>
-    <span class="kw">fn</span> <span class="ident">edges_are_deduped</span>(<span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">edges_are_deduped</span>(<span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">let</span> <span class="ident">unique_elements</span> <span class="op">=</span> <span class="ident">BTreeSet</span>::<span class="ident">from_iter</span>(<span class="ident">v</span>.<span class="ident">iter</span>());
         <span class="kw">let</span> <span class="ident">edges</span> <span class="op">=</span> <span class="ident">Edges</span>::<span class="ident">from</span>(<span class="ident">v</span>.<span class="ident">clone</span>());
         <span class="kw">let</span> <span class="ident">view</span> <span class="op">=</span> <span class="ident">edges</span>.<span class="ident">as_array_view</span>();
         <span class="kw">let</span> <span class="ident">unique_edges</span> <span class="op">=</span> <span class="ident">BTreeSet</span>::<span class="ident">from_iter</span>(<span class="ident">view</span>.<span class="ident">iter</span>());
-        <span class="ident">unique_edges</span> <span class="op">==</span> <span class="ident">unique_elements</span>
+        <span class="ident">unique_edges</span> <span class="op">=</span><span class="op">=</span> <span class="ident">unique_elements</span>
     }
 }
 

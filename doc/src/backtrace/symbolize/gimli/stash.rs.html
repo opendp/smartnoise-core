@@ -33,11 +33,11 @@
 
 <span class="doccomment">/// A simple arena allocator for byte buffers.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Stash</span> {
-    <span class="ident">buffers</span>: <span class="ident">UnsafeCell</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>,
+    <span class="ident">buffers</span>: <span class="ident">UnsafeCell</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Stash</span> {
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="ident">Stash</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Stash</span> {
         <span class="ident">Stash</span> {
             <span class="ident">buffers</span>: <span class="ident">UnsafeCell</span>::<span class="ident">new</span>(<span class="ident">Vec</span>::<span class="ident">new</span>()),
         }
@@ -45,7 +45,7 @@
 
     <span class="doccomment">/// Allocates a buffer of the specified size and returns a mutable reference</span>
     <span class="doccomment">/// to it.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">allocate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">size</span>: <span class="ident">usize</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>] {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">allocate</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">size</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">u8</span>] {
         <span class="comment">// SAFETY: this is the only function that ever constructs a mutable</span>
         <span class="comment">// reference to `self.buffers`.</span>
         <span class="kw">let</span> <span class="ident">buffers</span> <span class="op">=</span> <span class="kw">unsafe</span> { <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">buffers</span>.<span class="ident">get</span>() };

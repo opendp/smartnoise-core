@@ -64,25 +64,25 @@
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">evaluate_function</span>(
     <span class="ident">function</span>: <span class="kw-2">&amp;</span><span class="ident">proto</span>::<span class="ident">Function</span>,
     <span class="ident">arguments</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span>,
-) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;&gt;</span> {
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="kw">let</span> <span class="ident">proto</span>::<span class="ident">Function</span> {
         <span class="ident">computation_graph</span>, <span class="ident">release</span>, <span class="ident">arguments</span>: <span class="ident">arguments_names</span>, <span class="ident">outputs</span>
     } <span class="op">=</span> <span class="ident">function</span>;
 
     <span class="kw">let</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">release</span>.<span class="ident">clone</span>()
-        .<span class="ident">unwrap_or_else</span>(<span class="op">||</span> <span class="ident">proto</span>::<span class="ident">Release</span> { <span class="ident">values</span>: <span class="ident">HashMap</span>::<span class="ident">new</span>() }).<span class="ident">values</span>;
+        .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">proto</span>::<span class="ident">Release</span> { <span class="ident">values</span>: <span class="ident">HashMap</span>::<span class="ident">new</span>() }).<span class="ident">values</span>;
     <span class="kw">let</span> <span class="ident">computation_graph</span> <span class="op">=</span> <span class="ident">computation_graph</span>.<span class="ident">clone</span>()
-        .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;computation_graph must be defined&quot;</span>))<span class="question-mark">?</span>;
+        .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;computation_graph must be defined&quot;</span>))<span class="question-mark">?</span>;
 
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">release</span> <span class="op">=</span> <span class="ident">release</span>.<span class="ident">into_iter</span>()
         .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">idx</span>, <span class="ident">release_node</span>)<span class="op">|</span> <span class="prelude-val">Ok</span>((<span class="ident">idx</span>, <span class="ident">parse_release_node</span>(<span class="ident">release_node</span>))))
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">ReleaseNode</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">u32</span>, <span class="ident">ReleaseNode</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
 
     <span class="comment">// insert arguments into function</span>
     <span class="ident">arguments_names</span>.<span class="ident">iter</span>()
         .<span class="ident">try_for_each</span>(<span class="op">|</span>(<span class="ident">name</span>, <span class="ident">id</span>)<span class="op">|</span> {
             <span class="kw">let</span> <span class="ident">argument</span> <span class="op">=</span> <span class="ident">arguments</span>.<span class="ident">get</span>(<span class="ident">name</span>)
-                .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;missing argument in function evaluation: {}&quot;</span>, <span class="ident">name</span>)))<span class="question-mark">?</span>;
+                .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;missing argument in function evaluation: {}&quot;</span>, <span class="ident">name</span>)))<span class="question-mark">?</span>;
             <span class="ident">release</span>.<span class="ident">insert</span>(<span class="kw-2">*</span><span class="ident">id</span>, <span class="ident">ReleaseNode</span> {
                 <span class="ident">value</span>: <span class="ident">argument</span>.<span class="ident">clone</span>(),
                 <span class="ident">privacy_usages</span>: <span class="prelude-val">None</span>,
@@ -101,10 +101,10 @@
         .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">name</span>, <span class="ident">id</span>)<span class="op">|</span> <span class="prelude-val">Ok</span>((
             <span class="ident">name</span>.<span class="ident">clone</span>(),
             <span class="ident">release</span>.<span class="ident">get</span>(<span class="ident">id</span>)
-                .<span class="ident">ok_or_else</span>(<span class="op">||</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Function failed to evaluate. Warnings: {:?}&quot;</span>, <span class="ident">warnings</span>)))<span class="question-mark">?</span>
+                .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;Function failed to evaluate. Warnings: {:?}&quot;</span>, <span class="ident">warnings</span>)))<span class="question-mark">?</span>
                 .<span class="ident">value</span>.<span class="ident">clone</span>()
         )))
-        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>()
+        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Value</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "whitenoise_runtime";</script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>

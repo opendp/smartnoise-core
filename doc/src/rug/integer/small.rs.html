@@ -543,11 +543,11 @@ assert_eq!(a, 1500);
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Mpz</span> {
     <span class="kw">pub</span> <span class="ident">alloc</span>: <span class="ident">c_int</span>,
     <span class="kw">pub</span> <span class="ident">size</span>: <span class="ident">c_int</span>,
-    <span class="kw">pub</span> <span class="ident">d</span>: <span class="ident">UnsafeCell</span><span class="op">&lt;</span><span class="ident">NonNull</span><span class="op">&lt;</span><span class="ident">limb_t</span><span class="op">&gt;&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">d</span>: <span class="ident">UnsafeCell</span><span class="op">&lt;</span><span class="ident">NonNull</span><span class="op">&lt;</span><span class="ident">limb_t</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">Mpz</span> {
-    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">Mpz</span> {
+    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Mpz</span> {
         <span class="ident">Mpz</span> {
             <span class="ident">alloc</span>: <span class="self">self</span>.<span class="ident">alloc</span>,
             <span class="ident">size</span>: <span class="self">self</span>.<span class="ident">size</span>,
@@ -556,7 +556,7 @@ assert_eq!(a, 1500);
     }
 }
 
-<span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">Limbs</span><span class="op">&gt;</span>() <span class="op">==</span> <span class="number">16</span>);
+<span class="macro">static_assert</span><span class="macro">!</span>(<span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">Limbs</span><span class="op">&gt;</span>() <span class="op">=</span><span class="op">=</span> <span class="number">16</span>);
 <span class="macro">static_assert_same_layout</span><span class="macro">!</span>(<span class="ident">Mpz</span>, <span class="ident">mpz_t</span>);
 
 <span class="comment">// Safety: SmallInteger cannot be Sync because it contains an</span>
@@ -568,7 +568,7 @@ assert_eq!(a, 1500);
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">SmallInteger</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">SmallInteger</span>::<span class="ident">new</span>()
     }
 }
@@ -587,7 +587,7 @@ assert_eq!(a, 1500);
     <span class="doccomment">///</span>
     <span class="doccomment">/// [`SmallInteger`]: struct.SmallInteger.html</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">SmallInteger</span> {
             <span class="ident">inner</span>: <span class="ident">Mpz</span> {
                 <span class="ident">alloc</span>: <span class="ident">LIMBS_IN_SMALL</span> <span class="kw">as</span> <span class="ident">c_int</span>,
@@ -630,7 +630,7 @@ assert_eq!(a, 1500);
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="comment">// Safety: after calling update_d(), self.inner.d points to the</span>
     <span class="comment">// limbs so it is in a consistent state.</span>
-    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">as_nonreallocating_integer</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Integer</span> {
+    <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">as_nonreallocating_integer</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Integer</span> {
         <span class="self">self</span>.<span class="ident">update_d</span>();
         <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="macro">cast_ptr_mut</span><span class="macro">!</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">inner</span>, <span class="ident">Integer</span>);
         <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="kw-2">*</span><span class="ident">ptr</span>
@@ -650,7 +650,7 @@ assert_eq!(a, 1500);
 <span class="kw">impl</span> <span class="ident">Deref</span> <span class="kw">for</span> <span class="ident">SmallInteger</span> {
     <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> <span class="ident">Integer</span>;
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Integer</span> {
+    <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Integer</span> {
         <span class="self">self</span>.<span class="ident">update_d</span>();
         <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="macro">cast_ptr</span><span class="macro">!</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span>, <span class="ident">Integer</span>);
         <span class="comment">// Safety: since we called update_d, the inner pointer is pointing</span>
@@ -683,20 +683,20 @@ assert_eq!(a, 1500);
 
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">SealedToSmall</span>: <span class="ident">Sized</span> {
     <span class="kw">fn</span> <span class="ident">copy</span>(<span class="self">self</span>, <span class="ident">size</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">c_int</span>, <span class="ident">limbs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Limbs</span>);
-    <span class="kw">fn</span> <span class="ident">is_zero</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span>;
+    <span class="kw">fn</span> <span class="ident">is_zero</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>;
 }
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">is_zero</span> {
-    () <span class="op">=&gt;</span> {
+    () <span class="op">=</span><span class="op">&gt;</span> {
         <span class="attribute">#[<span class="ident">inline</span>]</span>
-        <span class="kw">fn</span> <span class="ident">is_zero</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
-            <span class="kw-2">*</span><span class="self">self</span> <span class="op">==</span> <span class="number">0</span>
+        <span class="kw">fn</span> <span class="ident">is_zero</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+            <span class="kw-2">*</span><span class="self">self</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span>
         }
     };
 }
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">signed</span> {
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">I</span>:<span class="ident">ty</span>)<span class="kw-2">*</span>) <span class="op">=&gt;</span> { $(
+    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">I</span>:<span class="ident">ty</span>)<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> { $(
         <span class="kw">impl</span> <span class="ident">ToSmall</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">I</span> {}
         <span class="kw">impl</span> <span class="ident">SealedToSmall</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">I</span> {
             <span class="attribute">#[<span class="ident">inline</span>]</span>
@@ -714,12 +714,12 @@ assert_eq!(a, 1500);
 }
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">one_limb</span> {
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span>:<span class="ident">ty</span>)<span class="kw-2">*</span>) <span class="op">=&gt;</span> { $(
+    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span>:<span class="ident">ty</span>)<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> { $(
         <span class="kw">impl</span> <span class="ident">ToSmall</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span> {}
         <span class="kw">impl</span> <span class="ident">SealedToSmall</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">U</span> {
             <span class="attribute">#[<span class="ident">inline</span>]</span>
             <span class="kw">fn</span> <span class="ident">copy</span>(<span class="self">self</span>, <span class="ident">size</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">c_int</span>, <span class="ident">limbs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Limbs</span>) {
-                <span class="kw">if</span> <span class="self">self</span> <span class="op">==</span> <span class="number">0</span> {
+                <span class="kw">if</span> <span class="self">self</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
                     <span class="kw-2">*</span><span class="ident">size</span> <span class="op">=</span> <span class="number">0</span>;
                 } <span class="kw">else</span> {
                     <span class="kw-2">*</span><span class="ident">size</span> <span class="op">=</span> <span class="number">1</span>;
@@ -748,7 +748,7 @@ assert_eq!(a, 1500);
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">is_zero</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">fn</span> <span class="ident">is_zero</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="op">!</span><span class="kw-2">*</span><span class="self">self</span>
     }
 }
@@ -764,15 +764,15 @@ assert_eq!(a, 1500);
 <span class="kw">impl</span> <span class="ident">SealedToSmall</span> <span class="kw">for</span> <span class="ident">u64</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">copy</span>(<span class="self">self</span>, <span class="ident">size</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">c_int</span>, <span class="ident">limbs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Limbs</span>) {
-        <span class="kw">if</span> <span class="self">self</span> <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="self">self</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="kw-2">*</span><span class="ident">size</span> <span class="op">=</span> <span class="number">0</span>;
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span> <span class="op">&lt;=</span> <span class="number">0xffff_ffff</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0xffff_ffff</span> {
             <span class="kw-2">*</span><span class="ident">size</span> <span class="op">=</span> <span class="number">1</span>;
             <span class="ident">limbs</span>[<span class="number">0</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">wrapping_cast</span>());
         } <span class="kw">else</span> {
             <span class="kw-2">*</span><span class="ident">size</span> <span class="op">=</span> <span class="number">2</span>;
             <span class="ident">limbs</span>[<span class="number">0</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">wrapping_cast</span>());
-            <span class="ident">limbs</span>[<span class="number">1</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="self">self</span> <span class="op">&gt;&gt;</span> <span class="number">32</span>).<span class="ident">wrapping_cast</span>());
+            <span class="ident">limbs</span>[<span class="number">1</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="self">self</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">32</span>).<span class="ident">wrapping_cast</span>());
         }
     }
 
@@ -785,41 +785,41 @@ assert_eq!(a, 1500);
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_64</span>)]</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">copy</span>(<span class="self">self</span>, <span class="ident">size</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">c_int</span>, <span class="ident">limbs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Limbs</span>) {
-        <span class="kw">if</span> <span class="self">self</span> <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="self">self</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="kw-2">*</span><span class="ident">size</span> <span class="op">=</span> <span class="number">0</span>;
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span> <span class="op">&lt;=</span> <span class="number">0xffff_ffff_ffff_ffff</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0xffff_ffff_ffff_ffff</span> {
             <span class="kw-2">*</span><span class="ident">size</span> <span class="op">=</span> <span class="number">1</span>;
             <span class="ident">limbs</span>[<span class="number">0</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">wrapping_cast</span>());
         } <span class="kw">else</span> {
             <span class="kw-2">*</span><span class="ident">size</span> <span class="op">=</span> <span class="number">2</span>;
             <span class="ident">limbs</span>[<span class="number">0</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">wrapping_cast</span>());
-            <span class="ident">limbs</span>[<span class="number">1</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="self">self</span> <span class="op">&gt;&gt;</span> <span class="number">64</span>).<span class="ident">wrapping_cast</span>());
+            <span class="ident">limbs</span>[<span class="number">1</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="self">self</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">64</span>).<span class="ident">wrapping_cast</span>());
         }
     }
 
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">gmp_limb_bits_32</span>)]</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">copy</span>(<span class="self">self</span>, <span class="ident">size</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">c_int</span>, <span class="ident">limbs</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Limbs</span>) {
-        <span class="kw">if</span> <span class="self">self</span> <span class="op">==</span> <span class="number">0</span> {
+        <span class="kw">if</span> <span class="self">self</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="kw-2">*</span><span class="ident">size</span> <span class="op">=</span> <span class="number">0</span>;
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span> <span class="op">&lt;=</span> <span class="number">0xffff_ffff</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0xffff_ffff</span> {
             <span class="kw-2">*</span><span class="ident">size</span> <span class="op">=</span> <span class="number">1</span>;
             <span class="ident">limbs</span>[<span class="number">0</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">wrapping_cast</span>());
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span> <span class="op">&lt;=</span> <span class="number">0xffff_ffff_ffff_ffff</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0xffff_ffff_ffff_ffff</span> {
             <span class="kw-2">*</span><span class="ident">size</span> <span class="op">=</span> <span class="number">2</span>;
             <span class="ident">limbs</span>[<span class="number">0</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">wrapping_cast</span>());
-            <span class="ident">limbs</span>[<span class="number">1</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="self">self</span> <span class="op">&gt;&gt;</span> <span class="number">32</span>).<span class="ident">wrapping_cast</span>());
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span> <span class="op">&lt;=</span> <span class="number">0xffff_ffff_ffff_ffff_ffff_ffff</span> {
+            <span class="ident">limbs</span>[<span class="number">1</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="self">self</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">32</span>).<span class="ident">wrapping_cast</span>());
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0xffff_ffff_ffff_ffff_ffff_ffff</span> {
             <span class="kw-2">*</span><span class="ident">size</span> <span class="op">=</span> <span class="number">3</span>;
             <span class="ident">limbs</span>[<span class="number">0</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">wrapping_cast</span>());
-            <span class="ident">limbs</span>[<span class="number">1</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="self">self</span> <span class="op">&gt;&gt;</span> <span class="number">32</span>).<span class="ident">wrapping_cast</span>());
-            <span class="ident">limbs</span>[<span class="number">2</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="self">self</span> <span class="op">&gt;&gt;</span> <span class="number">64</span>).<span class="ident">wrapping_cast</span>());
+            <span class="ident">limbs</span>[<span class="number">1</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="self">self</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">32</span>).<span class="ident">wrapping_cast</span>());
+            <span class="ident">limbs</span>[<span class="number">2</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="self">self</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">64</span>).<span class="ident">wrapping_cast</span>());
         } <span class="kw">else</span> {
             <span class="kw-2">*</span><span class="ident">size</span> <span class="op">=</span> <span class="number">4</span>;
             <span class="ident">limbs</span>[<span class="number">0</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">wrapping_cast</span>());
-            <span class="ident">limbs</span>[<span class="number">1</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="self">self</span> <span class="op">&gt;&gt;</span> <span class="number">32</span>).<span class="ident">wrapping_cast</span>());
-            <span class="ident">limbs</span>[<span class="number">2</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="self">self</span> <span class="op">&gt;&gt;</span> <span class="number">64</span>).<span class="ident">wrapping_cast</span>());
-            <span class="ident">limbs</span>[<span class="number">3</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="self">self</span> <span class="op">&gt;&gt;</span> <span class="number">96</span>).<span class="ident">wrapping_cast</span>());
+            <span class="ident">limbs</span>[<span class="number">1</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="self">self</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">32</span>).<span class="ident">wrapping_cast</span>());
+            <span class="ident">limbs</span>[<span class="number">2</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="self">self</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">64</span>).<span class="ident">wrapping_cast</span>());
+            <span class="ident">limbs</span>[<span class="number">3</span>] <span class="op">=</span> <span class="ident">MaybeUninit</span>::<span class="ident">new</span>((<span class="self">self</span> <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">96</span>).<span class="ident">wrapping_cast</span>());
         }
     }
 
@@ -852,7 +852,7 @@ assert_eq!(a, 1500);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ToSmall</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SmallInteger</span> {
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">src</span>: <span class="ident">T</span>) <span class="op">-&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">src</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">size</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">limbs</span> <span class="op">=</span> <span class="macro">small_limbs</span><span class="macro">!</span>[<span class="number">0</span>];
         <span class="ident">src</span>.<span class="ident">copy</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">size</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">limbs</span>);
@@ -910,10 +910,10 @@ assert_eq!(a, 1500);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">i</span>, <span class="number">0xf_0000_0006u64</span>);
         <span class="ident">i</span>.<span class="ident">assign</span>(<span class="op">-</span><span class="number">0xf_0000_0006i64</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">i</span>, <span class="op">-</span><span class="number">0xf_0000_0006i64</span>);
-        <span class="ident">i</span>.<span class="ident">assign</span>(<span class="number">6u128</span> <span class="op">&lt;&lt;</span> <span class="number">64</span> <span class="op">|</span> <span class="number">7u128</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">i</span>, <span class="number">6u128</span> <span class="op">&lt;&lt;</span> <span class="number">64</span> <span class="op">|</span> <span class="number">7u128</span>);
-        <span class="ident">i</span>.<span class="ident">assign</span>(<span class="op">-</span><span class="number">6i128</span> <span class="op">&lt;&lt;</span> <span class="number">64</span> <span class="op">|</span> <span class="number">7i128</span>);
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">i</span>, <span class="op">-</span><span class="number">6i128</span> <span class="op">&lt;&lt;</span> <span class="number">64</span> <span class="op">|</span> <span class="number">7i128</span>);
+        <span class="ident">i</span>.<span class="ident">assign</span>(<span class="number">6u128</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">64</span> <span class="op">|</span> <span class="number">7u128</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">i</span>, <span class="number">6u128</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">64</span> <span class="op">|</span> <span class="number">7u128</span>);
+        <span class="ident">i</span>.<span class="ident">assign</span>(<span class="op">-</span><span class="number">6i128</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">64</span> <span class="op">|</span> <span class="number">7i128</span>);
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">i</span>, <span class="op">-</span><span class="number">6i128</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">64</span> <span class="op">|</span> <span class="number">7i128</span>);
         <span class="ident">i</span>.<span class="ident">assign</span>(<span class="number">6usize</span>);
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">*</span><span class="ident">i</span>, <span class="number">6</span>);
         <span class="ident">i</span>.<span class="ident">assign</span>(<span class="op">-</span><span class="number">6isize</span>);

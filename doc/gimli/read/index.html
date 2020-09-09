@@ -25,7 +25,7 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">entries</span> <span class="op">=</span> <span class="ident">unit</span>.<span class="ident">entries</span>();
     <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>((<span class="kw">_</span>, <span class="ident">entry</span>)) <span class="op">=</span> <span class="ident">entries</span>.<span class="ident">next_dfs</span>()<span class="question-mark">?</span> {
         <span class="comment">// If we find an entry for a function, print it.</span>
-        <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">tag</span>() <span class="op">==</span> <span class="ident">gimli</span>::<span class="ident">DW_TAG_subprogram</span> {
+        <span class="kw">if</span> <span class="ident">entry</span>.<span class="ident">tag</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">gimli</span>::<span class="ident">DW_TAG_subprogram</span> {
             <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;Found a function: {:?}&quot;</span>, <span class="ident">entry</span>);
         }
     }
@@ -167,8 +167,8 @@ into your code:</p>
 <span class="kw">use</span> <span class="ident">fallible_iterator</span>::<span class="ident">FallibleIterator</span>;
 <span class="kw">use</span> <span class="ident">gimli</span>::{<span class="ident">DebugAranges</span>, <span class="ident">EndianSlice</span>, <span class="ident">LittleEndian</span>};
 
-<span class="kw">fn</span> <span class="ident">find_sum_of_address_range_lengths</span>(<span class="ident">aranges</span>: <span class="ident">DebugAranges</span><span class="op">&lt;</span><span class="ident">EndianSlice</span><span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;&gt;</span>)
-    <span class="op">-&gt;</span> <span class="ident">gimli</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>
+<span class="kw">fn</span> <span class="ident">find_sum_of_address_range_lengths</span>(<span class="ident">aranges</span>: <span class="ident">DebugAranges</span><span class="op">&lt;</span><span class="ident">EndianSlice</span><span class="op">&lt;</span><span class="ident">LittleEndian</span><span class="op">&gt;</span><span class="op">&gt;</span>)
+    <span class="op">-</span><span class="op">&gt;</span> <span class="ident">gimli</span>::<span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>
 {
     <span class="comment">// `DebugAranges::items` returns a `FallibleIterator`!</span>
     <span class="ident">aranges</span>.<span class="ident">items</span>()

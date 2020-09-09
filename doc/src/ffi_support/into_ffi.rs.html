@@ -469,22 +469,22 @@
     <span class="doccomment">/// Return an &#39;empty&#39; value. This is what&#39;s passed back to C in the case of an error,</span>
     <span class="doccomment">/// so it doesn&#39;t actually need to be &quot;empty&quot;, so much as &quot;ignorable&quot;. Note that this</span>
     <span class="doccomment">/// is also used when an empty `Option&lt;T&gt;` is returned.</span>
-    <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span>;
+    <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span>;
 
     <span class="doccomment">/// Convert ourselves into a value we can pass back to C with confidence.</span>
-    <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span>;
+    <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span>;
 }
 
 <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">IntoFfi</span> <span class="kw">for</span> <span class="ident">String</span> {
     <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_char</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
+    <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
         <span class="ident">ptr</span>::<span class="ident">null_mut</span>()
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
+    <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
         <span class="ident">rust_string_to_c</span>(<span class="self">self</span>)
     }
 }
@@ -494,12 +494,12 @@
     <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">IntoFfi</span><span class="op">&gt;</span>::<span class="ident">Value</span>;
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
+    <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
         <span class="ident">T</span>::<span class="ident">ffi_default</span>()
     }
 
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
+    <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="self">self</span> {
             <span class="ident">s</span>.<span class="ident">into_ffi_value</span>()
         } <span class="kw">else</span> {
@@ -513,11 +513,11 @@
 <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">IntoFfi</span> <span class="kw">for</span> <span class="ident">bool</span> {
     <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="ident">u8</span>;
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
+    <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
         <span class="number">0u8</span>
     }
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
+    <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
         <span class="self">self</span> <span class="kw">as</span> <span class="ident">u8</span>
     }
 }
@@ -525,22 +525,22 @@
 <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">IntoFfi</span> <span class="kw">for</span> <span class="kw">crate</span>::<span class="ident">ByteBuffer</span> {
     <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="kw">crate</span>::<span class="ident">ByteBuffer</span>;
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
+    <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
         <span class="kw">crate</span>::<span class="ident">ByteBuffer</span>::<span class="ident">default</span>()
     }
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
+    <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Value</span> {
         <span class="self">self</span>
     }
 }
 
 <span class="comment">// just cuts down on boilerplate. Not public.</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_into_ffi_for_primitive</span> {
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>),<span class="op">+</span>) <span class="op">=&gt;</span> {$(
+    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>),<span class="op">+</span>) <span class="op">=</span><span class="op">&gt;</span> {$(
         <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">IntoFfi</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span> {
             <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="self">Self</span>;
-            <span class="attribute">#[<span class="ident">inline</span>]</span> <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> { <span class="ident">Default</span>::<span class="ident">default</span>() }
-            <span class="attribute">#[<span class="ident">inline</span>]</span> <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> { <span class="self">self</span> }
+            <span class="attribute">#[<span class="ident">inline</span>]</span> <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> { <span class="ident">Default</span>::<span class="ident">default</span>() }
+            <span class="attribute">#[<span class="ident">inline</span>]</span> <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> { <span class="self">self</span> }
         }
     )<span class="op">+</span>}
 }
@@ -550,11 +550,11 @@
 
 <span class="comment">// just cuts down on boilerplate. Not public.</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_into_ffi_for_pointer</span> {
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>),<span class="op">+</span>) <span class="op">=&gt;</span> {$(
+    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span>:<span class="ident">ty</span>),<span class="op">+</span>) <span class="op">=</span><span class="op">&gt;</span> {$(
         <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">IntoFfi</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">T</span> {
             <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="self">Self</span>;
-            <span class="attribute">#[<span class="ident">inline</span>]</span> <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-&gt;</span> <span class="self">Self</span> { <span class="ident">ptr</span>::<span class="ident">null_mut</span>() }
-            <span class="attribute">#[<span class="ident">inline</span>]</span> <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-&gt;</span> <span class="self">Self</span> { <span class="self">self</span> }
+            <span class="attribute">#[<span class="ident">inline</span>]</span> <span class="kw">fn</span> <span class="ident">ffi_default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> { <span class="ident">ptr</span>::<span class="ident">null_mut</span>() }
+            <span class="attribute">#[<span class="ident">inline</span>]</span> <span class="kw">fn</span> <span class="ident">into_ffi_value</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> { <span class="self">self</span> }
         }
     )<span class="op">+</span>}
 }

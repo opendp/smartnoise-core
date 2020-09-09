@@ -272,7 +272,7 @@
     <span class="doccomment">/// let n = Uniform::new(0.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!(0.0, n.min());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">min</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">min</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 }
 
 <span class="doccomment">/// The `Max` trait specifies that an object has a maximum value</span>
@@ -290,7 +290,7 @@
     <span class="doccomment">/// let n = Uniform::new(0.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!(1.0, n.max());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">max</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 }
 
 <span class="doccomment">/// The `Mean` trait specifies that an object has a closed form</span>
@@ -308,7 +308,7 @@
     <span class="doccomment">/// let n = Uniform::new(0.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!(0.5, n.mean());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 }
 
 <span class="doccomment">/// The `CheckedMean` trait specifies that an object has a closed form</span>
@@ -325,7 +325,7 @@
     <span class="doccomment">/// let n = FisherSnedecor::new(1.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert!(n.checked_mean().is_err());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">checked_mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">checked_mean</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// The `Variance` trait specifies that an object has a closed form solution for</span>
@@ -344,7 +344,7 @@
     <span class="doccomment">/// let n = Uniform::new(0.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!(1.0 / 12.0, n.variance());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 
     <span class="doccomment">/// Returns the standard deviation. May panic depending</span>
     <span class="doccomment">/// on the implementor.</span>
@@ -358,7 +358,7 @@
     <span class="doccomment">/// let n = Uniform::new(0.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!((1f64 / 12f64).sqrt(), n.std_dev());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 }
 
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">CheckedVariance</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>: <span class="ident">CheckedMean</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
@@ -372,7 +372,7 @@
     <span class="doccomment">/// let n = FisherSnedecor::new(1.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert!(n.checked_variance().is_err());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">checked_variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">checked_variance</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Returns the standard deviation.</span>
     <span class="doccomment">///</span>
@@ -385,7 +385,7 @@
     <span class="doccomment">/// let n = FisherSnedecor::new(1.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert!(n.checked_std_dev().is_err());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">checked_std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">checked_std_dev</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// The `Entropy` trait specifies an object that has a closed form solution</span>
@@ -403,7 +403,7 @@
     <span class="doccomment">/// let n = Uniform::new(0.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!(0.0, n.entropy());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">entropy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">entropy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 }
 
 <span class="doccomment">/// The `CheckedEntropy` trait specifies an object that has a closed form</span>
@@ -420,7 +420,7 @@
     <span class="doccomment">/// let n = StudentsT::new(0.0, 2.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert!(n.checked_entropy().is_err());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">checked_entropy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">checked_entropy</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// The `Skewness` trait specifies an object that has a closed form solution</span>
@@ -438,7 +438,7 @@
     <span class="doccomment">/// let n = Uniform::new(0.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!(0.0, n.skewness());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 }
 
 <span class="doccomment">/// The `CheckedSkewness` trait specifies an object that has a closed form</span>
@@ -455,7 +455,7 @@
     <span class="doccomment">/// let n = FisherSnedecor::new(1.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert!(n.checked_skewness().is_err());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">checked_skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">checked_skewness</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// The `Median` trait specifies than an object has a closed form solution</span>
@@ -473,7 +473,7 @@
     <span class="doccomment">/// let n = Uniform::new(0.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!(0.5, n.median());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">median</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 }
 
 <span class="doccomment">/// The `Mode` trait specififies that an object has a closed form solution</span>
@@ -491,7 +491,7 @@
     <span class="doccomment">/// let n = Uniform::new(0.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert_eq!(0.5, n.mode());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">T</span>;
+    <span class="kw">fn</span> <span class="ident">mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span>;
 }
 
 <span class="doccomment">/// The `CheckedMode` trait specifies that an object has a closed form solution</span>
@@ -508,7 +508,7 @@
     <span class="doccomment">/// let n = Beta::new(1.0, 1.0).unwrap();</span>
     <span class="doccomment">/// assert!(n.checked_mode().is_err());</span>
     <span class="doccomment">/// ```</span>
-    <span class="kw">fn</span> <span class="ident">checked_mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">checked_mode</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
 }
 </pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "statrs";</script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>

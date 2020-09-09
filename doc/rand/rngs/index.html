@@ -33,26 +33,26 @@ additionally implement the <a href="../../rand/trait.CryptoRng.html"><code>Crypt
 <li><code>seed_from_u64</code> allows any PRNG to be seeded from a <code>u64</code> insecurely</li>
 <li><code>from_entropy</code> securely seeds a PRNG from fresh entropy</li>
 </ul>
-<p>Use the <a href="../../rand_core/index.html" title="`rand_core`"><code>rand_core</code></a> crate when implementing your own RNGs.</p>
+<p>Use the <a href="../../rand_core/index.html" title="rand_core"><code>rand_core</code></a> crate when implementing your own RNGs.</p>
 <h2 id="our-generators" class="section-header"><a href="#our-generators">Our generators</a></h2>
 <p>This crate provides several random number generators:</p>
 <ul>
-<li><a href="../../rand/rngs/struct.OsRng.html" title="`OsRng`"><code>OsRng</code></a> is an interface to the operating system's random number
+<li><a href="../../rand/rngs/struct.OsRng.html" title="OsRng"><code>OsRng</code></a> is an interface to the operating system's random number
 source. Typically the operating system uses a CSPRNG with entropy
 provided by a TRNG and some type of on-going re-seeding.</li>
-<li><a href="../../rand/rngs/struct.ThreadRng.html" title="`ThreadRng`"><code>ThreadRng</code></a>, provided by the <a href="../../rand/fn.thread_rng.html"><code>thread_rng</code></a> function, is a handle to a
-thread-local CSPRNG with periodic seeding from <a href="../../rand/rngs/struct.OsRng.html" title="`OsRng`"><code>OsRng</code></a>. Because this
-is local, it is typically much faster than <a href="../../rand/rngs/struct.OsRng.html" title="`OsRng`"><code>OsRng</code></a>. It should be
-secure, though the paranoid may prefer <a href="../../rand/rngs/struct.OsRng.html" title="`OsRng`"><code>OsRng</code></a>.</li>
-<li><a href="../../rand/rngs/struct.StdRng.html" title="`StdRng`"><code>StdRng</code></a> is a CSPRNG chosen for good performance and trust of security
+<li><a href="../../rand/rngs/struct.ThreadRng.html" title="ThreadRng"><code>ThreadRng</code></a>, provided by the <a href="../../rand/fn.thread_rng.html"><code>thread_rng</code></a> function, is a handle to a
+thread-local CSPRNG with periodic seeding from <a href="../../rand/rngs/struct.OsRng.html" title="OsRng"><code>OsRng</code></a>. Because this
+is local, it is typically much faster than <a href="../../rand/rngs/struct.OsRng.html" title="OsRng"><code>OsRng</code></a>. It should be
+secure, though the paranoid may prefer <a href="../../rand/rngs/struct.OsRng.html" title="OsRng"><code>OsRng</code></a>.</li>
+<li><a href="../../rand/rngs/struct.StdRng.html" title="StdRng"><code>StdRng</code></a> is a CSPRNG chosen for good performance and trust of security
 (based on reviews, maturity and usage). The current algorithm is ChaCha20,
 which is well established and rigorously analysed.
-<a href="../../rand/rngs/struct.StdRng.html" title="`StdRng`"><code>StdRng</code></a> provides the algorithm used by <a href="../../rand/rngs/struct.ThreadRng.html" title="`ThreadRng`"><code>ThreadRng</code></a> but without
+<a href="../../rand/rngs/struct.StdRng.html" title="StdRng"><code>StdRng</code></a> provides the algorithm used by <a href="../../rand/rngs/struct.ThreadRng.html" title="ThreadRng"><code>ThreadRng</code></a> but without
 periodic reseeding.</li>
 <li>[<code>SmallRng</code>] is an <strong>insecure</strong> PRNG designed to be fast, simple, require
 little memory, and have good output quality.</li>
 </ul>
-<p>The algorithms selected for <a href="../../rand/rngs/struct.StdRng.html" title="`StdRng`"><code>StdRng</code></a> and [<code>SmallRng</code>] may change in any
+<p>The algorithms selected for <a href="../../rand/rngs/struct.StdRng.html" title="StdRng"><code>StdRng</code></a> and [<code>SmallRng</code>] may change in any
 release and may be platform-dependent, therefore they should be considered
 <strong>not reproducible</strong>.</p>
 <h2 id="additional-generators" class="section-header"><a href="#additional-generators">Additional generators</a></h2>
@@ -63,7 +63,7 @@ entropy harvesting from CPU timer jitter, but is very slow and has
 <a href="https://github.com/rust-random/rand/issues/699">security issues</a>.</p>
 <p><strong>PRNGs</strong>: Several companion crates are available, providing individual or
 families of PRNG algorithms. These provide the implementations behind
-<a href="../../rand/rngs/struct.StdRng.html" title="`StdRng`"><code>StdRng</code></a> and [<code>SmallRng</code>] but can also be used directly, indeed <em>should</em>
+<a href="../../rand/rngs/struct.StdRng.html" title="StdRng"><code>StdRng</code></a> and [<code>SmallRng</code>] but can also be used directly, indeed <em>should</em>
 be used directly when <strong>reproducibility</strong> matters.
 Some suggestions are: <a href="https://crates.io/crates/rand_chacha"><code>rand_chacha</code></a>, <a href="https://crates.io/crates/rand_pcg"><code>rand_pcg</code></a>, <a href="https://crates.io/crates/rand_xoshiro"><code>rand_xoshiro</code></a>.
 A full list can be found by searching for crates with the <a href="https://crates.io/keywords/rng"><code>rng</code> tag</a>.</p>
@@ -78,6 +78,6 @@ operating system.</p>
 </td></tr><tr class='module-item'><td><a class="struct" href="struct.StdRng.html" title='rand::rngs::StdRng struct'>StdRng</a></td><td class='docblock-short'><p>The standard RNG. The PRNG algorithm in <code>StdRng</code> is chosen to be efficient
 on the current platform, to be statistically strong and unpredictable
 (meaning a cryptographically secure PRNG).</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.ThreadRng.html" title='rand::rngs::ThreadRng struct'>ThreadRng</a></td><td class='docblock-short'><p>The type returned by <a href="../../rand/fn.thread_rng.html" title="`thread_rng`"><code>thread_rng</code></a>, essentially just a reference to the
+</td></tr><tr class='module-item'><td><a class="struct" href="struct.ThreadRng.html" title='rand::rngs::ThreadRng struct'>ThreadRng</a></td><td class='docblock-short'><p>The type returned by <a href="../../rand/fn.thread_rng.html" title="thread_rng"><code>thread_rng</code></a>, essentially just a reference to the
 PRNG in thread-local memory.</p>
 </td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "rand";</script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>

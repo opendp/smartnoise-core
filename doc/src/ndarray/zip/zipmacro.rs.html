@@ -136,140 +136,140 @@
 <span id="135">135</span>
 <span id="136">136</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="doccomment">/// Array zip macro: lock step function application across several arrays and</span>
-<span class="doccomment">/// producers.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is a shorthand for [`Zip`](struct.Zip.html).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This example:</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust,ignore</span>
-<span class="doccomment">/// azip!((a in &amp;mut a, &amp;b in &amp;b, &amp;c in &amp;c) *a = b + c);</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Is equivalent to:</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust,ignore</span>
-<span class="doccomment">/// Zip::from(&amp;mut a).and(&amp;b).and(&amp;c).apply(|a, &amp;b, &amp;c| {</span>
-<span class="doccomment">///     *a = b + c</span>
-<span class="doccomment">/// });</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The syntax is either</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `azip!((` *pat* `in` *expr* `,` *[* *pat* `in` *expr* `,` ... *]* `)` *body_expr* `)`</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// or, to use `Zip::indexed` instead of `Zip::from`,</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `azip!((index` *pat* `,` *pat* `in` *expr* `,` *[* *pat* `in` *expr* `,` ... *]* `)` *body_expr* `)`</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The *expr* are expressions whose types must implement `IntoNdProducer`, the</span>
-<span class="doccomment">/// *pat* are the patterns of the parameters to the closure called by</span>
-<span class="doccomment">/// `Zip::apply`, and *body_expr* is the body of the closure called by</span>
-<span class="doccomment">/// `Zip::apply`. You can think of each *pat* `in` *expr* as being analogous to</span>
-<span class="doccomment">/// the `pat in expr` of a normal loop `for pat in expr { statements }`: a</span>
-<span class="doccomment">/// pattern, followed by `in`, followed by an expression that implements</span>
-<span class="doccomment">/// `IntoNdProducer` (analogous to `IntoIterator` for a `for` loop).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// **Panics** if any of the arrays are not of the same shape.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ## Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```rust</span>
-<span class="doccomment">/// extern crate ndarray;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// use ndarray::{azip, Array1, Array2, Axis};</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// type M = Array2&lt;f32&gt;;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// fn main() {</span>
-<span class="doccomment">///     // Setup example arrays</span>
-<span class="doccomment">///     let mut a = M::zeros((16, 16));</span>
-<span class="doccomment">///     let mut b = M::zeros(a.dim());</span>
-<span class="doccomment">///     let mut c = M::zeros(a.dim());</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     // assign values</span>
-<span class="doccomment">///     b.fill(1.);</span>
-<span class="doccomment">///     for ((i, j), elt) in c.indexed_iter_mut() {</span>
-<span class="doccomment">///         *elt = (i + 10 * j) as f32;</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     // Example 1: Compute a simple ternary operation:</span>
-<span class="doccomment">///     // elementwise addition of b and c, stored in a</span>
-<span class="doccomment">///     azip!((a in &amp;mut a, &amp;b in &amp;b, &amp;c in &amp;c) *a = b + c);</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     assert_eq!(a, &amp;b + &amp;c);</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     // Example 2: azip!() with index</span>
-<span class="doccomment">///     azip!((index (i, j), &amp;b in &amp;b, &amp;c in &amp;c) {</span>
-<span class="doccomment">///         a[[i, j]] = b - c;</span>
-<span class="doccomment">///     });</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     assert_eq!(a, &amp;b - &amp;c);</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     // Example 3: azip!() on references</span>
-<span class="doccomment">///     // See the definition of the function below</span>
-<span class="doccomment">///     borrow_multiply(&amp;mut a, &amp;b, &amp;c);</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     assert_eq!(a, &amp;b * &amp;c);</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     // Since this function borrows its inputs, the `IntoNdProducer`</span>
-<span class="doccomment">///     // expressions don&#39;t need to explicitly include `&amp;mut` or `&amp;`.</span>
-<span class="doccomment">///     fn borrow_multiply(a: &amp;mut M, b: &amp;M, c: &amp;M) {</span>
-<span class="doccomment">///         azip!((a in a, &amp;b in b, &amp;c in c) *a = b * c);</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     // Example 4: using azip!() without dereference in pattern.</span>
-<span class="doccomment">///     //</span>
-<span class="doccomment">///     // Create a new array `totals` with one entry per row of `a`.</span>
-<span class="doccomment">///     // Use azip to traverse the rows of `a` and assign to the corresponding</span>
-<span class="doccomment">///     // entry in `totals` with the sum across each row.</span>
-<span class="doccomment">///     //</span>
-<span class="doccomment">///     // The row is an array view; it doesn&#39;t need to be dereferenced.</span>
-<span class="doccomment">///     let mut totals = Array1::zeros(a.rows());</span>
-<span class="doccomment">///     azip!((totals in &amp;mut totals, row in a.genrows()) *totals = row.sum());</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///     // Check the result against the built in `.sum_axis()` along axis 1.</span>
-<span class="doccomment">///     assert_eq!(totals, a.sum_axis(Axis(1)));</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
+<span class="doccomment">/// Array zip macro: lock step function application across several arrays and</span>
+<span class="doccomment">/// producers.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This is a shorthand for [`Zip`](struct.Zip.html).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This example:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```rust,ignore</span>
+<span class="doccomment">/// azip!((a in &amp;mut a, &amp;b in &amp;b, &amp;c in &amp;c) *a = b + c);</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Is equivalent to:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```rust,ignore</span>
+<span class="doccomment">/// Zip::from(&amp;mut a).and(&amp;b).and(&amp;c).apply(|a, &amp;b, &amp;c| {</span>
+<span class="doccomment">///     *a = b + c</span>
+<span class="doccomment">/// });</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The syntax is either</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `azip!((` *pat* `in` *expr* `,` *[* *pat* `in` *expr* `,` ... *]* `)` *body_expr* `)`</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// or, to use `Zip::indexed` instead of `Zip::from`,</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `azip!((index` *pat* `,` *pat* `in` *expr* `,` *[* *pat* `in` *expr* `,` ... *]* `)` *body_expr* `)`</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The *expr* are expressions whose types must implement `IntoNdProducer`, the</span>
+<span class="doccomment">/// *pat* are the patterns of the parameters to the closure called by</span>
+<span class="doccomment">/// `Zip::apply`, and *body_expr* is the body of the closure called by</span>
+<span class="doccomment">/// `Zip::apply`. You can think of each *pat* `in` *expr* as being analogous to</span>
+<span class="doccomment">/// the `pat in expr` of a normal loop `for pat in expr { statements }`: a</span>
+<span class="doccomment">/// pattern, followed by `in`, followed by an expression that implements</span>
+<span class="doccomment">/// `IntoNdProducer` (analogous to `IntoIterator` for a `for` loop).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// **Panics** if any of the arrays are not of the same shape.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ## Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```rust</span>
+<span class="doccomment">/// extern crate ndarray;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// use ndarray::{azip, Array1, Array2, Axis};</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// type M = Array2&lt;f32&gt;;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// fn main() {</span>
+<span class="doccomment">///     // Setup example arrays</span>
+<span class="doccomment">///     let mut a = M::zeros((16, 16));</span>
+<span class="doccomment">///     let mut b = M::zeros(a.dim());</span>
+<span class="doccomment">///     let mut c = M::zeros(a.dim());</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///     // assign values</span>
+<span class="doccomment">///     b.fill(1.);</span>
+<span class="doccomment">///     for ((i, j), elt) in c.indexed_iter_mut() {</span>
+<span class="doccomment">///         *elt = (i + 10 * j) as f32;</span>
+<span class="doccomment">///     }</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///     // Example 1: Compute a simple ternary operation:</span>
+<span class="doccomment">///     // elementwise addition of b and c, stored in a</span>
+<span class="doccomment">///     azip!((a in &amp;mut a, &amp;b in &amp;b, &amp;c in &amp;c) *a = b + c);</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///     assert_eq!(a, &amp;b + &amp;c);</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///     // Example 2: azip!() with index</span>
+<span class="doccomment">///     azip!((index (i, j), &amp;b in &amp;b, &amp;c in &amp;c) {</span>
+<span class="doccomment">///         a[[i, j]] = b - c;</span>
+<span class="doccomment">///     });</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///     assert_eq!(a, &amp;b - &amp;c);</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///     // Example 3: azip!() on references</span>
+<span class="doccomment">///     // See the definition of the function below</span>
+<span class="doccomment">///     borrow_multiply(&amp;mut a, &amp;b, &amp;c);</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///     assert_eq!(a, &amp;b * &amp;c);</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///     // Since this function borrows its inputs, the `IntoNdProducer`</span>
+<span class="doccomment">///     // expressions don&#39;t need to explicitly include `&amp;mut` or `&amp;`.</span>
+<span class="doccomment">///     fn borrow_multiply(a: &amp;mut M, b: &amp;M, c: &amp;M) {</span>
+<span class="doccomment">///         azip!((a in a, &amp;b in b, &amp;c in c) *a = b * c);</span>
+<span class="doccomment">///     }</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///     // Example 4: using azip!() without dereference in pattern.</span>
+<span class="doccomment">///     //</span>
+<span class="doccomment">///     // Create a new array `totals` with one entry per row of `a`.</span>
+<span class="doccomment">///     // Use azip to traverse the rows of `a` and assign to the corresponding</span>
+<span class="doccomment">///     // entry in `totals` with the sum across each row.</span>
+<span class="doccomment">///     //</span>
+<span class="doccomment">///     // The row is an array view; it doesn&#39;t need to be dereferenced.</span>
+<span class="doccomment">///     let mut totals = Array1::zeros(a.rows());</span>
+<span class="doccomment">///     azip!((totals in &amp;mut totals, row in a.genrows()) *totals = row.sum());</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///     // Check the result against the built in `.sum_axis()` along axis 1.</span>
+<span class="doccomment">///     assert_eq!(totals, a.sum_axis(Axis(1)));</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">azip</span> {
-    <span class="comment">// Indexed with a single producer</span>
-    <span class="comment">// we allow an optional trailing comma after the producers in each rule.</span>
-    (@<span class="ident">build</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">apply</span>:<span class="ident">ident</span> (<span class="ident">index</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">index</span>:<span class="ident">pat</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_pat</span>:<span class="ident">pat</span> <span class="kw">in</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_prod</span>:<span class="ident">expr</span> $(,)<span class="question-mark">?</span>) <span class="macro-nonterminal">$</span><span class="macro-nonterminal">body</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> {
+    <span class="comment">// Indexed with a single producer</span>
+    <span class="comment">// we allow an optional trailing comma after the producers in each rule.</span>
+    (@<span class="ident">build</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">apply</span>:<span class="ident">ident</span> (<span class="ident">index</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">index</span>:<span class="ident">pat</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_pat</span>:<span class="ident">pat</span> <span class="kw">in</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_prod</span>:<span class="ident">expr</span> $(,)<span class="question-mark">?</span>) <span class="macro-nonterminal">$</span><span class="macro-nonterminal">body</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">Zip</span>::<span class="ident">indexed</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_prod</span>).<span class="macro-nonterminal">$</span><span class="macro-nonterminal">apply</span>(<span class="op">|</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">index</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_pat</span><span class="op">|</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">body</span>)
     };
-    <span class="comment">// Indexed with more than one producer</span>
-    (@<span class="ident">build</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">apply</span>:<span class="ident">ident</span> (<span class="ident">index</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">index</span>:<span class="ident">pat</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_pat</span>:<span class="ident">pat</span> <span class="kw">in</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_prod</span>:<span class="ident">expr</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">pat</span>:<span class="ident">pat</span> <span class="kw">in</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prod</span>:<span class="ident">expr</span>),<span class="op">*</span> $(,)<span class="question-mark">?</span>) <span class="macro-nonterminal">$</span><span class="macro-nonterminal">body</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> {
+    <span class="comment">// Indexed with more than one producer</span>
+    (@<span class="ident">build</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">apply</span>:<span class="ident">ident</span> (<span class="ident">index</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">index</span>:<span class="ident">pat</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_pat</span>:<span class="ident">pat</span> <span class="kw">in</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_prod</span>:<span class="ident">expr</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">pat</span>:<span class="ident">pat</span> <span class="kw">in</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prod</span>:<span class="ident">expr</span>),<span class="op">*</span> $(,)<span class="question-mark">?</span>) <span class="macro-nonterminal">$</span><span class="macro-nonterminal">body</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">Zip</span>::<span class="ident">indexed</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_prod</span>)
             $(.<span class="ident">and</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">prod</span>))<span class="op">*</span>
             .<span class="macro-nonterminal">$</span><span class="macro-nonterminal">apply</span>(<span class="op">|</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">index</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_pat</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">pat</span>),<span class="kw-2">*</span><span class="op">|</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">body</span>)
     };
-    <span class="comment">// Unindexed with a single producer</span>
-    (@<span class="ident">build</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">apply</span>:<span class="ident">ident</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_pat</span>:<span class="ident">pat</span> <span class="kw">in</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_prod</span>:<span class="ident">expr</span> $(,)<span class="question-mark">?</span>) <span class="macro-nonterminal">$</span><span class="macro-nonterminal">body</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> {
+    <span class="comment">// Unindexed with a single producer</span>
+    (@<span class="ident">build</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">apply</span>:<span class="ident">ident</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_pat</span>:<span class="ident">pat</span> <span class="kw">in</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_prod</span>:<span class="ident">expr</span> $(,)<span class="question-mark">?</span>) <span class="macro-nonterminal">$</span><span class="macro-nonterminal">body</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">Zip</span>::<span class="ident">from</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_prod</span>).<span class="macro-nonterminal">$</span><span class="macro-nonterminal">apply</span>(<span class="op">|</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_pat</span><span class="op">|</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">body</span>)
     };
-    <span class="comment">// Unindexed with more than one producer</span>
-    (@<span class="ident">build</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">apply</span>:<span class="ident">ident</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_pat</span>:<span class="ident">pat</span> <span class="kw">in</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_prod</span>:<span class="ident">expr</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">pat</span>:<span class="ident">pat</span> <span class="kw">in</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prod</span>:<span class="ident">expr</span>),<span class="op">*</span> $(,)<span class="question-mark">?</span>) <span class="macro-nonterminal">$</span><span class="macro-nonterminal">body</span>:<span class="ident">expr</span>) <span class="op">=&gt;</span> {
+    <span class="comment">// Unindexed with more than one producer</span>
+    (@<span class="ident">build</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">apply</span>:<span class="ident">ident</span> (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_pat</span>:<span class="ident">pat</span> <span class="kw">in</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_prod</span>:<span class="ident">expr</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">pat</span>:<span class="ident">pat</span> <span class="kw">in</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prod</span>:<span class="ident">expr</span>),<span class="op">*</span> $(,)<span class="question-mark">?</span>) <span class="macro-nonterminal">$</span><span class="macro-nonterminal">body</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">Zip</span>::<span class="ident">from</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_prod</span>)
             $(.<span class="ident">and</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">prod</span>))<span class="op">*</span>
             .<span class="macro-nonterminal">$</span><span class="macro-nonterminal">apply</span>(<span class="op">|</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_pat</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">pat</span>),<span class="kw-2">*</span><span class="op">|</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">body</span>)
     };
 
-    <span class="comment">// Unindexed with one or more producer, no loop body</span>
-    (@<span class="ident">build</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">apply</span>:<span class="ident">ident</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_prod</span>:<span class="ident">expr</span> $(, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prod</span>:<span class="ident">expr</span>)<span class="op">*</span> $(,)<span class="question-mark">?</span>) <span class="op">=&gt;</span> {
+    <span class="comment">// Unindexed with one or more producer, no loop body</span>
+    (@<span class="ident">build</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">apply</span>:<span class="ident">ident</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_prod</span>:<span class="ident">expr</span> $(, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">prod</span>:<span class="ident">expr</span>)<span class="op">*</span> $(,)<span class="question-mark">?</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">Zip</span>::<span class="ident">from</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">first_prod</span>)
             $(.<span class="ident">and</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">prod</span>))<span class="op">*</span>
     };
-    <span class="comment">// catch-all rule</span>
-    (@<span class="ident">build</span> $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) <span class="op">=&gt;</span> { <span class="macro">compile_error</span><span class="macro">!</span>(<span class="string">&quot;Invalid syntax in azip!()&quot;</span>) };
-    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) <span class="op">=&gt;</span> {
-        <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">azip</span><span class="op">!</span>(@<span class="ident">build</span> <span class="ident">apply</span> $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>)<span class="kw-2">*</span>)
+    <span class="comment">// catch-all rule</span>
+    (@<span class="ident">build</span> $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> { <span class="macro">compile_error</span><span class="macro">!</span>(<span class="string">&quot;Invalid syntax in azip!()&quot;</span>) };
+    ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
+        <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro">azip</span><span class="macro">!</span>(@<span class="macro-nonterminal">build</span> <span class="ident">apply</span> $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>)<span class="kw-2">*</span>)
     };
 }
 </pre></div>
