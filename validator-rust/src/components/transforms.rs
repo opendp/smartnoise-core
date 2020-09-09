@@ -13,6 +13,7 @@ use num::{CheckedAdd, CheckedSub, Zero};
 use indexmap::map::IndexMap;
 use std::ops::{Mul, Div};
 use std::cmp::Ordering;
+use itertools::Itertools;
 
 
 impl Component for proto::Abs {
@@ -250,13 +251,22 @@ impl Component for proto::Divide {
         fn optimize<T: PartialOrd + Div<Output=T> + Zero + Copy>(
             a: T, c: T, d: T, f: T
         ) -> Result<(Option<T>, Option<T>)> {
-            let corners = vec![a / f, a / d, c / f, c / d];
-            Ok((
-                corners.iter().min_by(|x, y|
-                    x.partial_cmp(y).unwrap_or(Ordering::Equal)).cloned(),
-                corners.iter().max_by(|x, y|
-                    x.partial_cmp(y).unwrap_or(Ordering::Equal)).cloned()
-            ))
+            let compare = |x: &T, y: &T| x.partial_cmp(y).unwrap_or(Ordering::Equal);
+            // if denominator interval does not contain zero
+            if T::zero() < d || f < T::zero() {
+                let (min, max) = vec![a / f, a / d, c / f, c / d].into_iter()
+                    .minmax_by(compare).into_option().unwrap();
+                return Ok((Some(min), Some(max)))
+            }
+
+            // if one arm of denominator is zero
+            if d.is_zero() && !f.is_zero() {
+                return Ok((None, vec![a / f, c / f].into_iter().max_by(compare)))
+            }
+            if !d.is_zero() && f.is_zero() {
+                return Ok((vec![a / d, c / d].into_iter().min_by(compare), None))
+            }
+            Ok((None, None))
         }
 
         fn optimize_wrapper<T: PartialOrd + Div<Output=T> + Zero + Copy>(
