@@ -5,24 +5,28 @@ minor = 2
 patch = 1
 
 [paths]
-# locations of repositories to update
+# Locations of repositories to update
 #
-# Path to the repository "whitenoise-core-python"
+# ------------------------------------------------------
+# (1) Path to  repository "whitenoise-core-python"
 #   - e.g. "/Users/username/github/repos/whitenoise-core-python"
+# ------------------------------------------------------
 #
-python = "/Users/michael/whitenoise/python"   
-#python = "/Users/ramanprasad/Documents/github-rp/whitenoise-core" 
+#python = "/Users/michael/whitenoise/python"
+python = "/Users/ramanprasad/Documents/github-rp/whitenoise-core-python"
 #
+# ------------------------------------------------------
+# (2) Path to repository "whitenoise-core"
+#   - e.g. "/Users/username/github/repos/whitenoise-core-python/whitenoise-core"
+#   - Normally this is the submodule within whitenoise-core-python
+# ------------------------------------------------------
 #
-# Path to the repository "whitenoise-core"
-#   - e.g. "/Users/username/github/repos/whitenoise-core"
+#core = "/Users/michael/whitenoise/python/whitenoise-core"
+core = "/Users/ramanprasad/Documents/github-rp/whitenoise-core-python/whitenoise-core"
 #
-core = "/Users/michael/whitenoise/python/whitenoise-core" 
-#core = "/Users/ramanprasad/Documents/github-rp/whitenoise-core" 
-#
-# Path to the repository "whitenoise-core-r"
+# ------------------------------------------------------
+# (3) Path to the repository "whitenoise-core-r"
 #  ** Currently not in use **
+# ------------------------------------------------------
 #
 #R = "/Users/michael/whitenoise/R"
-
-
