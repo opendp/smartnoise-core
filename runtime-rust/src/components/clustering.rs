@@ -2,6 +2,7 @@ use ndarray::{ArrayD, Array};
 use ndarray;
 use whitenoise_validator::{Integer, Float};
 use crate::utilities::noise::sample_uniform;
+use crate::utilities::noise;
 
 #[derive(Debug)]
 #[derive(Clone)]
@@ -102,11 +103,16 @@ pub fn kmeans(data: &ArrayD<Float>, k: Integer, r_min: Float, r_max: Float, nite
     clusters
 }
 
+pub fn add_laplace_noise(data: &ArrayD<Float>, d: Integer, niters: Integer, epsilon: Float, enforce_constant_time: bool) -> ArrayD<Float> {
+    let result: Vec<Float> = data.iter().map(|x| x + noise::sample_laplace(0., ((d+1) as Float)*(niters as Float) / epsilon, enforce_constant_time)).collect();
+    Array::from(result).into_dyn()
+}
+
 #[cfg(test)]
 pub mod test_clustering {
 
-    use ndarray::{arr2, arr1};
-    use crate::components::clustering::{find_closest_centroid, generate_clusters, assign_initial_clusters, array_magnitude, update_clusters, kmeans};
+    use ndarray::{arr2, arr1, Array};
+    use crate::components::clustering::{find_closest_centroid, generate_clusters, assign_initial_clusters, array_magnitude, update_clusters, kmeans, add_laplace_noise};
     use whitenoise_validator::Integer;
     // use rug::Float;
 
@@ -226,6 +232,42 @@ pub mod test_clustering {
             // assert_eq!(c.members.len(), 1);
             println!();
         }
+    }
+
+    #[test]
+    pub fn test_add_laplace_noise() {
+        let data = arr2(&[
+            [0., 0., 0.],
+            [1., 1., 1.],
+            [5., 5., 5.],
+            [10., 10., 10.],
+            [100., 100., 100.],
+        ]).into_dyn();
+        let k = 3;
+        let r_min = 0.0;
+        let r_max = 10.0;
+        let niters = 1000;
+        let epsilon = 1.0;
+        let clusters = kmeans(&data, k, r_min, r_max, niters);
+        let noisy_cluster = add_laplace_noise(&clusters[0].center.to_owned(), data.shape()[1] as Integer, niters, epsilon, true);
+
+        println!();
+        println!("---------------");
+        println!("- test_add_laplace_noise -");
+        println!("---------------");
+        println!("Data shape: {:?}", data.shape());
+        println!();
+
+        for (cluster_index, c) in clusters.iter().enumerate() {
+            println!("Cluster {}", cluster_index);
+            println!("Center: {} \t Member Count: {}", c.center, c.members.len());
+            for (i, m) in c.members.iter().enumerate() {
+                println!("Member {}: {:?}", i, m);
+            }
+            // assert_eq!(c.members.len(), 1);
+            println!();
+        }
+        println!("Noisy Center: {:?}", noisy_cluster);
 
     }
 
