@@ -1,8 +1,51 @@
-use ndarray::{ArrayD, Array};
+use ndarray::{ArrayD, Array, ShapeBuilder};
 use ndarray;
-use whitenoise_validator::{Integer, Float};
+use whitenoise_validator::{Integer, Float, proto};
 use crate::utilities::noise::sample_uniform;
 use crate::utilities::noise;
+
+use indexmap::indexmap;
+use rand::prelude::*;
+use whitenoise_validator::base::{ReleaseNode, Value};
+use whitenoise_validator::errors::*;
+use whitenoise_validator::utilities::take_argument;
+
+use crate::components::Evaluable;
+use crate::NodeArguments;
+
+impl Evaluable for proto::Clustering {
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        // theil-sen inputs must be 1d
+        let data = take_argument(&mut arguments, "data")?
+            .array()?.float()?.into_dimensionality::<ndarray::Ix1>()?.into_dyn();
+
+        let k = take_argument(&mut arguments, "k")?.array()?.first_int()?;
+        let niters = take_argument(&mut arguments, "niters")?.array()?.first_int()?;
+
+        // TODO: Make these args
+        let r_min = 0.0;
+        let r_max = 1000.0;
+
+        let clusters = match self.implementation.to_lowercase().as_str() {
+            "kmeans" => kmeans(&data, k, r_min, r_max, niters),
+            _ => return Err(Error::from("Invalid implementation"))
+        };
+
+        let centers = clusters.iter().map(|x| x.center).collect::<Vec<ArrayD<Float>>>();
+
+        // let mut centers_array: ArrayD::<ArrayD<Float>> = ArrayD::from_shape_fn((centers.len(), centers[0].shape()[1]), |(i,j)| centers[i][j]).into_dyn();
+        // &[centers.len(), centers[0].shape[1]]);
+        // TODO: There has to be a better way to do this
+        // for i in 0..centers.len()-1 {
+        //     centers_array[i] = centers[i].to_owned();
+        // }
+
+        Ok(ReleaseNode::new(Value::Dataframe(indexmap![
+            // "centers".into() => centers_array.into_dyn().into()
+        ])))
+    }
+}
+
 
 #[derive(Debug)]
 #[derive(Clone)]

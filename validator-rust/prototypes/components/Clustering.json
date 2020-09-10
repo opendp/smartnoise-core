@@ -1,0 +1,31 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array"
+    }
+  },
+  "id": "Clustering",
+  "name": "clustering",
+  "options": {
+    "implementation": {
+      "type_proto": "string",
+      "type_rust": "String",
+      "default_python": "\"kmeans\"",
+      "default_rust": "String::from(\"kmeans\")",
+      "description": "Clustering implementation to use. One of [`TODO`, `TODO`]"
+    },
+    "k": {
+      "type_proto": "uint32",
+      "type_rust": "u32",
+      "default_python": "0",
+      "default_rust": "0",
+      "description": "Number of clusters"
+    }
+  },
+  "return": {
+    "type_value": "Array",
+    "description": "Centroids and members of each cluster"
+  },
+  "description": "Clusters data into k distinct groups",
+  "proto_id": 66
+}
