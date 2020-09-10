@@ -1,4 +1,4 @@
-use ndarray::{ArrayD, Array, ShapeBuilder};
+use ndarray::{ArrayD, Array, ShapeBuilder, arr1};
 use ndarray;
 use whitenoise_validator::{Integer, Float, proto};
 use crate::utilities::noise::sample_uniform;
@@ -31,7 +31,7 @@ impl Evaluable for proto::Clustering {
             _ => return Err(Error::from("Invalid implementation"))
         };
 
-        let centers = clusters.iter().map(|x| x.center).collect::<Vec<ArrayD<Float>>>();
+        // let centers = clusters.iter().map(|x| x.center).collect::<Vec<ArrayD<Float>>>();
 
         // let mut centers_array: ArrayD::<ArrayD<Float>> = ArrayD::from_shape_fn((centers.len(), centers[0].shape()[1]), |(i,j)| centers[i][j]).into_dyn();
         // &[centers.len(), centers[0].shape[1]]);
@@ -42,6 +42,7 @@ impl Evaluable for proto::Clustering {
 
         Ok(ReleaseNode::new(Value::Dataframe(indexmap![
             // "centers".into() => centers_array.into_dyn().into()
+            "centers".into() => arr1(&[1.0, 2.0, 3.0]).into_dyn().into()
         ])))
     }
 }
