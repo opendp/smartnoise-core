@@ -55,21 +55,19 @@ impl Component for proto::GaussianMechanism {
         let privacy_usage = self.privacy_usage.iter().cloned().map(Ok)
             .fold1(|l, r| l? + r?).ok_or_else(|| "privacy_usage: must be defined")??;
 
-        let mut warnings = privacy_usage_check(
+        let warnings = privacy_usage_check(
             &privacy_usage,
             data_property.num_records,
             privacy_definition.strict_parameter_checks)?;
 
         let epsilon = get_epsilon(&privacy_usage)?;
-        if epsilon > 1.0 {
-            let message = Error::from(format!("Warning: A privacy parameter of epsilon = {} is in use. Privacy is only \
-                    guaranteed for the Gaussian mechanism as implemented in the rust runtime for epsilon \
-                    between 0 and 1.", epsilon));
+        if !self.analytic && epsilon > 1.0 {
+            let message = Error::from(format!(
+                "Warning: A privacy parameter of epsilon = {} is in use. \
+                Privacy is only guaranteed for the Gaussian mechanism for epsilon between 0 and 1. \
+                Use the 'AnalyticGaussian' instead.", epsilon));
 
-            if privacy_definition.strict_parameter_checks {
-                return Err(message)
-            }
-            warnings.push(message);
+            return Err(message)
         }
 
         if get_delta(&privacy_usage)? == 0.0 {

@@ -115,7 +115,12 @@ impl Expandable for proto::DpHistogram {
                         privacy_usage: self.privacy_usage.clone()
                     }),
                     "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                        privacy_usage: self.privacy_usage.clone()
+                        privacy_usage: self.privacy_usage.clone(),
+                        analytic: false
+                    }),
+                    "analyticgaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                        privacy_usage: self.privacy_usage.clone(),
+                        analytic: true
                     }),
                     _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
                 }),

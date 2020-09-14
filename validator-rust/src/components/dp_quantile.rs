@@ -61,7 +61,12 @@ impl Expandable for proto::DpQuantile {
                     privacy_usage: self.privacy_usage.clone()
                 }),
                 "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                    privacy_usage: self.privacy_usage.clone()
+                    privacy_usage: self.privacy_usage.clone(),
+                    analytic: false
+                }),
+                "analyticgaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                    privacy_usage: self.privacy_usage.clone(),
+                    analytic: true
                 }),
                 "exponential" => proto::component::Variant::ExponentialMechanism(proto::ExponentialMechanism {
                     privacy_usage: self.privacy_usage.clone()

@@ -17,7 +17,7 @@
       "type_rust": "String",
       "default_python": "\"Laplace\"",
       "default_rust": "String::from(\"Laplace\")",
-      "description": "Privatizing mechanism to use. One of [`Laplace`, `Gaussian`]"
+      "description": "Privatizing mechanism to use. One of [`Laplace`, `Gaussian`, `AnalyticGaussian`]."
     },
     "privacy_usage": {
       "type_proto": "repeated PrivacyUsage",

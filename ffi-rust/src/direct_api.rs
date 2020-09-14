@@ -1,4 +1,3 @@
-
 use whitenoise_runtime::utilities::mechanisms;
 
 #[no_mangle]
@@ -11,10 +10,12 @@ pub extern "C" fn laplace_mechanism(
 
 #[no_mangle]
 pub extern "C" fn gaussian_mechanism(
-    value: f64, epsilon: f64, delta: f64, sensitivity: f64, enforce_constant_time: bool
+    value: f64, epsilon: f64, delta: f64, sensitivity: f64,
+    analytic: bool,
+    enforce_constant_time: bool,
 ) -> f64 {
     value + mechanisms::gaussian_mechanism(
-        epsilon, delta, sensitivity, enforce_constant_time).unwrap()
+        epsilon, delta, sensitivity, analytic, enforce_constant_time).unwrap()
 }
 
 #[no_mangle]

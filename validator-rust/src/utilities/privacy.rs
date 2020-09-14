@@ -1,11 +1,13 @@
-use std::collections::{HashMap, HashSet};
-use crate::errors::*;
-use itertools::Itertools;
 use std::cmp::Ordering;
-use crate::{proto, Float};
-use crate::base::{ValueProperties, Release, GroupId, IndexKey};
+use std::collections::{HashMap, HashSet};
+
+use itertools::Itertools;
+
+use crate::{Float, proto};
+use crate::base::{GroupId, IndexKey, Release, ValueProperties};
 use crate::components::Mechanism;
-use crate::utilities::{get_input_properties, get_common_value, get_dependents};
+use crate::errors::*;
+use crate::utilities::{get_common_value, get_dependents, get_input_properties};
 
 type BatchIdentifier = (u32, u32);
 type PartitionIds = Vec<u32>;
@@ -379,7 +381,7 @@ pub fn compute_graph_privacy_usage(
 pub fn privacy_usage_check(
     privacy_usage: &proto::PrivacyUsage,
     num_records: Option<i64>,
-    strict_delta_check: bool,
+    strict_parameter_check: bool,
 ) -> Result<Vec<Error>> {
     let mut warnings = Vec::new();
 
@@ -390,7 +392,7 @@ pub fn privacy_usage_check(
                 return Err("epsilon: privacy parameter epsilon must be greater than 0".into());
             }
 
-            if usage.epsilon > 1.0 {
+            if strict_parameter_check && usage.epsilon > 1.0 {
                 warnings.push(format!("Warning: A large privacy parameter of epsilon = {} is in use", usage.epsilon.to_string()).into())
             }
 
@@ -408,16 +410,12 @@ pub fn privacy_usage_check(
                                 return Err("delta: a value greater than 1 / num_records is not differentially private".into());
                             }
 
-                            if usage.delta * num_records.pow(2) as f64 > 1.0 {
+                            if strict_parameter_check && usage.delta * num_records.pow(2) as f64 > 1.0 {
                                 warnings.push("delta: a value greater than 1 / num_records^2 exposes individuals to significant risk".into());
                             }
                         }
-                        None => {
-                            let message = "delta: the number of records must be known to check if delta is a value that satisfies differential privacy";
-                            if strict_delta_check {
-                                return Err(message.into());
-                            }
-                            warnings.push(message.into());
+                        None => if strict_parameter_check {
+                            return Err("delta: the number of records must be known to check if delta is a value that satisfies differential privacy".into());
                         }
                     }
                 }

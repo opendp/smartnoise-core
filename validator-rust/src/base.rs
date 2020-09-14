@@ -200,6 +200,12 @@ impl From<std::num::TryFromIntError> for Error {
     }
 }
 
+impl From<std::num::ParseIntError> for Error {
+    fn from(value: std::num::ParseIntError) -> Self {
+        format!("{}", value).into()
+    }
+}
+
 impl From<ndarray_stats::errors::MinMaxError> for Error {
     fn from(value: ndarray_stats::errors::MinMaxError) -> Self {
         format!("min-max error: {}", value).into()

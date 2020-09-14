@@ -37,7 +37,7 @@ impl Expandable for proto::DpMedian {
                 privacy_usage: self.privacy_usage.clone(),
                 mechanism
             })),
-            omit: true,
+            omit: component.omit,
             submission: component.submission,
         });
         expansion.traversal.push(component_id);

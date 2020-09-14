@@ -13,6 +13,13 @@
       "type_rust": "Vec<proto::PrivacyUsage>",
       "default_python": "None",
       "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+    },
+    "analytic": {
+      "type_proto": "bool",
+      "type_rust": "bool",
+      "default_python": "True",
+      "default_rust": "true",
+      "description": "Set to enable use of the analytic gaussian mechanism."
     }
   },
   "return": {

@@ -42,11 +42,11 @@ impl Expandable for proto::DpCovariance {
             },
             None => {
                 let left_property = properties.get::<IndexKey>(&"left".into())
-                    .ok_or("data: missing")?.array()
-                    .map_err(prepend("data:"))?.clone();
+                    .ok_or("left: missing")?.array()
+                    .map_err(prepend("left:"))?.clone();
                 let right_property = properties.get::<IndexKey>(&"right".into())
-                    .ok_or("data: missing")?.array()
-                    .map_err(prepend("data:"))?.clone();
+                    .ok_or("right: missing")?.array()
+                    .map_err(prepend("right:"))?.clone();
 
                 shape = vec![u32::try_from(left_property.num_columns()?)?, u32::try_from(right_property.num_columns()?)?];
                 arguments = indexmap![
@@ -82,9 +82,14 @@ impl Expandable for proto::DpCovariance {
                     privacy_usage: self.privacy_usage.clone()
                 }),
                 "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                    privacy_usage: self.privacy_usage.clone()
+                    privacy_usage: self.privacy_usage.clone(),
+                    analytic: false
                 }),
-                _x => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
+                "analyticgaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                    privacy_usage: self.privacy_usage.clone(),
+                    analytic: true
+                }),
+                _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
             }),
             omit: true,
             submission: component.submission,
