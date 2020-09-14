@@ -1,15 +1,16 @@
 use std::cmp::Ordering;
 
+use whitenoise_validator::errors::*;
 use ieee754::Ieee754;
 use ndarray::{ArrayD, Axis, Zip};
 use ndarray::prelude::IxDyn;
 use openssl::rand::rand_bytes;
 
-use whitenoise_validator::errors::*;
 use whitenoise_validator::utilities::array::{slow_select, slow_stack};
 
 pub mod mechanisms;
 pub mod noise;
+
 pub mod analytic_gaussian;
 
 ///  Accepts an ndarray and returns the number of columns.
@@ -21,23 +22,22 @@ pub mod analytic_gaussian;
 /// Number of columns in data.
 pub fn get_num_columns<T>(data: &ArrayD<T>) -> Result<i64> {
     match data.ndim() {
-        0 => Err("data is a scalar".into()),
-        1 => Ok(1),
+        0 | 1 => Ok(1),
         2 => Ok(data.len_of(Axis(1)) as i64),
         _ => Err("data may be at most 2-dimensional".into())
     }
 }
 
 
-/// Broadcast left and right to match each other, and map an operator over the pairs
+/// Broadcast left and right to match each other, and map an operator over the pairs.
 ///
 /// # Arguments
-/// * `left` - left vector to map over
-/// * `right` - right vector to map over
-/// * `operator` - function to apply to each pair
+/// * `left` - Left vector to map over.
+/// * `right` - Right vector to map over.
+/// * `operator` - Function to apply to each pair.
 ///
 /// # Return
-/// An array of mapped data
+/// An array of mapped data.
 ///
 /// # Example
 /// ```
@@ -267,9 +267,9 @@ pub fn binary_to_f64(binary_string: &str) -> Result<f64> {
 /// * `binary_string` - 64-bit binary string.
 ///
 /// # Return
-/// * `(sign, exponent, mantissa)` - where each is a `String`.
-pub fn split_ieee_into_components(binary_string: &str) -> (String, String, String) {
-    (binary_string[0..1].to_string(), binary_string[1..12].to_string(), binary_string[12..].to_string())
+/// (sign, exponent, mantissa) - where each is a `String`.
+pub fn split_ieee_into_components(binary_string: String) -> (String, String, String) {
+    return (binary_string[0..1].to_string(), binary_string[1..12].to_string(), binary_string[12..].to_string());
 }
 
 /// Combines `String` versions of sign, exponent, and mantissa into
@@ -282,7 +282,9 @@ pub fn split_ieee_into_components(binary_string: &str) -> (String, String, Strin
 ///
 /// # Return
 /// Concatenation of sign, exponent, and mantissa.
-pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) -> String {
+pub fn combine_components_into_ieee(
+    (sign, exponent, mantissa): (String, String, String)
+) -> String {
     vec![sign, exponent, mantissa].concat()
 }
 
@@ -447,4 +449,86 @@ pub fn create_subset<T>(
 
     // subsample based on top k indices
     Ok(key_vec.iter().take(k).map(|v| set[v.1].clone()).collect())
+}
+
+
+/// Finds the closest number to x that is a multiple of Lambda.
+///
+/// # Arguments
+/// * `x` - Number to be rounded to closest multiple of Lambda.
+/// * `m` - Integer such that Lambda = 2^m.
+///
+/// # Returns
+/// Closest multiple of Lambda to x.
+pub fn get_closest_multiple_of_lambda(x: f64, m: i16) -> Result<f64> {
+    let (sign, mut exponent, mantissa) = x.decompose();
+    exponent -= m;
+
+    let (sign, mut exponent, mantissa) = match exponent {
+        // original components already represent an integer (decimal shifted >= 52 places on mantissa)
+        exponent if exponent >= 52 => (sign, exponent, mantissa),
+        // round int to +- 1
+        exponent if exponent == -1 => (sign, 0, 0),
+        // round int to 0, and keep it zero after adding m
+        exponent if exponent < -1 => (sign, -1023 - m, 0),
+        // round to int when decimal is within range of mantissa
+        _ => {
+            // get elements of mantissa that represent integers (after decimal is shifted by "exponent" places)
+            //     shift 1 "exponent" places to the left (no overflow because exponent < 64)
+            //     subtract one to set "exponent" bits to one
+            //     shift the mask to the left for a 52-bit mask that keeps the top #"exponent" bits
+            let integer_mask: u64 = ((1u64 << exponent) - 1) << (52 - exponent);
+            let integer_mantissa: u64 = mantissa & integer_mask;
+
+            // check if digit after exponent point is set
+            if mantissa & (1u64 << (52 - (exponent + 1))) == 0u64 {
+                (sign, exponent, integer_mantissa)
+            } else {
+                // if integer part of mantissa is all 1s, rounding needs to be reflected in the exponent instead
+                if integer_mantissa == integer_mask {
+                    (sign, exponent + 1, 0)
+                } else {
+                    (sign, exponent, integer_mantissa + (1u64 << (52 - exponent)))
+                }
+            }
+        }
+    };
+
+    exponent += m;
+    Ok(f64::recompose(sign, exponent, mantissa))
+}
+
+#[cfg(test)]
+mod test_get_closest_multiple_of_lambda {
+    use whitenoise_validator::hashmap;
+    use crate::utilities::get_closest_multiple_of_lambda;
+
+    #[test]
+    fn test_get_closest_multiple_of_lambda_range() {
+        (0..100).for_each(|i| {
+            let x = 1. - 0.01 * (i as f64);
+            println!("{}: {}", x, get_closest_multiple_of_lambda(x, -1).unwrap())
+        });
+    }
+
+    #[test]
+    fn test_get_closest_multiple_of_lambda() {
+        let input = vec![-30.01, -2.51, -1.01, -0.76, -0.51, -0.26, 0.0, 0.26, 0.51, 0.76, 1.01, 2.51, 30.01];
+
+        hashmap![
+            -2 => vec![-30., -2.5, -1.0, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 1.0, 2.5, 30.0],
+            -1 => vec![-30., -2.5, -1.0, -1.0, -0.5, -0.5, 0.0, 0.5, 0.5, 1.0, 1.0, 2.5, 30.0],
+            0 => vec![-30., -3.0, -1.0, -1.0, -1.0, -0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 3.0, 30.0],
+            1 => vec![-30., -2.0, -2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 30.0],
+            2 => vec![-32., -4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 32.0]
+        ].into_iter().for_each(|(m, outputs)| {
+            input.iter().copied().zip(outputs.into_iter())
+                .for_each(|(input, expected)| {
+                    let actual = get_closest_multiple_of_lambda(input, m).unwrap();
+                    println!("m: {:?}, input: {:?}, actual: {:?}, expected: {:?}",
+                             m, input, actual, expected);
+                    assert_eq!(actual, expected)
+                })
+        });
+    }
 }

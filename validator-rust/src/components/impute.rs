@@ -1,14 +1,12 @@
-use crate::errors::*;
+use indexmap::map::IndexMap;
 
 use crate::{base, Warnable};
-use crate::proto;
+use crate::base::{Array, DataType, IndexKey, Nature, NatureContinuous, Value, ValueProperties, Vector1DNull, NatureCategorical, Jagged};
 use crate::components::{Component, Expandable};
-
-use crate::base::{Vector1DNull, Nature, NatureContinuous, Value, Array, ValueProperties, DataType, IndexKey};
-use crate::utilities::{prepend, get_literal, get_argument};
-use indexmap::map::IndexMap;
+use crate::errors::*;
+use crate::proto;
+use crate::utilities::{get_argument, get_literal, prepend, standardize_categorical_argument, standardize_null_candidates_argument};
 use crate::utilities::inference::infer_property;
-
 
 impl Component for proto::Impute {
     fn propagate_property(
@@ -16,7 +14,7 @@ impl Component for proto::Impute {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let mut data_property = properties.get::<base::IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
@@ -29,33 +27,61 @@ impl Component for proto::Impute {
         // integers may not be null
         if data_property.data_type == DataType::Int {
             if data_property.nullity {
-                return Err("impossible state: integers contain nullity".into())
+                return Err("data: integers may not contain nullity".into())
             }
             return Ok(ValueProperties::Array(data_property).into())
         }
 
         if data_property.data_type == DataType::Unknown {
-            return Err("data_type must be known".into())
+            return Err("data: data_type must be known".into())
         }
 
-        if let Some(categories) = public_arguments.get::<IndexKey>(&"categories".into()) {
+        let num_columns = data_property.num_columns
+            .ok_or("data: number of columns missing")?;
+
+        if let Some(&categories) = public_arguments.get::<IndexKey>(&"categories".into()) {
             if data_property.data_type != categories.ref_jagged()?.data_type() {
                 return Err("categories and data must be homogeneously typed".into())
             }
 
-            let null_values = get_argument(&public_arguments, "null_values")?.ref_jagged()?;
+            let null_values = get_argument(&public_arguments, "null_values")?.clone().jagged()?;
 
             if null_values.data_type() != data_property.data_type {
                 return Err("null_values and data must be homogeneously typed".into())
             }
 
-            // TODO: propagation of categories through imputation and resize
-            data_property.nature = None;
+            data_property.nature = match data_property.nature {
+                Some(Nature::Categorical(NatureCategorical { categories: prior })) => Some(Nature::Categorical(NatureCategorical {
+                    categories: match (prior, categories.clone().jagged()?, null_values) {
+                        (Jagged::Int(prior), Jagged::Int(categories), Jagged::Int(nulls)) =>
+                            standardize_categorical_argument(prior, num_columns)?.into_iter()
+                                .zip(standardize_categorical_argument(categories, num_columns)?.into_iter())
+                                .zip(standardize_null_candidates_argument(nulls, num_columns)?.into_iter())
+                                .map(|((prior, cands), nulls)| prior.into_iter()
+                                    .filter(|p| !nulls.contains(p)).chain(cands).collect::<Vec<_>>())
+                                .collect::<Vec<_>>().into(),
+                        (Jagged::Bool(prior), Jagged::Bool(categories), Jagged::Bool(nulls)) =>
+                            standardize_categorical_argument(prior, num_columns)?.into_iter()
+                                .zip(standardize_categorical_argument(categories, num_columns)?.into_iter())
+                                .zip(standardize_null_candidates_argument(nulls, num_columns)?.into_iter())
+                                .map(|((prior, cands), nulls)| prior.into_iter()
+                                    .filter(|p| !nulls.contains(p)).chain(cands).collect::<Vec<_>>())
+                                .collect::<Vec<_>>().into(),
+                        (Jagged::Str(prior), Jagged::Str(categories), Jagged::Str(nulls)) =>
+                            standardize_categorical_argument(prior, num_columns)?.into_iter()
+                                .zip(standardize_categorical_argument(categories, num_columns)?.into_iter())
+                                .zip(standardize_null_candidates_argument(nulls, num_columns)?.into_iter())
+                                .map(|((prior, cands), nulls)| prior.into_iter()
+                                    .filter(|p| !nulls.contains(p)).chain(cands).collect::<Vec<_>>())
+                                .collect::<Vec<_>>().into(),
+                        _ => return Err("categories may not be float".into())
+                    }
+                })),
+                _ => None
+            };
             return Ok(ValueProperties::Array(data_property).into())
         }
 
-        let num_columns = data_property.num_columns
-            .ok_or("data: number of columns missing")?;
         // 1. check public arguments (constant n)
         let impute_lower = match public_arguments.get::<IndexKey>(&"lower".into()) {
             Some(lower) => lower.ref_array()?.clone().vec_float(Some(num_columns))
@@ -144,7 +170,8 @@ impl Expandable for proto::Impute {
                 maximum_id += 1;
                 let id_lower = maximum_id;
                 let value = Value::Array(Array::Float(
-                    ndarray::Array::from(properties.get::<IndexKey>(&"data".into()).unwrap().to_owned().array()?.lower_float()?).into_dyn()));
+                    ndarray::Array::from(properties.get::<IndexKey>(&"data".into())
+                        .unwrap().to_owned().array()?.lower_float()?).into_dyn()));
                 let (patch_node, release) = get_literal(value, component.submission)?;
                 expansion.computation_graph.insert(id_lower, patch_node);
                 expansion.properties.insert(id_lower, infer_property(&release.value, None)?);
@@ -156,7 +183,8 @@ impl Expandable for proto::Impute {
                 maximum_id += 1;
                 let id_upper = maximum_id;
                 let value = Value::Array(Array::Float(
-                    ndarray::Array::from(properties.get::<IndexKey>(&"data".into()).unwrap().to_owned().array()?.upper_float()?).into_dyn()));
+                    ndarray::Array::from(properties.get::<IndexKey>(&"data".into())
+                        .unwrap().to_owned().array()?.upper_float()?).into_dyn()));
                 let (patch_node, release) = get_literal(value, component.submission)?;
                 expansion.computation_graph.insert(id_upper, patch_node);
                 expansion.properties.insert(id_upper, infer_property(&release.value, None)?);
@@ -177,20 +205,21 @@ pub mod test_impute {
     use crate::base::test_data;
 
     pub mod utilities {
-        use crate::components::clamp::test_clamp;
-        use crate::bindings::Analysis;
         use crate::base::Value;
+        use crate::bindings::Analysis;
+        use crate::components::clamp::test_clamp;
 
         pub fn analysis_f64_cont(value: Value, lower: Option<Value>, upper: Option<Value>) -> (Analysis, u32) {
             let (mut analysis, clamped) = test_clamp::utilities::analysis_f64_cont(
                 value, lower.clone(), upper.clone());
 
-            let lower = analysis.literal().value(match lower {
-                Some(lower) => lower, None => 0.0.into()
-            }).value_public(true).build();
-            let upper = analysis.literal().value(match upper {
-                Some(upper) => upper, None => 10.0.into()
-            }).value_public(true).build();
+            let lower = analysis.literal()
+                .value(lower.unwrap_or_else(|| 0.0.into()))
+                .value_public(true).build();
+
+            let upper = analysis.literal()
+                .value(upper.unwrap_or_else(|| 10.0.into()))
+                .value_public(true).build();
 
             let imputed = analysis.impute(clamped)
                 .lower(lower).upper(upper)

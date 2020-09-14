@@ -1,28 +1,35 @@
-use crate::errors::*;
-
-use crate::{proto, base};
-use crate::components::{Expandable, Report};
-
-
-use crate::base::{IndexKey, NodeProperties, Value};
-use crate::utilities::json::{JSONRelease, value_to_json, AlgorithmInfo, privacy_usage_to_json};
 use std::convert::TryFrom;
-use crate::utilities::prepend;
+
 use indexmap::map::IndexMap;
 
+use crate::{base, proto};
+use crate::base::{IndexKey, NodeProperties, Value};
+use crate::components::{Expandable, Report};
+use crate::errors::*;
+use crate::utilities::json::{AlgorithmInfo, JSONRelease, privacy_usage_to_json, value_to_json};
+use crate::utilities::prepend;
 
 impl Expandable for proto::DpCovariance {
     fn expand_component(
         &self,
-        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         _public_arguments: &IndexMap<IndexKey, &Value>,
         properties: &base::NodeProperties,
         component_id: u32,
         mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-
         let mut expansion = base::ComponentExpansion::default();
+
+        let mechanism = if self.mechanism.to_lowercase().as_str() == "automatic" {
+            let privacy_definition = privacy_definition.as_ref()
+                .ok_or_else(|| Error::from("privacy_definition must be known"))?;
+
+            if privacy_definition.protect_floating_point
+            { "snapping" } else { "laplace" }.to_string()
+        } else { self.mechanism.to_lowercase() };
+
+        let argument_ids = component.arguments();
 
         let arguments;
         let shape;
@@ -35,7 +42,7 @@ impl Expandable for proto::DpCovariance {
                 let num_columns = data_property.num_columns()?;
                 shape = vec![u32::try_from(num_columns)?, u32::try_from(num_columns)?];
                 arguments = indexmap![
-                    "data".into() => *component.arguments().get::<IndexKey>(&"data".into())
+                    "data".into() => *argument_ids.get::<IndexKey>(&"data".into())
                         .ok_or_else(|| Error::from("data must be provided as an argument"))?
                 ];
                 symmetric = true;
@@ -50,9 +57,9 @@ impl Expandable for proto::DpCovariance {
 
                 shape = vec![u32::try_from(left_property.num_columns()?)?, u32::try_from(right_property.num_columns()?)?];
                 arguments = indexmap![
-                    "left".into() => *component.arguments().get::<IndexKey>(&"left".into())
+                    "left".into() => *argument_ids.get::<IndexKey>(&"left".into())
                         .ok_or_else(|| Error::from("left must be provided as an argument"))?,
-                    "right".into() => *component.arguments().get::<IndexKey>(&"right".into())
+                    "right".into() => *argument_ids.get::<IndexKey>(&"right".into())
                         .ok_or_else(|| Error::from("right must be provided as an argument"))?
                 ];
                 symmetric = false;
@@ -75,22 +82,35 @@ impl Expandable for proto::DpCovariance {
         // noise
         maximum_id += 1;
         let id_noise = maximum_id;
-        expansion.computation_graph.insert(id_noise, proto::Component {
-            arguments: Some(proto::ArgumentNodeIds::new(indexmap!["data".into() => id_covariance])),
-            variant: Some(match self.mechanism.to_lowercase().as_str() {
-                "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
-                    privacy_usage: self.privacy_usage.clone()
-                }),
-                "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                    privacy_usage: self.privacy_usage.clone(),
-                    analytic: false
-                }),
-                "analyticgaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                    privacy_usage: self.privacy_usage.clone(),
-                    analytic: true
-                }),
-                _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
+        let mut arguments = indexmap!["data".into() => id_covariance];
+        let variant = Some(match mechanism.as_str() {
+            "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
+                privacy_usage: self.privacy_usage.clone()
             }),
+            "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                privacy_usage: self.privacy_usage.clone(),
+                analytic: false,
+            }),
+            "analyticgaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                privacy_usage: self.privacy_usage.clone(),
+                analytic: true,
+            }),
+            "snapping" => {
+                argument_ids.get::<IndexKey>(&"lower".into())
+                    .map(|lower| arguments.insert("lower".into(), *lower));
+                argument_ids.get::<IndexKey>(&"upper".into())
+                    .map(|upper| arguments.insert("upper".into(), *upper));
+
+                proto::component::Variant::SnappingMechanism(proto::SnappingMechanism {
+                    privacy_usage: self.privacy_usage.clone()
+                })
+            }
+            _ => bail!("Unexpected invalid token {:?}", self.mechanism.as_str()),
+        });
+
+        expansion.computation_graph.insert(id_noise, proto::Component {
+            arguments: Some(proto::ArgumentNodeIds::new(arguments)),
+            variant,
             omit: true,
             submission: component.submission,
         });

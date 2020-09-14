@@ -1,13 +1,11 @@
-use crate::errors::*;
-
-use crate::{proto, base, Warnable, Float};
-
-use crate::components::{Component, Sensitivity};
-use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, IndexKey, Vector1DNull, Nature, NatureContinuous};
-use crate::utilities::prepend;
-use ndarray::prelude::*;
 use indexmap::map::IndexMap;
+use ndarray::prelude::*;
 
+use crate::{base, Float, proto, Warnable};
+use crate::base::{AggregatorProperties, DataType, IndexKey, Nature, NatureContinuous, NodeProperties, SensitivitySpace, Value, ValueProperties, Vector1DNull};
+use crate::components::{Component, Sensitivity};
+use crate::errors::*;
+use crate::utilities::prepend;
 
 impl Component for proto::Sum {
     fn propagate_property(

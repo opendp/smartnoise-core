@@ -45,6 +45,7 @@ mod exponential_mechanism;
 mod gaussian_mechanism;
 mod laplace_mechanism;
 mod simple_geometric_mechanism;
+pub mod snapping_mechanism;
 mod resize;
 mod sum;
 mod union;
@@ -179,12 +180,14 @@ pub trait Accuracy {
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
         accuracies: &proto::Accuracies,
+        public_arguments: IndexMap<base::IndexKey, &Value>
     ) -> Result<Option<Vec<proto::PrivacyUsage>>>;
 
     fn privacy_usage_to_accuracy(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
         alpha: f64,
     ) -> Result<Option<Vec<proto::Accuracy>>>;
 }
@@ -253,7 +256,8 @@ impl Component for proto::Component {
             Filter, Histogram, Impute, Index, Literal, Materialize, Mean,
             Partition, Quantile, RawMoment, Reshape, Resize, Sum, Union, Variance,
 
-            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
+            ExponentialMechanism, GaussianMechanism, LaplaceMechanism,
+            SimpleGeometricMechanism, SnappingMechanism,
 
             Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
             Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract
@@ -329,7 +333,8 @@ impl Expandable for proto::Component {
             DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian,
             DpMinimum, DpQuantile, DpRawMoment, DpSum, DpVariance,
 
-            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
+            ExponentialMechanism, GaussianMechanism, LaplaceMechanism,
+            SimpleGeometricMechanism, SnappingMechanism,
 
             ToBool, ToFloat, ToInt, ToString
         );
@@ -365,7 +370,8 @@ impl Mechanism for proto::Component {
 
         get_privacy_usage!(
             // INSERT COMPONENT LIST
-            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism
+            ExponentialMechanism, GaussianMechanism, LaplaceMechanism,
+            SimpleGeometricMechanism, SnappingMechanism
         );
 
         Ok(None)
@@ -414,6 +420,7 @@ impl Accuracy for proto::Component {
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
         accuracy: &proto::Accuracies,
+        public_arguments: IndexMap<base::IndexKey, &Value>
     ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
         let variant = self.variant.as_ref()
             .ok_or_else(|| "variant: must be defined")?;
@@ -423,7 +430,8 @@ impl Accuracy for proto::Component {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = variant {
-                            return x.accuracy_to_privacy_usage(privacy_definition, properties, accuracy)
+                            return x.accuracy_to_privacy_usage(
+                                privacy_definition, properties, accuracy, public_arguments)
                                 .chain_err(|| format!("node specification {:?}:", variant))
                        }
                     )*
@@ -434,7 +442,8 @@ impl Accuracy for proto::Component {
         accuracy_to_privacy_usage!(
              LaplaceMechanism,
              GaussianMechanism,
-             SimpleGeometricMechanism
+             SimpleGeometricMechanism,
+             SnappingMechanism
         );
 
         Ok(None)
@@ -447,6 +456,7 @@ impl Accuracy for proto::Component {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
         alpha: f64,
     ) -> Result<Option<Vec<proto::Accuracy>>> {
         let variant = self.variant.as_ref()
@@ -457,7 +467,8 @@ impl Accuracy for proto::Component {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = variant {
-                            return x.privacy_usage_to_accuracy(privacy_definition, properties, alpha)
+                            return x.privacy_usage_to_accuracy(
+                                privacy_definition, properties, public_arguments, alpha)
                                 .chain_err(|| format!("node specification {:?}:", variant))
                        }
                     )*
@@ -468,7 +479,8 @@ impl Accuracy for proto::Component {
         privacy_usage_to_accuracy!(
             LaplaceMechanism,
             GaussianMechanism,
-            SimpleGeometricMechanism
+            SimpleGeometricMechanism,
+            SnappingMechanism
         );
 
         Ok(None)

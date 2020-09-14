@@ -68,7 +68,7 @@ pub fn get_analytic_gaussian_sigma(epsilon: f64, delta: f64, sensitivity: f64) -
         1.
     } else {
         let (s_inf, s_sup) = doubling_trick(0., 1., epsilon, delta, delta_thr);
-        let tol: f64 = 10_f64.powf(-12.);
+        let tol: f64 = 1e-10f64;
         let s_final = binary_search(s_inf, s_sup, epsilon, delta, delta_thr, tol);
         (1. + s_final / 2.).sqrt() - (s_final / 2.).sqrt()
     };

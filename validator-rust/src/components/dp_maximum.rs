@@ -15,25 +15,18 @@ impl Expandable for proto::DpMaximum {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         _public_arguments: &IndexMap<IndexKey, &Value>,
-        properties: &base::NodeProperties,
+        _properties: &base::NodeProperties,
         component_id: u32,
         mut _maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
         let mut expansion = base::ComponentExpansion::default();
-
-        let mechanism = if self.mechanism.to_lowercase().as_str() == "automatic" {
-            if properties.contains_key::<IndexKey>(&"candidates".into())
-            { "exponential" } else { "laplace" }.to_string()
-        } else {
-            self.mechanism.to_lowercase()
-        };
 
         expansion.computation_graph.insert(component_id, proto::Component {
             arguments: component.arguments.clone(),
             variant: Some(proto::component::Variant::DpQuantile(proto::DpQuantile {
                 alpha: 1.,
                 interpolation: "upper".to_string(),
-                mechanism,
+                mechanism: self.mechanism.clone(),
                 privacy_usage: self.privacy_usage.clone()
             })),
             omit: component.omit,

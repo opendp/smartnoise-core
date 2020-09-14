@@ -1,0 +1,653 @@
+\documentclass[11pt]{scrartcl} % Font size
+\input{../structure.tex} % Include the file specifying the document structure and custom commands
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{
+	\normalfont\normalsize
+	\textsc{Harvard Privacy Tools Project}\\ % Your university, school and/or department name(s)
+	\vspace{25pt} % Whitespace
+	\rule{\linewidth}{0.5pt}\\ % Thin top horizontal rule
+	\vspace{20pt} % Whitespace
+	{\huge Snapping Mechanism Notes}\\ % The assignment title
+	\vspace{12pt} % Whitespace
+	\rule{\linewidth}{2pt}\\ % Thick bottom horizontal rule
+	\vspace{12pt} % Whitespace
+}
+
+\date{\normalsize\today} % Today's date (\today) or a custom date
+
+\begin{document}
+\maketitle % Print the title
+
+\section{Introduction}
+The implementation of the snapping mechanism utilizes a number of ideas described in \href{http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.366.5957&rep=rep1&type=pdf}{Mironov (2012)}\footnote{specifically in section 5.2} that, as far as I can tell, are not commonly seen in implementations of other DP algorithms. This document provides an overview of these ideas. \newline
+
+\section{Mechanism Definitions}
+Below we present the mechanisms as if they are operating on the set 64-bit floating point numbers, $\mathbb{D}$, rather than $\mathbb{R}$. We will use $\oplus$ and $\otimes$ to represent the floating-point implementations of addition and multiplication, respectively.
+
+\subsection{Laplace Mechanism}
+\label{subsec:laplace}
+Let $f$ be a function computed on a data set $D$ with sensitivity $\Delta_f$ and $\epsilon$ be the desired privacy parameter. Further, let $\lambda = \frac{\Delta_f}{\epsilon}$. Then the Laplace Mechanism is defined as:
+\[ M_{L}(D, f(\cdot), \lambda) = f(D) \oplus Y \]
+where $Y \sim Laplace(\lambda)$.
+
+\subsection{Snapping Mechanism}
+\label{subsec:snapping}
+Let $B$ be a user-chosen quantity that reflects beliefs about reasonable bounds on $f(D)$ and $\Lambda$ be the smallest power of two at least as large as $\lambda$. Using the same notation as above, the snapping mechanism is defined as:
+\[ M_{S}(D, f(\cdot), \lambda, B) = clamp_{B}\left( \lfloor clamp_{B}\left( f(D) \right) \oplus Y \rceil_{\Lambda} \right). \]
+where $clamp_{B}(\cdot)$ restricts output to the interval $[-B, B]$ and $\lfloor \cdot \rceil_{\Lambda}$ rounds to the nearest multiple of $\Lambda$, with ties resolved toward $+ \infty$.
+
+\section{Sampling from the Laplace}
+\label{sec:sampling_from_laplace}
+Mironov presents the Laplace noise as
+\[ S \otimes \lambda \otimes LN(U^*) \]
+where $S$ is a uniform draw over $\{\pm 1\}$, $\lambda = \frac{\Delta_f}{\epsilon}$, $LN(\cdot)$ is the floating-point implementation of the natural logarithm with exact rounding, and $U^*$ is the uniform distribution over $\mathbb{D} \cap (0,1)$ such that each double is output with proportion relative to its \href{https://en.wikipedia.org/wiki/Unit_in_the_last_place}{unit of least precision}. $\oplus$ and $\otimes$ are the floating-point implementations of addition and multiplication, respectively. \newline
+
+We get $U^*$ as Mironov suggests, by sampling our exponent from a geometric distribution with parameter $p = 0.5$ and a mantissa uniformly from $\{0,1\}^{52}$. Let $e$ be a draw from $Geom(0.5)$ and $m_1, m_2 \hdots, m_{52}$ be the bits of our mantissa. Then we have
+\[ U^{*} = (1.m_1m_2 \hdots m_{52})_2 * 2^{- e}. \]
+The unit of least precision is completely decided by the value of $e$, so the floating-point values within each unit of least precision are uniformly distributed. Drawing $e$ from the geometric ensures that the probability of drawing a value from a given band is equal to the size of the band. \newline
+
+$LN(\cdot)$ must be implemented with exact rounding, which we define below.\footnote{For all rounding, we assume that our goal is to round to the nearest number we are able to represent.} Consider that for an arbitrary $x \in \mathbb{D}$ the natural log of $x$ is not necessarily $\in \mathbb{D}$. Let $a < ln(x) < b$ where $a,b \in \mathbb{D}$ and $\not\exists c \in \mathbb{D}: a < c < b$. Without loss of generality, assume that $\vert a-x \vert < \vert b - x \vert$, so that if we had infinite precision in calculating $ln(x)$ (but still had to output an element $\in \mathbb{D}$), we would output $a$.
+Many mathematical libraries do what is called \textit{accurate-faithful} rounding, which means that in the scenario above our algorithm would output $a$ with high probability. In an \textit{exact rounding} paradigm, the algorithm outputs $a$ with probability 1. You can read more about exact rounding in section 1.1 \href{http://www.ens-lyon.fr/LIP/Pub/Rapports/RR/RR2005/RR2005-37.pdf}{here}. Section 2.1 of the paper just linked appeals to proofs from a set of papers that say you need 118 bits of precision, in the worst case, to calculate the logarithm with exact rounding. So, the current implementation calculates $LN(U^*)$ with at least 118 bits of precision.\footnote{We potentially use $> 118$ because of the $\epsilon$ redefinition described later.} \newline
+
+Finally, we can choose to perform $\oplus$ and $\otimes$ with greater than normal precision if we so choose. For now, we are using the same 118 bits of precision for all the basic floating-point operations, using the assumption that exact rounding of basic arithmetic operations should require less precision than calculating the log. This should probably be made more rigorous at some point.
+
+\section{Implementation of $\lfloor \cdot \rceil_{\Lambda}$}
+\label{sec:implementation_of_rounding}
+The $\lfloor \cdot \rceil_{\Lambda}$ function takes an input and rounds it to the nearest multiple of $\Lambda$, where $\Lambda$ is the smallest power of two greater than or equal to $\lambda$. There are multiple steps to this implementation that are worth explaining.
+
+\subsection{Finding $\Lambda$}
+\label{subsec:finding_lambda}
+The algorithm receives $\lambda$ as input, but must find $\Lambda$ itself. First, represent $\lambda$ in its \href{https://en.wikipedia.org/wiki/Double-precision_floating-point_format}{IEEE-754 64-bit floating-point format}:
+\[ \lambda = (-1)^S (1.m_{1} \hdots m_{52})_2 * 2^{(e_1 \hdots e_{11})_2-1023}. \]
+We know $\lambda > 0$, so we know $S = 0$. Now, note that powers of two correspond exactly to the IEEE representations with $m_1 = \hdots = m_{52} = 0$. If $\lambda$ is already a power of two, then we simply return $\lambda$. Otherwise, we get the smallest power of two greater than $\lambda$ by changing to mantissa to $(0 \hdots 0)_2$ and increasing the exponent by 1. So, we have
+\begin{equation}
+    \Lambda =
+        \begin{cases}
+            \lambda, & \text{ if } m_1 = \hdots = m_{52} = 0 \\
+            (1.0 \hdots 0)_2 * 2^{(e_1 \hdots e_{11})_2-1022}, & \text{ if } \exists i: m_i \neq 0
+        \end{cases}
+\end{equation}
+
+\subsection{Rounding to nearest multiple of $\Lambda$}
+We now want to round our input $x$ to the nearest multiple of $\Lambda$. We do so via a three-step process:
+\begin{enumerate}
+    \item $x' = \frac{x}{\Lambda}$
+    \item Round $x'$ to nearest integer, yielding $x''$
+    \item $\lfloor x \rceil_{\Lambda} = \Lambda x''$
+\end{enumerate}
+We split the process into three steps because each step can be performed exactly (with no introduction of floating-point error) via manipulation of the IEEE floating-point representation.
+
+\subsubsection{Calculate $x' = \frac{x}{\Lambda}$}
+\label{subsec:calculate_xprime}
+We can perform this division exactly because $\Lambda$ is a power of two. Let $\Lambda = 2^m$ for some $m \in \mathbb{Z}$ and let $x$ have the IEEE representation
+\[ x = (-1)^S (1.m_{1} \hdots m_{52})_2 * 2^{(e_1 \hdots e_{11})_2-1023}. \]
+Then we know that
+\[ x' = (-1)^S (1.m_{1} \hdots m_{52})_2 * 2^{(e_1 \hdots e_{11})_2-1023-m}. \]
+We can rewrite $(e_1 \hdots e_{11})_2 - m$ as $(f_1 \hdots f_{11})_2$ and represent $x'$ directly as its IEEE implementation:
+\[ x' = (-1)^S (1.m_{1} \hdots m_{52})_2 * 2^{(f_1 \hdots f_{11})_2-1023}. \]
+
+\subsubsection{Round $x'$ to nearest integer}
+\label{subsec:round_xprime}
+Let $y = (f_1 \hdots f_{11})_2-1023$. We present slightly different rounding algorithms based on the value of $y$. Note that we abuse notation a bit below; the repeating element notation $\bar{0}$ means to repeat the element (in this case, 0) until the rest of the larger section has been filled. For example, if the mantissa is 52 bits, then $101\bar{0}$ represents $101$ followed by 49 trailing zeros. \newline
+
+\textbf{Case 1: $y \geq 52$} \newline
+If $y \geq 52$, then we know that only integers are able to be represented at this scale, so there is no need to round.\footnote{See \href{https://www.exploringbinary.com/the-spacing-of-binary-floating-point-numbers/}{here} for an explanation.} \newline
+
+\textbf{Case 2: $y \in \{0, 1, \hdots, 51\}$} \newline
+We can think of multiplying by $2^y$ as shifting the radix point to the right $y$ times. We can then write
+\[ x' = (-1)^S (1m_1 \hdots m_y.m_{y+1} \hdots m_{52})_2. \]
+
+We know $m_1 \hdots m_y$ represent powers of two $\in \mathbb{Z}$ and $m_{y+1} \hdots m_{52}$ are powers of two $\not \in \mathbb{Z}$. Specifically, $m_{y+1}$ corresponds to $\frac{1}{2}$. So, we know to round up if $m_{y+1} = 1$ and down if $m_{y+1} = 0$. \newline
+
+Rounding up requires incrementing up by 1 the integral part of the mantissa ($m_1 \hdots m_y$), and changing the fractional part ($m_{y+1}, \hdots, m_{52}$) to zeros. Note that there is an edge case here where $m_i = 1$ for all $i$ in which the mantissa becomes $(\bar{0})_2$ and we instead increment the exponent. Rounding down requires maintaining the integral part of the mantissa and changing the fractional part to zeros. \newline
+
+Let $(m'_1 \hdots m'_y)_2 = (m_1 \hdots m_y)_2 + 1$ and $(f'_1 \hdots f'_{11})_2 = (f_1 \hdots f_{11})_2 + 1$. Then we get:
+\begin{equation}
+    x'' =
+        \begin{cases}
+            (-1)^S (1.m'_1 \hdots m'_y \bar{0})_2 * 2^{(f_1 \hdots f_{11})_2-1023}, & \text{ if } m_{y+1} = 1 \text{ and } \exists i: m_i = 0 \\
+            (-1)^S (1.\bar{0})_2 * 2^{(f'_1 \hdots f'_{11})_2-1023}, & \text{ if } m_{y+1} = 1 \text{ and } \forall i: m_i = 1 \\
+            (-1)^S (1.m_1 \hdots m_y \bar{0})_2 * 2^{(f_1 \hdots f_{11})_2-1023}, & \text{ if } m_{y+1} = 0
+        \end{cases}
+\end{equation}
+
+\textbf{Case 3: $y = -1$} \newline
+We think of this case similarly to the beginning of Case 2 and shift the radix point to the left:
+\[ x'' = (-1)^S (0.1m_1 m_2 \hdots)_2. \]
+W know the bit directly to the right of the radix point is the implicit 1 in the IEEE representation, so we know we will round up. Rounding up always rounds to 1, so we know
+\[ x'' = (-1)^S (1.\bar{0})_2 * 2^{(0\bar{1})_2 - 1023}. \]
+
+\textbf{Case 4: $y < -1$} \newline
+This is exactly the same as Case 3, except we know there are some number of leading zeros between the radix point and the implicit 1. Therefore, we always round down to 0 and get:
+\[ x'' = (-1)^0 (1.\bar{0})_2 * 2^{(\bar{0})_2 - 1023}. \]
+The notation directly above should not be taken literally, as 0 has a special IEEE representation (all 0s) that does not quite follow the standard formula. We present the standard formally for the sake of consistency and comparison with the earlier cases. \newline
+
+\subsubsection{Multiply $x''$ by $\Lambda$}
+\label{subsubsec:multiply_xdoubleprime}
+Finally, we multiply $x''$ by $\Lambda$ to get our desired result. This is effectively the opposite of Step 1, in that we add $m$ to the exponent of $x''$. The only difference is that we now have to deal with the case in which $x'' = 0$, because $0*2^m \neq 0$ if you implement multiplication by $2^m$ through exponent addition.\footnote{This is due to the special representation of 0.}
+
+\section{Redefinition of $\epsilon$}
+\label{sec:redefine_epsilon}
+Mironov states in the last line of the privacy proof that the snapping mechanism respects
+\[ \left( \frac{1 + 12B\eta}{\lambda'} + 2\eta \right)\text{-DP}\footnote{We use $\lambda'$ rather than $\lambda$ 
+to reflect that it is calculated with respect to our functional $\epsilon'$} \]
+where $B$ is the clamping bound and $\eta$ is the machine-$\epsilon$.\footnote{This is a relatively minor point, but I have normally seen machine-$\epsilon$ defined as the smallest value $\epsilon$ such that $1 \oplus \epsilon \neq 1$. Mironov defines it as the largest $\epsilon$ such that $1 \oplus \epsilon = 1$.} We will take $\eta$ to be our floating-point precision, rather than a value that is machine-imposed, which allows us to use high-precision libraries to get smaller values of $\eta$.
+Because we have rescaled our function to $\Delta f = 1$, we have $\lambda' = \frac{1}{\epsilon'}$ and this is equivalent to
+\[ \big( \epsilon'(1 + 12B\eta) + 2\eta \big)\text{-DP}. \]
+For ease of notation, we will call this $\epsilon$-DP and it can be thought of as the privacy level relative to the Laplace. That is, if you were to get $\epsilon'$-DP from the Laplace Mechanism, you would get $\epsilon$-DP from the Snapping Mechanism. Put another way, you get $\epsilon$-DP from the Snapping Mechanism when you use $\epsilon'$ to parameterize the Laplace noise that is embedded within the Snapping Mechanism. \newline
+
+This is not really sufficient to be usable in a system that might require budgeting of a privacy budget, as you cannot (as written above) simply set a privacy allocation for the Snapping Mechanism, as it relies on $B$ and $\eta$. So rather than returning $\epsilon$ as a function of $\epsilon'$, we should do the reverse.
+\begin{align}
+             \epsilon &= \epsilon'(1 + 12B\eta) + 2\eta \nonumber \\
+    \implies \epsilon' &= \frac{\epsilon - 2\eta}{1 + 12B \eta} \nonumber
+\end{align}
+This $\epsilon'$ is what will be used in the parameterization in the Laplace within the Snapping Mechanism. Thus, we need $\epsilon' > 0$, or $\epsilon > 2\eta$, where $\eta = 2^{-p}$, and $p$ is our floating point precision. This simplifies to $\epsilon > 2^{-p+1}$. Assuming we want minimum sufficient precision, we can find the smallest power of two $\geq \epsilon$, call it $2^{-m}$, and let $p = m+2$. For setting our mechanism-level precision, we use the larger of the $p$ we just found or the level necessary to perform exact rounding on the logarithm as described earlier (which we currently believe to be 118).
+
+\section{Utility}
+\label{sec:utility}
+
+\subsection{Symmetric Bounds}
+\label{subsec:symmetric_bounds}
+Notice that, as stated, the clamping bounds $\{-B, B\}$ are symmetric about 0 -- this is sub-optimal in many cases. 
+For example if the user is confident that their statistic of interest lies in the range $[1,000, 2,000]$ they 
+would need to set $B = 2,000$, generate a clamping range $[-2,000, 2000]$, and have noise scaled by $4,000$ 
+rather than $1,000$. In practice, we can allow users to provide $[lower, upper]$ bounds on the statistic value rather 
+than a single $B$. If we let $s = \frac{upper - lower}{2}$ and pre-shift our statistic value by $s$ we can let 
+$B = upper - s$ and have a version with potentially much greater utility.
+
+\subsection{Error}
+\label{subsec:error}
+As originally written, it is difficult to reason about error/utility of the Snapping Mechanism. The output of the Snapping Mechanism relies on the user-provided bound, $B$, which could potentially cause the output to be arbitrarily far from $f(D)$. The potential for bias of the Snapping Mechanism decreases as $B$ increases in absolute value. Note however that $\epsilon'$ decreases as $B$ increases, thus causing the amount of added Laplace noise to increase. Throughout this section, we will assume that $f(D) \geq 0$, though a very similar process can be taken to reason about $f(D) \leq 0$. Furthermore, we consider the case in which $\Delta f = 1$.
+The accuracy/error calculations should be multiplied by $\Delta f$ for the case in which $\Delta f \neq 0$. \newline
+
+One possibility is that, instead of the user choosing $B$, we set it for them within the mechanism. We can use the data bounds the user provides to calculate an
+upper bound on $\vert f(D) \vert$.\footnote{This should, at least theoretically, be possible for $f: \mathcal{X} \rightarrow \mathbb{R}$ if $f$ is continuous and $\mathcal{X}$ is compact (thanks to Ira/Wikipedia for pointing this out).} We will refer to this maximal value of $f(D)$ as $B'$. This will allow us to set a $B$ such that we are sure that $clamp_B \left( f(D) \right)$ is non-binding. This will make it a bit easier to think about the error of the mechanism, as every component of the mechanism is now something with a value or distribution we can reason about. For now, we will mostly ignore exactly how this is done and focus on general analysis assuming that such a $B$ can be chosen.
+
+Now, consider the following quantity:
+\[ N \sim \big \vert f(D) - clamp_B \big( \lfloor f(D) + Y' \rceil_{\Lambda'} \big) \big \vert \]
+with $Y' \sim Laplace(\lambda')$ where $\lambda' = \frac{1}{e'} = \frac{1 + 12B \eta}{\epsilon - 2\eta}$. This is the amount of noise added to $f(D)$ by the snapping mechanism.\footnote{Note that we ignore the inner $clamp_B$ inside the Snapping Mechanism because we set $B \geq f(D)$.} We have then:
+\begin{equation}
+	N =
+		\label{snapped_noise}
+		\begin{cases}
+			B + f(D), &\text{ if } clamp_B \left( \lfloor f(D) + Y' \rceil_{\Lambda'} \right) = -B  \\
+			B - f(D), &\text{ if } clamp_B \left( \lfloor f(D) + Y' \rceil_{\Lambda'} \right) = B  \\
+			\big\vert f(D) - \lfloor f(D) + Y' \rceil_{\Lambda'} \big\vert, &\text{ otherwise }
+		\end{cases}
+\end{equation}
+
+We can examine these cases further. Let $F_{Y'}$ be the CDF of $Y' \sim Laplace(\lambda')$, which we write:
+\begin{equation}
+	F_{Y'}(x) =
+		\begin{cases}
+			\frac{1}{2} \exp \left( \frac{x}{\lambda'} \right), &\text{ if } x < 0 \\
+			1 - \frac{1}{2} \exp \left( \frac{-x}{\lambda'} \right), &\text{ if } x \geq 0
+		\end{cases}
+\end{equation}
+
+Then:
+\begin{align}
+	               \mathbb{P} \big( clamp_B\left( \lfloor f(D) + Y' \rceil_{\Lambda'} \right) = -B \big) \nonumber &= \mathbb{P} \big( \lfloor f(D) + Y' \rceil_{\Lambda'} < -B \big) \nonumber \\
+	&\leq \mathbb{P} \big( f(D) + Y' < -B + \frac{\Lambda'}{2} \big) \nonumber \\
+	&= \mathbb{P} \big( Y' < -B - f(D) + \frac{\Lambda'}{2} \big) \nonumber \\
+	&= F_{Y'} \big( -B - f(D) + \frac{\Lambda'}{2} \big) \nonumber
+\end{align}
+
+\begin{align}
+	               \mathbb{P} \big( clamp_B\left( \lfloor f(D) + Y' \rceil_{\Lambda'} \right) = B \big) \nonumber &= \mathbb{P} \big( \lfloor f(D) + Y' \rceil_{\Lambda'} \geq B \big) \nonumber \\
+	&\leq \mathbb{P} \big( f(D) + Y' \geq B - \frac{\Lambda'}{2} \big) \nonumber \\
+	&= \mathbb{P} \big( Y' \geq B - f(D) - \frac{\Lambda'}{2} \big) \nonumber \\
+	&= 1 - \mathbb{P} \big( Y' < B - f(D) - \frac{\Lambda'}{2} \big) \nonumber \\
+	&= 1 - F_{Y'} \big( B - f(D) - \frac{\Lambda'}{2} \big) \nonumber
+\end{align}
+
+Recall from the triangle inequality that $\vert x-z \vert \leq \vert x-y \vert + \vert y-z \vert$. Then we have
+\begin{align}
+\big\vert f(D) - \lfloor f(D) + Y' \rceil_{\Lambda'} \big\vert \nonumber &\leq \big\vert f(D) - (f(D) + Y') \big\vert + \big\vert f(D) + Y' - \lfloor f(D) + Y' \rceil_{\Lambda'} \big\vert \nonumber \\
+                                                                        &\leq \vert -Y' \vert + \frac{\Lambda'}{2} \nonumber \\
+	                                                                    &= \vert Y' \vert + \frac{\Lambda'}{2} \nonumber
+\end{align}
+It is important to note that this $Y'$ is associated with the Laplace noise inside the snapping mechanism which uses the redefined $\epsilon'$, rather than the user's desired $\epsilon$. So, we need to do a bit more work in order to compare the error of the Snapping Mechanism to that we would get if we instead used a Laplace Mechanism with the same nominal privay guarantee. \newline
+
+Let $Y \sim Laplace(\lambda)$, where $\lambda = \frac{1}{\epsilon}$, be the distribution of noise generated by the Laplace Mechanism.
+We showed in \autoref{subsec:snapping} that we can represent the distribution of Laplace noise as $S \otimes \lambda \otimes LN(U^*)$. So, we have
+\[ Y \sim S \otimes \frac{1}{\epsilon} \otimes LN(U^*) \]
+\[ Y' \sim S \otimes \frac{1 + 12B\eta}{\epsilon - 2\eta} \otimes LN(U^*) \]
+and thus,
+\[ Y' = \frac{\epsilon(1 + 12B\eta)}{\epsilon - 2\eta}Y \]
+
+So we can rewrite $\eqref{snapped_noise}$ as
+\begin{equation}
+	\label{snapped_noise_rewrite}
+	N
+		\begin{cases}
+			= B + f(D), &\text{ with probability } \leq F_{Y'} \big( -B - f(D) + \frac{\Lambda'}{2} \big)  \\
+			= B - f(D), &\text{ with probability } \leq 1 - F_{Y'} \big( B - f(D) - \frac{\Lambda'}{2} \big)  \\
+			\leq \vert Y' \vert + \frac{\Lambda'}{2}, &\text{ otherwise }
+		\end{cases}
+\end{equation}
+Note that $N$ is always $\leq B + f(D)$.
+
+\subsection{Accuracy}
+\label{subsec:accuracy}
+We would like to convert the error into an accuracy estimate. Keeping in line with existing standards in PSI-Library, we define the accuracy $a$ for a given $\alpha$ as the $a$ such that $\alpha = \mathbb{P}(N > a)$, where $N$ is (as above) the error (relative to $f(D)$) introduced by the Snapping Mechanism. It is difficult to get an exact accuracy guarantee because of our inability to model the effects of $\lfloor \cdot \rceil_\Lambda'$, so we will instead refer to $a$ as the smallest $x$ such that $\mathbb{P}(N > x) \leq \alpha$. \newline
+
+Recall that $N \leq B + f(D)$. If we can get an upper bound on $P_{L} = \mathbb{P}(N = B + f(D))$, then we can start concerning ourselves only with the second two lines of $\eqref{snapped_noise_rewrite}$, which we will call $N_{sub}$. \newline
+
+Let's attempt to get bounds on $P_{L} = \mathbb{P}(N = B + f(D))$ and $P_{U} = \mathbb{P}(N = B - f(D))$ in terms of quantities we know. Remember that $\frac{\lambda'}{2} \leq \frac{\Lambda'}{2} < \lambda'$.
+\begin{align}
+	P_{L} &= \mathbb{P}(N = B + f(D)) \nonumber \\
+		  &= F_{Y'}(-B - f(D) + \frac{\Lambda'}{2}) \nonumber \\
+		  &< F_{Y'}(-B - f(D) + \lambda') \nonumber \\
+		  &= P_{L}^{+} \nonumber
+\end{align}
+\begin{align}
+	P_{U} &= \mathbb{P}(N = B - f(D)) \nonumber \\
+		  &= 1 - F_{Y'}(B - f(D) - \frac{\Lambda'}{2}) \nonumber \\
+		  &\geq 1 - F_{Y'}(B - f(D) - \lambda') \nonumber \\
+		  &= P_{U}^{-} \nonumber
+\end{align}
+Because we know that $\mathbbm{P}(N=B+f(D)) \leq P_L < P_{L}^{+}$, we can reframe our original goal. We wanted to find the smallest $x$ such that $\alpha \geq \mathbb{P}(N > x)$, but this is equivalent to finding the smallest $x$ such that
+\[ \alpha - P_{L}^{+} \geq \mathbb{P}(N_{sub} > x) \]
+which we further reinterpret as
+\[ \alpha - P_{L}^{+} \geq 1 - \mathbb{P}(N_{sub} \leq x) = 1 - F_{N_{sub}}(x). \]
+Consider $N_{sub}$; we know that
+\[ Y' \sim Laplace (\lambda') \]
+with $\lambda' = \frac{1}{\epsilon'} = \frac{1 + 12B \eta}{\epsilon - 2 \eta}$, which implies that
+\[ \vert Y' \vert \sim Exponential(\epsilon'). \]
+We now construct upper and lower bounds on the CDF of $Z = \vert Y' \vert + \frac{\Lambda'}{2}$, which we will call $F_{Z}$:
+\begin{align}
+	F_{Z}(z) &= \mathbb{P}(Z \leq z) \nonumber \\
+			 &= \mathbb{P}\left( \vert Y' \vert + \frac{\Lambda'}{2} \leq z \right) \nonumber \\
+			 &= \mathbb{P} \left( \vert Y' \vert \leq z - \frac{\Lambda'}{2} \right) \nonumber \\
+			 &\leq \mathbb{P} \left( \vert Y' \vert \leq z - \frac{\lambda'}{2} \right) \nonumber \\
+			 &= 1 - \exp\left( -\epsilon'(z - \frac{\lambda'}{2}) \right) \nonumber \\
+			 &= 1 - \exp\left( -\epsilon'z + \frac{1}{2} \right) \nonumber \\
+			 &= F_{Z}^{+}(z) \nonumber
+\end{align}
+\begin{align}
+	F_{Z}(z) &= \mathbb{P}(Z \leq z) \nonumber \\
+			 &= \mathbb{P}\left( \vert Y' \vert + \frac{\Lambda'}{2} \leq z \right) \nonumber \\
+			 &= \mathbb{P} \left( \vert Y' \vert \leq z - \frac{\Lambda'}{2} \right) \nonumber \\
+			 &> \mathbb{P} \left( \vert Y' \vert \leq z - \lambda' \right) \nonumber \\
+			 &= 1 - \exp\left( -\epsilon'(z - \lambda') \right) \nonumber \\
+			 &= 1 - \exp\left( -\epsilon'z + 1 \right) \nonumber \\
+			 &= F_{Z}^{-}(z) \nonumber
+\end{align}
+
+Let $f_Z$ be the PDF of $Z$, $m = \min\left(B-f(D),x\right)$, and $n = \min\left(B+f(D),x\right)$.  Then we have:
+\begin{align}
+	F_{N_{sub}}(x) &= \int_{0}^{m} f_{Z}(z)dz + \left( P_{U} + \int_{B - f(D)}^{n} f_{Z}(z)dz \right) \cdot \mathbbm{1}\left(x \geq B - f(D)\right) \nonumber \\
+				   &= F_{Z}(m) + \left( P_{U}  + F_{Z}(n) - F_{Z}(B - f(D)) \right) \cdot \mathbbm{1}\left( x \geq B - f(D) \right)   \nonumber \\
+				   &\geq F_{Z}^{-}(m) + \left( P_{U}^{-} + F_{Z}^{-}(n) - F_{Z}^{+}(B - f(D) \right) \cdot \mathbbm{1}\left(x \geq B - f(D)\right) \nonumber \\
+				   &= F_{N_{sub}}^{-}(x) \nonumber
+\end{align}
+Now that we have $F_{N_{sub}}^{-}(x)$ as a lower bound on $F_{N_{sub}}(x)$, we know that
+$1 - F_{N_{sub}}^{-}(x)$ is an upper bound on $1 - F_{N_{sub}}(x)$.
+So, our objective is now to find the minimum $x$ such that $1 - F_{N_{sub}}^{-}(x) = \alpha - P_{L}^{+}$.
+We rewrite this condition as $F_{N_{sub}}^{-}(x) = 1 + P_{L}^{+} - \alpha$. \newline
+
+Observe that if for a given $x'$ we have
+$F_{Z}^{-}(x') \geq 1 + P_{L}^{+} - \alpha$, we know that
+\[ \exists x \leq x': x = 1 + P_{L}^{+} - \alpha \]
+We can find this $x$ by performing algebra on $F_{Z}^{-}(x)$, which yields the following algorithm:
+
+\begin{algorithm}
+	\label{GetAccuracy}
+	\begin{algorithmic}
+		\Function{GetAccuracy}{$f(D), B, P_{L}^{+}, P_{U}^{-}, \epsilon', \alpha$}
+			\If{$P_{L}^{+} \geq \alpha$}
+				\State\Return{B + f(D)}
+			\ElsIf{$F^{-}_{Z}(B - f(D)) \geq 1 + P_{L}^{+} - \alpha$}
+				\State\Return{$\frac{1 - \ln(\alpha - P_{L}^{+})}{\epsilon'}$}
+			\ElsIf{$F^{-}_{Z}(B - f(D)) + P_{U}^{-} \geq 1 + P_{L}^{+} - \alpha$}
+				\State\Return{B - f(D)}
+			\Else{}
+				\State\Return{$\frac{1 - \ln(\alpha - P_{L}^{+} + P_{U}^{-})}{\epsilon'}$}
+			\EndIf
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+Calculations/explanations of the return statements above can be found in $\autoref{appendix:accuracy}$. \newline
+
+There are some complications with \emph{GetAccuracy}. \newline
+
+First, it relies on $f(D)$ and thus is privacy-leaking. I have not yet figured out the privacy loss of releasing the accuracy,
+but we could work on this in the future. James suggested that we could potentially give simulated accuracy estimates
+for estimates of $f(D)$ provided by the user, thus removing the dependance on the real $f(D)$.
+I think that if we did this, we could not give a post-hoc accuracy guarantee using \emph{GetAccuracy}
+(it would be too easy for a user to ask for an exhaustive list of accuracies for possible $f(D)$ and then back out the true
+$f(D)$ from the provided post-hoc accuracy guarantee). \newline
+
+Second (though related), the accuracy guarantee using the actual $f(D)$ cannot be done until the mechanism has been run,
+so the user cannot get a certain accuracy guarantee before running the algorithm in order to decide whether or
+not they want to spend some of their privacy budget on the statistic. \newline
+
+We instead use a more conservative accuracy metric that will be independent of $D$.\footnote{Thanks to Victor Balcer for motivating
+this idea.} Note that, provided that $f(D) \in [-B, B]$ (as is guaranteed by our method for choosing $B$),
+the outer $clamp_B$ (after noise is added) can only help our accuracy. Thus, we can model the noise as always being upper bounded by
+$Z = \vert Y' \vert + \frac{\Lambda'}{2}$ and ignore the cases in which the outer clamping binds bound. \newline
+
+Let's first consider the question of, for a given accuracy $a$, finding confidence $\alpha$ such that
+$\mathbbm{P}(Z \geq a) \leq \alpha$. We would like for $\alpha$ to be as small as possible, though any sufficiently large
+$\alpha$ would satisfy our needs.
+
+\begin{align*}
+	\mathbb{P}(Z > a) &= 1 - \mathbb{P}(Z \leq a) \\
+	                  &= 1 - F_{Z}(a) \\
+	                  &= \exp\left( -\epsilon'(a - \frac{\Lambda'}{2}) \right)
+\end{align*}
+and so we have
+\[ \alpha = \exp\left( -\epsilon'(a - \frac{\Lambda'}{2}) \right). \]
+We can rearrange and solve for $a$ to put this in the terms we were using earlier (finding a suitable accuracy $a$ for
+a given $\alpha$). That calculation yields
+\[ a = \frac{\ln \left( \frac{1}{\alpha} \right)}{\epsilon'} + \frac{\Lambda'}{2}. \]
+
+The algorithm for getting accuracy is then as follows. Notice that we can clamp our accuracy guarantee to $2B$ if it
+exceeds this, as the outer clamp ensures that the mechanism output is $\in [-B, B]$.
+\begin{algorithm}
+	\label{GetAccuracy2}
+	\begin{algorithmic}
+		\Function{GetAccuracy2}{$B, \epsilon', \Lambda', \alpha$}
+			\State $a = \frac{\ln \left( \frac{1}{\alpha} \right)}{\epsilon'} + \frac{\Lambda'}{2}$
+			\If{$a \geq 2B$}
+					\State\Return{2B}
+			\Else{}
+				\State\Return{a}
+			\EndIf
+		\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+
+For a less tight, but simpler, bound we can use that $\frac{\Lambda'}{2} \leq \lambda' = 
+\frac{1}{\epsilon'}$ and set $a = \frac{1 + \ln \left( \frac{1}{\alpha} \right)}{\epsilon'}$. 
+Also recall that this accuracy statement is conditional of $f(D) \in [-B, B]$. If the clamping bounds are not 
+explicitly set to contain $f(D)$ with probability $1$, then we cannot give any accuracy guarantee. \newline 
+
+The accuracy for the pure Laplace is given as $\frac{\ln \left( \frac{1}{\alpha} \right)}{\epsilon}$. Recalling that
+$\epsilon' = \frac{\epsilon - 2\eta}{1 + 12B\eta}$ we can represent the difference between the accuracy of the
+Snapping and Laplace as follows:
+\begin{align*}
+	a_{Snapping} &= \frac{\ln \left( \frac{1}{\alpha} \right)}{\epsilon'} + \frac{\Lambda'}{2} \\
+	&= \frac{\ln \left( \frac{1}{\alpha} \right)}{\left( \frac{\epsilon - 2\eta}{1 + 12B\eta} \right)} + \frac{\Lambda'}{2} \\
+	&= \frac{(1 + 12B \eta) \left(\ln \left( \frac{1}{\alpha} \right) \right)}{\epsilon - 2\eta} + \frac{\Lambda'}{2} \\
+	&= \frac{\epsilon(1 + 12B \eta)}{\epsilon - 2\eta } \cdot \left(\frac{\ln \left( \frac{1}{\alpha} \right)}{\epsilon} \right) + \frac{\Lambda'}{2} \\
+	&= \frac{\epsilon(1 + 12B \eta)}{\epsilon - 2\eta} \cdot a_{Laplace} + \frac{\Lambda'}{2}
+\end{align*}
+
+We would also like to be able to go from accuracy to get epsilon. We perform some algebra
+and get
+\[ \epsilon' = \frac{\ln\left( \frac{1}{\alpha} \right)}{a - \frac{\Lambda'}{2}} \]
+or, if we wanted our overall $\epsilon$
+\begin{equation}
+	\label{eq:accuracy_to_overall_epsilon}
+	\epsilon = (1+12B\eta) \left( \frac{\ln\left( \frac{1}{\alpha} \right)}{a - \frac{\Lambda'}{2}} \right) + 2\eta.
+\end{equation}
+This is a bit unsatisfying, as both $\Lambda'$ and $\eta$ are non-trivial functions of $\epsilon$. 
+We can use $\frac{\Lambda'}{2} \leq \lambda' = \frac{1}{\epsilon'}$ to get a nicer statement: 
+\begin{align}
+	\label{eq:accuracy_to_overall_epsilon_cleaner}
+	\epsilon &= (1+12B\eta) \left( \frac{\ln\left( \frac{1}{\alpha} \right)}{a - \frac{\Lambda'}{2}} \right) + 2\eta \nonumber \\
+			 &\leq (1 + 12B\eta) \left( \frac{\ln\left( \frac{1}{\alpha} \right)}{a - \frac{1}{\epsilon'}} \right) + 2\eta \nonumber \\
+			 &= (1 + 12B\eta) \left( \frac{\ln\left( \frac{1}{\alpha} \right)}{a - \frac{1 + 12B\eta}{\epsilon - 2\eta}} \right) + 2\eta \nonumber \\
+			 &\leq (1 + 12B\eta) \left( \frac{\ln\left( \frac{1}{\alpha} \right)}{a - \frac{1}{\epsilon}} \right) + 2\eta.
+\end{align}
+\eqref{eq:accuracy_to_overall_epsilon_cleaner} is monotonic in $\epsilon$ for $0 < \frac{1}{\epsilon} < a$ and so 
+we can use binary search to try to find the minimum $\epsilon$ that satisfies the desired $a$. 
+Technically, $\eta$ is also a function of $\epsilon$ and so we fold that into the binary search by 
+calculating $\eta$ anew for each tested $\epsilon$ value. \newline 
+
+For all privacy/accuracy analysis of the Snapping mechanism, note that the tradeoff between privacy/accuracy 
+guarantees is not smooth due to the $\Lambda'$ term. 
+For example, $\forall \lambda' = \frac{1}{\epsilon'} \in (\frac{1}{2}, 1]: \Lambda' = 1$, but for 
+$\lambda' = 1.01$ we have $\Lambda' = 2$. For an empirical evaluation of this, see 
+the sample notebook \href{https://github.com/opendifferentialprivacy/whitenoise-samples/blob/cc_add_snapping/analysis/snapping_mechanism.ipynb}{here}.  
+
+\subsection{Bias}
+\label{subsec:bias}
+Because of the clamping to $[-B,B]$, the snapping mechanism will almost always bias estimates toward $0$.
+I am not yet sure if it would be possible to give information about bias of the released statistic without leaking information
+about the data (I lean toward thinking that it is not), but I believe we could provide the bias for a statistic for
+a user's guesses about what $f(D)$ might be. \newline
+
+Let $\hat{f}(D)$ be the user's estimate of $f(D)$ and $\hat{\tilde{f}}(D)$ be the output of the snapping mechanism as applied to
+$\hat{f}(D)$. Without loss of generality, we will assume that $\hat{f}(D) \geq 0$. If it were not, we could
+multiply $f'(D)$ by $-1$ and use this algorithm to get the correct result.\footnote{This works because our bounds, $-B \text{ and } B$, are symmetric about $0$.}
+We think about the distribution of noise not as the absolute value of noise (which we used earlier), but as
+being some distribution with support $[-B - \hat{f}(D), B - \hat{f}(D)]$. \newline
+
+We write the bias of the snapping mechanism as
+\[ Bias = \E(\hat{\tilde{f}}(D) - \hat{f}(D)) = \E\left( clamp_B\left( \lfloor \hat{f}(D) + Y' \rceil_{\Lambda'} \right) - \hat{f}(D) \right) \]
+where $Y' \sim Laplace(\lambda')$ and the expectation is over the randomness of the snapping mechanism.
+Note that bias is a property of the snapping, not of any individual output of the mechanism.
+Thus, any individual output from the snapping mechanism could be as far as $2B$ from the actual raw statistic
+we wish to estimate. \newline
+
+To avoid trying to model the effects of $\lfloor \cdot \rceil_{\Lambda'}$ directly, we will move to considering
+a new quantity we will call $Bias^{+}$, which is an upper bound on the bias:
+\[ Bias^{+} = \E\left( clamp_B\left( f'(D) + Y^{*} \right) - \hat{f}(D) \right) \]
+where $Y^{*} \sim Laplace(-\frac{\Lambda'}{2}, \lambda')$.\footnote{I believe this works,
+but need to think of how to prove it.} Now, define the following:
+\[ p_L = F_{Y^*}(-B - \hat{f}(D)) \]
+\[ p_U = 1 - F_{Y^*}(B - \hat{f}(D)) \]
+such that $F_{Y^*}$ is the CDF of $Y^*$ and $p_L, p_U$ are the probabilities that the lower/upper bounds are binding (respectively).
+Then we can write
+\[ Bias^+ = p_L \cdot (-B - \hat{f}(D)) + p_U \cdot (B - \hat{f}(D)) + (1-p_l-p_U) \cdot \int_{-B-\hat{f}(D)}^{B-\hat{f}(D)}y^* f(y^*) dy^* \]
+where $f$ is the PDF of $Y^*$. \newline
+
+There may be other notions of bias we could provide to a user. For example, the maximum possible bias
+(i.e. when $f(D) = \pm B$) (already included in the code), or the expected bias over a set/distribution of $\hat{f}(D)$ (not
+yet implemented).
+
+\subsection{Choosing $B$}
+\label{subsec:choosing_B}
+Now that we have a general statements on error and bias, let's consider how best to choose $B$.
+We will always face a tradeoff in choosing $B$; choosing a larger $B$ necessitates adding more noise within
+our mechanism (and increases the variance), but choosing a smaller $B$ increases our bias.
+We would like the user to be able to express their preferences as to this bias-variance tradeoff,
+but we cannot tell them for certain how bad the bias will be, as it is a function of the private $f(D)$.
+Our current method is below, though we are open to considering other possibilities.
+
+\subsubsection{$P(\text{clamping bound binds})$}
+\label{subsubsec:p_clamp_bound_binds}
+Let $B'$ be the largest possible value (in terms of absolute value) of the statistic, conditional on the data bounds provided
+by the user. Our current approach, adapted from a suggestion by Victor Balcer, is to set
+\[ B = B' + \frac{\Lambda'}{2} \left(1 + 2\ln \left( \frac{1}{\gamma} \right) \right) \]
+for some $\gamma \in (0,1]$ specified by the user. This ensures that $B$ does not bind with probability at least $1 - \gamma$,
+a fact we show below. \newline
+
+We know that $f(D) \in [-B', B']$ and that our worst case bias will happen when $f(D) = \pm B'$, so without loss of generality
+let $f(D) = B'$. We can appeal to $p_L, p_U$ defined in \autoref{subsec:bias} as the probability that the lower/upper
+clamping bounds are binding. We want to show that their sum is $\leq \gamma$.
+Recall that we defined $Y^* \sim Laplace(-\frac{\Lambda'}{2}, \lambda')$ because setting the mean to
+$-\frac{\Lambda}{2}$ produces an upper bound on the bias.
+Here, we will define $Y^{**} \sim Laplace(\frac{\Lambda'}{2}, \lambda')$, as this will produce an
+upper bound on the probability that the clamping bounds bind. We will define $p_{L**}, p_{U**}$
+relative to this distribution and use them instead of the $p_L, p_U$ defined earlier.
+\begin{align}
+	\Pr(\text{clamping bound binds}) &= p_{L**} + p_{U**} \nonumber \\
+							  &= F_{Y^{**}}(-B - B') + 1 - F_{Y^{**}}(B - B') \nonumber \\
+							  &= \frac{1}{2} + \frac{1}{2}sign\left(-B - B' - \frac{\Lambda'}{2}\right) \left( 1-\exp\left( -\epsilon' \cdot \big\vert -B - B' - \frac{\Lambda'}{2} \big\vert \right) \right) \nonumber \\
+							  &\hspace{10pt} + 1 \nonumber \\
+							  &\hspace{10pt} - \frac{1}{2} - \frac{1}{2}sign\left(B - B' - \frac{\Lambda'}{2}\right) \left( 1-\exp\left( -\epsilon' \cdot \big\vert B - B' - \frac{\Lambda'}{2} \big\vert \right) \right) \nonumber \\
+							  &= 1 - \frac{1}{2} \left( 1-\exp\left( -\epsilon' \cdot \big\vert -B - B' - \frac{\Lambda'}{2} \big\vert \right) \right) \nonumber \\
+							  &\hspace{20pt} - \frac{1}{2} \left( 1-\exp\left( -\epsilon' \cdot \big\vert B - B' - \frac{\Lambda'}{2} \big\vert \right) \right) \label{eq:choosing_B_p1} \\
+							  &= 1 - \frac{1}{2} \left(1-\exp \left( -\epsilon' \left( B + B' + \frac{\Lambda'}{2} \right) \right) \right) \nonumber \\
+							  &\hspace{20pt} - \frac{1}{2} \left( 1-\exp\left( -\epsilon' \left( B - B' - \frac{\Lambda'}{2} \right) \right) \right) \nonumber \\
+							  &= \frac{1}{2} \left( \exp \left( -\epsilon' \left( B + B' + \frac{\Lambda'}{2} \right) \right) + \exp\left( -\epsilon' \left( B - B' - \frac{\Lambda'}{2} \right) \right) \right) \nonumber \\
+							  &= \frac{1}{2} \bigg( \exp \left( \epsilon' \left( -2B' + \Lambda' \ln(\gamma) - \Lambda'  \right) \right) + \exp\left( \epsilon' \left( \Lambda' \ln(\gamma) \right) \right) \bigg) \nonumber \\
+							  &\leq \frac{1}{2} \bigg( \exp \left( \epsilon' \left( \Lambda' \ln(\gamma)\right) \right) + \exp\left( \epsilon' \left( \Lambda' \ln(\gamma) \right) \right) \bigg) \label{eq:choosing_B_p2} \\
+							  &= \gamma^{\epsilon' \Lambda'} \nonumber \\
+							  &\leq \gamma \label{eq:choosing_B_p3}
+\end{align}
+We get to \eqref{eq:choosing_B_p1} by noting that $-B-B'-\frac{\Lambda'}{2}$ is always negative and
+$B-B'-\frac{\Lambda'}{2}$ is always positive. \eqref{eq:choosing_B_p2} follows because
+$B', \Lambda' \geq 0$, and \eqref{eq:choosing_B_p3} because
+$\Lambda'\epsilon' = \frac{\Lambda'}{\lambda'} \geq 1$ and $\gamma \in (0,1]$. \newline
+
+Now, there is a problem in the statement above; we cannot use $\Lambda'$ to define $B$, as $B$ is used
+to define $\Lambda'$. We could try to upper bound $\Lambda'$ with something and substitute that into
+our formula for $B$ instead; a natural choice would be to try to use $\Lambda$.
+Unfortunately, $\Lambda' > \Lambda$ and we do not have a representation
+of $\Lambda'$ in terms of $\Lambda$ that is independent of $B$.
+So, we need to try something else. Note that
+\[ \Lambda' \leq 2\lambda' = \frac{2 + 24B\eta}{\epsilon - 2\eta}. \]
+We can make $\eta$ almost arbitrarily small, which allows us to upper bound $B\eta$ by something small.
+Assume that after we have set $B$, we can find $\eta$ such that $B\eta \leq 2^{-52}$ (note that $2^{-52}$
+was chosen somewhat arbitrarily). Then we know that $2 + 24B\eta \leq 2 + 24 \cdot 2^{-52}$.
+We know $\eta \leq 2^{-118}$ because of the precision needed for exact rounding of the natural log,
+so we will use $2^{-118}$ as the $\eta$ in the denominator to remove the dependence on $\eta$.
+So we have that
+\[ \Lambda' \leq \frac{2 + 24B\eta}{\epsilon-2\eta} \leq \frac{2+24 \cdot 2^{-52}}{\epsilon - 2^{-117}}. \]
+and thus a new statement for $B$:
+\[ B = B' + \frac{k}{2} \left(1 + 2\ln \left( \frac{1}{\gamma} \right) \right), \]
+where $k = \frac{2+24 \cdot 2^{-52}}{\epsilon - 2^{-117}}$. \newline
+
+In the case where the user provides accuracy instead of $\epsilon$, we can use
+\eqref{eq:accuracy_to_overall_epsilon}
+to get a lower bound on $\epsilon$. We can then use this lower bound on epsilon to
+calculate a $k$ that will be more than sufficiently large to satisfy our constraints.
+\begin{align*}
+	\epsilon &= (1+12B\eta) \left( \frac{\ln\left( \frac{1}{\alpha} \right)}{a - \frac{\Lambda'}{2}} \right) + 2\eta \\
+			 &\geq \frac{\ln\left( \frac{1}{\alpha} \right)}{a - \frac{\Lambda'}{2}} \\
+			 &\geq \frac{\ln\left( \frac{1}{\alpha} \right)}{a}.
+\end{align*}
+So if the user provides accuracy rather than $\epsilon$, we can set
+\[ k = \frac{2+24 \cdot 2^{-52}}{\epsilon^{-} - 2^{-117}} \]
+where $\epsilon^{-} = \frac{\ln\left( \frac{1}{\alpha} \right)}{a}$.
+Notice that this $\epsilon^{-}$ follows what we would get if we were using the Laplace,
+rather than Snapping.
+
+\section{Finding $B'$}
+\label{sec:finding_B_prime}
+We have been assuming that we can find $B'$, the maximum value (in terms of absolute value) of a given statistic conditional on knowing
+the bounds of the data. I believe that, at least for now, this will need to be done manually for each statistic
+for which we want to use the Snapping Mechanism. I provide statements for a few statistics below.
+
+\subsection{Mean}
+\label{subsec:Bprime_mean}
+Let $x$ be a realization of a random variable $X$ with support $[a,b]$. Then
+\[ B' = \max \left( \vert a \vert, \vert b \vert \right). \]
+
+\subsection{Sample Variance}
+\label{subsec:Bprime_sample_variance}
+Let $x$ be a realization of a random variable $X$ with support $[a,b]$ and sample size $n$.
+We imagine two different cases: one with $n$ even and one with $n$ odd.
+Note that the maximum variance when $n$ is even is higher than when $n$ is odd,
+so we could simply use that as a universal bound. \newline
+
+\textbf{Case 1: $n$ even} \newline
+Let $x$ be such that it yields our largest possible variance;
+exactly half of our observations $= a$ and the other half $= b$.
+In this case our sample mean $\bar{x} = \frac{b+a}{2}$ and
+$\forall i: \vert x_i - \frac{b+a}{2} \vert = \vert \frac{b-a}{2} \vert$. So we have
+\begin{align*}
+	Var(x) &= \frac{1}{n-1} \sum_{i=1}^{n} (x_i - \bar{x})^2 \\
+		   &= \frac{1}{n-1} \sum_{i=1}^{n} \left(x_i - \frac{b+a}{2}\right)^2 \\
+		   &= \frac{1}{n-1} \sum_{i=1}^{n} \frac{(b-a)^2}{4} \\
+		   &= \left(\frac{n}{n-1}\right) \frac{(b-a)^2}{4}.
+\end{align*}
+Thus, we set $B' = \left(\frac{n}{n-1}\right) \frac{(b-a)^2}{4}$.
+
+\textbf{Case 2: $n$ odd} \newline
+Let $x$ have $\frac{n-1}{2}$ values $=a$, $\frac{n-1}{2}$ values $=b$, and one value $=\frac{b+a}{2}$
+(wlog, call this value $x_n$). Then $\bar{x} = \frac{b+a}{2}$ and
+$\forall i \neq n: \vert x_i - \frac{b-a}{2} \vert = \vert \frac{b-a}{2} \vert$, while
+$\vert x_n - \frac{b+a}{2} \vert = 0$. Then we have
+\begin{align*}
+	Var(x) &= \frac{1}{n-1} \sum_{i=1}^{n} (x_i - \bar{x})^2 \\
+		   &= \frac{1}{n-1} \sum_{i=1}^{n} \left(x_i - \frac{b+a}{2}\right)^2 \\
+		   &= \frac{1}{n-1} \sum_{i=1}^{n-1} \frac{(b-a)^2}{4} + 0 \\
+		   &= \frac{(b-a)^2}{4}.
+\end{align*}
+So, $B' = \frac{(b-a)^2}{4}$.
+
+\subsection{Sample Covariance}
+\label{subsec:Bprime_sample_covariance}
+Let $x,y$ be realizations of random variables $X,Y$ with supports $[a,b], [c,d]$ (respectively)
+and sample size $n$. Then we have
+\[ cov(x,y) = \frac{1}{n-1} \sum_{i=1}^{n}(x_i-\bar{x})(y_i-\bar{y}) \]
+where $\bar{x}, \bar{y}$ are the sample means of $x$ and $y$. The covariance is maximized
+when the $x_i,y_i$ deviate from their mean to the greatest possible extent, and always do
+so in the same direction. As with the sample variance, we have different cases for
+even and odd $n$. \newline
+
+\textbf{Case 1: $n$ even} \newline
+Let $x$ be such that half of its observations $= a$ and the other half $= b$ so that
+$\bar{x} = \frac{b+a}{2}$.
+Let $y$ be such that $x_i = a \iff y_i = c$ and $x_i = b \iff y_i = d$ and note that
+$\bar{y} = \frac{d+c}{2}$. WLOG, let $x_i=a, y_i=c$ for $i \in \{1,\hdots,\frac{n}{2}\}$ and
+$x_i=b, y_i=d$ for $i \in \{\frac{n}{2}+1,\hdots,n\}$. Then,
+\begin{align*}
+	cov(x,y) &= \frac{1}{n-1} \sum_{i=1}^{n}(x_i-\bar{x})(y_i-\bar{y}) \\
+			 &= \frac{1}{n-1} \sum_{i=1}^{n}\left(x_i-\frac{b+a}{2}\right)\left(y_i-\frac{d+c}{2}\right) \\
+			 &= \frac{1}{n-1} \left( \sum_{i=1}^{n/2} \frac{b-a}{2} \cdot \frac{d-c}{2} + \sum_{i=n/2 + 1}^{n}\frac{a-b}{2} \cdot \frac{c-d}{2} \right) \\
+			 &= \frac{1}{n-1} \left( \sum_{i=1}^{n/2} \frac{b-a}{2} \cdot \frac{d-c}{2} + \sum_{i=n/2 + 1}^{n}\frac{b-a}{2} \cdot \frac{d-c}{2} \right) \\
+			 &= \frac{1}{n-1} \sum_{i=1}^{n} \frac{b-a}{2} \cdot \frac{d-c}{2} \\
+			 &= \left( \frac{n}{n-1} \right) \cdot \frac{(b-a)(d-c)}{4},
+\end{align*}
+and so $B' = \left( \frac{n}{n-1} \right) \cdot \frac{(b-a)(d-c)}{4}$. \newline
+
+\textbf{Case 2: $n$ odd} \newline
+Let $x$ have $\frac{n-1}{2}$ values $=a$, $\frac{n-1}{2}$ values $=b$, and one value $=\frac{b+a}{2}$.
+Let $x_i=a \iff y_i=c$, $x_i=b \iff y_i=d$, and $x_i=\frac{b+a}{2} \iff y_i=\frac{d+c}{2}$.
+Note that $\bar{x} = \frac{b+a}{2}$ and $\bar{y} = \frac{d+c}{2}$. WLOG, let
+$x_i=a, y_i=c$ for $i \in \{1,\hdots,\frac{n-1}{2}\}$,
+$x_i=b, y_i=d$ for $i \in \{\frac{n-1}{2}+1,\hdots,n-1\}$, and
+$x_n =\frac{b+a}{2}, y_n=\frac{d+c}{2}$. Then,
+\begin{align*}
+	cov(x,y) &= \frac{1}{n-1} \sum_{i=1}^{n}(x_i-\bar{x})(y_i-\bar{y}) \\
+			 &= \frac{1}{n-1} \sum_{i=1}^{n}\left(x_i-\frac{b+a}{2}\right)\left(y_i-\frac{d+c}{2}\right) \\
+			 &= \frac{1}{n-1} \left( \left( \sum_{i=1}^{(n-1)/2} \frac{b-a}{2} \cdot \frac{d-c}{2} \right) + \left( \sum_{i=(n-1)/2 + 1}^{n-1}\frac{a-b}{2} \cdot \frac{c-d}{2}\right) + 0 \right) \\
+			 &= \frac{1}{n-1} \left( \sum_{i=1}^{(n-1)/2} \frac{b-a}{2} \cdot \frac{d-c}{2} + \sum_{i=(n-1)/2 + 1}^{n-1}\frac{b-a}{2} \cdot \frac{d-c}{2} \right) \\
+			 &= \frac{1}{n-1} \sum_{i=1}^{n-1} \frac{b-a}{2} \cdot \frac{d-c}{2} \\
+			 &= \frac{(b-a)(d-c)}{4},
+\end{align*}
+and so $B' = \frac{(b-a)(d-c)}{4}$.
+
+\subsection{Histogram}
+\label{subsec:Bprime_histogram}
+For a vector of size $n$, the maximum count for any bin is $n$. So $B' = n$.
+
+% Appendices
+\begin{appendices}
+	\section{Accuracy Calculations}
+	\label{appendix:accuracy}
+	We iterate over the possible cases for where our optimal $a$ could lie.
+	We consider the sections of the PDF of $N$ representing where the bounds bind (Cases 1 and 3) as special cases, and use our bounds on
+	$F_{Z}$ for the sections between the bounds.
+
+	\textbf{Case 1:} $P_{L}^{+} \geq \alpha$ \newline
+	$P_{L}^{+} \geq \alpha$ means that the largest bound ($B + f(D)$) on the noise binds with probability $\geq \alpha$.
+	So, we can make no tighter accuracy guarantee at the $\alpha$ level than bounding by the greatest possible noise $B + f(D)$. \newline
+
+	\textbf{Case 2:} Case 1 does not hold and $F^{-}_{Z}(B - f(D)) \geq 1 + P_{L}^{+} - \alpha$ \newline
+	We know $a = x \leq B - f(D): F_{Z}^{-}(x) = 1 + P_{L}^{+} - \alpha$.
+	\begin{align}
+	              	 F_{Z}^{-}(a) &= 1 + P_{L}^{+} - \alpha \nonumber \\
+		1 - \exp(-\epsilon'a + 1) &= 1 + P_{L}^{+} - \alpha \nonumber \\
+		           \epsilon'a + 1 &= \ln(\alpha - P_{L}^{+}) \nonumber \\
+		                        a &= \frac{1 - \ln(\alpha - P_{L}^{+})}{\epsilon'} \nonumber
+	\end{align}
+
+	\textbf{Case 3:} Case 1,2 do not hold and $F^{-}_{Z}(B - f(D)) + P_{U}^{-} \geq 1 + P_{L}^{+} - \alpha$ \newline
+	This is conceptually similar to Case 1, in the sense that the probability of a bound binding (in this case, the bound if $B - f(D)$) pushes us past our
+	$\alpha$ level. Similar to before, we can make an accuracy guarantee that corresponds to the binding bound, $B - f(D)$. \newline
+
+	\textbf{Case 4:} Case 1,2,3 do not hold \newline
+	We know $a =  x \in (B - f(D), B + f(D))$ such that
+	\[ F_{Z}^{-}(x) - F_{Z}^{-}(B - f(D)) = 1 + P_{L}^{+} - \alpha - F_{Z}^{-}(B - f(D)) - P_{U}^{-} \]
+	\begin{align}
+		F_{Z}^{-}(a) - F_{Z}^{-}(B - f(D)) &= 1 + P_{L}^{+} - \alpha - F_{Z}^{-}(B - f(D)) - P_{U}^{-} \nonumber \\
+							  F_{Z}^{-}(a) &= 1 + P_{L}^{+} - \alpha - P_{U}^{-} \nonumber \\
+				1 - \exp(-\epsilon' a + 1) &= 1 + P_{L}^{+} - \alpha - P_{U}^{-} \nonumber \\
+						  -\epsilon' a + 1 &= \ln(\alpha - P_{L}^{+} + P_{U}^{-}) \nonumber \\
+						                 a &= \frac{1 - \ln(\alpha - P_{L}^{+} + P_{U}^{-})}{\epsilon'} \nonumber
+	\end{align}
+\end{appendices}
+
+\end{document}

@@ -24,13 +24,13 @@
     "lower": {
       "type_value": "Array",
       "default_python": "0",
-      "description": "Estimated minimum possible size of bin counts."
+      "description": "Estimated minimum possible value of bin counts. Useful to help bound elapsed time when sampling for the geometric mechanism. Required for the snapping mechanism."
     },
     "upper": {
       "type_value": "Array",
       "default_python": "None",
       "default_rust": "None",
-      "description": "Estimated maximum possible size of bin counts."
+      "description": "Estimated maximum possible value of bin counts. Useful to help bound elapsed time when sampling for the geometric mechanism. Required for the snapping mechanism."
     },
     "inclusive_left": {
       "type_value": "Array",
@@ -46,7 +46,7 @@
       "type_rust": "String",
       "default_python": "\"SimpleGeometric\"",
       "default_rust": "String::from(\"SimpleGeometric\")",
-      "description": "Privatizing mechanism to use. One of [`SimpleGeometric`, `Laplace`, `Gaussian`, `AnalyticGaussian`]. Only `SimpleGeometric` is accepted if floating-point protections are enabled."
+      "description": "Privatizing mechanism to use. One of [`SimpleGeometric`, `Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]. Only `SimpleGeometric` is accepted if floating-point protections are enabled."
     },
     "privacy_usage": {
       "type_proto": "repeated PrivacyUsage",

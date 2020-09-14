@@ -36,7 +36,6 @@ impl Component for proto::Histogram {
         if categories.num_columns() != 1 {
             return Err("data must contain one column".into())
         }
-        data_property.num_records = Some(categories.num_records()[0] as i64);
         let num_columns = data_property.num_columns()?;
 
         // save a snapshot of the state when aggregating
@@ -50,9 +49,10 @@ impl Component for proto::Histogram {
 
         data_property.nature = Some(Nature::Continuous(NatureContinuous {
             lower: Vector1DNull::Int((0..num_columns).map(|_| Some(0)).collect()),
-            upper: Vector1DNull::Int((0..num_columns).map(|_| None).collect()),
+            upper: Vector1DNull::Int((0..num_columns).map(|_| data_property.num_records.clone()).collect()),
         }));
         data_property.data_type = DataType::Int;
+        data_property.num_records = Some(categories.num_records()[0] as i64);
         data_property.dataset_id = Some(node_id as i64);
 
         Ok(ValueProperties::Array(data_property).into())

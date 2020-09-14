@@ -1,29 +1,26 @@
+use std::collections::{HashMap, HashSet};
+use std::hash::Hash;
+use std::iter::FromIterator;
+
+use indexmap::map::IndexMap;
+use itertools::Itertools;
+use ndarray::prelude::*;
+use noisy_float::prelude::n64;
+
+use crate::{base, Float, proto, Warnable};
+use crate::base::{IndexKey, NodeProperties, Release, SensitivitySpace, Value, ValueProperties};
+// import all trait implementations
+use crate::components::*;
+use crate::errors::*;
+use crate::utilities::inference::infer_property;
+use crate::utilities::privacy::spread_privacy_usage;
+
 pub mod json;
 pub mod inference;
 pub mod serial;
 pub mod array;
 pub mod privacy;
 pub mod properties;
-
-use crate::errors::*;
-
-use crate::{proto, base, Warnable, Float};
-
-use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, IndexKey};
-use std::collections::{HashMap, HashSet};
-use std::hash::Hash;
-use crate::utilities::inference::infer_property;
-
-use itertools::Itertools;
-use ndarray::prelude::*;
-
-// import all trait implementations
-use crate::components::*;
-use noisy_float::prelude::n64;
-use std::iter::FromIterator;
-use crate::utilities::privacy::spread_privacy_usage;
-use indexmap::map::IndexMap;
-
 
 /// Retrieve the specified Value from the arguments to a component.
 pub fn take_argument(
@@ -183,7 +180,8 @@ pub fn propagate_properties(
         let release_node = release.get(&node_id);
         // println!("release node {:?}", release_node);
 
-        let propagation_result = if release_node.map(|release_node| release_node.public).unwrap_or(false) {
+        let propagation_result = if release_node
+            .map(|release_node| release_node.public).unwrap_or(false) {
             // if node has already been evaluated and is public, infer properties directly from the public data
             // println!("inferring property");
             Ok(Warnable(infer_property(
@@ -312,7 +310,8 @@ pub fn get_sinks(computation_graph: &HashMap<u32, proto::Component>) -> HashSet<
 pub fn standardize_numeric_argument<T: Clone>(value: ArrayD<T>, length: i64) -> Result<ArrayD<T>> {
     match value.ndim() {
         0 => match value.first() {
-            Some(scalar) => Ok(Array::from((0..length).map(|_| scalar.clone()).collect::<Vec<T>>()).into_dyn()),
+            Some(scalar) => Ok(Array::from((0..length).map(|_| scalar.clone())
+                .collect::<Vec<T>>()).into_dyn()),
             None => Err("value must be non-empty".into())
         },
         1 => if value.len() as i64 == length {
@@ -342,7 +341,8 @@ pub fn standardize_float_argument(
         let original_length = col.len();
 
         // TODO cfg conditional compilation to n32
-        if deduplicate(col.into_iter().map(|v| n64(v as f64)).collect()).len() < original_length {
+        if deduplicate(col.into_iter()
+            .map(|v| n64(v as f64)).collect()).len() < original_length {
             return Err("floats must not contain duplicates".into());
         }
         Ok::<_, Error>(())
@@ -378,7 +378,8 @@ pub fn standardize_categorical_argument<T: Clone + Eq + Hash + Ord>(
 }
 
 
-/// Given a jagged null values array, conduct well-formedness checks, broadcast along columns, and flatten along rows.
+/// Given a jagged null values array,
+///    conduct well-formedness checks, broadcast along columns, and flatten along rows.
 #[doc(hidden)]
 pub fn standardize_null_candidates_argument<T: Clone>(
     mut value: Vec<Vec<T>>,
@@ -397,7 +398,8 @@ pub fn standardize_null_candidates_argument<T: Clone>(
     Ok(value)
 }
 
-/// Given a jagged null values array, conduct well-formedness checks, broadcast along columns, and flatten along rows.
+/// Given a jagged null values array,
+///    conduct well-formedness checks, broadcast along columns, and flatten along rows.
 #[doc(hidden)]
 pub fn standardize_null_target_argument<T: Clone>(
     value: ArrayD<T>,
@@ -420,7 +422,8 @@ pub fn standardize_null_target_argument<T: Clone>(
     bail!("length of null must be one, or {}", length)
 }
 
-/// Given categories and a jagged categories weights array, conduct well-formedness checks and return a standardized set of probabilities.
+/// Given categories and a jagged categories weights array,
+///    conduct well-formedness checks and return a standardized set of probabilities.
 #[doc(hidden)]
 pub fn standardize_weight_argument(
     weights: &Option<Vec<Vec<Float>>>,
@@ -455,7 +458,8 @@ pub fn standardize_weight_argument(
                 }).collect::<Result<Vec<Vec<Float>>>>()
         }
         _ => if lengths.len() == weights.len() {
-            weights.iter().map(|v| normalize_probabilities(v)).collect::<Result<Vec<Vec<Float>>>>()
+            weights.iter().map(|v| normalize_probabilities(v))
+                .collect::<Result<Vec<Vec<Float>>>>()
         } else {
             Err("category weights must be the same length as categories, or none".into())
         }

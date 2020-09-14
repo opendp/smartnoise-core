@@ -130,6 +130,7 @@ impl Accuracy for proto::GaussianMechanism {
         privacy_definition: &proto::PrivacyDefinition,
         properties: &base::NodeProperties,
         accuracies: &proto::Accuracies,
+        _public_arguments: IndexMap<base::IndexKey, &Value>
     ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
         let data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
@@ -168,6 +169,7 @@ impl Accuracy for proto::GaussianMechanism {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &base::NodeProperties,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
         alpha: f64,
     ) -> Result<Option<Vec<proto::Accuracy>>> {
         let data_property = properties.get::<IndexKey>(&"data".into())

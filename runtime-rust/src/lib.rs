@@ -156,6 +156,7 @@ pub fn release(
         computation_graph.extend(expansion.computation_graph);
         properties.extend(expansion.properties);
         release.extend(expansion.releases);
+        warnings.extend(expansion.warnings);
 
         // if nodes were added to the traversal, then evaluate the new nodes first
         if !expansion.traversal.is_empty() {

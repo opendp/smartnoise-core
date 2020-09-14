@@ -1,17 +1,16 @@
-use crate::errors::*;
-
-use crate::{proto, base};
-use crate::components::{Expandable, Report};
-
-use crate::base::{NodeProperties, Value, Array, IndexKey, DataType, ArrayProperties};
-use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
-use crate::utilities::{prepend, privacy::spread_privacy_usage, array::get_ith_column};
 use indexmap::map::IndexMap;
+
+use crate::{base, proto};
+use crate::base::{Array, ArrayProperties, DataType, IndexKey, NodeProperties, Value};
+use crate::components::{Expandable, Report};
+use crate::errors::*;
+use crate::utilities::{array::get_ith_column, prepend, privacy::spread_privacy_usage};
+use crate::utilities::json::{AlgorithmInfo, JSONRelease, privacy_usage_to_json, value_to_json};
 
 impl Expandable for proto::DpSum {
     fn expand_component(
         &self,
-        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         _public_arguments: &IndexMap<IndexKey, &Value>,
         properties: &base::NodeProperties,
@@ -20,6 +19,7 @@ impl Expandable for proto::DpSum {
     ) -> Result<base::ComponentExpansion> {
 
         let mut expansion = base::ComponentExpansion::default();
+        let argument_ids = component.arguments();
 
         let data_property = properties.get::<base::IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
@@ -30,7 +30,7 @@ impl Expandable for proto::DpSum {
         let id_sum = maximum_id;
         expansion.computation_graph.insert(id_sum, proto::Component {
             arguments: Some(proto::ArgumentNodeIds::new(indexmap![
-                "data".into() => *component.arguments().get::<base::IndexKey>(&"data".into())
+                "data".into() => *argument_ids.get::<base::IndexKey>(&"data".into())
                     .ok_or_else(|| Error::from("data must be provided as an argument"))?])),
             variant: Some(proto::component::Variant::Sum(proto::Sum {})),
             omit: true,
@@ -38,13 +38,15 @@ impl Expandable for proto::DpSum {
         });
         expansion.traversal.push(id_sum);
 
-        let mechanism = get_mechanism(&data_property, &self.mechanism)?;
+        let privacy_definition = privacy_definition.as_ref()
+            .ok_or_else(|| Error::from("privacy_definition must be known"))?;
+        let mechanism = get_mechanism(
+            &data_property, &self.mechanism, privacy_definition.protect_floating_point)?;
 
         if mechanism.as_str() == "simplegeometric" {
-            let arguments = component.arguments();
-            let sum_max_id = *arguments.get::<IndexKey>(&"upper".into())
+            let sum_max_id = *argument_ids.get::<IndexKey>(&"upper".into())
                 .ok_or_else(|| Error::from("upper must be defined for geometric mechanism"))?;
-            let sum_min_id = *arguments.get::<IndexKey>(&"lower".into())
+            let sum_min_id = *argument_ids.get::<IndexKey>(&"lower".into())
                 .ok_or_else(|| Error::from("lower must be defined for geometric mechanism"))?;
 
             // noising
@@ -63,24 +65,35 @@ impl Expandable for proto::DpSum {
         } else {
 
             // noising
-            expansion.computation_graph.insert(component_id, proto::Component {
-                arguments: Some(proto::ArgumentNodeIds::new(indexmap![
-                    "data".into() => id_sum
-                ])),
-                variant: Some(match mechanism.as_str() {
-                    "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
-                        privacy_usage: self.privacy_usage.clone()
-                    }),
-                    "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                        privacy_usage: self.privacy_usage.clone(),
-                        analytic: false
-                    }),
-                    "analyticgaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                        privacy_usage: self.privacy_usage.clone(),
-                        analytic: true
-                    }),
-                    _ => panic!("Unexpected invalid token {:?}", mechanism.as_str()),
+            let mut arguments = indexmap!["data".into() => id_sum];
+            let variant = Some(match mechanism.as_str() {
+                "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
+                    privacy_usage: self.privacy_usage.clone()
                 }),
+                "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                    privacy_usage: self.privacy_usage.clone(),
+                    analytic: false
+                }),
+                "analyticgaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                    privacy_usage: self.privacy_usage.clone(),
+                    analytic: true
+                }),
+                "snapping" => {
+                    argument_ids.get::<IndexKey>(&"lower".into())
+                        .map(|lower| arguments.insert("lower".into(), *lower));
+                    argument_ids.get::<IndexKey>(&"upper".into())
+                        .map(|upper| arguments.insert("upper".into(), *upper));
+
+                    proto::component::Variant::SnappingMechanism(proto::SnappingMechanism {
+                        privacy_usage: self.privacy_usage.clone()
+                    })
+                },
+                _ => bail!("Unexpected invalid token {:?}", self.mechanism.as_str()),
+            });
+
+            expansion.computation_graph.insert(component_id, proto::Component {
+                arguments: Some(proto::ArgumentNodeIds::new(arguments)),
+                variant,
                 omit: component.omit,
                 submission: component.submission,
             });
@@ -105,8 +118,6 @@ impl Report for proto::DpSum {
             .map_err(prepend("data:"))?.clone();
 
         let mut releases = Vec::new();
-
-        let mechanism = get_mechanism(&data_property, &self.mechanism)?;
 
         let minimums = data_property.lower_float()?;
         let maximums = data_property.upper_float()?;
@@ -136,7 +147,7 @@ impl Report for proto::DpSum {
                 algorithm_info: AlgorithmInfo {
                     name: "".to_string(),
                     cite: "".to_string(),
-                    mechanism: mechanism.clone(),
+                    mechanism: self.mechanism.clone(),
                     argument: serde_json::json!({
                             "constraint": {
                                 "lowerbound": minimums[column_number],
@@ -151,13 +162,13 @@ impl Report for proto::DpSum {
     }
 }
 
-fn get_mechanism(data_property: &ArrayProperties, mechanism: &str) -> Result<String> {
+fn get_mechanism(data_property: &ArrayProperties, mechanism: &str, protect_floating_point: bool) -> Result<String> {
     let mechanism = mechanism.to_lowercase();
 
     Ok(if mechanism == "automatic" {
         match data_property.data_type {
             DataType::Int => "simplegeometric",
-            DataType::Float => "laplace",
+            DataType::Float => if protect_floating_point { "snapping" } else { "laplace" },
             _ => return Err("cannot sum non-integer data".into())
         }.to_string()
     } else {

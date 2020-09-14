@@ -1,17 +1,18 @@
-use whitenoise_validator::errors::*;
-use probability::distribution::{Laplace, Inverse};
-use ieee754::Ieee754;
 use std::{cmp, f64::consts, mem};
 
-use crate::utilities;
-
+use ieee754::Ieee754;
+use probability::distribution::{Inverse, Laplace};
+#[cfg(not(feature="use-mpfr"))]
+use probability::prelude::Gaussian;
 #[cfg(feature="use-mpfr")]
 use rug::{Float, rand::{ThreadRandGen, ThreadRandState}};
 
+use whitenoise_validator::errors::*;
 use whitenoise_validator::Integer;
 
-#[cfg(not(feature="use-mpfr"))]
-use probability::prelude::Gaussian;
+use crate::utilities;
+use crate::utilities::get_closest_multiple_of_lambda;
+use whitenoise_validator::components::snapping_mechanism::{get_smallest_greater_or_eq_power_of_two, redefine_epsilon, compute_precision};
 
 // Give MPFR ability to draw randomness from OpenSSL
 #[cfg(feature="use-mpfr")]
@@ -76,6 +77,11 @@ pub fn censored_specific_geom(enforce_constant_time: bool) -> Result<i16> {
 /// # Arguments
 /// * `prob`- The desired probability of success (bit = 1).
 ///
+/// * `shift` - f64, the center of the distribution
+/// * `scale` - f64, the scaling parameter of the distribution
+/// * `min` - f64, the minimum value of random variables pulled from the distribution.
+/// * `max` - f64, the maximum value of random variables pulled from the distribution
+///
 /// # Return
 /// A bit that is 1 with probability "prob"
 ///
@@ -136,7 +142,8 @@ pub fn sample_bit_prob(prob: f64, enforce_constant_time: bool) -> Result<bool> {
 mod test_sample_bit_prob {
     use ieee754::Ieee754;
     use itertools::Itertools;
-    use crate::utilities::noise::{sample_uniform, sample_bit_prob};
+
+    use crate::utilities::noise::{sample_bit_prob, sample_uniform};
 
     fn check_bit_vs_string_equal(value: f64) {
         let (_sign, _exponent, mut mantissa) = value.decompose_raw();
@@ -216,7 +223,7 @@ mod test_sample_bit {
     #[test]
     fn test_sample_bit() {
         (0..100).for_each(|_| {
-            dbg!(sample_bit());
+            dbg!(sample_bit().unwrap());
         });
     }
 }
@@ -225,18 +232,19 @@ mod test_sample_bit {
 ///
 /// # Arguments
 ///
-/// * `min` - Minimum value of distribution from which we sample.
-/// * `max` - Maximum value of distribution from which we sample.
+/// * `min` - &i64, minimum value of distribution to sample from
+/// * `max` - &i64, maximum value of distribution to sample from
 ///
 /// # Return
 /// Random uniform variable between min and max (inclusive).
 ///
 /// # Example
+///
 /// ```
 /// // returns a uniform draw from the set {0,1,2}
 /// use whitenoise_runtime::utilities::noise::sample_uniform_int;
-/// let n = sample_uniform_int(0, 2);
-/// # n.unwrap();
+/// let n = sample_uniform_int(0, 2).unwrap();
+/// assert!(n == 0 || n == 1 || n == 2);
 /// ```
 ///
 /// ```should_panic
@@ -301,8 +309,8 @@ mod test_sample_uniform_int {
 ///
 /// # Arguments
 ///
-/// `min` - Inclusive minimum of uniform distribution.
-/// `max` - Non-inclusive maximum of uniform distribution.
+/// `min`: f64 minimum of uniform distribution (inclusive)
+/// `max`: f64 maximum of uniform distribution (non-inclusive)
 ///
 /// # Return
 /// Random draw from Unif[min, max).
@@ -636,4 +644,70 @@ pub fn sample_simple_geometric_mechanism(
         let geom: i64 = sample_geometric_censored(1. - alpha, max_trials, enforce_constant_time)?;
         sign * geom
     })
+}
+
+/// Apply noise to value according to the Snapping mechanism.
+/// Sensitivity is assumed to be 1 in L1 space.
+///
+/// # Arguments
+/// * `value` - Non-private value of the statistic to be privatized.
+/// * `epsilon` - Desired privacy guarantee.
+/// * `b` - Upper bound on function value being privatized.
+/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time;
+///
+/// # Returns
+/// Value of statistic with noise applied according to the Snapping mechanism.
+///
+/// # Example
+/// ```
+/// use whitenoise_runtime::utilities::noise::apply_snapping_noise;
+/// let value: f64 = 50.0;
+/// let epsilon: f64 = 1.0;
+/// let b: f64 = 100.0;
+/// let value = apply_snapping_noise(value, epsilon, b, false);
+/// println!("snapped value: {:?}", value.unwrap());
+/// ```
+#[cfg(feature = "use-mpfr")]
+pub fn apply_snapping_noise(
+    mut value: f64, mut epsilon: f64, b: f64,
+    enforce_constant_time: bool
+) -> Result<(f64, f64)> {
+    // must be computed before redefining epsilon
+    let precision = compute_precision(epsilon)?;
+
+    // ensure that precision is supported by the OS
+    if precision > rug::float::prec_max() {
+        return Err("Operating system does not support sufficient precision to use the Snapping Mechanism".into());
+    }
+    macro_rules! to_rug {($v:expr) => {rug::Float::with_val(precision, $v)}};
+
+    // effective epsilon is reduced due to snapping mechanism
+    epsilon = redefine_epsilon(epsilon, b, precision);
+    if epsilon == 0.0 {
+        return Err("epsilon is zero due to floating-point round-off".into())
+    }
+
+    let sign = if sample_bit()? {-1.} else {1.};
+    // 1.0 because sensitivity has been scaled to one
+    let lambda = 1.0 / epsilon;
+    // draw from {d: d in Doubles && d in (0, 1)} with probability based on unit of least precision
+    let u_star_sample = to_rug!(sample_uniform(0., 1., enforce_constant_time)?);
+
+    // add noise
+    //    rug is mandatory for ln
+    //    rug is optional for sign * lambda
+    value += (to_rug!(sign * lambda) * u_star_sample.ln()).to_f64();
+
+    // snap to lambda
+    let m = get_smallest_greater_or_eq_power_of_two(lambda)?;
+    value = get_closest_multiple_of_lambda(value, m)?;
+
+    Ok((value, epsilon))
+}
+
+#[cfg(not(feature = "use-mpfr"))]
+pub fn snapping_mechanism(
+    mechanism_input: &f64, epsilon: &f64, b: &f64, sensitivity: &f64
+) -> Result<f64> {
+    Err(Error::from("Crate must be compiled with gmp-mpfr to use the snapping mechanism."))
 }
