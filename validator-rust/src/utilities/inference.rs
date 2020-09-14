@@ -248,7 +248,8 @@ pub fn infer_property(
                 dimensionality: Some(array.shape().len() as i64),
                 group_id: prior_prop_arr
                     .map(|v| v.group_id.clone())
-                    .unwrap_or_else(Vec::new)
+                    .unwrap_or_else(Vec::new),
+                naturally_ordered: true
             }.into()
         },
         Value::Dataframe(dataframe) => match prior_property {

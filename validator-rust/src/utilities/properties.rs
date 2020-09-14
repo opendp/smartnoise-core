@@ -76,6 +76,10 @@ pub fn stack_properties(all_properties: &[ValueProperties], dimensionality: Opti
     let nature = get_common_continuous_nature(&natures, data_type.to_owned())
         .or_else(|| get_common_categorical_nature(&natures));
 
+    if !all_properties.iter().all(|prop| prop.naturally_ordered) {
+        return Err("cannot stack columns that may have been reordered".into())
+    }
+
     Ok(ValueProperties::Array(ArrayProperties {
         num_records,
         num_columns: all_properties.iter()
@@ -91,7 +95,8 @@ pub fn stack_properties(all_properties: &[ValueProperties], dimensionality: Opti
         // this is a library-wide assumption - that datasets have more than zero rows
         is_not_empty: all_properties.iter().all(|prop| prop.is_not_empty),
         dimensionality,
-        group_id
+        group_id,
+        naturally_ordered: true
     }))
 }
 

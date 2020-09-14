@@ -2,7 +2,7 @@ import tomlkit
 import os
 
 self_dir = os.path.dirname(__file__)
-config_path = os.path.join(self_dir, "update_version_config.toml")
+config_path = os.path.join(self_dir, "update_version.toml")
 
 with open(config_path, 'r') as config_file:
     config = tomlkit.loads(config_file.read())
@@ -60,7 +60,7 @@ if "python" in config['paths']:
     doc_builder_path = os.path.join(config['paths']['python'], "scripts", "build_docs.sh")
     with open(doc_builder_path, "r") as doc_builder_file:
         lines = doc_builder_file.readlines()
-    lines[next(i for i, l in enumerate(lines) if l.startswith("WN_VERSION="))] = f"WN_VERSION={VERSION}"
+    lines[next(i for i, l in enumerate(lines) if l.startswith("WN_VERSION="))] = f"WN_VERSION={VERSION}\n"
     with open(doc_builder_path, "w") as doc_builder_file:
         doc_builder_file.writelines(lines)
 
