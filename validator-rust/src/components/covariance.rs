@@ -1,13 +1,11 @@
-use crate::errors::*;
-
-
-use crate::{proto, base, Warnable, Float};
-
-use crate::components::{Component, Sensitivity};
-use crate::base::{IndexKey, Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
-use crate::utilities::prepend;
-use ndarray::prelude::*;
 use indexmap::map::IndexMap;
+use ndarray::prelude::*;
+
+use crate::{base, Float, proto, Warnable};
+use crate::base::{AggregatorProperties, DataType, IndexKey, Nature, NatureContinuous, NodeProperties, SensitivitySpace, Value, ValueProperties, Vector1DNull};
+use crate::components::{Component, Sensitivity};
+use crate::errors::*;
+use crate::utilities::prepend;
 
 impl Component for proto::Covariance {
     fn propagate_property(
@@ -53,8 +51,28 @@ impl Component for proto::Covariance {
             if data_property.data_type != DataType::Float {
                 return Err("data: atomic type must be float".into());
             }
-            // min/max of data is not known after computing covariance
-            data_property.nature = None;
+
+            data_property.nature = match (
+                data_property.lower_float(),
+                data_property.upper_float()) {
+                (Ok(l), Ok(u)) => {
+                    let bounds = l.into_iter().zip(u.into_iter()).collect::<Vec<_>>();
+
+                    let upper_bound = bounds.iter().enumerate()
+                        .map(|(i, l_bounds)| bounds.iter().enumerate()
+                            .filter(|(j, _)| i <= *j)
+                            .map(|(_, r_bounds)| (l_bounds.1 - l_bounds.0) * (r_bounds.1 - r_bounds.0) / 4.)
+                            .collect::<Vec<Float>>())
+                        .flatten()
+                        .collect::<Vec<Float>>();
+
+                    Some(Nature::Continuous(NatureContinuous {
+                        lower: Vector1DNull::Float(upper_bound.iter().map(|v| Some(-v)).collect()),
+                        upper: Vector1DNull::Float(upper_bound.into_iter().map(Some).collect())
+                    }))
+                },
+                _ => None
+            };
             data_property.dataset_id = Some(node_id as i64);
             Ok(ValueProperties::Array(data_property).into())
         } else if properties.contains_key::<IndexKey>(&"left".into()) && properties.contains_key::<IndexKey>(&"right".into()) {
@@ -99,7 +117,29 @@ impl Component for proto::Covariance {
                     (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
             });
 
-            left_property.nature = None;
+            left_property.nature = match (
+                left_property.lower_float(),
+                left_property.upper_float(),
+                right_property.lower_float(),
+                right_property.upper_float()) {
+                (Ok(l_l), Ok(l_u), Ok(r_l), Ok(r_u)) => {
+                    let l_bounds = l_l.into_iter().zip(l_u.into_iter()).collect::<Vec<_>>();
+                    let r_bounds = r_l.into_iter().zip(r_u.into_iter()).collect::<Vec<_>>();
+
+                    let upper_bound = l_bounds.iter()
+                        .map(|l_bounds| r_bounds.iter()
+                            .map(|r_bounds| (l_bounds.1 - l_bounds.0) * (r_bounds.1 - r_bounds.0) / 4.)
+                            .collect::<Vec<Float>>())
+                        .flatten()
+                        .collect::<Vec<Float>>();
+
+                    Some(Nature::Continuous(NatureContinuous {
+                        lower: Vector1DNull::Float(upper_bound.iter().map(|v| Some(-v)).collect()),
+                        upper: Vector1DNull::Float(upper_bound.into_iter().map(Some).collect())
+                    }))
+                },
+                _ => None
+            };
             left_property.releasable = left_property.releasable && right_property.releasable;
 
             left_property.num_records = Some(1);

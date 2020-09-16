@@ -1,15 +1,12 @@
-use crate::errors::*;
-
-use crate::{base, Warnable, Float};
-use crate::proto;
-
-use crate::components::{Component, Expandable};
-
-use crate::base::{Value, Array, Nature, NatureContinuous, Vector1DNull, ValueProperties, DataType, IndexKey};
-use crate::utilities::{prepend, get_literal};
 use indexmap::map::IndexMap;
-use crate::utilities::inference::infer_property;
 
+use crate::{base, Float, Warnable};
+use crate::base::{DataType, IndexKey, Jagged, Nature, NatureCategorical, NatureContinuous, Value, ValueProperties, Vector1DNull};
+use crate::components::{Component, Expandable};
+use crate::errors::*;
+use crate::proto;
+use crate::utilities::{get_literal, prepend, standardize_categorical_argument};
+use crate::utilities::inference::infer_property;
 
 impl Component for proto::Resize {
     fn propagate_property(
@@ -38,7 +35,8 @@ impl Component for proto::Resize {
                 return Err("cannot resize number of columns when number of columns is known".into())
             }
 
-            let num_columns = num_columns.ref_array()?.first_int()? as i64;
+            let num_columns = num_columns.ref_array()?.first_int()
+                .map_err(prepend("number_columns:"))? as i64;
             if num_columns < 1 {
                 return Err("number_columns must be greater than zero".into());
             }
@@ -49,9 +47,10 @@ impl Component for proto::Resize {
         }
 
         if let Some(num_records) = public_arguments.get::<IndexKey>(&"number_rows".into()) {
-            let num_records = num_records.ref_array()?.first_int()?;
+            let num_records = num_records.ref_array()?.first_int()
+                .map_err(prepend("number_rows:"))?;
             if num_records < 1 {
-                return Err("number_rows must be greater than zero".into());
+                return Err("number_rows: must be greater than zero".into());
             }
 
             data_property.num_records = Some(num_records as i64);
@@ -66,16 +65,37 @@ impl Component for proto::Resize {
             }
         }
 
-        if let Some(categories) = public_arguments.get::<IndexKey>(&"categories".into()) {
+        let num_columns = data_property.num_columns()?;
+
+        if let Some(&categories) = public_arguments.get::<IndexKey>(&"categories".into()) {
             if data_property.data_type != categories.ref_jagged()?.data_type() {
-                return Err("data's data_type must match categories' data_type".into());
+                return Err("data's atomic type must match categories' atomic type".into());
             }
-            // TODO: propagation of categories through imputation and resize
-            data_property.nature = None;
+            data_property.nature = match data_property.nature {
+                Some(Nature::Categorical(NatureCategorical { categories: prior })) => Some(Nature::Categorical(NatureCategorical {
+                    categories: match (prior, categories.clone().jagged()?) {
+                        (Jagged::Int(prior), Jagged::Int(categories)) =>
+                            standardize_categorical_argument(prior, num_columns)?.into_iter()
+                                .zip(standardize_categorical_argument(categories, num_columns)?.into_iter())
+                                .map(|(l, r)| [l, r].concat())
+                                .collect::<Vec<_>>().into(),
+                        (Jagged::Bool(prior), Jagged::Bool(categories)) =>
+                            standardize_categorical_argument(prior, num_columns)?.into_iter()
+                                .zip(standardize_categorical_argument(categories, num_columns)?.into_iter())
+                                .map(|(l, r)| [l, r].concat())
+                                .collect::<Vec<_>>().into(),
+                        (Jagged::Str(prior), Jagged::Str(categories)) =>
+                            Jagged::Str(standardize_categorical_argument(prior, num_columns)?.into_iter()
+                                .zip(standardize_categorical_argument(categories, num_columns)?.into_iter())
+                                .map(|(l, r)| [l, r].concat())
+                                .collect::<Vec<_>>()),
+                        _ => return Err("categories may not be float".into())
+                    }.deduplicate()?
+                })),
+                _ => None
+            };
             return Ok(ValueProperties::Array(data_property).into())
         }
-
-        let num_columns = data_property.num_columns()?;
 
         match data_property.data_type {
             DataType::Float => {
@@ -229,36 +249,56 @@ impl Expandable for proto::Resize {
 
         let mut expansion = base::ComponentExpansion::default();
 
-        let mut component = component.clone();
+        if properties.contains_key::<IndexKey>(&"categories".into()) {
+            return Ok(expansion)
+        }
+
+        let has_lower = properties.contains_key::<IndexKey>(&"lower".into());
+        let has_upper = properties.contains_key::<IndexKey>(&"upper".into());
 
         let data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        if !properties.contains_key::<IndexKey>(&"categories".into()) {
-            if !properties.contains_key::<IndexKey>(&"lower".into()) {
+        let mut component = component.clone();
+
+        // numeric resizing
+        if has_lower || has_upper || matches!(data_property.nature, Some(Nature::Continuous(_))) {
+            if !has_lower {
                 maximum_id += 1;
                 let id_lower = maximum_id;
-                let value = Value::Array(Array::Float(
-                    ndarray::Array::from(data_property.lower_float()?).into_dyn()));
-                let (patch_node, release) = get_literal(value, component.submission)?;
+                let (patch_node, release) = get_literal(
+                    Value::Array(data_property.lower()?), component.submission)?;
                 expansion.computation_graph.insert(id_lower, patch_node);
                 expansion.properties.insert(id_lower, infer_property(&release.value, None)?);
                 expansion.releases.insert(id_lower, release);
                 component.insert_argument(&"lower".into(), id_lower);
             }
-
-            if !properties.contains_key::<IndexKey>(&"upper".into()) {
+            if !has_upper {
                 maximum_id += 1;
                 let id_upper = maximum_id;
-                let value = Value::Array(Array::Float(
-                    ndarray::Array::from(data_property.upper_float()?).into_dyn()));
-                let (patch_node, release) = get_literal(value, component.submission)?;
+                let (patch_node, release) = get_literal(
+                    Value::Array(data_property.upper()?), component.submission)?;
                 expansion.computation_graph.insert(id_upper, patch_node);
                 expansion.properties.insert(id_upper, infer_property(&release.value, None)?);
                 expansion.releases.insert(id_upper, release);
                 component.insert_argument(&"upper".into(), id_upper);
             }
+        }
+        // categorical resizing
+        else if matches!(data_property.nature, Some(Nature::Categorical(_))) {
+            maximum_id += 1;
+            let id_categories = maximum_id;
+            let (patch_node, release) = get_literal(
+                Value::Jagged(data_property.categories()?), component.submission)?;
+            expansion.computation_graph.insert(id_categories, patch_node);
+            expansion.properties.insert(id_categories, infer_property(&release.value, None)?);
+            expansion.releases.insert(id_categories, release);
+            component.insert_argument(&"categories".into(), id_categories);
+        }
+        // unknown clamping procedure
+        else {
+            return Err("lower/upper/categorical arguments must be provided, or lower/upper/categorical properties must be known on data".into())
         }
 
         expansion.computation_graph.insert(component_id, component);
@@ -274,9 +314,9 @@ pub mod test_resize {
     use crate::base::test_data;
 
     pub mod utilities {
-        use crate::components::impute::test_impute;
-        use crate::bindings::Analysis;
         use crate::base::Value;
+        use crate::bindings::Analysis;
+        use crate::components::impute::test_impute;
 
         pub fn analysis_f64_cont(value: Value, number_rows: Value, lower: Option<Value>, upper: Option<Value>) -> (Analysis, u32) {
 

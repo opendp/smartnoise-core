@@ -1,14 +1,11 @@
-use crate::errors::*;
-
-use crate::{proto, base, Warnable, Float};
-
-use crate::components::{Component, Sensitivity, Expandable};
-use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, JaggedProperties, IndexKey};
-
-use crate::utilities::prepend;
-use ndarray::prelude::*;
 use indexmap::map::IndexMap;
+use ndarray::prelude::*;
 
+use crate::{base, Float, proto, Warnable};
+use crate::base::{AggregatorProperties, DataType, IndexKey, JaggedProperties, NodeProperties, SensitivitySpace, Value, ValueProperties};
+use crate::components::{Component, Expandable, Sensitivity};
+use crate::errors::*;
+use crate::utilities::prepend;
 
 impl Component for proto::Quantile {
     fn propagate_property(
@@ -67,7 +64,6 @@ impl Component for proto::Quantile {
                 });
 
                 data_property.num_records = Some(1);
-                data_property.nature = None;
 
                 ValueProperties::Array(data_property).into()
             }
@@ -90,10 +86,7 @@ impl Sensitivity for proto::Quantile {
         data_property.assert_non_null()?;
 
         match sensitivity_type {
-            SensitivitySpace::KNorm(k) => {
-                if k != &1 {
-                    return Err("Quantile sensitivity is only implemented for KNorm of 1".into());
-                }
+            SensitivitySpace::KNorm(_k) => {
                 let lower = data_property.lower_float()?;
                 let upper = data_property.upper_float()?;
 

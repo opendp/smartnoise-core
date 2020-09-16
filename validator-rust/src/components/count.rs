@@ -37,9 +37,6 @@ impl Component for proto::Count {
             data_property.assert_is_not_aggregated()?;
         }
 
-        data_property.num_records = Some(1);
-        data_property.num_columns = Some(1);
-
         let c_stability = match properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")? {
             ValueProperties::Array(value) => {
@@ -77,6 +74,8 @@ impl Component for proto::Count {
         }));
         data_property.data_type = DataType::Int;
         data_property.dataset_id = Some(node_id as i64);
+        data_property.num_records = Some(1);
+        data_property.num_columns = Some(1);
 
         Ok(ValueProperties::Array(data_property).into())
     }

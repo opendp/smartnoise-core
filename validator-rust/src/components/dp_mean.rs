@@ -1,13 +1,11 @@
-use crate::errors::*;
-
-use crate::{proto, base};
-use crate::components::{Expandable, Report};
-
-use crate::base::{IndexKey, NodeProperties, Value};
-use crate::utilities::json::{JSONRelease, AlgorithmInfo, privacy_usage_to_json, value_to_json};
-use crate::utilities::{prepend, privacy::spread_privacy_usage, array::get_ith_column};
 use indexmap::map::IndexMap;
 
+use crate::{base, proto};
+use crate::base::{IndexKey, NodeProperties, Value};
+use crate::components::{Expandable, Report};
+use crate::errors::*;
+use crate::utilities::{array::get_ith_column, prepend, privacy::spread_privacy_usage};
+use crate::utilities::json::{AlgorithmInfo, JSONRelease, privacy_usage_to_json, value_to_json};
 
 impl Expandable for proto::DpMean {
     /// Expand component
@@ -20,7 +18,7 @@ impl Expandable for proto::DpMean {
     /// * `maximum_id` - last ID value created for sequence, increment used to define current ID
     fn expand_component(
         &self,
-        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
         _public_arguments: &IndexMap<IndexKey, &Value>,
         properties: &base::NodeProperties,
@@ -28,6 +26,7 @@ impl Expandable for proto::DpMean {
         mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
         let mut expansion = base::ComponentExpansion::default();
+        let argument_ids = component.arguments();
 
         if self.implementation.to_lowercase().as_str() == "plug-in" {
 
@@ -35,7 +34,7 @@ impl Expandable for proto::DpMean {
                 .ok_or("data: missing")?.array()
                 .map_err(prepend("data:"))?.num_columns()? as f64;
 
-            let id_data = *component.arguments().get::<base::IndexKey>(&"data".into())
+            let id_data = *argument_ids.get::<base::IndexKey>(&"data".into())
                 .ok_or_else(|| Error::from("data must be provided as an argument"))?;
 
             // dp sum
@@ -104,7 +103,7 @@ impl Expandable for proto::DpMean {
             let id_mean = maximum_id;
             expansion.computation_graph.insert(id_mean, proto::Component {
                 arguments: Some(proto::ArgumentNodeIds::new(indexmap![
-                    "data".into() => *component.arguments().get::<IndexKey>(&"data".into())
+                    "data".into() => *argument_ids.get::<IndexKey>(&"data".into())
                         .ok_or_else(|| Error::from("data must be provided as an argument"))?])),
                 variant: Some(proto::component::Variant::Mean(proto::Mean {})),
                 omit: true,
@@ -113,17 +112,42 @@ impl Expandable for proto::DpMean {
             expansion.traversal.push(id_mean);
 
             // noising
-            expansion.computation_graph.insert(component_id, proto::Component {
-                arguments: Some(proto::ArgumentNodeIds::new(indexmap!["data".into() => id_mean])),
-                variant: Some(match self.mechanism.to_lowercase().as_str() {
-                    "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
-                        privacy_usage: self.privacy_usage.clone()
-                    }),
-                    "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
-                        privacy_usage: self.privacy_usage.clone()
-                    }),
-                    _ => panic!("Unexpected invalid token {:?}", self.mechanism.as_str()),
+            let mechanism = if self.mechanism.to_lowercase().as_str() == "automatic" {
+                let privacy_definition = privacy_definition.as_ref()
+                    .ok_or_else(|| Error::from("privacy_definition must be known"))?;
+                if privacy_definition.protect_floating_point
+                { "snapping" } else { "laplace" }.to_string()
+            } else { self.mechanism.to_lowercase() };
+
+            let mut arguments = indexmap!["data".into() => id_mean];
+            let variant = Some(match mechanism.as_str() {
+                "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
+                    privacy_usage: self.privacy_usage.clone()
                 }),
+                "gaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                    privacy_usage: self.privacy_usage.clone(),
+                    analytic: false
+                }),
+                "analyticgaussian" => proto::component::Variant::GaussianMechanism(proto::GaussianMechanism {
+                    privacy_usage: self.privacy_usage.clone(),
+                    analytic: true
+                }),
+                "snapping" => {
+                    argument_ids.get::<IndexKey>(&"lower".into())
+                        .map(|lower| arguments.insert("lower".into(), *lower));
+                    argument_ids.get::<IndexKey>(&"upper".into())
+                        .map(|upper| arguments.insert("upper".into(), *upper));
+
+                    proto::component::Variant::SnappingMechanism(proto::SnappingMechanism {
+                        privacy_usage: self.privacy_usage.clone()
+                    })
+                },
+                _ => bail!("Unexpected invalid token {:?}", self.mechanism.as_str())
+            });
+
+            expansion.computation_graph.insert(component_id, proto::Component {
+                arguments: Some(proto::ArgumentNodeIds::new(arguments)),
+                variant,
                 omit: component.omit,
                 submission: component.submission,
             });

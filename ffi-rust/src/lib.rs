@@ -192,7 +192,7 @@ pub extern "C" fn accuracy_to_privacy_usage(
         value: match proto::RequestAccuracyToPrivacyUsage::decode(request_buffer) {
             Ok(request) => {
                 let proto::RequestAccuracyToPrivacyUsage {
-                    component, privacy_definition, properties, accuracies
+                    component, privacy_definition, properties, accuracies, public_arguments
                 } = request;
 
 
@@ -206,9 +206,11 @@ pub extern "C" fn accuracy_to_privacy_usage(
                         .ok_or_else(|| Error::from("properties must be defined"))?);
                     let accuracies: proto::Accuracies = accuracies
                         .ok_or_else(|| Error::from("accuracies must be defined"))?;
+                    let public_arguments = public_arguments
+                        .map_or_else(IndexMap::new, parse_indexmap_release_node);
 
                     whitenoise_validator::accuracy_to_privacy_usage(
-                        component, privacy_definition, properties, accuracies,
+                        component, privacy_definition, properties, accuracies, public_arguments
                     )
                 };
 
@@ -246,7 +248,7 @@ pub extern "C" fn privacy_usage_to_accuracy(
         value: match proto::RequestPrivacyUsageToAccuracy::decode(request_buffer) {
             Ok(request) => {
                 let proto::RequestPrivacyUsageToAccuracy {
-                    component, privacy_definition, properties, alpha
+                    component, privacy_definition, properties, alpha, public_arguments
                 } = request;
 
                 let run = || -> Result<proto::Accuracies> {
@@ -256,9 +258,11 @@ pub extern "C" fn privacy_usage_to_accuracy(
                         .ok_or_else(|| Error::from("privacy definition must be defined"))?;
                     let properties = parse_argument_properties(properties
                         .ok_or_else(|| Error::from("properties must be defined"))?);
+                    let public_arguments = public_arguments
+                        .map_or_else(IndexMap::new, parse_indexmap_release_node);
 
                     whitenoise_validator::privacy_usage_to_accuracy(
-                        component, privacy_definition, properties, alpha)
+                        component, privacy_definition, properties, public_arguments, alpha)
                 };
 
                 match run() {

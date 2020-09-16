@@ -17,6 +17,18 @@
       "default_python": "None",
       "default_rust": "None",
       "description": "2D data array used to construct covariance matrix."
+    },
+    "lower": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Estimated minimum possible value of the statistic. Only useful for the snapping mechanism."
+    },
+    "upper": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Estimated maximum possible value of the statistic. Only useful for the snapping mechanism."
     }
   },
   "id": "DPCovariance",
@@ -25,9 +37,9 @@
     "mechanism": {
       "type_proto": "string",
       "type_rust": "String",
-      "default_python": "\"Laplace\"",
-      "default_rust": "String::from(\"Laplace\")",
-      "description": "Privatizing mechanism to use. One of [`Laplace`, `Gaussian`]"
+      "default_python": "\"Automatic\"",
+      "default_rust": "String::from(\"Automatic\")",
+      "description": "Privatizing mechanism to use. One of [`Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]"
     },
     "privacy_usage": {
       "type_proto": "repeated PrivacyUsage",

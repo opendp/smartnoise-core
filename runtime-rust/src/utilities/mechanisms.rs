@@ -1,8 +1,8 @@
 use whitenoise_validator::errors::*;
 
-use crate::utilities::noise;
 use crate::utilities;
 use whitenoise_validator::Float;
+use crate::utilities::{noise, analytic_gaussian};
 
 /// Returns noise drawn according to the Laplace mechanism
 ///
@@ -15,12 +15,12 @@ use whitenoise_validator::Float;
 /// for more information
 ///
 /// # Arguments
-///
 /// * `epsilon` - Multiplicative privacy loss parameter.
 /// * `sensitivity` - Upper bound on the L1 sensitivity of the function you want to privatize.
+/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time
 ///
 /// # Return
-/// Array of a single value drawn from the Laplace distribution with scale sensitivity/epsilon centered about 0.
+/// A single value drawn from the Laplace distribution with scale sensitivity/epsilon centered about 0.
 ///
 /// # Examples
 /// ```
@@ -32,10 +32,84 @@ pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: 
         return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
     }
     let scale: f64 = sensitivity / epsilon;
-    let noise: f64 = noise::sample_laplace(0., scale, enforce_constant_time);
-
-    Ok(noise)
+    noise::sample_laplace(0., scale, enforce_constant_time)
 }
+
+/// Computes privatized value according to the Snapping mechanism
+///
+/// Developed as a variant of the Laplace mechanism which does not suffer from floating-point side channel attacks.
+/// For more information, see [Mironov (2012)](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.366.5957&rep=rep1&type=pdf)
+///
+/// # Arguments
+/// * `value` - Non-private value of the statistic to be privatized.
+/// * `epsilon` - Desired privacy guarantee.
+/// * `sensitivity` - l1 Sensitivity of function to which mechanism is being applied.
+/// * `min` - Lower bound on function value being privatized.
+/// * `max` - Upper bound on function value being privatized.
+/// * `binding_probability` - Optional. Probability of binding on the final clamp
+/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time
+///
+/// # Returns
+/// Result of snapping mechanism
+///
+/// # Example
+/// ```
+/// use whitenoise_runtime::utilities::mechanisms::snapping_mechanism;
+/// let value: f64 = 50.0;
+/// let epsilon: f64 = 1.0;
+/// let min: f64 = -50.;
+/// let max: f64 = 150.0;
+/// let sensitivity: f64 = 1.0/1000.0;
+/// let precision: i64 = 118;
+/// snapping_mechanism(value, epsilon, sensitivity, min, max, None, false).unwrap();
+/// println!("snapped value: {}", value);
+/// ```
+pub fn snapping_mechanism(
+    mut value: f64, epsilon: f64, sensitivity: f64,
+    min: f64, max: f64, binding_probability: Option<f64>,
+    enforce_constant_time: bool
+) -> Result<f64> {
+    if sensitivity < 0. {
+        return Err(format!("sensitivity ({}) must be non-negative", sensitivity).into());
+    }
+    if epsilon <= 0. {
+        return Err(format!("epsilon ({}) must be positive", epsilon).into())
+    }
+    if min > max {
+        return Err("lower may not be greater than upper".into())
+    }
+
+    let mut b = (max - min) / 2.;
+    let shift = min + b;
+
+    // ~~ preprocess ~~
+    // (A) shift mechanism input to be about zero
+    value -= shift;
+    // (B) clamp by b
+    value = num::clamp(value, -b.abs(), b.abs());
+    // (C) scale by sensitivity, to convert quantity to sensitivity-1
+    value /= sensitivity;
+    b /= sensitivity;
+
+    // ~~ internals ~~
+    let (mut value, epsilon) = noise::apply_snapping_noise(value, epsilon, b, enforce_constant_time)?;
+
+    if let Some(binding_probability) = binding_probability {
+        b += (1.0 - 2.0 * (1.0 - binding_probability).ln()) / epsilon;
+    }
+
+    // ~~ postprocess ~~
+    // (C) return to original scale
+    value *= sensitivity;
+    b *= sensitivity;
+    // (B) re-clamp by b
+    value = num::clamp(value, -b.abs(), b.abs());
+    // (A) shift mechanism output back to original location
+    value += shift;
+
+    Ok(value)
+}
+
 
 /// Returns noise drawn according to the Gaussian mechanism.
 ///
@@ -54,6 +128,7 @@ pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: 
 /// * `epsilon` - Multiplicative privacy loss parameter.
 /// * `delta` - Additive privacy loss parameter.
 /// * `sensitivity` - Upper bound on the L2 sensitivity of the function you want to privatize.
+/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time
 ///
 /// # Return
 /// A draw from Gaussian distribution with scale defined as above.
@@ -61,25 +136,24 @@ pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: 
 /// # Examples
 /// ```
 /// use whitenoise_runtime::utilities::mechanisms::gaussian_mechanism;
-/// let n = gaussian_mechanism(0.1, 0.0001, 2.0, false);
+/// let n = gaussian_mechanism(0.1, 0.0001, 2.0, false, false);
 /// ```
-#[cfg(feature = "use-mpfr")]
-pub fn gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, _enforce_constant_time: bool) -> Result<f64> {
+pub fn gaussian_mechanism(
+    epsilon: f64, delta: f64, sensitivity: f64,
+    analytic: bool,
+    enforce_constant_time: bool
+) -> Result<f64> {
     if epsilon <= 0. || delta <= 0. || sensitivity <= 0. {
         return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
     }
-    let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;
-    Ok(noise::sample_gaussian_mpfr(0., scale).to_f64())
-}
 
-#[cfg(not(feature = "use-mpfr"))]
-pub fn gaussian_mechanism(epsilon: f64, delta: f64, sensitivity: f64, enforce_constant_time: bool) -> Result<f64> {
-    if epsilon <= 0. || delta <= 0. || sensitivity <= 0. {
-        return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
-    }
-    let scale: f64 = sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon;
-    let noise: f64 = noise::sample_gaussian(0., scale, enforce_constant_time);
-    Ok(noise)
+    let scale = if analytic {
+        analytic_gaussian::get_analytic_gaussian_sigma(epsilon, delta, sensitivity)
+    } else {
+        sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon
+    };
+    // this uses mpfr noise if available
+    noise::sample_gaussian(0., scale, enforce_constant_time)
 }
 
 /// Returns noise drawn according to the Geometric mechanism.
@@ -114,8 +188,7 @@ pub fn simple_geometric_mechanism(
         return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
     }
     let scale: f64 = sensitivity / epsilon;
-    let noise: i64 = noise::sample_simple_geometric_mechanism(scale, min, max, enforce_constant_time);
-    Ok(noise)
+    noise::sample_simple_geometric_mechanism(scale, min, max, enforce_constant_time)
 }
 
 /// Returns data element according to the Exponential mechanism.
@@ -126,6 +199,7 @@ pub fn simple_geometric_mechanism(
 /// * `sensitivity` - L1 sensitivity of utility function.
 /// * `candidate_set` - Data from which user wants an element returned.
 /// * `utility` - Utility function used within the exponential mechanism.
+/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time
 ///
 /// NOTE: This implementation is likely non-private because of the difference between theory on
 ///       the real numbers and floating-point numbers. See [Ilvento 2019](https://arxiv.org/abs/1912.04222) for

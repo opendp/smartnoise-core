@@ -1,0 +1,42 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array",
+      "description": "Result to be released privately via the Snapping mechanism."
+    },
+    "lower": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Estimated minimum possible value of the data. Only useful for the snapping mechanism."
+    },
+    "upper": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Estimated maximum possible value of the statistic. Only useful for the snapping mechanism."
+    },
+    "binding_probability": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Upper bound on probability that final clamp binds. Must be within [0, 1)."
+    }
+  },
+  "id": "SnappingMechanism",
+  "name": "snapping_mechanism",
+  "options": {
+    "privacy_usage": {
+      "type_proto": "repeated PrivacyUsage",
+      "type_rust": "Vec<proto::PrivacyUsage>",
+      "default_python": "None",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+    }
+  },
+  "return": {
+    "type_value": "Array",
+    "description": "Original data perturbed via the Snapping mechanism."
+  },
+  "description": "Privatizes a result by returning it perturbed via the Snapping mechanism.",
+  "proto_id": 64
+}

@@ -200,6 +200,12 @@ impl From<std::num::TryFromIntError> for Error {
     }
 }
 
+impl From<std::num::ParseIntError> for Error {
+    fn from(value: std::num::ParseIntError) -> Self {
+        format!("{}", value).into()
+    }
+}
+
 impl From<ndarray_stats::errors::MinMaxError> for Error {
     fn from(value: ndarray_stats::errors::MinMaxError) -> Self {
         format!("min-max error: {}", value).into()
@@ -731,6 +737,21 @@ impl JaggedProperties {
 }
 
 impl ArrayProperties {
+    pub fn lower(&self) -> Result<Array> {
+        Ok(match (self.lower_float(), self.lower_int()) {
+            (Ok(lower), Err(_)) => Array::Float(ndarray::arr1(&lower).into_dyn()),
+            (Err(_), Ok(lower)) => Array::Int(ndarray::arr1(&lower).into_dyn()),
+            _ => return Err("lower bound must be known".into())
+        })
+    }
+    pub fn upper(&self) -> Result<Array> {
+        Ok(match (self.upper_float(), self.upper_int()) {
+            (Ok(upper), Err(_)) => Array::Float(ndarray::arr1(&upper).into_dyn()),
+            (Err(_), Ok(upper)) => Array::Int(ndarray::arr1(&upper).into_dyn()),
+            _ => return Err("upper bound must be known".into())
+        })
+    }
+
     pub fn lower_float_option(&self) -> Result<Vec<Option<Float>>> {
         match self.nature.to_owned() {
             Some(value) => match value {

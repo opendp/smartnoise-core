@@ -85,7 +85,9 @@ impl Evaluable for proto::component::Variant {
             Materialize, Mean, Partition,
             Quantile, RawMoment, Reshape, Resize, Sum, Union, Variance,
 
-            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
+            ExponentialMechanism, GaussianMechanism,
+            LaplaceMechanism, SnappingMechanism,
+            SimpleGeometricMechanism,
 
             Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
             Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract
