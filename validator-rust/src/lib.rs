@@ -132,13 +132,13 @@ pub fn compute_privacy_usage(
 /// Generate a json string with a summary/report of the Analysis and Release
 pub fn generate_report(
     privacy_definition: proto::PrivacyDefinition,
-    mut computation_graph: HashMap<u32, proto::Component>,
+    computation_graph: HashMap<u32, proto::Component>,
     mut release: base::Release
 ) -> Result<String> {
 
     let graph_properties = utilities::propagate_properties(
         &Some(privacy_definition),
-        &mut computation_graph,
+        &mut computation_graph.clone(),
         &mut release, None, false)?.0;
 
     // variable names
@@ -172,6 +172,7 @@ pub fn generate_report(
 
     });
 
+    // generate summaries for any component that has a release, and has summarize implemented on it
     let release_schemas = computation_graph.iter()
         .map(|(node_id, component)| {
             let public_arguments = utilities::get_public_arguments(&component, &release)?;
