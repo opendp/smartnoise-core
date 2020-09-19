@@ -76,11 +76,7 @@ pub fn censored_specific_geom(enforce_constant_time: bool) -> Result<i16> {
 ///
 /// # Arguments
 /// * `prob`- The desired probability of success (bit = 1).
-///
-/// * `shift` - f64, the center of the distribution
-/// * `scale` - f64, the scaling parameter of the distribution
-/// * `min` - f64, the minimum value of random variables pulled from the distribution.
-/// * `max` - f64, the maximum value of random variables pulled from the distribution
+/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time
 ///
 /// # Return
 /// A bit that is 1 with probability "prob"
@@ -136,6 +132,21 @@ pub fn sample_bit_prob(prob: f64, enforce_constant_time: bool) -> Result<bool> {
         // retrieve the bit at `i` slots shifted from the left
         i => mantissa & (1_u64 << (52 - i as usize)) != 0
     })
+}
+
+/// Sample from the binomial distribution.
+///
+/// # Arguments
+/// * `n` - Number of trials
+/// * `prob`- The desired probability of success (bit = 1).
+/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time
+///
+/// # Return
+/// Number of successful trials
+pub fn sample_binomial(n: i64, prob: f64, enforce_constant_time: bool) -> Result<i64> {
+    (0..n).try_fold(0, |sum, _|
+        sample_bit_prob(prob, enforce_constant_time)
+            .map(|v| sum + if v {1} else {0}))
 }
 
 #[cfg(test)]
