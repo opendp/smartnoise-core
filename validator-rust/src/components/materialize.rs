@@ -33,7 +33,7 @@ impl Component for proto::Materialize {
                     is_not_empty: true,
                     dimensionality: Some(1),
                     group_id: vec![],
-                    naturally_ordered: true
+                    naturally_ordered: true,
                     sample_proportion: vec![1.]
                 }))).collect(),
         }).into())

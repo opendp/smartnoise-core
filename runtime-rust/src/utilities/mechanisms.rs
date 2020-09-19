@@ -2,7 +2,7 @@ use whitenoise_validator::errors::*;
 
 use crate::utilities;
 use whitenoise_validator::Float;
-use crate::utilities::{noise, analytic_gaussian};
+use crate::utilities::{noise};
 use whitenoise_validator::components::gaussian_mechanism::get_analytic_gaussian_sigma;
 
 /// Returns noise drawn according to the Laplace mechanism
@@ -155,17 +155,6 @@ pub fn gaussian_mechanism(
     };
     // this uses mpfr noise if available
     noise::sample_gaussian(0., scale, enforce_constant_time)
-}
-
-///TODO: TESTING
-pub fn analytic_gaussian_mechanism(epsilon: &f64, delta: &f64, sensitivity: &f64) -> Result<f64> {
-    if epsilon < &0. || delta < &0. || sensitivity < &0. {
-        return Err(format!("epsilon ({}), delta ({}) and sensitivity ({}) must all be positive", epsilon, delta, sensitivity).into());
-    }
-
-    let scale: f64 = analytic_gaussian::get_analytic_gaussian_sigma(epsilon, delta, sensitivity);
-    let noise: f64 = noise::sample_gaussian(&0., &scale);
-    Ok(noise)
 }
 
 /// Returns noise drawn according to the Geometric mechanism.

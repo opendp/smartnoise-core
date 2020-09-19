@@ -76,7 +76,7 @@ pub fn stack_properties(all_properties: &[ValueProperties], dimensionality: Opti
     let nature = get_common_continuous_nature(&natures, data_type.to_owned())
         .or_else(|| get_common_categorical_nature(&natures));
 
-    if !all_properties.iter().all(|prop| prop.naturally_ordered) {
+    if !all_properties.iter().all(|prop| prop.naturally_ordered) && dataset_id.is_none() {
         return Err("cannot stack columns that may have been reordered".into())
     }
 

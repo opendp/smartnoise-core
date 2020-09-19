@@ -1,7 +1,7 @@
 use indexmap::map::IndexMap;
 
 use crate::{base, Float, Warnable};
-use crate::base::{DataType, IndexKey, Jagged, Nature, NatureCategorical, NatureContinuous, Value, ValueProperties, Vector1DNull};
+use crate::base::{DataType, IndexKey, Jagged, Nature, NatureCategorical, NatureContinuous, Value, ValueProperties, Vector1DNull, ArrayProperties};
 use crate::components::{Component, Expandable};
 use crate::errors::*;
 use crate::proto;
@@ -17,7 +17,7 @@ impl Component for proto::Resize {
         _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
 
-        let mut data_property = properties.get::<IndexKey>(&"data".into())
+        let mut data_property: ArrayProperties = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -241,6 +241,7 @@ impl Component for proto::Resize {
             .zip(data_property.c_stability.iter())
             .map(|(p, c)| p * (sample_proportion / c))
             .collect();
+        data_property.naturally_ordered = false;
 
         Ok(ValueProperties::Array(data_property).into())
     }
