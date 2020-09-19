@@ -1,3 +1,4 @@
+use std::cmp::Ordering;
 use std::ops::{Add, Div, Mul, Rem, Sub};
 
 use ndarray::{ArrayD, Axis};
@@ -13,6 +14,7 @@ use whitenoise_validator::utilities::take_argument;
 
 use crate::components::Evaluable;
 use crate::NodeArguments;
+use std::fmt::Debug;
 
 impl Evaluable for proto::Quantile {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
@@ -94,12 +96,10 @@ pub fn quantile<T: FromPrimitive + Ord + Clone + Sub<Output=T> + Mul<Output=T> +
     }
 }
 
-
-pub fn quantile_utilities_arrayd<T: Ord + Clone + Copy>(
+pub fn quantile_utilities_arrayd<T: Ord + Clone + Copy + Debug>(
     candidates: ArrayD<T>, data: ArrayD<T>, lower: Option<T>, upper: Option<T>,
     alpha: Float
 ) -> Result<ArrayD<Float>> {
-
     Ok(ndarray::Array::from_shape_vec(candidates.shape(), candidates.gencolumns().into_iter()
         .zip(data.gencolumns().into_iter())
         .map(|(candidates, column)|
@@ -108,62 +108,164 @@ pub fn quantile_utilities_arrayd<T: Ord + Clone + Copy>(
         .flatten().collect::<Vec<_>>())?.into_dyn())
 }
 
-pub fn quantile_utilities<T: Ord + Clone + Copy>(
-    mut candidates: Vec<T>, mut data: Vec<T>,
-    lower: Option<T>, upper: Option<T>,
-    alpha: Float
+
+/// Compute median utilities of candidates on a vector
+/// Formula is n * max(alpha, 1 - alpha) - |(1 - alpha) * #(Z < r) - alpha * #(Z > r)
+///
+/// # Arguments
+/// * `candidates` - values to be scored
+/// * `column` - dataset to score against
+/// * `alpha` - parameter for quantile. {0: min, 0.5: median, 1: max, ...}
+///
+/// # Returns
+/// Utility for each candidate
+fn quantile_utilities<T: Ord + Clone + Copy + Debug>(
+    mut candidates: Vec<T>, mut column: Vec<T>,
+    lower: Option<T>, upper: Option<T>, alpha: Float,
 ) -> Result<Vec<Float>> {
     match (lower, upper) {
         (Some(l), Some(u)) => {
             if l > u { return Err("lower must not be greater than upper".into()) }
             candidates.push(l);
             candidates.push(u);
-            data.iter_mut().for_each(|v| *v = l.max(*v).min(u));
+            column.iter_mut().for_each(|v| *v = l.max(*v).min(u));
         }
         _ => ()
     }
-
-    let n = data.len() as Float;
-    let constant = alpha.max(1. - alpha);
+    // sort candidates but preserve original ordering
     let mut candidates = candidates.into_iter().enumerate().collect::<Vec<(usize, T)>>();
     candidates.sort_unstable_by_key(|v| v.1);
-    data.sort_unstable();
+    column.sort_unstable();
 
-    let mut offsets = Vec::new();
-    let mut index = 0;
-    data.into_iter().enumerate().for_each(|(offset, v)| {
-        while index < candidates.len() && v > candidates[index].1 {
-            offsets.push(offset as Float);
-            index += 1;
+    let mut col_idx: usize = 0;
+    let mut cand_idx: usize = 0;
+    let mut utilities = Vec::with_capacity(candidates.len());
+
+    // prepend utilities for candidates less than smallest value of the dataset
+    if let Some(v) = column.first() {
+        let candidate_score = score_candidate(col_idx, column.len() - col_idx, alpha);
+        while cand_idx < candidates.len() && candidates[cand_idx].1 < *v {
+            utilities.push(candidate_score);
+            cand_idx += 1;
         }
-    });
+    }
 
-    // ensure offsets and candidates have the same length by appending offsets for candidates greater than the maximum value of the dataset
-    offsets.extend((0..candidates.len() - offsets.len()).map(|_| n));
+    while cand_idx < candidates.len() && col_idx < column.len() {
+        match column[col_idx].cmp(&candidates[cand_idx].1) {
+            Ordering::Less => col_idx += 1,
+            // if ith value is equal, then there are
+            //   i values smaller than the current candidate
+            //   loop to find number of values larger than current candidate
+            Ordering::Equal => {
+                let num_lt = col_idx;
+                let num_gt = loop {
+                    col_idx += 1;
+                    // if all elements are lte, then num_lte == n, so num_gt must be 0
+                    if col_idx == column.len() { break column.len() - col_idx }
+                    // if next value is greater than candidate,
+                    //  then num_gt is n - num_lte
+                    if column[col_idx] > candidates[cand_idx].1 {
+                        break column.len() - col_idx
+                    }
+                };
+                // score the candidate
+                let candidate_score = score_candidate(num_lt, num_gt, alpha);
+                // reuse the score for all equivalent candidates
+                while cand_idx < candidates.len() && candidates[cand_idx].1 == column[num_lt] {
+                    utilities.push(candidate_score);
+                    cand_idx += 1;
+                }
+            }
+            // if the ith value is larger, then there are
+            //  i values smaller than the current candidate
+            //  n - i values larger
+            Ordering::Greater => {
+                utilities.push(score_candidate(col_idx, column.len() - col_idx, alpha));
+                cand_idx += 1;
+            }
+        }
+    }
 
-    let utilities = offsets.into_iter()
-        .map(|offset| constant * n - (offset - alpha * n).abs())
-        .collect::<Vec<Float>>();
+    // append utilities for candidates greater than the maximum value of the dataset
+    let candidate_score = score_candidate(column.len(), 0, alpha);
+    utilities.extend((0..candidates.len() - utilities.len()).map(|_| candidate_score));
 
-    // order the utilities by the order of the candidates before they were sorted
-    Ok(candidates.into_iter().map(|(idx, _)| utilities[idx]).collect::<Vec<_>>())
+    // order the utilities by the order of the candidates before they were sorted, and shift the utility
+    let constant = alpha.max(1. - alpha);
+    Ok(candidates.into_iter().map(|(idx, _)| constant * column.len() as f64 - utilities[idx]).collect())
+}
+
+fn score_candidate(num_lt: usize, num_gt: usize, alpha: f64) -> f64 {
+    ((1. - alpha) * num_lt as f64 - alpha * num_gt as f64).abs()
 }
 
 #[cfg(test)]
-pub mod test_quantile {
-    use crate::components::quantile::quantile_utilities_arrayd;
+mod test_quantile_utilities {
     use ndarray::arr1;
     use noisy_float::types::n64;
 
+    use crate::components::quantile::{quantile_utilities, quantile_utilities_arrayd};
+
     #[test]
-    fn utility() {
+    fn test_scoring() {
+        // no candidates, no score
+        assert_eq!(
+            quantile_utilities::<i64>(vec![], vec![], None, None, 0.5).unwrap(),
+            Vec::<f64>::new());
+        assert_eq!(
+            quantile_utilities(vec![], vec![1], None, None, 0.5).unwrap(),
+            Vec::<f64>::new());
+        // no data, score should be zero
+        assert_eq!(
+            quantile_utilities(vec![0], vec![], None, None, 0.5).unwrap(),
+            vec![0.]);
+        // 0.5 - 0.
+        assert_eq!(
+            quantile_utilities(vec![0], vec![0], None, None, 0.5).unwrap(),
+            vec![0.5]);
+        // 0.5 - |0.5 * 0. - 0.5 * 0.|
+        // 0.5 - |0.5 * 1. - 0.5 * 0.|
+        // 0.5 - |0.5 * 1. - 0.5 * 0.|
+        assert_eq!(
+            quantile_utilities(vec![0, 1, 2], vec![0], None, None, 0.5).unwrap(),
+            vec![0.5, 0., 0.]);
+        // 1.5 - |0.5 * 0. - 0.5 * 0.|
+        // 1.5 - |0.5 * 3. - 0.5 * 0.|
+        // 1.5 - |0.5 * 3. - 0.5 * 0.|
+        assert_eq!(
+            quantile_utilities(vec![0, 1, 2], vec![0, 0, 0], None, None, 0.5).unwrap(),
+            vec![1.5, 0., 0.]);
+        // // 1.5 - |0.5 * 0. - 0.5 * 3.|
+        // // 1.5 - |0.5 * 0. - 0.5 * 1.|
+        // // 1.5 - |0.5 * 0. - 0.5 * 1.|
+        assert_eq!(
+            quantile_utilities(vec![0, 1, 1], vec![1, 1, 2], None, None, 0.5).unwrap(),
+            vec![0., 1., 1.]);
+        assert_eq!(
+            quantile_utilities(vec![1, 0, 1], vec![2, 1, 1], None, None, 0.5).unwrap(),
+            vec![1., 0., 1.]);
+    }
+
+    #[test]
+    fn utility_arrayd() {
+        // 5. is best
+        // -10: 12 * 0.5 - |.5 * 0 - .5 * 12| = 0.0
+        // -5:  12 * 0.5 - |.5 * 0 - .5 * 12| = 0.0
+        // 0:   12 * 0.5 - |.5 * 0 - .5 * 11| = 0.5
+        // 2:   12 * 0.5 - |.5 * 1 - .5 * 11| = 1.0
+        // 5:   12 * 0.5 - |.5 * 3 - .5 * 6 | = 4.5
+        // 7:   12 * 0.5 - |.5 * 8 - .5 * 2 | = 3.0
+        // 10:  12 * 0.5 - |.5 * 0 - .5 * 11| = 0.5
+        // 12:  12 * 0.5 - |.5 * 0 - .5 * 12| = 0.0
         let utilities = quantile_utilities_arrayd(
             arr1(&[-10., -5., 0., 2., 5., 7., 10., 12.]).into_dyn().mapv(n64),
             arr1(&[0., 10., 5., 7., 6., 4., 3., 8., 7., 6., 5., 5.]).into_dyn().mapv(n64),
             None, None,
-            0.5
-        ).unwrap();
+            0.5,
+        ).unwrap().into_dimensionality::<ndarray::Ix1>().unwrap().to_vec();
 
-        println!("utilities {:?}", utilities);
+        assert_eq!(utilities, vec![0., 0., 0.5, 1.0, 4.5, 3.0, 0.5, 0.]);
+
+        // println!("utilities {:?}", utilities);
     }
 }

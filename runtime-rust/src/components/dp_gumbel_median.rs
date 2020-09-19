@@ -83,7 +83,7 @@ fn dp_gumbel_median(
 
 #[cfg(test)]
 pub mod test {
-    use ndarray::{array, ArrayD};
+    use ndarray::{ArrayD};
 
     use whitenoise_validator::{Float, Integer};
     use whitenoise_validator::errors::*;
