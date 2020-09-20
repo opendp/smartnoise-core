@@ -1,14 +1,13 @@
-use crate::errors::*;
-
-use crate::{proto, base, Warnable};
-
-use crate::components::{Component, Expandable, Sensitivity, Mechanism};
-use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, ArrayProperties, NodeProperties, IndexKey};
-use crate::utilities::{prepend, get_literal, get_argument};
-use crate::utilities::privacy::{privacy_usage_check};
-use itertools::Itertools;
 use indexmap::map::IndexMap;
+use itertools::Itertools;
+
+use crate::{base, proto, Warnable};
+use crate::base::{ArrayProperties, DataType, IndexKey, NodeProperties, SensitivitySpace, Value, ValueProperties};
+use crate::components::{Component, Expandable, Mechanism, Sensitivity};
+use crate::errors::*;
+use crate::utilities::{get_argument, get_literal, prepend};
 use crate::utilities::inference::infer_property;
+use crate::utilities::privacy::privacy_usage_check;
 
 impl Component for proto::ExponentialMechanism {
     fn propagate_property(
@@ -63,7 +62,7 @@ impl Component for proto::ExponentialMechanism {
             num_columns: Some(num_columns),
             nullity: false,
             releasable: true,
-            c_stability: (0..num_columns).map(|_| 1.).collect(),
+            c_stability: 1,
             aggregator: None,
             nature: None,
             data_type: candidates.data_type(),
@@ -74,7 +73,7 @@ impl Component for proto::ExponentialMechanism {
             dimensionality: Some(2),
             group_id: vec![],
             naturally_ordered: true,
-            sample_proportion: vec![1.]
+            sample_proportion: None
         };
 
         let privacy_usage = self.privacy_usage.iter().cloned().map(Ok)
@@ -151,10 +150,10 @@ impl Mechanism for proto::ExponentialMechanism {
 
 
         Some(release_usage.unwrap_or_else(|| &self.privacy_usage).iter()
-            .zip(data_property.c_stability.iter())
-            .zip(data_property.sample_proportion.iter())
-            .map(|((usage, c_stab), s_prop)|
-                usage.effective_to_actual(*s_prop, *c_stab as f64, privacy_definition.group_size))
+            .map(|usage| usage.effective_to_actual(
+                data_property.sample_proportion.unwrap_or(1.),
+                data_property.c_stability,
+                privacy_definition.group_size))
             .collect::<Result<Vec<proto::PrivacyUsage>>>()).transpose()
     }
 }

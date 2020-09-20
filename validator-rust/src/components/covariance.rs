@@ -29,13 +29,6 @@ impl Component for proto::Covariance {
             let num_columns = data_property.num_columns()?;
             let num_columns = num_columns * (num_columns + 1) / 2;
 
-            data_property.c_stability = data_property.c_stability.iter().enumerate()
-                .map(|(i, l_stab)| data_property.c_stability.iter().enumerate()
-                    .filter(|(j, _)| i <= *j)
-                    .map(|(_, r_stab)| l_stab * r_stab)
-                    .collect::<Vec<Float>>())
-                .flatten().collect::<Vec<Float>>();
-
             // save a snapshot of the state when aggregating
             data_property.aggregator = Some(AggregatorProperties {
                 component: proto::component::Variant::Covariance(self.clone()),
@@ -102,11 +95,19 @@ impl Component for proto::Covariance {
                 right_property.assert_is_not_aggregated()?;
             }
 
-            let num_columns = left_property.num_columns()? * right_property.num_columns()?;
+            if !left_property.releasable && !right_property.releasable && left_property.group_id != right_property.group_id {
+                return Err("data from separate partitions may not be mixed".into())
+            }
 
-            left_property.c_stability = left_property.c_stability.iter()
-                .map(|l| right_property.c_stability.iter()
-                    .map(|r| l * r).collect::<Vec<_>>()).flatten().collect();
+            if left_property.dataset_id != right_property.dataset_id {
+                return Err("left and right arguments must share the same dataset id".into())
+            }
+            // this check should be un-necessary due to the dataset id check
+            if left_property.c_stability != right_property.c_stability {
+                return Err(Error::from("left and right datasets must share the same stabilities"))
+            }
+
+            let num_columns = left_property.num_columns()? * right_property.num_columns()?;
 
             // save a snapshot of the state when aggregating
             left_property.aggregator = Some(AggregatorProperties {

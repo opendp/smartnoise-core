@@ -42,8 +42,6 @@ impl Component for proto::Resize {
             }
             data_property.num_columns = Some(num_columns);
             data_property.nature = None;
-            data_property.c_stability = (0..num_columns).map(|_| 1.).collect::<Vec<Float>>();
-            data_property.sample_proportion = (0..num_columns).map(|_| 1.).collect::<Vec<Float>>();
             data_property.dimensionality = Some(2);
         }
 
@@ -233,15 +231,24 @@ impl Component for proto::Resize {
             _ => return Err("bounds for imputation must be numeric".into())
         }
 
-        let sample_proportion: Float = public_arguments.get(&IndexKey::from("sample_proportion"))
-            .and_then(|v| v.ref_array().ok()?.first_float().ok()).unwrap_or(1.);
-        data_property.c_stability = data_property.c_stability.into_iter()
-            .map(|v| v * sample_proportion.ceil()).collect();
-        data_property.sample_proportion = data_property.sample_proportion.into_iter()
-            .zip(data_property.c_stability.iter())
-            .map(|(p, c)| p * (sample_proportion / c))
-            .collect();
-        data_property.naturally_ordered = false;
+        let sample_proportion: Option<Float> = public_arguments.get(&IndexKey::from("sample_proportion"))
+            .and_then(|v| v.ref_array().ok()?.first_float().ok());
+        if let Some(sample_proportion) = sample_proportion {
+            if sample_proportion <= 0. {
+                return Err("sample_proportion must be positive".into())
+            }
+        }
+        data_property.c_stability = data_property.c_stability * sample_proportion.unwrap_or(1.).ceil() as u32;
+        data_property.sample_proportion = match (data_property.sample_proportion, sample_proportion) {
+            (Some(_), Some(_)) => return Err(Error::from("multiple samplings is not currently supported")),
+            (Some(prior_prop), None) => Some(prior_prop),
+            (None, Some(new_prop)) => Some(new_prop / new_prop.ceil()),
+            (None, None) => None
+        };
+
+        if data_property.sample_proportion.is_some() {
+            data_property.naturally_ordered = false;
+        }
 
         Ok(ValueProperties::Array(data_property).into())
     }

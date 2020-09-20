@@ -79,6 +79,7 @@ impl Expandable for proto::DpCovariance {
         });
         expansion.traversal.push(id_covariance);
 
+        println!("dp covar {:?}", self.privacy_usage);
         // noise
         maximum_id += 1;
         let id_noise = maximum_id;

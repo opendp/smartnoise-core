@@ -136,10 +136,10 @@ impl Mechanism for proto::SimpleGeometricMechanism {
             .map_err(prepend("data:"))?;
 
         Some(release_usage.unwrap_or_else(|| &self.privacy_usage).iter()
-            .zip(data_property.c_stability.iter())
-            .zip(data_property.sample_proportion.iter())
-            .map(|((usage, c_stab), s_prop)|
-                usage.effective_to_actual(*s_prop, *c_stab as f64, privacy_definition.group_size))
+            .map(|usage| usage.effective_to_actual(
+                data_property.sample_proportion.unwrap_or(1.),
+                data_property.c_stability,
+                privacy_definition.group_size))
             .collect::<Result<Vec<proto::PrivacyUsage>>>()).transpose()
     }
 }

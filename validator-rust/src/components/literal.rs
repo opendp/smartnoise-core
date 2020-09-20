@@ -20,7 +20,7 @@ impl Component for proto::Literal {
             num_columns: None,
             nullity: true,
             releasable: false,
-            c_stability: vec![],
+            c_stability: 1,
             aggregator: None,
             nature: None,
             data_type: DataType::Unknown,
@@ -30,7 +30,7 @@ impl Component for proto::Literal {
             dimensionality: None,
             group_id: vec![],
             naturally_ordered: true,
-            sample_proportion: vec![]
+            sample_proportion: None
         }).into())
     }
 }

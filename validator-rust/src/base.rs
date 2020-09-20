@@ -687,7 +687,7 @@ pub struct ArrayProperties {
     /// set to true by the mechanisms. Acts as a filter on the values in the release
     pub releasable: bool,
     /// amplification of privacy usage by unstable data transformations, or possibility of duplicated records
-    pub c_stability: Vec<Float>,
+    pub c_stability: u32,
     /// set when data is aggregated, used to help compute sensitivity from the mechanisms
     pub aggregator: Option<AggregatorProperties>,
     /// either min/max or categories
@@ -706,7 +706,7 @@ pub struct ArrayProperties {
     /// used to determine if order of rows has changed
     pub naturally_ordered: bool,
     /// proportion of original data sampled
-    pub sample_proportion: Vec<f64>,
+    pub sample_proportion: Option<f64>,
 }
 
 
@@ -856,7 +856,7 @@ impl ArrayProperties {
         if self.aggregator.is_some() { Err("aggregated data may not be manipulated".into()) } else { Ok(()) }
     }
     pub fn assert_is_not_sampled(&self) -> Result<()> {
-        if self.sample_proportion.iter().any(|v| v != &1.) {
+        if self.sample_proportion.unwrap_or(1.) != 1. {
             Err("sampled data may not be manipulated in this way".into())
         } else { Ok(())}
     }
@@ -1128,25 +1128,40 @@ pub type NodeProperties = IndexMap<base::IndexKey, ValueProperties>;
 
 
 impl proto::PrivacyUsage {
-    pub(crate) fn actual_to_effective(&self, s: f64, mut c_stability: f64, group_size: u32) -> Result<Self> {
-        c_stability *= group_size as f64;
+    pub(crate) fn actual_to_effective(&self, s: f64, mut c_stability: u32, group_size: u32) -> Result<Self> {
+        use proto::privacy_usage::{DistanceApproximate, Distance::Approximate};
+
+        c_stability *= group_size;
         Ok(proto::PrivacyUsage {
             distance: Some(match self.distance.as_ref().ok_or_else(|| "distance must be defined")? {
-                proto::privacy_usage::Distance::Approximate(app) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                    epsilon: (((app.epsilon.exp() - 1.) / s) + 1.).ln() / c_stability,
-                    delta: app.delta / s / ((c_stability * app.epsilon).exp() - 1.) / (app.epsilon.exp() - 1.),
+                Approximate(DistanceApproximate { epsilon, delta }) =>
+                    Approximate(DistanceApproximate {
+                    epsilon: match s {
+                        s if s == 1. => epsilon / c_stability as f64,
+                        _ if *epsilon > 100. =>
+                            return Err(Error::from("large epsilon (>100) with privacy amplification by subsampling is numerically unstable")),
+                        s => (((epsilon.exp() - 1.) / s) + 1.).ln() / c_stability as f64
+                    },
+                    delta: delta / s / ((c_stability as f64 * epsilon).exp() - 1.) / (epsilon.exp() - 1.),
                 })
             })
         })
     }
 
-    pub(crate) fn effective_to_actual(&self, s: f64, mut c_stability: f64, group_size: u32) -> Result<Self> {
-        c_stability *= group_size as f64;
+    pub(crate) fn effective_to_actual(&self, s: f64, mut c_stability: u32, group_size: u32) -> Result<Self> {
+        use proto::privacy_usage::{DistanceApproximate, Distance::Approximate};
+
+        c_stability *= group_size;
         Ok(proto::PrivacyUsage {
             distance: Some(match self.distance.as_ref().ok_or_else(|| "distance must be defined")? {
-                proto::privacy_usage::Distance::Approximate(app) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                    epsilon: (((app.epsilon * c_stability).exp() - 1.) * s + 1.).ln(),
-                    delta: app.delta * s * ((c_stability * app.epsilon).exp() - 1.) / (app.epsilon.exp() - 1.),
+                Approximate(DistanceApproximate { epsilon, delta }) => Approximate(DistanceApproximate {
+                    epsilon: match s {
+                        s if s == 1. => epsilon * c_stability as f64,
+                        _ if epsilon * c_stability as f64 > 100. =>
+                            return Err(Error::from("large epsilon * c_stability (>100) with privacy amplification by subsampling is numerically unstable")),
+                        s => (((epsilon * c_stability as f64).exp() - 1.) * s + 1.).ln()
+                    },
+                    delta: delta * s * ((c_stability as f64 * epsilon).exp() - 1.) / (epsilon.exp() - 1.),
                 })
             })
         })

@@ -250,8 +250,7 @@ pub fn parse_array_properties(value: proto::ArrayProperties) -> ArrayProperties 
         num_columns: value.num_columns.and_then(parse_i64_null),
         nullity: value.nullity,
         releasable: value.releasable,
-        c_stability: parse_array1d_f64(value.c_stability.to_owned().unwrap())
-            .into_iter().map(|v| v as Float).collect(),
+        c_stability: value.c_stability,
         aggregator: value.aggregator.map(|aggregator| AggregatorProperties {
             component: aggregator.component.unwrap().variant.unwrap(),
             properties: parse_argument_properties(aggregator.properties.unwrap()),
@@ -274,8 +273,7 @@ pub fn parse_array_properties(value: proto::ArrayProperties) -> ArrayProperties 
         dimensionality: value.dimensionality.and_then(parse_i64_null),
         group_id: value.group_id.into_iter().map(parse_group_id).collect(),
         naturally_ordered: value.naturally_ordered,
-        sample_proportion: parse_array1d_f64(value.sample_proportion.to_owned().unwrap())
-            .into_iter().map(|v| v as Float).collect(),
+        sample_proportion: parse_f64_null(value.sample_proportion.unwrap()).map(Float::from)
     }
 }
 
@@ -551,7 +549,7 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
         num_columns: Some(serialize_i64_null(num_columns)),
         nullity,
         releasable,
-        c_stability: Some(serialize_array1d_f64(c_stability.into_iter().map(|v| v as f64).collect())),
+        c_stability,
         nature: nature.map(|nature| match nature {
             Nature::Categorical(categorical) => proto::array_properties::Nature::Categorical(proto::NatureCategorical {
                 categories: Some(serialize_jagged(categorical.categories))
@@ -578,8 +576,7 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
         dimensionality: Some(serialize_i64_null(dimensionality)),
         group_id: group_id.into_iter().map(serialize_group_id).collect(),
         naturally_ordered,
-        sample_proportion: Some(serialize_array1d_f64(sample_proportion.into_iter()
-            .map(|v| v as f64).collect()))
+        sample_proportion: Some(serialize_f64_null(sample_proportion.map(f64::from)))
     }
 }
 

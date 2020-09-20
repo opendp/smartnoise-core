@@ -1,16 +1,13 @@
-use crate::errors::*;
-
-
-use crate::{proto, base, Warnable, Float};
-
-use crate::components::{Component, Sensitivity};
-use crate::base::{Value, ValueProperties, ArrayProperties, AggregatorProperties, NodeProperties, SensitivitySpace, IndexKey, PartitionsProperties};
-use crate::utilities::{get_common_value};
-
-use itertools::Itertools;
-use ndarray::{ArrayViewD, Axis, stack};
 use indexmap::map::IndexMap;
-use crate::utilities::privacy::{get_group_id_path, get_c_stability_multiplier};
+use ndarray::{ArrayViewD, Axis, stack};
+
+use crate::{base, Float, proto, Warnable};
+use crate::base::{AggregatorProperties, ArrayProperties, IndexKey, NodeProperties, PartitionsProperties, SensitivitySpace, Value, ValueProperties};
+use crate::components::{Component, Sensitivity};
+use crate::errors::*;
+use crate::utilities::get_common_value;
+use crate::utilities::privacy::{get_c_stability_multiplier, get_group_id_path};
+
 // given a partitional indexmap, output the concatenation of all partitions
 
 impl Component for proto::Union {
@@ -24,8 +21,8 @@ impl Component for proto::Union {
 
         Ok(Warnable::new(if self.flatten {
             // all partitions must be arrays
-            let array_props = properties.values()
-                .map(|v| v.array()).collect::<Result<Vec<&ArrayProperties>>>()?;
+            let array_props: Vec<&ArrayProperties> = properties.values()
+                .map(|v| v.array()).collect::<Result<_>>()?;
 
             let num_columns = get_common_value(&array_props.iter()
                 .map(|v| Some(v.num_columns)).collect())
@@ -39,15 +36,18 @@ impl Component for proto::Union {
             let c_stab_mult = get_c_stability_multiplier(
                 array_props.iter().map(|prop| prop.group_id.clone()).collect())?;
 
+            if array_props.iter().any(|v| v.sample_proportion.is_some()) {
+                return Err(Error::from("cannot currently union partitions with sampled data"))
+            }
+
             ValueProperties::Array(ArrayProperties {
                 num_records,
                 num_columns,
                 nullity: get_common_value(&array_props.iter().map(|v| v.nullity).collect())
                     .unwrap_or(true),
                 releasable,
-                c_stability: array_props.iter().map(|v| v.c_stability.clone())
-                    .fold1(|l, r| l.iter().zip(r).map(|(l, r)| l.max(r) * c_stab_mult).collect::<Vec<Float>>())
-                    .ok_or_else(|| "must have at least one partition when unioning")?,
+                c_stability: array_props.iter().map(|v| v.c_stability).max()
+                    .ok_or_else(|| Error::from("union must have at least one argument"))? * c_stab_mult,
                 aggregator: if releasable { None } else {
                     Some(AggregatorProperties {
                         component: proto::component::Variant::Union(self.clone()),
@@ -72,9 +72,7 @@ impl Component for proto::Union {
                     .map(|prop| prop.group_id.clone())
                     .collect())?,
                 naturally_ordered: false,
-                sample_proportion: array_props.iter().map(|v| v.sample_proportion.clone())
-                    .fold1(|l, r| l.iter().zip(r).map(|(l, r)| l.max(r)).collect::<Vec<Float>>())
-                    .ok_or_else(|| "must have at least one partition when unioning")?,
+                sample_proportion: None,
             })
         } else {
             ValueProperties::Partitions(PartitionsProperties { children: properties })

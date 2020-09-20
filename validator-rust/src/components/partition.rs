@@ -145,8 +145,7 @@ fn get_partition_properties(
         properties.is_not_empty = num_records.unwrap_or(0) != 0;
 
         if neighboring_definition == proto::privacy_definition::Neighboring::Substitute {
-            properties.c_stability = properties.c_stability
-                .into_iter().map(|v| v * 2.).collect();
+            properties.c_stability = properties.c_stability * 2
         }
 
         properties

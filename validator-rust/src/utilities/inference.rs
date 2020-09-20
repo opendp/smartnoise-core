@@ -212,13 +212,6 @@ pub fn infer_nullity(value: &Value) -> Result<bool> {
     }
 }
 
-pub fn infer_c_stability(value: &Array) -> Result<Vec<Float>> {
-    Ok((0..value.num_columns()?).map(|_| 1.).collect())
-}
-pub fn infer_sample_proportion(value: &Array) -> Result<Vec<Float>> {
-    Ok((0..value.num_columns()?).map(|_| 1.).collect())
-}
-
 pub fn infer_property(
     value: &Value, prior_property: Option<&ValueProperties>
 ) -> Result<ValueProperties> {
@@ -233,10 +226,9 @@ pub fn infer_property(
                 nullity: infer_nullity(&value)?,
                 releasable: true,
                 nature: infer_nature(&value, prior_property)?,
-                c_stability: match prior_prop_arr {
-                    Some(p) => p.c_stability.clone(),
-                    None => infer_c_stability(&array)?
-                },
+                c_stability: prior_prop_arr
+                    .map(|prop| prop.c_stability)
+                    .unwrap_or(1),
                 num_columns: Some(array.num_columns()? as i64),
                 num_records: Some(array.num_records()? as i64),
                 aggregator: prior_prop_arr.and_then(|p| p.aggregator.clone()),
@@ -253,10 +245,7 @@ pub fn infer_property(
                     .map(|v| v.group_id.clone())
                     .unwrap_or_else(Vec::new),
                 naturally_ordered: true,
-                sample_proportion: match prior_prop_arr {
-                    Some(p) => p.sample_proportion.clone(),
-                    None => infer_sample_proportion(&array)?
-                }
+                sample_proportion: None
             }.into()
         },
         Value::Dataframe(dataframe) => match prior_property {
