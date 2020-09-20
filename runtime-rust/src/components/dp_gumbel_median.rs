@@ -92,6 +92,7 @@ pub mod test {
     use crate::components::linreg_theilsen::{theil_sen_transform, theil_sen_transform_k_match};
     use crate::components::linreg_theilsen::tests::{public_theil_sen, test_dataset};
     use crate::utilities::noise;
+    use whitenoise_validator::proto::privacy_definition::Neighboring;
 
     /// Randomly select k points from x and y (k < n) and then perform DP-TheilSen.
         /// Useful for larger datasets where calculating on n^2 points is less than ideal.
@@ -120,7 +121,7 @@ pub mod test {
         r_lower: Float, r_upper: Float,
         enforce_constant_time: bool,
     ) -> Result<(Float, Float)> {
-        let (slopes, intercepts) = theil_sen_transform(x, y)?;
+        let (slopes, intercepts) = theil_sen_transform(x, y, Neighboring::AddRemove)?;
 
         let slope = dp_gumbel_median(slopes, epsilon, r_lower, r_upper, enforce_constant_time)?;
         let intercept = dp_gumbel_median(intercepts, epsilon, r_lower, r_upper, enforce_constant_time)?;
@@ -174,7 +175,7 @@ pub mod test {
         let epsilon = 1.0;
 
         let (slope, intercept) = public_theil_sen(&x, &y);
-        let (dp_slope_candidates, dp_intercept_candidates) = theil_sen_transform_k_match(&x, &y, k).unwrap();
+        let (dp_slope_candidates, dp_intercept_candidates) = theil_sen_transform_k_match(&x, &y, Neighboring::AddRemove, k).unwrap();
 
         assert_eq!(dp_slope_candidates.len() as Integer, k * (n / 2));
         assert_eq!(dp_intercept_candidates.len() as Integer, k * (n / 2));

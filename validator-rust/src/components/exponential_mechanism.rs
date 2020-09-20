@@ -42,6 +42,10 @@ impl Component for proto::ExponentialMechanism {
             return Err("utilities and candidates must share the same number of columns".into());
         }
 
+        if utilities_property.num_columns()? != 1 {
+            return Err(Error::from("the exponential mechanism only works with one column at a time"))
+        }
+
         let aggregator = utilities_property.aggregator.clone()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
@@ -69,7 +73,7 @@ impl Component for proto::ExponentialMechanism {
             dataset_id: None,
             node_id: node_id as i64,
             is_not_empty: true,
-            dimensionality: utilities_property.dimensionality.map(|v| v - 1),
+            dimensionality: Some(0),
             group_id: utilities_property.group_id,
             naturally_ordered: true,
             sample_proportion: None

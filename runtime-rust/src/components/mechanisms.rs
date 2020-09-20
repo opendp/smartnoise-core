@@ -1,4 +1,4 @@
-use ndarray::{arr1, Axis};
+use ndarray::{arr0};
 
 use whitenoise_validator::{Float, Integer, proto};
 use whitenoise_validator::base::{Array, ReleaseNode, Value};
@@ -161,7 +161,7 @@ impl Evaluable for proto::ExponentialMechanism {
         macro_rules! apply_exponential {
             ($candidates:ident) => {
                 {
-                    let release_vec = $candidates.gencolumns().into_iter()
+                    let mut release_vec = $candidates.gencolumns().into_iter()
                         .zip(utilities.gencolumns().into_iter())
                         .zip(sensitivity.iter().zip(epsilon.iter()))
                         .map(|((cands, utils), (sens, eps))| exponential_mechanism(
@@ -171,10 +171,7 @@ impl Evaluable for proto::ExponentialMechanism {
                             enforce_constant_time))
                         .collect::<Result<Vec<_>>>()?;
 
-                    let mut release_array = arr1(&release_vec).into_dyn();
-                    release_array.insert_axis_inplace(Axis(0));
-
-                    Value::from(release_array)
+                    Value::from(arr0(release_vec.remove(0)).into_dyn())
                 }
             }
         }

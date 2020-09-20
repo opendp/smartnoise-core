@@ -125,8 +125,8 @@ pub mod tests {
     use super::*;
 
     pub fn test_dataset(n: Integer) -> (Vec<Float>, Vec<Float>) {
-        let x = (0..n).map(|i| i as f64 + noise::sample_gaussian(0., 0.1, false)).collect();
-        let y = (0..n).map(|i| (2 * i) as f64 + noise::sample_gaussian(0., 0.1, false)).collect();
+        let x = (0..n).map(|i| i as f64 + noise::sample_gaussian(0., 0.1, false).unwrap()).collect();
+        let y = (0..n).map(|i| (2 * i) as f64 + noise::sample_gaussian(0., 0.1, false).unwrap()).collect();
         (x, y)
     }
 
@@ -147,7 +147,7 @@ pub mod tests {
 
         // Slope m is median of slope calculated between all pairs of
         // non-identical points
-        let (slopes, intercepts) = theil_sen_transform(x, y).unwrap();
+        let (slopes, intercepts) = theil_sen_transform(x, y, Neighboring::AddRemove).unwrap();
         let slope = median(&slopes);
         let intercept = median(&intercepts);
 
@@ -157,7 +157,7 @@ pub mod tests {
     #[test]
     fn theil_sen_length() {
         let (x, y) = test_dataset(10);
-        let (slopes, intercepts) = theil_sen_transform(&x, &y).unwrap();
+        let (slopes, intercepts) = theil_sen_transform(&x, &y, Neighboring::AddRemove).unwrap();
 
         let n = x.len() as Integer;
         assert_eq!(slopes.len() as Integer, n * (n - 1) / 2);
