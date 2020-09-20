@@ -3,7 +3,7 @@ use ndarray::prelude::*;
 
 use crate::{base, Float, proto, Warnable};
 use crate::base::{
-    AggregatorProperties, DataType, IndexKey, JaggedProperties,
+    AggregatorProperties, DataType, IndexKey,
     NodeProperties, SensitivitySpace, Value, ValueProperties,
     ArrayProperties, Nature, NatureContinuous, Vector1DNull
 };

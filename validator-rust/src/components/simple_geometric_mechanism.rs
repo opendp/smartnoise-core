@@ -105,7 +105,7 @@ impl Expandable for proto::SimpleGeometricMechanism {
             if let Some(lower_id) = lower_id {
                 let (patch_node, release) = get_literal(arr1(&data_property.lower_int()?).into_dyn().into(), component.submission)?;
                 expansion.computation_graph.insert(lower_id, patch_node);
-                expansion.properties.insert(lower_id, infer_property(&release.value, None)?);
+                expansion.properties.insert(lower_id, infer_property(&release.value, None, lower_id)?);
                 expansion.releases.insert(lower_id, release);
                 component.insert_argument(&"lower".into(), lower_id);
             }
@@ -113,7 +113,7 @@ impl Expandable for proto::SimpleGeometricMechanism {
             if let Some(upper_id) = upper_id {
                 let (patch_node, release) = get_literal(arr1(&data_property.upper_int()?).into_dyn().into(), component.submission)?;
                 expansion.computation_graph.insert(upper_id, patch_node);
-                expansion.properties.insert(upper_id, infer_property(&release.value, None)?);
+                expansion.properties.insert(upper_id, infer_property(&release.value, None, upper_id)?);
                 expansion.releases.insert(upper_id, release);
                 component.insert_argument(&"upper".into(), upper_id);
             }

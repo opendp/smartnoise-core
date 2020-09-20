@@ -118,7 +118,7 @@ impl Expandable for proto::SnappingMechanism {
             if let Some(lower_id) = lower_id {
                 let (patch_node, release) = get_literal(Value::Array(data_property.lower()?), component.submission)?;
                 expansion.computation_graph.insert(lower_id, patch_node);
-                expansion.properties.insert(lower_id, infer_property(&release.value, None)?);
+                expansion.properties.insert(lower_id, infer_property(&release.value, None, lower_id)?);
                 expansion.releases.insert(lower_id, release);
                 component.insert_argument(&"lower".into(), lower_id);
             }
@@ -126,7 +126,7 @@ impl Expandable for proto::SnappingMechanism {
             if let Some(upper_id) = upper_id {
                 let (patch_node, release) = get_literal(Value::Array(data_property.upper()?), component.submission)?;
                 expansion.computation_graph.insert(upper_id, patch_node);
-                expansion.properties.insert(upper_id, infer_property(&release.value, None)?);
+                expansion.properties.insert(upper_id, infer_property(&release.value, None, upper_id)?);
                 expansion.releases.insert(upper_id, release);
                 component.insert_argument(&"upper".into(), upper_id);
             }

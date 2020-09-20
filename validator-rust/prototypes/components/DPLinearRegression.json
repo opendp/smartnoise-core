@@ -34,5 +34,5 @@
     "description": "Differentially private estimate of the slope and intercept of the line fit to the data."
   },
   "description": "Returns differentially private estimates of the slope and intercept.",
-  "proto_id": 64
+  "proto_id": 67
 }

@@ -1,7 +1,7 @@
 use ndarray::{arr1, Axis};
 
 use whitenoise_validator::{Float, Integer, proto};
-use whitenoise_validator::base::{Array, Jagged, ReleaseNode, Value};
+use whitenoise_validator::base::{Array, ReleaseNode, Value};
 use whitenoise_validator::errors::*;
 use whitenoise_validator::utilities::{array::broadcast_ndarray, privacy::{get_delta, get_epsilon, spread_privacy_usage}, take_argument};
 

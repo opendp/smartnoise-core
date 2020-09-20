@@ -577,7 +577,7 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
         dimensionality: Some(serialize_i64_null(dimensionality)),
         group_id: group_id.into_iter().map(serialize_group_id).collect(),
         naturally_ordered,
-        sample_proportion: Some(serialize_f64_null(sample_proportion.map(f64::from)))
+        sample_proportion: Some(serialize_f64_null(sample_proportion.map(f64::from))),
         node_id: node_id as u32
     }
 }

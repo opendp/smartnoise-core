@@ -310,7 +310,7 @@ impl Expandable for proto::Resize {
             let (patch_node, release) = get_literal(
                 Value::Jagged(data_property.categories()?), component.submission)?;
             expansion.computation_graph.insert(id_categories, patch_node);
-            expansion.properties.insert(id_categories, infer_property(&release.value, None)?);
+            expansion.properties.insert(id_categories, infer_property(&release.value, None, id_categories)?);
             expansion.releases.insert(id_categories, release);
             component.insert_argument(&"categories".into(), id_categories);
         }

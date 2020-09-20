@@ -48,12 +48,24 @@ impl Component for proto::TheilSen {
         }
 
         let k = match self.implementation.to_lowercase().as_str() {
-            "theil-sen" => data_property_x.num_records()? - 1,
+            "theil-sen" => data_property_x.num_records()? as u32 - 1,
             "theil-sen-match" => 1,
-            "theil-sen-k-match" => self.k as i64,
+            "theil-sen-k-match" => self.k,
              _ => return Err("Invalid implementation passed. \
                      Valid values are theil-sen and theil-sen-k-match".into())
         };
+
+        if !data_property_x.releasable && !data_property_y.releasable && data_property_x.group_id != data_property_y.group_id {
+            return Err("data from separate partitions may not be mixed".into())
+        }
+
+        if data_property_x.dataset_id != data_property_y.dataset_id {
+            return Err("left and right arguments must share the same dataset id".into())
+        }
+        // this check should be un-necessary due to the dataset id check
+        if data_property_x.c_stability != data_property_y.c_stability {
+            return Err(Error::from("left and right datasets must share the same stabilities"))
+        }
 
         let output_properties = ArrayProperties {
             // records may be null, then filtered
@@ -61,8 +73,7 @@ impl Component for proto::TheilSen {
             num_columns: Some(1),
             nullity: data_property_x.nullity || data_property_y.nullity,
             releasable: data_property_x.releasable && data_property_y.releasable,
-            c_stability: data_property_x.c_stability.iter().zip(data_property_y.c_stability.iter())
-                .map(|(l, r)| l * r * k as f64).collect(),
+            c_stability: data_property_x.c_stability * k,
             aggregator: None,
             nature: None,
             data_type: DataType::Float,
@@ -71,6 +82,8 @@ impl Component for proto::TheilSen {
             is_not_empty: true,
             dimensionality: Some(1),
             group_id: propagate_binary_group_id(&data_property_x, &data_property_y)?,
+            naturally_ordered: false,
+            sample_proportion: None
         };
 
         Ok(ValueProperties::Dataframe(DataframeProperties {

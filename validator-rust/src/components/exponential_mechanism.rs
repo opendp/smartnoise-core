@@ -5,7 +5,7 @@ use crate::{base, proto, Warnable};
 use crate::base::{ArrayProperties, DataType, IndexKey, NodeProperties, SensitivitySpace, Value, ValueProperties};
 use crate::components::{Component, Expandable, Mechanism, Sensitivity};
 use crate::errors::*;
-use crate::utilities::{get_argument, get_literal, prepend};
+use crate::utilities::{get_literal, prepend};
 use crate::utilities::inference::infer_property;
 use crate::utilities::privacy::privacy_usage_check;
 
