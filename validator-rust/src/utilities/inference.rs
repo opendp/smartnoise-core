@@ -245,7 +245,7 @@ pub fn infer_property(
                     .map(|v| v.group_id.clone())
                     .unwrap_or_else(Vec::new),
                 naturally_ordered: true,
-                sample_proportion: None
+                sample_proportion: prior_prop_arr.and_then(|p| p.sample_proportion)
             }.into()
         },
         Value::Dataframe(dataframe) => match prior_property {

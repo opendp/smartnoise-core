@@ -31,7 +31,6 @@ impl Evaluable for proto::LaplaceMechanism {
 
         let sensitivity = take_argument(&mut arguments, "sensitivity")?.array()?.float()?;
 
-        println!("lap {:?}", self.privacy_usage);
         let usages = spread_privacy_usage(&self.privacy_usage, num_columns)?;
         let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
