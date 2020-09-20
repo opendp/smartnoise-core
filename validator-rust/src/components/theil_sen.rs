@@ -68,7 +68,7 @@ impl Component for proto::TheilSen {
         }
 
         let output_properties = ArrayProperties {
-            // records may be null, then filtered
+            // TODO: these properties could be made tighter
             num_records: None,
             num_columns: Some(1),
             nullity: data_property_x.nullity || data_property_y.nullity,
@@ -79,7 +79,7 @@ impl Component for proto::TheilSen {
             data_type: DataType::Float,
             dataset_id: Some(node_id as i64),
             node_id: node_id as i64,
-            is_not_empty: true,
+            is_not_empty: false,
             dimensionality: Some(1),
             group_id: propagate_binary_group_id(&data_property_x, &data_property_y)?,
             naturally_ordered: false,
