@@ -4,7 +4,7 @@ use crate::{base, proto};
 use crate::base::{IndexKey, NodeProperties, Value};
 use crate::components::{Expandable, Report};
 use crate::errors::*;
-use crate::utilities::{get_literal};
+use crate::utilities::get_literal;
 use crate::utilities::inference::infer_property;
 use crate::utilities::json::{AlgorithmInfo, JSONRelease, privacy_usage_to_json, value_to_json};
 use crate::utilities::privacy::spread_privacy_usage;
@@ -26,29 +26,40 @@ impl Expandable for proto::DpLinearRegression {
         let intercept_privacy_usage = privacy_usages.remove(0);
 
         let mut expansion = base::ComponentExpansion::default();
-        let id_data_x = *component.arguments().get::<base::IndexKey>(&"data_x".into())
-            .ok_or_else(|| Error::from("data must be provided as an argument"))?;
-        let id_data_y = *component.arguments().get::<base::IndexKey>(&"data_y".into())
-            .ok_or_else(|| Error::from("data must be provided as an argument"))?;
-        let mut arguments = indexmap!["data_x".into() => id_data_x, "data_y".into() => id_data_y];
+
+        let get_id = |name: &str| -> Result<u32> {
+            component.arguments().get::<base::IndexKey>(&name.into())
+                .ok_or_else(|| Error::from(format!("{} must be provided as an argument", name)))
+                .map(|v| *v)
+        };
+
+        let id_data_x = get_id("data_x")?;
+        let id_data_y = get_id("data_y")?;
+        let id_lower_slope = get_id("lower_slope")?;
+        let id_upper_slope = get_id("upper_slope")?;
+        let id_lower_intercept = get_id("lower_intercept")?;
+        let id_upper_intercept = get_id("upper_intercept")?;
+
+        let mut theil_sen_arguments = indexmap!["data_x".into() => id_data_x, "data_y".into() => id_data_y];
 
         match self.implementation.to_lowercase().as_str() {
             "theil-sen" => (),
             "theil-sen-k-match" => {
-
-                arguments.insert("k".into(), if let Some(id_k) = component.arguments().get::<base::IndexKey>(&"k".into()) {
-                    *id_k
-                } else {
-                    maximum_id += 1;
-                    let id_k = maximum_id.to_owned();
-                    let value = Value::from(DEFAULT_K as i64);
-                    expansion.properties.insert(id_k, infer_property(&value, None, id_k)?);
-                    let (patch_node, release) = get_literal(value, component.submission)?;
-                    expansion.computation_graph.insert(id_k, patch_node);
-                    expansion.releases.insert(id_k, release);
-                    id_k
-                });
-            }
+                theil_sen_arguments.insert(
+                    "k".into(),
+                    if let Some(id_k) = component.arguments().get::<base::IndexKey>(&"k".into()) {
+                        *id_k
+                    } else {
+                        maximum_id += 1;
+                        let id_k = maximum_id.to_owned();
+                        let value = Value::from(DEFAULT_K as i64);
+                        expansion.properties.insert(id_k, infer_property(&value, None, id_k)?);
+                        let (patch_node, release) = get_literal(value, component.submission)?;
+                        expansion.computation_graph.insert(id_k, patch_node);
+                        expansion.releases.insert(id_k, release);
+                        id_k
+                    });
+            },
             _ => return Err(Error::from("Invalid implementation argument"))
         }
 
@@ -56,7 +67,7 @@ impl Expandable for proto::DpLinearRegression {
         maximum_id += 1;
         let id_theil_sen = maximum_id;
         expansion.computation_graph.insert(id_theil_sen, proto::Component {
-            arguments: Some(proto::ArgumentNodeIds::new(arguments)),
+            arguments: Some(proto::ArgumentNodeIds::new(theil_sen_arguments)),
             variant: Some(proto::component::Variant::TheilSen(proto::TheilSen {
                 implementation: self.implementation.clone(),
                 k: if let Some(k) = public_arguments.get(&IndexKey::from("k")) {
@@ -92,7 +103,11 @@ impl Expandable for proto::DpLinearRegression {
         maximum_id += 1;
         let id_slope_dp_median = maximum_id;
         expansion.computation_graph.insert(id_slope_dp_median, proto::Component {
-            arguments: Some(proto::ArgumentNodeIds::new(indexmap!["data".into() => id_slope_index])),
+            arguments: Some(proto::ArgumentNodeIds::new(indexmap![
+                "data".into() => id_slope_index,
+                "lower".into() => id_lower_slope,
+                "upper".into() => id_upper_slope
+            ])),
             variant: Some(proto::component::Variant::DpMedian(proto::DpMedian {
                 mechanism: "gumbel".to_string(),
                 privacy_usage: vec![slope_privacy_usage],
@@ -127,7 +142,11 @@ impl Expandable for proto::DpLinearRegression {
         maximum_id += 1;
         let id_intercept_dp_median = maximum_id;
         expansion.computation_graph.insert(id_intercept_dp_median, proto::Component {
-            arguments: Some(proto::ArgumentNodeIds::new(indexmap!["data".into() => id_intercept_index])),
+            arguments: Some(proto::ArgumentNodeIds::new(indexmap![
+                "data".into() => id_intercept_index,
+                "lower".into() => id_lower_intercept,
+                "upper".into() => id_upper_intercept
+            ])),
             variant: Some(proto::component::Variant::DpMedian(proto::DpMedian {
                 mechanism: "gumbel".to_string(),
                 privacy_usage: vec![intercept_privacy_usage],
@@ -140,7 +159,10 @@ impl Expandable for proto::DpLinearRegression {
 
         // bind together
         expansion.computation_graph.insert(component_id, proto::Component {
-            arguments: Some(proto::ArgumentNodeIds::new(indexmap!["slope".into() => id_slope_index, "intercept".into() => id_intercept_index])),
+            arguments: Some(proto::ArgumentNodeIds::new(indexmap![
+                "slope".into() => id_slope_dp_median,
+                "intercept".into() => id_intercept_dp_median
+            ])),
             variant: Some(proto::component::Variant::ColumnBind(proto::ColumnBind {})),
             omit: component.omit,
             submission: component.submission,

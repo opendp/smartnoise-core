@@ -8,11 +8,12 @@ use crate::utilities::{array::get_ith_column, prepend, privacy::spread_privacy_u
 use crate::utilities::json::{AlgorithmInfo, JSONRelease, privacy_usage_to_json, value_to_json};
 
 impl Component for proto::DpGumbelMedian {
-    fn propagate_property(&self,
-                          _privacy_definition: &Option<proto::PrivacyDefinition>,
-                          _public_arguments: IndexMap<base::IndexKey, &Value>,
-                          properties: NodeProperties,
-                          node_id: u32,
+    fn propagate_property(
+        &self,
+        _privacy_definition: &Option<proto::PrivacyDefinition>,
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        properties: NodeProperties,
+        node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
         let data_property: ArrayProperties = properties.get(&IndexKey::from("data"))
             .ok_or_else(|| Error::from("data: missing"))?.clone().array()

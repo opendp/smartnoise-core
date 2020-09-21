@@ -1,15 +1,42 @@
 {
   "arguments": {
     "data_x": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Predictor variable"
     },
     "data_y": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Target variable"
     },
     "k": {
       "type_value": "Integer",
       "default_python": "None",
-      "default_rust": "None"
+      "default_rust": "None",
+      "description": "Number of matchings. Memory usage is quadratic in K."
+    },
+    "lower_slope": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Estimated minimum possible value of the slope."
+    },
+    "upper_slope": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Estimated maximum possible value of the slope."
+    },
+    "lower_intercept": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Estimated minimum possible value of the intercept."
+    },
+    "upper_intercept": {
+      "type_value": "Array",
+      "default_python": "None",
+      "default_rust": "None",
+      "description": "Estimated maximum possible value of the intercept."
     }
   },
   "id": "DPLinearRegression",

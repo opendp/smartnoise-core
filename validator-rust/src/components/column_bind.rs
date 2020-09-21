@@ -42,7 +42,7 @@ impl Component for proto::ColumnBind {
             num_records: Some(get_common_value(&array_props.iter()
                 .map(|v| v.num_records).collect::<Vec<_>>())
                 .ok_or_else(|| Error::from("all record lengths must match"))?
-                .ok_or_else(|| "num_records must be known when unioning")?),
+                .ok_or_else(|| "num_records must be known when binding columns")?),
             num_columns: array_props.iter()
                 .try_fold(0, |sum, v| v.num_columns.map(|v| sum + v)),
             nullity: get_common_value(&array_props.iter().map(|v| v.nullity).collect())

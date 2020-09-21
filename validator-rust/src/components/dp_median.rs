@@ -31,16 +31,24 @@ impl Expandable for proto::DpMedian {
 
         expansion.computation_graph.insert(component_id, proto::Component {
             arguments: component.arguments.clone(),
-            variant: Some(proto::component::Variant::DpQuantile(proto::DpQuantile {
-                alpha: 0.5,
-                interpolation: self.interpolation.clone(),
-                privacy_usage: self.privacy_usage.clone(),
-                mechanism
-            })),
+            variant: Some(if mechanism == "gumbel" {
+                proto::component::Variant::DpGumbelMedian(proto::DpGumbelMedian {
+                    privacy_usage: self.privacy_usage.clone()
+                })
+            } else {
+                proto::component::Variant::DpQuantile(proto::DpQuantile {
+                    alpha: 0.5,
+                    interpolation: self.interpolation.clone(),
+                    privacy_usage: self.privacy_usage.clone(),
+                    mechanism
+                })
+            }),
             omit: component.omit,
             submission: component.submission,
         });
+
         expansion.traversal.push(component_id);
+
 
         Ok(expansion)
     }

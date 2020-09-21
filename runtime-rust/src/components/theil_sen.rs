@@ -36,8 +36,8 @@ impl Evaluable for proto::TheilSen {
         }?;
 
         Ok(ReleaseNode::new(Value::Dataframe(indexmap![
-            "slopes".into() => ndarray::Array::from(slopes).into_dyn().into(),
-            "intercepts".into() => ndarray::Array::from(intercepts).into_dyn().into()
+            "slope".into() => ndarray::Array::from(slopes).into_dyn().into(),
+            "intercept".into() => ndarray::Array::from(intercepts).into_dyn().into()
         ])))
     }
 }

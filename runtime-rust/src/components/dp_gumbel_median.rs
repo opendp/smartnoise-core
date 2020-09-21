@@ -90,8 +90,8 @@ pub mod test {
     use whitenoise_validator::proto::privacy_definition::Neighboring;
 
     use crate::components::dp_gumbel_median::{dp_gumbel_median, permute_range};
-    use crate::components::linreg_theilsen::{theil_sen_transform, theil_sen_transform_k_match};
-    use crate::components::linreg_theilsen::tests::{public_theil_sen, test_dataset};
+    use crate::components::theil_sen::{theil_sen_transform, theil_sen_transform_k_match};
+    use crate::components::theil_sen::tests::{public_theil_sen, test_dataset};
     use crate::components::resize::create_sampling_indices;
     use crate::utilities::noise;
 

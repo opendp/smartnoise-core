@@ -1,14 +1,14 @@
-use whitenoise_validator::errors::*;
-
 use ndarray::prelude::*;
-use crate::NodeArguments;
-use whitenoise_validator::base::{Array, ReleaseNode};
-use crate::components::Evaluable;
-
-use whitenoise_validator::{proto};
-use crate::utilities::{to_nd};
 use ndarray::stack;
+
+use whitenoise_validator::proto;
+use whitenoise_validator::base::{Array, ReleaseNode};
+use whitenoise_validator::errors::*;
 use whitenoise_validator::utilities::array::slow_stack;
+
+use crate::components::Evaluable;
+use crate::NodeArguments;
+use crate::utilities::to_nd;
 
 impl Evaluable for proto::ColumnBind {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: NodeArguments) -> Result<ReleaseNode> {
