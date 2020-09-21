@@ -1,21 +1,23 @@
 use std::cmp::Ordering;
 
-use rand::seq::SliceRandom;
-
-use whitenoise_validator::{Float, Integer, proto};
+use whitenoise_validator::{Float, proto};
 use whitenoise_validator::base::ReleaseNode;
 use whitenoise_validator::errors::*;
-use whitenoise_validator::utilities::privacy::{get_epsilon, spread_privacy_usage};
+use whitenoise_validator::utilities::privacy::get_epsilon;
 use whitenoise_validator::utilities::take_argument;
 
 use crate::components::Evaluable;
 use crate::NodeArguments;
-use crate::utilities::{noise};
+use crate::utilities::noise;
 
 impl Evaluable for proto::DpGumbelMedian {
     fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
         let data = take_argument(&mut arguments, "data")?.array()?.vec_float(None)?;
-        let epsilon = get_epsilon(&spread_privacy_usage(&self.privacy_usage, 1)?[0])?;
+
+        if self.privacy_usage.len() != 1 {
+            return Err(Error::from("DPGumbelMedian is not vectorized, only one privacy parameter may be passed"))
+        }
+        let epsilon = get_epsilon(&self.privacy_usage[0])?;
 
         let lower = take_argument(&mut arguments, "lower")?.array()?.first_float()?;
         let upper = take_argument(&mut arguments, "upper")?.array()?.first_float()?;
@@ -26,17 +28,12 @@ impl Evaluable for proto::DpGumbelMedian {
 
         let median = dp_gumbel_median(data, epsilon, lower, upper, enforce_constant_time)?;
 
-        Ok(ReleaseNode::new(median.into()))
+        Ok(ReleaseNode {
+            value: median.into(),
+            privacy_usages: Some(self.privacy_usage.clone()),
+            public: true,
+        })
     }
-}
-
-
-/// Select k random values from range 1 to n
-///
-pub fn permute_range(n: Integer, k: Integer) -> Vec<Integer> {
-    let range = (1..n as Integer).collect::<Vec<Integer>>();
-    let mut rng = rand::thread_rng();
-    range.choose_multiple(&mut rng, k as usize).cloned().collect()
 }
 
 /// This follows closely the DP Median implementation from the paper, including notation
@@ -46,8 +43,14 @@ fn dp_gumbel_median(
     lower: Float, upper: Float,
     enforce_constant_time: bool,
 ) -> Result<Float> {
+    // ensure there is always a score that is not negative infinity
+    if lower >= upper {
+        return Err(Error::from("lower must be less than upper"))
+    }
+
     let mut z_clipped = z.into_iter()
-        .filter(|v| &lower <= v && v <= &upper)
+        .filter(|v| !v.is_nan())
+        .map(|v| if v < lower { lower } else if v > upper { upper } else { v })
         .chain(vec![lower, upper])
         .collect::<Vec<_>>();
     z_clipped.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
@@ -55,10 +58,7 @@ fn dp_gumbel_median(
     let mut max_noisy_score = f64::NEG_INFINITY;
     let mut arg_max_noisy_score: usize = 0;
 
-    let limit = z_clipped.len();
-    if limit == 0 { return Err("empty candidate set".into()) }
-
-    for i in 1..limit {
+    for i in 1..z_clipped.len() {
         let length = z_clipped[i] - z_clipped[i - 1];
         let dist_from_median = (i as Float - (z_clipped.len() as Float / 2.0)).abs().ceil();
 
@@ -83,27 +83,27 @@ fn dp_gumbel_median(
 
 #[cfg(test)]
 pub mod test {
-    use ndarray::{ArrayD};
+    use ndarray::ArrayD;
 
     use whitenoise_validator::{Float, Integer};
     use whitenoise_validator::errors::*;
+    use whitenoise_validator::proto::privacy_definition::Neighboring;
 
     use crate::components::dp_gumbel_median::{dp_gumbel_median, permute_range};
     use crate::components::linreg_theilsen::{theil_sen_transform, theil_sen_transform_k_match};
     use crate::components::linreg_theilsen::tests::{public_theil_sen, test_dataset};
+    use crate::components::resize::create_sampling_indices;
     use crate::utilities::noise;
-    use whitenoise_validator::proto::privacy_definition::Neighboring;
 
     /// Randomly select k points from x and y (k < n) and then perform DP-TheilSen.
-        /// Useful for larger datasets where calculating on n^2 points is less than ideal.
+            /// Useful for larger datasets where calculating on n^2 points is less than ideal.
     pub fn dp_theil_sen_k_subset(
         x: &ArrayD<Float>, y: &ArrayD<Float>,
         n: Integer, k: Integer, epsilon: Float,
         lower: Float, upper: Float,
         enforce_constant_time: bool,
     ) -> Result<(Float, Float)> {
-        let indices: Vec<usize> = permute_range(n, k).iter()
-            .map(|x| *x as usize).collect::<Vec<usize>>();
+        let indices: Vec<usize> = create_sampling_indices(k, n, enforce_constant_time)?;
 
         let x_kmatch = x.select(ndarray::Axis(0), &indices)
             .into_dimensionality::<ndarray::Ix1>()?.to_vec();
@@ -130,10 +130,10 @@ pub mod test {
     }
 
     #[test]
-    fn permute_range_test() {
+    fn create_sampling_indices_test() {
         let n = 10;
         let k = n - 1;
-        let tau = permute_range(n, k);
+        let tau = create_sampling_indices(k, n, false).unwrap();
         assert_eq!(tau.len() as Integer, k)
     }
 

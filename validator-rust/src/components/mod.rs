@@ -341,7 +341,7 @@ impl Expandable for proto::Component {
             DpMinimum, DpQuantile, DpRawMoment, DpSum, DpVariance,
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism,
-            SimpleGeometricMechanism, SnappingMechanism,
+            SimpleGeometricMechanism, SnappingMechanism, DpGumbelMedian,
 
             ToBool, ToFloat, ToInt, ToString
         );

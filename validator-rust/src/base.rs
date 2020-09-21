@@ -1147,6 +1147,9 @@ pub type NodeProperties = IndexMap<base::IndexKey, ValueProperties>;
 
 impl proto::PrivacyUsage {
     pub(crate) fn actual_to_effective(&self, s: f64, mut c_stability: u32, group_size: u32) -> Result<Self> {
+        if group_size == 0 {
+            return Err(Error::from("group size must be greater than zero"))
+        }
         use proto::privacy_usage::{DistanceApproximate, Distance::Approximate};
 
         c_stability *= group_size;
@@ -1167,6 +1170,9 @@ impl proto::PrivacyUsage {
     }
 
     pub(crate) fn effective_to_actual(&self, s: f64, mut c_stability: u32, group_size: u32) -> Result<Self> {
+        if group_size == 0 {
+            return Err(Error::from("group size must be greater than zero"))
+        }
         use proto::privacy_usage::{DistanceApproximate, Distance::Approximate};
 
         c_stability *= group_size;

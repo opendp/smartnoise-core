@@ -1,16 +1,12 @@
-use crate::errors::*;
-
-
-use crate::components::{Sensitivity, Accuracy, Mechanism};
-use crate::{proto, base, Warnable};
-
-use crate::components::{Component, Expandable};
-use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, NodeProperties, IndexKey};
-use crate::utilities::{prepend, expand_mechanism};
-use crate::utilities::privacy::{spread_privacy_usage, get_epsilon, privacy_usage_check};
-use itertools::Itertools;
 use indexmap::map::IndexMap;
+use itertools::Itertools;
 
+use crate::{base, proto, Warnable};
+use crate::base::{DataType, IndexKey, NodeProperties, SensitivitySpace, Value, ValueProperties, ArrayProperties};
+use crate::components::{Accuracy, Component, Expandable, Mechanism, Sensitivity};
+use crate::errors::*;
+use crate::utilities::{expand_mechanism, prepend};
+use crate::utilities::privacy::{get_epsilon, privacy_usage_check, spread_privacy_usage};
 
 impl Component for proto::LaplaceMechanism {
     fn propagate_property(
@@ -18,7 +14,7 @@ impl Component for proto::LaplaceMechanism {
         privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
 
         let privacy_definition = privacy_definition.as_ref()
@@ -28,11 +24,7 @@ impl Component for proto::LaplaceMechanism {
             return Err("Floating-point protections are enabled. The laplace mechanism is susceptible to floating-point attacks.".into())
         }
 
-        if privacy_definition.group_size == 0 {
-            return Err("group size must be greater than zero".into())
-        }
-
-        let mut data_property = properties.get::<IndexKey>(&"data".into())
+        let mut data_property: ArrayProperties = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 

@@ -7,6 +7,8 @@
 //! - [Top-level documentation](https://opendifferentialprivacy.github.io/whitenoise-core/)
 
 #![warn(unused_extern_crates)]
+// s! macros for slicing from ndarray use unsafe code
+#![deny(unsafe_code)]
 #![allow(clippy::implicit_hasher)]
 
 pub use whitenoise_validator::proto;

@@ -24,8 +24,6 @@ noisy_float = "0.1.12"
 libmath = "0.2.1"
 statrs = "0.12.0"
 num-traits = "0.2"
-conv = "0.3.3"
-permutohedron = "0.2.4"
 rand = "0.7.3"
 
     [dependencies.openssl]

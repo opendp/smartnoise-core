@@ -24,7 +24,8 @@ impl Component for proto::ExponentialMechanism {
             return Err("group size must be greater than zero".into());
         }
 
-        let utilities_property: ArrayProperties = properties.get::<IndexKey>(&"utilities".into())
+        let utilities_property: ArrayProperties = properties
+            .get(&IndexKey::from("utilities"))
             .ok_or("utilities: missing")?.array()
             .map_err(prepend("utilities:"))?.clone();
 
@@ -32,8 +33,13 @@ impl Component for proto::ExponentialMechanism {
             return Err("utilities: data_type must be float".into());
         }
 
-        let candidates_property = properties.get(&IndexKey::from("candidates"))
-            .ok_or_else(|| Error::from("candidates: missing"))?.array()?;
+        let candidates_property: ArrayProperties = properties
+            .get(&IndexKey::from("candidates"))
+            .ok_or_else(|| Error::from("candidates: missing"))?.array()?.clone();
+
+        if !candidates_property.releasable {
+            return Err(Error::from("candidates: must be public"))
+        }
 
         if utilities_property.num_records()? != candidates_property.num_records()? {
             return Err("utilities and candidates must share the same number of records".into());
@@ -43,13 +49,11 @@ impl Component for proto::ExponentialMechanism {
         }
 
         if utilities_property.num_columns()? != 1 {
-            return Err(Error::from("the exponential mechanism only works with one column at a time"))
+            return Err(Error::from("exponential mechanism only works with one column at a time"))
         }
 
         let aggregator = utilities_property.aggregator.clone()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
-
-        // TODO: check that aggregator data id matches data id
 
         // sensitivity must be computable
         let sensitivity_values = aggregator.component.compute_sensitivity(
@@ -60,10 +64,9 @@ impl Component for proto::ExponentialMechanism {
         // make sure sensitivities are an f64 array
         sensitivity_values.array()?.float()?;
 
-        let num_columns = utilities_property.num_columns()?;
         let output_property = ArrayProperties {
             num_records: Some(1),
-            num_columns: Some(num_columns),
+            num_columns: Some(1),
             nullity: false,
             releasable: true,
             c_stability: 1,
@@ -102,8 +105,11 @@ impl Expandable for proto::ExponentialMechanism {
         component_id: u32,
         mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-
         let mut expansion = base::ComponentExpansion::default();
+
+        let data_property: ArrayProperties = properties.get::<IndexKey>(&"data".into())
+            .ok_or("data: missing")?.array()
+            .map_err(prepend("data:"))?.clone();
 
         let privacy_definition = privacy_definition.as_ref()
             .ok_or_else(|| "privacy definition must be defined")?;
@@ -132,6 +138,19 @@ impl Expandable for proto::ExponentialMechanism {
         let mut noise_component = component.clone();
         noise_component.insert_argument(&"sensitivity".into(), id_sensitivity);
 
+        if self.privacy_usage.len() != 1 {
+            return Err(Error::from("privacy usage must be of length one"));
+        }
+
+        // update the privacy usage
+        if let Some(proto::component::Variant::ExponentialMechanism(variant)) = &mut noise_component.variant {
+            variant.privacy_usage = vec![self.privacy_usage[0].actual_to_effective(
+                data_property.sample_proportion.unwrap_or(1.),
+                data_property.c_stability,
+                privacy_definition.group_size)?];
+            // this case should never happen
+        } else { return Err(Error::from("Variant must be defined")) }
+
         expansion.computation_graph.insert(component_id, noise_component);
 
         Ok(expansion)
@@ -148,7 +167,6 @@ impl Mechanism for proto::ExponentialMechanism {
         let data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?;
-
 
         Some(release_usage.unwrap_or_else(|| &self.privacy_usage).iter()
             .map(|usage| usage.effective_to_actual(

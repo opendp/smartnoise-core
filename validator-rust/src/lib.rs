@@ -11,6 +11,7 @@
 //! - [Top-level documentation](https://opendifferentialprivacy.github.io/whitenoise-core/)
 
 #![warn(unused_extern_crates)]
+#![forbid(unsafe_code)]
 #![allow(clippy::implicit_hasher)]
 
 // `error_chain!` can recurse deeply
