@@ -107,7 +107,7 @@ impl Expandable for proto::ExponentialMechanism {
     ) -> Result<base::ComponentExpansion> {
         let mut expansion = base::ComponentExpansion::default();
 
-        let data_property: ArrayProperties = properties.get::<IndexKey>(&"data".into())
+        let utilities_property: ArrayProperties = properties.get::<IndexKey>(&"utilities".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -145,8 +145,8 @@ impl Expandable for proto::ExponentialMechanism {
         // update the privacy usage
         if let Some(proto::component::Variant::ExponentialMechanism(variant)) = &mut noise_component.variant {
             variant.privacy_usage = vec![self.privacy_usage[0].actual_to_effective(
-                data_property.sample_proportion.unwrap_or(1.),
-                data_property.c_stability,
+                utilities_property.sample_proportion.unwrap_or(1.),
+                utilities_property.c_stability,
                 privacy_definition.group_size)?];
             // this case should never happen
         } else { return Err(Error::from("Variant must be defined")) }
