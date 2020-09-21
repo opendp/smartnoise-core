@@ -25,8 +25,9 @@ impl Component for proto::Union {
                 .map(|v| v.array()).collect::<Result<_>>()?;
 
             let num_columns = get_common_value(&array_props.iter()
-                .map(|v| Some(v.num_columns)).collect())
-                .unwrap_or(None).ok_or_else(|| "num_columns must be known when unioning")?;
+                .map(|v| v.num_columns).collect())
+                .ok_or_else(|| Error::from("all column lengths must match"))?
+                .ok_or_else(|| "num_columns must be known when unioning")?;
 
             let num_records = array_props.iter().try_fold(0, |sum, v| v.num_records.map(|v| sum + v));
 
@@ -42,7 +43,7 @@ impl Component for proto::Union {
 
             ValueProperties::Array(ArrayProperties {
                 num_records,
-                num_columns,
+                num_columns: Some(num_columns),
                 nullity: get_common_value(&array_props.iter().map(|v| v.nullity).collect())
                     .unwrap_or(true),
                 releasable,

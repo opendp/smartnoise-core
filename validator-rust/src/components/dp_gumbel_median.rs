@@ -121,8 +121,7 @@ impl Report for proto::DpGumbelMedian {
                 variables: serde_json::json!(variable_name.to_string()),
                 release_info: match release.ref_array()? {
                     Array::Float(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
-                    Array::Int(v) => value_to_json(&get_ith_column(v, column_number)?.into())?,
-                    _ => return Err("maximum must be numeric".into())
+                    _ => return Err("release must be float".into())
                 },
                 privacy_loss: privacy_usage_to_json(&privacy_usages[column_number].clone()),
                 accuracy: None,

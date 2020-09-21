@@ -1,18 +1,19 @@
 use std::{cmp, f64::consts, mem};
 
 use ieee754::Ieee754;
+use noisy_float::types::n64;
 use probability::distribution::{Inverse, Laplace};
 #[cfg(not(feature="use-mpfr"))]
 use probability::prelude::Gaussian;
 #[cfg(feature="use-mpfr")]
 use rug::{Float, rand::{ThreadRandGen, ThreadRandState}};
 
+use whitenoise_validator::components::snapping_mechanism::{compute_precision, get_smallest_greater_or_eq_power_of_two, redefine_epsilon};
 use whitenoise_validator::errors::*;
 use whitenoise_validator::Integer;
 
 use crate::utilities;
 use crate::utilities::get_closest_multiple_of_lambda;
-use whitenoise_validator::components::snapping_mechanism::{get_smallest_greater_or_eq_power_of_two, redefine_epsilon, compute_precision};
 
 // Give MPFR ability to draw randomness from OpenSSL
 #[cfg(feature="use-mpfr")]
@@ -462,7 +463,6 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
 /// # n.unwrap();
 /// ```
 pub fn sample_laplace(shift: f64, scale: f64, enforce_constant_time: bool) -> Result<f64> {
-    // nothing in sample_uniform can throw an error
     let probability: f64 = sample_uniform(0., 1., enforce_constant_time)?;
     Ok(Laplace::new(shift, scale).inverse(probability))
 }
@@ -738,11 +738,22 @@ pub fn sample_gumbel(loc: f64, scale: f64) -> f64 {
     let rug_scale = Float::with_val(120, scale);
     let u = Float::with_val(120, sample_uniform_mpfr(0.0, 1.0).unwrap());
     // Accept if u > 0, otherwise reject and call function again
-    if u.gt(&Float::with_val(120, 0.0))   {
+    if u.gt(&Float::with_val(120, 0.0)) {
         let negative_log = -(u.ln());
         let log_term = negative_log.ln();
         (-rug_scale.mul_add(&log_term, &rug_loc)).to_f64()
     } else {
         sample_gumbel(loc, scale)
     }
+}
+
+/// Shuffle a vector
+///
+pub fn shuffle<T>(vector: Vec<T>, enforce_constant_time: bool) -> Result<Vec<T>> {
+    let mut vector = vector
+        .into_iter()
+        .map(|v| Ok((v, n64(sample_uniform(0., 1., enforce_constant_time)?))))
+        .collect::<Result<Vec<_>>>()?;
+    vector.sort_unstable_by_key(|v| v.1);
+    Ok(vector.into_iter().map(|(v, _)| v).collect())
 }

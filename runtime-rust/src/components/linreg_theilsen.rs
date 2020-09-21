@@ -1,5 +1,4 @@
 use indexmap::indexmap;
-use rand::prelude::*;
 use ndarray;
 
 use whitenoise_validator::{Float, Integer, proto};
@@ -10,6 +9,7 @@ use whitenoise_validator::utilities::take_argument;
 use crate::components::Evaluable;
 use crate::NodeArguments;
 use proto::privacy_definition::Neighboring;
+use crate::utilities::noise::shuffle;
 
 
 impl Evaluable for proto::TheilSen {
@@ -20,13 +20,18 @@ impl Evaluable for proto::TheilSen {
         let data_y = take_argument(&mut arguments, "data_y")?
             .array()?.float()?.into_dimensionality::<ndarray::Ix1>()?.to_vec();
 
-        let neighboring = Neighboring::from_i32(privacy_definition.as_ref()
-            .ok_or_else(|| Error::from("privacy_definition must be known"))?.neighboring)
+        let privacy_definition = privacy_definition.as_ref()
+            .ok_or_else(|| Error::from("privacy_definition must be known"))?;
+        let neighboring = Neighboring::from_i32(privacy_definition.neighboring)
             .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
+        let enforce_constant_time = privacy_definition.protect_elapsed_time;
 
         let (slopes, intercepts) = match self.implementation.to_lowercase().as_str() {
             "theil-sen" => theil_sen_transform(&data_x, &data_y, neighboring),
-            "theil-sen-k-match" => theil_sen_transform_k_match(&data_x, &data_y, neighboring, take_argument(&mut arguments, "k")?.array()?.first_int()?),
+            "theil-sen-k-match" => theil_sen_transform_k_match(
+                &data_x, &data_y,
+                take_argument(&mut arguments, "k")?.array()?.first_int()?,
+                neighboring, enforce_constant_time),
             _ => return Err(Error::from("Invalid implementation"))
         }?;
 
@@ -83,7 +88,9 @@ pub fn theil_sen_transform(
 /// Separate data into two bins, match members of each bin to form pairs
 /// Note: k is number of trials here
 pub fn theil_sen_transform_k_match(
-    x: &Vec<Float>, y: &Vec<Float>, neighboring: Neighboring, k: Integer
+    x: &Vec<Float>, y: &Vec<Float>, k: Integer,
+    neighboring: Neighboring,
+    enforce_constant_time: bool
 ) -> Result<(Vec<Float>, Vec<Float>)> {
     if x.len() != y.len() {
         return Err("x and y must be the same length".into())
@@ -94,10 +101,8 @@ pub fn theil_sen_transform_k_match(
     let mut intercepts: Vec<Float> = Vec::new();
 
     for _iteration in 0..k {
-        let mut shuffled: Vec<(Float, Float)> = x.iter().copied()
-            .zip(y.iter().copied()).collect();
-        let mut rng = rand::thread_rng();
-        shuffled.shuffle(&mut rng);
+        let shuffled: Vec<(Float, Float)> = shuffle(x.iter().copied()
+            .zip(y.iter().copied()).collect(), enforce_constant_time)?;
 
         // For n odd, the last data point in "shuffled" will be ignored
         let midpoint = n / 2;

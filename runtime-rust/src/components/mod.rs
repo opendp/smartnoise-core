@@ -37,6 +37,7 @@ pub mod raw_moment;
 pub mod reshape;
 pub mod resize;
 pub mod sum;
+pub mod to_dataframe;
 pub mod transforms;
 pub mod union;
 pub mod variance;
@@ -86,7 +87,7 @@ impl Evaluable for proto::component::Variant {
             // INSERT COMPONENT LIST
             Cast, Clamp, ColumnBind, Count, Covariance, Digitize, Filter, Histogram, Impute, Index,
             Materialize, Mean, Partition,
-            Quantile, RawMoment, Reshape, Resize, Sum, Union, Variance,
+            Quantile, RawMoment, Reshape, Resize, Sum, ToDataframe, Union, Variance,
 
             ExponentialMechanism, GaussianMechanism,
             LaplaceMechanism, SnappingMechanism,

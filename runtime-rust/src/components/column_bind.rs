@@ -2,54 +2,37 @@ use whitenoise_validator::errors::*;
 
 use ndarray::prelude::*;
 use crate::NodeArguments;
-use whitenoise_validator::base::{Value, Array, ReleaseNode, IndexKey};
+use whitenoise_validator::base::{Array, ReleaseNode};
 use crate::components::Evaluable;
 
-use whitenoise_validator::proto;
-use whitenoise_validator::utilities::{array::get_ith_column, take_argument};
-use crate::utilities::standardize_columns;
-use indexmap::map::IndexMap;
+use whitenoise_validator::{proto};
+use crate::utilities::{to_nd};
+use ndarray::stack;
+use whitenoise_validator::utilities::array::slow_stack;
 
 impl Evaluable for proto::ColumnBind {
-    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
-        // force the input to be an array- reject indexmap and jagged
-        let data = take_argument(&mut arguments, "data")?.array()?;
+    fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: NodeArguments) -> Result<ReleaseNode> {
 
-        let column_names  = take_argument(&mut arguments, "names")?
-            .array()?.string()?;
+        let arrays = arguments.into_iter()
+            .map(|(_, v)| v.array()).collect::<Result<Vec<Array>>>()?;
 
-        // num columns is sufficient shared information to build the dataframe
-        let num_columns = match column_names.clone().into_dimensionality::<Ix1>() {
-            Ok(column_names) => column_names,
-            Err(_) => return Err("column names must be one-dimensional".into())
-        }.to_vec().len();
+        macro_rules! col_stack {
+            ($func:ident, $method:ident) => {
+                {
+                    let inputs = arrays.into_iter()
+                        .map(|v| v.$method().and_then(|v| to_nd(v, 2)))
+                        .collect::<Result<Vec<ndarray::ArrayD<_>>>>()?;
+                    $func(Axis(1), &inputs.iter().map(|v| v.view())
+                        .collect::<Vec<ArrayViewD<_>>>())?.into()
+                }
+            }
+        }
 
-        // split each column name into its own column
-        Ok(ReleaseNode::new(Value::Dataframe(match data {
-            Array::Float(array) => {
-                let standardized = standardize_columns(array, num_columns)?;
-                column_names.into_iter().enumerate()
-                    .map(|(idx, name)| Ok((name.to_string().into(), get_ith_column(&standardized, idx)?.into())))
-                    .collect::<Result<IndexMap<IndexKey, Value>>>()?
-            }
-            Array::Int(array) => {
-                let standardized = standardize_columns(array, num_columns)?;
-                column_names.into_iter().enumerate()
-                    .map(|(idx, name)| Ok((name.to_string().into(), get_ith_column(&standardized, idx)?.into())))
-                    .collect::<Result<IndexMap<IndexKey, Value>>>()?
-            }
-            Array::Bool(array) => {
-                let standardized = standardize_columns(array, num_columns)?;
-                column_names.into_iter().enumerate()
-                    .map(|(idx, name)| Ok((name.to_string().into(), get_ith_column(&standardized, idx)?.into())))
-                    .collect::<Result<IndexMap<IndexKey, Value>>>()?
-            }
-            Array::Str(array) => {
-                let standardized = standardize_columns(array, num_columns)?;
-                column_names.into_iter().enumerate()
-                    .map(|(idx, name)| Ok((name.to_string().into(), get_ith_column(&standardized, idx)?.into())))
-                    .collect::<Result<IndexMap<IndexKey, Value>>>()?
-            }
-        })))
+        Ok(ReleaseNode::new(match arrays.first().ok_or_else(|| "must have at least one argument")? {
+            Array::Float(_) => col_stack!(stack, float),
+            Array::Int(_) => col_stack!(stack, int),
+            Array::Bool(_) => col_stack!(stack, bool),
+            Array::Str(_) => col_stack!(slow_stack, string)
+        }))
     }
 }

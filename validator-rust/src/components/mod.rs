@@ -23,6 +23,7 @@ mod dp_variance;
 mod dp_covariance;
 mod dp_gumbel_median;
 mod dp_histogram;
+mod dp_linear_regression;
 mod dp_maximum;
 mod dp_median;
 mod dp_minimum;
@@ -49,6 +50,7 @@ mod simple_geometric_mechanism;
 pub mod snapping_mechanism;
 mod resize;
 mod theil_sen;
+mod to_dataframe;
 mod sum;
 mod union;
 mod variance;
@@ -261,7 +263,7 @@ impl Component for proto::Component {
             // INSERT COMPONENT LIST
             Cast, Clamp, ColumnBind, Count, Covariance, Digitize,
             Filter, Histogram, Impute, Index, Literal, Materialize, Mean,
-            Partition, Quantile, RawMoment, Reshape, Resize, Sum, Union, Variance,
+            Partition, Quantile, RawMoment, Reshape, Resize, Sum, ToDataframe, Union, Variance,
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism,
             SimpleGeometricMechanism, SnappingMechanism,
@@ -337,7 +339,7 @@ impl Expandable for proto::Component {
             // INSERT COMPONENT LIST
             Clamp, Digitize, Histogram, Impute, Map, Maximum, Median, Minimum, Partition, Resize,
 
-            DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian,
+            DpCount, DpCovariance, DpHistogram, DpLinearRegression, DpMaximum, DpMean, DpMedian,
             DpMinimum, DpQuantile, DpRawMoment, DpSum, DpVariance,
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism,
@@ -560,10 +562,10 @@ impl Named for proto::Component {
             }
         }
 
-        // TODO: transforms, covariance/cross-covariance, extended indexing
+        // TODO: transforms, covariance/cross-covariance, extended indexing, columnbind
         get_names!(
             // INSERT COMPONENT LIST
-            ColumnBind, Index, Literal, Materialize
+            ToDataframe, Index, Literal, Materialize
         );
 
         // default implementation
