@@ -89,7 +89,7 @@ pub mod test {
     use whitenoise_validator::errors::*;
     use whitenoise_validator::proto::privacy_definition::Neighboring;
 
-    use crate::components::dp_gumbel_median::{dp_gumbel_median, permute_range};
+    use crate::components::dp_gumbel_median::{dp_gumbel_median};
     use crate::components::theil_sen::{theil_sen_transform, theil_sen_transform_k_match};
     use crate::components::theil_sen::tests::{public_theil_sen, test_dataset};
     use crate::components::resize::create_sampling_indices;
@@ -175,7 +175,7 @@ pub mod test {
         let epsilon = 1.0;
 
         let (slope, intercept) = public_theil_sen(&x, &y);
-        let (dp_slope_candidates, dp_intercept_candidates) = theil_sen_transform_k_match(&x, &y, Neighboring::AddRemove, k).unwrap();
+        let (dp_slope_candidates, dp_intercept_candidates) = theil_sen_transform_k_match(&x, &y, k, Neighboring::AddRemove, false).unwrap();
 
         assert_eq!(dp_slope_candidates.len() as Integer, k * (n / 2));
         assert_eq!(dp_intercept_candidates.len() as Integer, k * (n / 2));
