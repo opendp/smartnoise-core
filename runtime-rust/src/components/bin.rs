@@ -93,7 +93,7 @@ pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T>
         .zip(inclusive_left.iter())
         // for each pairing, iterate over the cells
         .for_each(|((mut column, (mut edges, null)), inclusive_left)| {
-            edges.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            edges.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
             column.iter_mut()
                 // mutate the cell via the operator
                 .for_each(|v| {

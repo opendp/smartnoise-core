@@ -1,11 +1,11 @@
 {
   "arguments": {
     "utilities": {
-      "type_value": "Jagged",
+      "type_value": "Array",
       "description": "Respective scores for each candidate."
     },
     "candidates": {
-      "type_value": "Jagged",
+      "type_value": "Array",
       "description": "Set from which the Exponential mechanism will return an element."
     }
   },

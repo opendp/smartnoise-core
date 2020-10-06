@@ -32,13 +32,8 @@ impl Component for proto::RawMoment {
 
         let num_columns = data_property.num_columns()?;
         // save a snapshot of the state when aggregating
-        data_property.aggregator = Some(AggregatorProperties {
-            component: proto::component::Variant::RawMoment(self.clone()),
-            properties,
-            lipschitz_constants: ndarray::Array::from_shape_vec(
-                vec![1, num_columns as usize],
-                (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
-        });
+        data_property.aggregator = Some(AggregatorProperties::new(
+            proto::component::Variant::RawMoment(self.clone()), properties, num_columns));
         data_property.num_records = Some(1);
         data_property.dataset_id = Some(node_id as i64);
         Ok(ValueProperties::Array(data_property).into())

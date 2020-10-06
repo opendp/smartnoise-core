@@ -111,7 +111,7 @@ impl Expandable for proto::Digitize {
             maximum_id += 1;
             let id_null_value = maximum_id;
             let value = Value::Array(Array::Int(arr0(-1).into_dyn()));
-            expansion.properties.insert(id_null_value, infer_property(&value, None)?);
+            expansion.properties.insert(id_null_value, infer_property(&value, None, id_null_value)?);
             let (patch_node, release) = get_literal(value, component.submission)?;
             expansion.computation_graph.insert(id_null_value, patch_node);
             expansion.releases.insert(id_null_value, release);
@@ -121,7 +121,7 @@ impl Expandable for proto::Digitize {
             maximum_id += 1;
             let id_inclusive_left = maximum_id;
             let value = Value::Array(Array::Bool(arr0(true).into_dyn()));
-            expansion.properties.insert(id_inclusive_left, infer_property(&value, None)?);
+            expansion.properties.insert(id_inclusive_left, infer_property(&value, None, id_inclusive_left)?);
             let (patch_node, release) = get_literal(value, component.submission)?;
             expansion.computation_graph.insert(id_inclusive_left, patch_node);
             expansion.releases.insert(id_inclusive_left, release);

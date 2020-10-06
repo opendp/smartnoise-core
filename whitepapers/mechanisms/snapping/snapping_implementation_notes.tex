@@ -363,10 +363,10 @@ exceeds this, as the outer clamp ensures that the mechanism output is $\in [-B, 
 	\end{algorithmic}
 \end{algorithm}
 
-For a less tight, but simpler, bound we can use that $\frac{\Lambda'}{2} \leq \lambda' = 
-\frac{1}{\epsilon'}$ and set $a = \frac{1 + \ln \left( \frac{1}{\alpha} \right)}{\epsilon'}$. 
-Also recall that this accuracy statement is conditional of $f(D) \in [-B, B]$. If the clamping bounds are not 
-explicitly set to contain $f(D)$ with probability $1$, then we cannot give any accuracy guarantee. \newline 
+For a less tight, but simpler, bound we can use that $\frac{\Lambda'}{2} \leq \lambda' =
+\frac{1}{\epsilon'}$ and set $a = \frac{1 + \ln \left( \frac{1}{\alpha} \right)}{\epsilon'}$.
+Also recall that this accuracy statement is conditional of $f(D) \in [-B, B]$. If the clamping bounds are not
+explicitly set to contain $f(D)$ with probability $1$, then we cannot give any accuracy guarantee. \newline
 
 The accuracy for the pure Laplace is given as $\frac{\ln \left( \frac{1}{\alpha} \right)}{\epsilon}$. Recalling that
 $\epsilon' = \frac{\epsilon - 2\eta}{1 + 12B\eta}$ we can represent the difference between the accuracy of the
@@ -412,6 +412,7 @@ the sample notebook \href{https://github.com/opendifferentialprivacy/whitenoise-
 Because of the clamping to $[-B,B]$, the snapping mechanism will almost always bias estimates toward $0$.
 I am not yet sure if it would be possible to give information about bias of the released statistic without leaking information
 about the data (I lean toward thinking that it is not), but I believe we could provide the bias for a statistic for
+
 a user's guesses about what $f(D)$ might be. \newline
 
 Let $\hat{f}(D)$ be the user's estimate of $f(D)$ and $\hat{\tilde{f}}(D)$ be the output of the snapping mechanism as applied to

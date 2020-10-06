@@ -687,7 +687,7 @@ pub struct ArrayProperties {
     /// set to true by the mechanisms. Acts as a filter on the values in the release
     pub releasable: bool,
     /// amplification of privacy usage by unstable data transformations, or possibility of duplicated records
-    pub c_stability: Vec<Float>,
+    pub c_stability: u32,
     /// set when data is aggregated, used to help compute sensitivity from the mechanisms
     pub aggregator: Option<AggregatorProperties>,
     /// either min/max or categories
@@ -697,6 +697,8 @@ pub struct ArrayProperties {
     /// index of last Materialize or Filter node, where dataset was created
     /// used to determine if arrays are conformable even when N is not known
     pub dataset_id: Option<i64>,
+    /// node index of the value
+    pub node_id: i64,
     /// true if the number of rows is known to not be length zero
     pub is_not_empty: bool,
     /// number of axes in the array
@@ -704,7 +706,9 @@ pub struct ArrayProperties {
     /// used for tracking subpartitions
     pub group_id: Vec<GroupId>,
     /// used to determine if order of rows has changed
-    pub naturally_ordered: bool
+    pub naturally_ordered: bool,
+    /// proportion of original data sampled
+    pub sample_proportion: Option<f64>,
 }
 
 
@@ -853,6 +857,11 @@ impl ArrayProperties {
     pub fn assert_is_not_aggregated(&self) -> Result<()> {
         if self.aggregator.is_some() { Err("aggregated data may not be manipulated".into()) } else { Ok(()) }
     }
+    pub fn assert_is_not_sampled(&self) -> Result<()> {
+        if self.sample_proportion.unwrap_or(1.) != 1. {
+            Err("sampled data may not be manipulated in this way".into())
+        } else { Ok(())}
+    }
 }
 
 /// Fundamental data types for ArrayNDs and Vector2DJagged Values.
@@ -877,7 +886,23 @@ pub enum DataType {
 pub struct AggregatorProperties {
     pub component: proto::component::Variant,
     pub properties: IndexMap<IndexKey, ValueProperties>,
-    pub lipschitz_constants: Value,
+    pub lipschitz_constants: Value
+}
+
+impl AggregatorProperties {
+    pub(crate) fn new(
+        component: proto::component::Variant,
+        properties: base::NodeProperties,
+        num_columns: i64
+    ) -> AggregatorProperties {
+        AggregatorProperties {
+            component,
+            properties,
+            lipschitz_constants: ndarray::Array::from_shape_vec(
+                vec![1, num_columns as usize],
+                (0..num_columns).map(|_| 1.).collect()).unwrap().into_dyn().into()
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -1121,23 +1146,46 @@ pub type NodeProperties = IndexMap<base::IndexKey, ValueProperties>;
 
 
 impl proto::PrivacyUsage {
-    pub(crate) fn actual_to_effective(&self, p: f64, c_stability: f64, group_size: u32) -> Result<Self> {
+    pub(crate) fn actual_to_effective(&self, s: f64, mut c_stability: u32, group_size: u32) -> Result<Self> {
+        if group_size == 0 {
+            return Err(Error::from("group size must be greater than zero"))
+        }
+        use proto::privacy_usage::{DistanceApproximate, Distance::Approximate};
+
+        c_stability *= group_size;
         Ok(proto::PrivacyUsage {
             distance: Some(match self.distance.as_ref().ok_or_else(|| "distance must be defined")? {
-                proto::privacy_usage::Distance::Approximate(app) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                    epsilon: app.epsilon / c_stability / p / group_size as f64,
-                    delta: app.delta / c_stability / p / ((group_size as f64 * app.epsilon).exp() - 1.) / (app.epsilon.exp() - 1.),
+                Approximate(DistanceApproximate { epsilon, delta }) =>
+                    Approximate(DistanceApproximate {
+                    epsilon: match s {
+                        s if s == 1. => epsilon / c_stability as f64,
+                        _ if *epsilon > 100. =>
+                            return Err(Error::from("large epsilon (>100) with privacy amplification by subsampling is numerically unstable")),
+                        s => (((epsilon.exp() - 1.) / s) + 1.).ln() / c_stability as f64
+                    },
+                    delta: delta / s / ((c_stability as f64 * epsilon).exp() - 1.) / (epsilon.exp() - 1.),
                 })
             })
         })
     }
 
-    pub(crate) fn effective_to_actual(&self, p: f64, c_stability: f64, group_size: u32) -> Result<Self> {
+    pub(crate) fn effective_to_actual(&self, s: f64, mut c_stability: u32, group_size: u32) -> Result<Self> {
+        if group_size == 0 {
+            return Err(Error::from("group size must be greater than zero"))
+        }
+        use proto::privacy_usage::{DistanceApproximate, Distance::Approximate};
+
+        c_stability *= group_size;
         Ok(proto::PrivacyUsage {
             distance: Some(match self.distance.as_ref().ok_or_else(|| "distance must be defined")? {
-                proto::privacy_usage::Distance::Approximate(app) => proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                    epsilon: app.epsilon * c_stability * p * group_size as f64,
-                    delta: app.delta * c_stability * p * ((group_size as f64 * app.epsilon).exp() - 1.) / (app.epsilon.exp() - 1.),
+                Approximate(DistanceApproximate { epsilon, delta }) => Approximate(DistanceApproximate {
+                    epsilon: match s {
+                        s if s == 1. => epsilon * c_stability as f64,
+                        _ if epsilon * c_stability as f64 > 100. =>
+                            return Err(Error::from("large epsilon * c_stability (>100) with privacy amplification by subsampling is numerically unstable")),
+                        s => (((epsilon * c_stability as f64).exp() - 1.) * s + 1.).ln()
+                    },
+                    delta: delta * s * ((c_stability as f64 * epsilon).exp() - 1.) / (epsilon.exp() - 1.),
                 })
             })
         })

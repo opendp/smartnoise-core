@@ -4,7 +4,7 @@
       "type_value": "Array"
     },
     "candidates": {
-      "type_value": "Jagged",
+      "type_value": "Array",
       "default_python": "None",
       "default_rust": "None",
       "description": "Set from which the Exponential mechanism will return an element."

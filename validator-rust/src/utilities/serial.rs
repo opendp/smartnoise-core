@@ -1,15 +1,17 @@
 //! Serialization and deserialization between prost protobuf structs and internal representations
 
-use crate::{proto, Integer, Float};
 use std::collections::HashMap;
-use crate::base::{
-    Release, Nature, Jagged, Vector1D, Value, Array, Vector1DNull,
-    NatureCategorical, NatureContinuous, AggregatorProperties, ValueProperties,
-    JaggedProperties, DataType, ArrayProperties, ReleaseNode, GroupId,
-    IndexKey, ComponentExpansion, DataframeProperties, PartitionsProperties
-};
-use indexmap::IndexMap;
+
 use error_chain::ChainedError;
+use indexmap::IndexMap;
+
+use crate::{Float, Integer, proto};
+use crate::base::{
+    AggregatorProperties, Array, ArrayProperties, ComponentExpansion, DataframeProperties, DataType, GroupId,
+    IndexKey, Jagged, JaggedProperties, Nature,
+    NatureCategorical, NatureContinuous, PartitionsProperties, Release, ReleaseNode,
+    Value, ValueProperties, Vector1D, Vector1DNull
+};
 
 // PARSERS
 pub fn parse_bool_null(value: proto::BoolNull) -> Option<bool> {
@@ -248,8 +250,7 @@ pub fn parse_array_properties(value: proto::ArrayProperties) -> ArrayProperties 
         num_columns: value.num_columns.and_then(parse_i64_null),
         nullity: value.nullity,
         releasable: value.releasable,
-        c_stability: parse_array1d_f64(value.c_stability.to_owned().unwrap())
-            .into_iter().map(|v| v as Float).collect(),
+        c_stability: value.c_stability,
         aggregator: value.aggregator.map(|aggregator| AggregatorProperties {
             component: aggregator.component.unwrap().variant.unwrap(),
             properties: parse_argument_properties(aggregator.properties.unwrap()),
@@ -268,10 +269,12 @@ pub fn parse_array_properties(value: proto::ArrayProperties) -> ArrayProperties 
         }),
         data_type: parse_data_type(proto::DataType::from_i32(value.data_type).unwrap()),
         dataset_id: value.dataset_id.and_then(parse_i64_null),
+        node_id: value.node_id as i64,
         is_not_empty: value.is_not_empty,
         dimensionality: value.dimensionality.and_then(parse_i64_null),
         group_id: value.group_id.into_iter().map(parse_group_id).collect(),
-        naturally_ordered: value.naturally_ordered
+        naturally_ordered: value.naturally_ordered,
+        sample_proportion: parse_f64_null(value.sample_proportion.unwrap()).map(Float::from)
     }
 }
 
@@ -538,7 +541,8 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
         num_records, num_columns, nullity, releasable,
         c_stability, aggregator, nature,
         data_type, dataset_id, is_not_empty,
-        dimensionality, group_id, naturally_ordered
+        dimensionality, group_id,
+        naturally_ordered, sample_proportion, node_id
     } = value;
 
     proto::ArrayProperties {
@@ -546,7 +550,7 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
         num_columns: Some(serialize_i64_null(num_columns)),
         nullity,
         releasable,
-        c_stability: Some(serialize_array1d_f64(c_stability.into_iter().map(|v| v as f64).collect())),
+        c_stability,
         nature: nature.map(|nature| match nature {
             Nature::Categorical(categorical) => proto::array_properties::Nature::Categorical(proto::NatureCategorical {
                 categories: Some(serialize_jagged(categorical.categories))
@@ -572,7 +576,9 @@ pub fn serialize_array_properties(value: ArrayProperties) -> proto::ArrayPropert
         is_not_empty,
         dimensionality: Some(serialize_i64_null(dimensionality)),
         group_id: group_id.into_iter().map(serialize_group_id).collect(),
-        naturally_ordered
+        naturally_ordered,
+        sample_proportion: Some(serialize_f64_null(sample_proportion.map(f64::from))),
+        node_id: node_id as u32
     }
 }
 

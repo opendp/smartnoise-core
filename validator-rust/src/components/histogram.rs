@@ -39,13 +39,9 @@ impl Component for proto::Histogram {
         let num_columns = data_property.num_columns()?;
 
         // save a snapshot of the state when aggregating
-        data_property.aggregator = Some(AggregatorProperties {
-            component: proto::component::Variant::Histogram(self.clone()),
-            properties,
-            lipschitz_constants: ndarray::Array::from_shape_vec(
-                vec![1, num_columns as usize],
-                (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
-        });
+        data_property.aggregator = Some(AggregatorProperties::new(
+            proto::component::Variant::Histogram(self.clone()),
+            properties, num_columns));
 
         data_property.nature = Some(Nature::Continuous(NatureContinuous {
             lower: Vector1DNull::Int((0..num_columns).map(|_| Some(0)).collect()),
@@ -151,7 +147,7 @@ impl Expandable for proto::Histogram {
                 };
                 let (patch_node, categories_release) = get_literal(value, component.submission)?;
                 expansion.computation_graph.insert(id_categories, patch_node);
-                expansion.properties.insert(id_categories, infer_property(&categories_release.value, None)?);
+                expansion.properties.insert(id_categories, infer_property(&categories_release.value, None, id_categories)?);
                 expansion.releases.insert(id_categories, categories_release);
                 component.insert_argument(&"categories".into(), id_categories);
             }

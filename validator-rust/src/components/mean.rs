@@ -27,13 +27,8 @@ impl Component for proto::Mean {
 
         let num_columns = data_property.num_columns()?;
         // save a snapshot of the state when aggregating
-        data_property.aggregator = Some(AggregatorProperties {
-            component: proto::component::Variant::Mean(self.clone()),
-            properties,
-            lipschitz_constants: ndarray::Array::from_shape_vec(
-                vec![1, num_columns as usize],
-                (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
-        });
+        data_property.aggregator = Some(AggregatorProperties::new(
+            proto::component::Variant::Mean(self.clone()), properties, num_columns));
 
         if data_property.data_type != DataType::Float {
             return Err("data: atomic type must be float".into())

@@ -1,16 +1,17 @@
-use whitenoise_validator::errors::*;
-
-use crate::components::Evaluable;
-use whitenoise_validator::base::{Value, Array, Jagged, ReleaseNode, IndexKey};
-use whitenoise_validator::utilities::{standardize_numeric_argument, standardize_categorical_argument, standardize_weight_argument, take_argument, standardize_null_candidates_argument};
-use crate::NodeArguments;
-use crate::utilities::{noise};
-use crate::utilities;
-use ndarray::{ArrayD};
-use crate::utilities::get_num_columns;
-use whitenoise_validator::{proto, Float};
 use std::hash::Hash;
 
+use ndarray::ArrayD;
+
+use whitenoise_validator::{Float, proto};
+use whitenoise_validator::base::{Array, IndexKey, Jagged, ReleaseNode, Value};
+use whitenoise_validator::errors::*;
+use whitenoise_validator::utilities::{standardize_categorical_argument, standardize_null_candidates_argument, standardize_numeric_argument, standardize_weight_argument, take_argument};
+
+use crate::components::Evaluable;
+use crate::NodeArguments;
+use crate::utilities;
+use crate::utilities::get_num_columns;
+use crate::utilities::noise;
 
 impl Evaluable for proto::Impute {
     fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
@@ -29,17 +30,17 @@ impl Evaluable for proto::Impute {
                 take_argument(&mut arguments, "null_values")?.jagged()?) {
 
                 (Array::Bool(data), Jagged::Bool(categories), Jagged::Bool(nulls)) =>
-                    impute_categorical(data, categories, weights, nulls, enforce_constant_time)?.into(),
+                    impute_categorical_arrayd(data, categories, weights, nulls, enforce_constant_time)?.into(),
 
                 (Array::Float(_), Jagged::Float(_), Jagged::Float(_)) =>
                     return Err("categorical imputation over floats is not currently supported".into()),
 //                        impute_categorical(&data, &categories, &weights, &nulls)?.into(),
 
                 (Array::Int(data), Jagged::Int(categories), Jagged::Int(nulls)) =>
-                    impute_categorical(data, categories, weights, nulls, enforce_constant_time)?.into(),
+                    impute_categorical_arrayd(data, categories, weights, nulls, enforce_constant_time)?.into(),
 
                 (Array::Str(data), Jagged::Str(categories), Jagged::Str(nulls)) =>
-                    impute_categorical(data, categories, weights, nulls, enforce_constant_time)?.into(),
+                    impute_categorical_arrayd(data, categories, weights, nulls, enforce_constant_time)?.into(),
                 _ => return Err("types of data, categories, and null must be consistent and probabilities must be f64".into()),
             }))
         }
@@ -59,7 +60,7 @@ impl Evaluable for proto::Impute {
                     Ok(match (take_argument(&mut arguments, "data")?, take_argument(&mut arguments, "lower")?, take_argument(&mut arguments, "upper")?) {
                         (Value::Array(data), Value::Array(lower), Value::Array(upper)) => match (data, lower, upper) {
                             (Array::Float(data), Array::Float(lower), Array::Float(upper)) =>
-                                impute_float_uniform(data, lower, upper, enforce_constant_time)?.into(),
+                                impute_float_uniform_arrayd(data, lower, upper, enforce_constant_time)?.into(),
                             (Array::Int(data), Array::Int(_lower), Array::Int(_upper)) =>
                                 // continuous integers are already non-null
                                 data.into(),
@@ -76,7 +77,7 @@ impl Evaluable for proto::Impute {
                     let scale = take_argument(&mut arguments, "scale")?.array()?.float()?;
                     let shift = take_argument(&mut arguments, "shift")?.array()?.float()?;
 
-                    Ok(impute_float_gaussian(data, lower, upper, shift, scale, enforce_constant_time)?.into())
+                    Ok(impute_float_gaussian_arrayd(data, lower, upper, shift, scale, enforce_constant_time)?.into())
                 },
                 _ => return Err("Distribution not supported".into())
             }.map(ReleaseNode::new)
@@ -98,17 +99,17 @@ impl Evaluable for proto::Impute {
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use whitenoise_runtime::components::impute::impute_float_uniform;
+/// use whitenoise_runtime::components::impute::impute_float_uniform_arrayd;
 /// use whitenoise_validator::Float;
 ///
 /// let data: ArrayD<Float> = arr2(&[ [1., Float::NAN, 3., Float::NAN], [2., 2., Float::NAN, Float::NAN] ]).into_dyn();
 /// let lower: ArrayD<Float> = arr1(&[0., 2., 3., 4.]).into_dyn();
 /// let upper: ArrayD<Float> = arr1(&[10., 2., 5., 5.]).into_dyn();
-/// let imputed = impute_float_uniform(data, lower, upper, false);
+/// let imputed = impute_float_uniform_arrayd(data, lower, upper, false);
 /// # imputed.unwrap();
 /// ```
 
-pub fn impute_float_uniform(
+pub fn impute_float_uniform_arrayd(
     mut data: ArrayD<Float>,
     lower: ArrayD<Float>, upper: ArrayD<Float>,
     enforce_constant_time: bool
@@ -122,17 +123,26 @@ pub fn impute_float_uniform(
         .zip(standardize_numeric_argument(lower, num_columns)?.into_iter())
         .zip(standardize_numeric_argument(upper, num_columns)?.into_iter())
         // for each pairing, iterate over the cells
-        .try_for_each(|((mut column, min), max)| column.iter_mut()
-            // ignore nan values
-            .filter(|v| v.is_nan())
-            // mutate the cell via the operator
-            .try_for_each(|v| {
-                *v = noise::sample_uniform(
-                    *min as f64, *max as f64, enforce_constant_time)? as Float;
-                Ok::<_, Error>(())
-            }))?;
+        .try_for_each(|((mut column, min), max)| impute_float_uniform(
+            column.iter_mut(), (*min, *max), enforce_constant_time))?;
 
     Ok(data)
+}
+
+pub fn impute_float_uniform<'a, I: Iterator<Item=&'a mut Float>>(
+    // column: &mut Vec<Float>,
+    // column: &mut ndarray::ArrayBase<ndarray::ViewRepr<&mut Float>, ndarray::Ix1>,
+    column: I,
+    (lower, upper): (Float, Float),
+    enforce_constant_time: bool
+) -> Result<()> {
+    column
+        // ignore nan values
+        .filter(|v| v.is_nan())
+        // mutate the cell via the operator
+        .try_for_each(|v| noise::sample_uniform(
+            lower as f64, upper as f64, enforce_constant_time)
+            .map(|n| *v = n as Float))
 }
 
 /// Returns data with imputed values in place of `f64::NAN`.
@@ -151,17 +161,17 @@ pub fn impute_float_uniform(
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use whitenoise_runtime::components::impute::impute_float_gaussian;
+/// use whitenoise_runtime::components::impute::impute_float_gaussian_arrayd;
 /// use whitenoise_validator::Float;
 /// let data: ArrayD<Float> = arr1(&[1., Float::NAN, 3., Float::NAN]).into_dyn();
 /// let lower: ArrayD<Float> = arr1(&[0.0]).into_dyn();
 /// let upper: ArrayD<Float> = arr1(&[10.0]).into_dyn();
 /// let shift: ArrayD<Float> = arr1(&[5.0]).into_dyn();
 /// let scale: ArrayD<Float> = arr1(&[7.0]).into_dyn();
-/// let imputed = impute_float_gaussian(data, lower, upper, shift, scale, false);
+/// let imputed = impute_float_gaussian_arrayd(data, lower, upper, shift, scale, false);
 /// # imputed.unwrap();
 /// ```
-pub fn impute_float_gaussian(
+pub fn impute_float_gaussian_arrayd(
     mut data: ArrayD<Float>,
     lower: ArrayD<Float>, upper: ArrayD<Float>,
     shift: ArrayD<Float>, scale: ArrayD<Float>,
@@ -178,19 +188,28 @@ pub fn impute_float_gaussian(
         .zip(standardize_numeric_argument(shift, num_columns)?.into_iter()
             .zip(standardize_numeric_argument(scale, num_columns)?.into_iter()))
         // for each pairing, iterate over the cells
-        .try_for_each(|((mut column, (min, max)), (shift, scale))| column.iter_mut()
-            // ignore nan values
-            .filter(|v| v.is_nan())
-            // mutate the cell via the operator
-            .try_for_each(|v| {
-                *v = noise::sample_gaussian_truncated(
-                    *min as f64, *max as f64, *shift as f64, *scale as f64,
-                    enforce_constant_time
-                )? as Float;
-                Ok::<_, Error>(())
-            }))?;
+        .try_for_each(|((mut column, bounds), params)|
+            impute_float_gaussian(
+                column.iter_mut(),bounds,params, enforce_constant_time))?;
 
     Ok(data)
+}
+
+pub fn impute_float_gaussian<'a, I: Iterator<Item=&'a mut Float>>(
+    // column: &mut Vec<Float>,
+    column: I,
+    (min, max): (&Float, &Float),
+    (shift, scale): (&Float, &Float),
+    enforce_constant_time: bool
+) -> Result<()> {
+    column
+        // ignore nan values
+        .filter(|v| v.is_nan())
+        // mutate the cell via the operator
+        .try_for_each(|v| noise::sample_gaussian_truncated(
+            *min as f64, *max as f64, *shift as f64, *scale as f64,
+            enforce_constant_time)
+            .map(|n| *v = n as Float))
 }
 
 /// Returns data with imputed values in place on `null_value`.
@@ -207,7 +226,7 @@ pub fn impute_float_gaussian(
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use whitenoise_runtime::components::impute::impute_categorical;
+/// use whitenoise_runtime::components::impute::impute_categorical_arrayd;
 /// let data: ArrayD<String> = arr2(&[["a".to_string(), "b".to_string(), "null_3".to_string()],
 ///                                   ["c".to_string(), "null_2".to_string(), "a".to_string()]]).into_dyn();
 /// let categories: Vec<Vec<String>> = vec![vec!["a".to_string(), "c".to_string()],
@@ -220,14 +239,14 @@ pub fn impute_float_gaussian(
 ///                                         vec!["null_2".to_string()],
 ///                                         vec!["null_3".to_string()]];
 ///
-/// let imputed = impute_categorical(data, categories, weights, null_value, false);
+/// let imputed = impute_categorical_arrayd(data, categories, weights, null_value, false);
 /// # imputed.unwrap();
 /// ```
-pub fn impute_categorical<T: Clone>(
+pub fn impute_categorical_arrayd<T: Clone>(
     mut data: ArrayD<T>, categories: Vec<Vec<T>>,
     weights: Option<Vec<Vec<Float>>>, null_value: Vec<Vec<T>>,
     enforce_constant_time: bool
-) -> Result<ArrayD<T>> where T: Clone, T: PartialEq, T: Default, T: Ord, T: Hash {
+) -> Result<ArrayD<T>> where T: Clone + PartialEq + Default + Ord + Hash {
 
     let num_columns = get_num_columns(&data)?;
 
@@ -243,14 +262,24 @@ pub fn impute_categorical<T: Clone>(
         .zip(probabilities.iter())
         .zip(null_value.iter())
         // for each pairing, iterate over the cells
-        .try_for_each(|(((mut column, cats), probs), null)| column.iter_mut()
-            // ignore non null values
-            .filter(|v| null.contains(v))
-            // mutate the cell via the operator
-            .try_for_each(|v| {
-                *v = utilities::sample_from_set(&cats, &probs, enforce_constant_time)?;
-                Ok::<_, Error>(())
-            }))?;
+        .try_for_each(|(((mut column, cats), probs), null)| impute_categorical(
+            column.iter_mut(), cats, probs, null, enforce_constant_time))?;
 
     Ok(data)
+}
+
+fn impute_categorical<'a, T: 'a, I: Iterator<Item=&'a mut T>>(
+    // column: &mut Vec<T>,
+    column: I,
+    categories: &Vec<T>, probabilities: &Vec<Float>, null_values: &Vec<T>,
+    enforce_constant_time: bool
+) -> Result<()>
+    where T: Clone + PartialEq + Default + Ord + Hash {
+    column
+        // ignore non null values
+        .filter(|v| null_values.contains(v))
+        // mutate the cell via the operator
+        .try_for_each(|v| utilities::sample_from_set(
+            &categories, &probabilities, enforce_constant_time)
+            .map(|n| *v = n))
 }
