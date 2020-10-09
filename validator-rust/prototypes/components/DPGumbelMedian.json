@@ -1,0 +1,40 @@
+{
+  "arguments": {
+    "data": {
+      "type_value": "Array"
+    },
+    "r_lower": {
+      "type_proto": "double",
+      "type_rust": "f64",
+      "description": "Min candidate"
+    },
+    "r_upper": {
+      "type_proto": "double",
+      "type_rust": "f64",
+      "description": "Max candidate"
+    },
+    "enforce_constant_time": {
+      "type_proto": "bool",
+      "type_rust": "bool",
+      "default_python": "True",
+      "default_rust": "true",
+      "description": "Enforce constant time for median"
+    }
+  },
+  "id": "DPGumbelMedian",
+  "name": "dp_gumbel_median",
+  "options": {
+    "privacy_usage": {
+      "type_proto": "repeated PrivacyUsage",
+      "type_rust": "Vec<proto::PrivacyUsage>",
+      "default_python": "None",
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+    }
+  },
+  "return": {
+    "type_value": "Array",
+    "description": "Differentially private estimates of the median of each column of the data."
+  },
+  "description": "Returns differentially private estimates of the median of each column of the data.",
+  "proto_id": 66
+}

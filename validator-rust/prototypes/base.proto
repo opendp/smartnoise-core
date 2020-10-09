@@ -105,8 +105,8 @@ message ArrayProperties {
     /// true if data may contain null values
     bool nullity = 3;
 
-    /// multiplier on epsilon usage
-    Array1dF64 c_stability = 4;
+    /// number of records one individual may influence
+    uint32 c_stability = 4;
 
     /// description of the aggregation that has been applied to the data
     /// used to help compute sensitivity in the mechanisms
@@ -138,7 +138,14 @@ message ArrayProperties {
         NatureCategorical categorical = 101;
     }
 
+    // true if row ordering has not changed
     bool naturally_ordered = 12;
+
+    // proportion of records this array contains sampled from the original dataset
+    F64Null sample_proportion = 13;
+
+    // useful to reference an intermediate calculation
+    uint32 node_id = 14;
 }
 
 message NatureContinuous {

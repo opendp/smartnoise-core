@@ -1,18 +1,15 @@
-use crate::errors::*;
-
-use statrs::function::erf;
 use ::itertools::izip;
-
-use crate::components::{Sensitivity, Accuracy, Mechanism};
-use crate::{proto, base, Warnable};
-
-use crate::components::{Component, Expandable};
-use crate::base::{Value, SensitivitySpace, ValueProperties, DataType, NodeProperties, IndexKey};
-use crate::utilities::{prepend, expand_mechanism};
-use crate::utilities::privacy::{spread_privacy_usage, get_epsilon, get_delta, privacy_usage_check};
-use itertools::Itertools;
 use indexmap::map::IndexMap;
+use itertools::Itertools;
+use statrs::function::erf;
 
+use crate::{base, proto, Warnable};
+use crate::base::{DataType, IndexKey, NodeProperties, SensitivitySpace, Value, ValueProperties};
+use crate::components::{Accuracy, Mechanism, Sensitivity};
+use crate::components::{Component, Expandable};
+use crate::errors::*;
+use crate::utilities::{expand_mechanism, prepend};
+use crate::utilities::privacy::{get_delta, get_epsilon, privacy_usage_check, spread_privacy_usage};
 
 impl Component for proto::GaussianMechanism {
     fn propagate_property(
@@ -116,9 +113,10 @@ impl Mechanism for proto::GaussianMechanism {
             .map_err(prepend("data:"))?;
 
         Some(release_usage.unwrap_or_else(|| &self.privacy_usage).iter()
-            .zip(data_property.c_stability.iter())
-            .map(|(usage, c_stab)|
-                usage.effective_to_actual(1., *c_stab as f64, privacy_definition.group_size))
+            .map(|usage| usage.effective_to_actual(
+                data_property.sample_proportion.unwrap_or(1.),
+                data_property.c_stability,
+                privacy_definition.group_size))
             .collect::<Result<Vec<proto::PrivacyUsage>>>()).transpose()
     }
 }
@@ -152,17 +150,20 @@ impl Accuracy for proto::GaussianMechanism {
 
         use proto::privacy_usage::{Distance, DistanceApproximate};
 
-        Ok(Some(
-            iter.map(|(sensitivity, accuracy, delta)| {
+        Some(iter.map(|(sensitivity, accuracy, delta)| {
+            let sigma: f64 = if self.analytic {
                 let c: f64 = 2.0_f64 * (1.25_f64 / delta).ln();
-                let sigma: f64 = c.sqrt() * *sensitivity as f64 / accuracy.value;
-                proto::PrivacyUsage {
-                    distance: Some(Distance::Approximate(DistanceApproximate {
-                        epsilon: sigma * 2.0_f64.sqrt() * erf::erf_inv(1.0_f64 - accuracy.alpha),
-                        delta,
-                    }))
-                }
-            }).collect()))
+                c.sqrt() * *sensitivity as f64 / accuracy.value
+            } else {
+                return Err(Error::from("converting to privacy usage is not implemented for the analytic gaussian"))
+            };
+            Ok(proto::PrivacyUsage {
+                distance: Some(Distance::Approximate(DistanceApproximate {
+                    epsilon: sigma * 2.0_f64.sqrt() * erf::erf_inv(1.0_f64 - accuracy.alpha),
+                    delta,
+                }))
+            })
+        }).collect()).transpose()
     }
 
     fn privacy_usage_to_accuracy(
@@ -194,8 +195,13 @@ impl Accuracy for proto::GaussianMechanism {
 
         Ok(Some(
             iter.map(|(sensitivity, epsilon, delta)| {
-                let c: f64 = 2.0_f64 * (1.25_f64 / delta).ln();
-                let sigma: f64 = c.sqrt() * *sensitivity as f64 / epsilon;
+
+                let sigma: f64 = if self.analytic {
+                    let c: f64 = 2.0_f64 * (1.25_f64 / delta).ln();
+                    c.sqrt() * *sensitivity as f64 / epsilon
+                } else {
+                    get_analytic_gaussian_sigma(epsilon, delta, *sensitivity)
+                };
 
                 proto::Accuracy {
                     value: sigma * 2.0_f64.sqrt() * erf::erf_inv(1.0_f64 - alpha),
@@ -203,4 +209,80 @@ impl Accuracy for proto::GaussianMechanism {
                 }
             }).collect()))
     }
+}
+
+fn phi(t: f64) -> f64 {
+    0.5 * (1. + erf::erf(t / 2.0_f64.sqrt()))
+}
+
+fn case_a(epsilon: f64, s: f64) -> f64 {
+    phi((epsilon * s).sqrt()) - epsilon.exp() * phi(-(epsilon * (s + 2.)).sqrt())
+}
+
+fn case_b(epsilon: f64, s: f64) -> f64 {
+    phi(-(epsilon * s).sqrt()) - epsilon.exp() * phi(-(epsilon * (s + 2.)).sqrt())
+}
+
+fn doubling_trick(
+    mut s_inf: f64, mut s_sup: f64, epsilon: f64, delta: f64, delta_thr: f64,
+) -> (f64, f64) {
+    let predicate = |s: f64| if delta > delta_thr {
+        case_a(epsilon, s) < delta
+    } else {
+        case_b(epsilon, s) > delta
+    };
+
+    while predicate(s_sup) {
+        s_inf = s_sup;
+        s_sup = 2.0 * s_inf;
+    }
+    (s_inf, s_sup)
+}
+
+fn binary_search(
+    mut s_inf: f64, mut s_sup: f64, epsilon: f64, delta: f64, delta_thr: f64, tol: f64,
+) -> f64 {
+    let mut s_mid: f64 = s_inf + (s_sup - s_inf) / 2.;
+
+    let s_to_delta = |s: f64| if delta > delta_thr {
+        case_a(epsilon, s)
+    } else {
+        case_b(epsilon, s)
+    };
+
+    loop {
+        let delta_prime = s_to_delta(s_mid);
+
+        let diff = delta_prime - delta;
+        if (diff.abs() <= tol) && (diff <= 0.) { break }
+
+        let is_left = if delta > delta_thr {
+            delta_prime > delta
+        } else {
+            delta_prime < delta
+        };
+
+        if is_left {
+            s_sup = s_mid;
+        } else {
+            s_inf = s_mid;
+        }
+        s_mid = s_inf + (s_sup - s_inf) / 2.;
+    }
+    s_mid
+}
+
+pub fn get_analytic_gaussian_sigma(epsilon: f64, delta: f64, sensitivity: f64) -> f64 {
+    let delta_thr = case_a(epsilon, 0.);
+
+    let alpha = if delta == delta_thr {
+        1.
+    } else {
+        let (s_inf, s_sup) = doubling_trick(0., 1., epsilon, delta, delta_thr);
+        let tol: f64 = 1e-10f64;
+        let s_final = binary_search(s_inf, s_sup, epsilon, delta, delta_thr, tol);
+        (1. + s_final / 2.).sqrt() - (s_final / 2.).sqrt()
+    };
+
+    alpha * sensitivity / (2. * epsilon).sqrt()
 }

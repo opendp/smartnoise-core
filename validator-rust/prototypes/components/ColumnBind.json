@@ -1,18 +1,12 @@
 {
-  "arguments": {
-    "data": {
-      "type_value": "Array"
-    },
-    "names": {
-      "type_value": "Array"
-    }
-  },
+  "any_argument": true,
+  "arguments": {},
   "id": "ColumnBind",
   "name": "column_bind",
   "options": {},
   "return": {
-    "type_value": "Dataframe"
+    "type_value": "Array"
   },
-  "description": "Name columns of an array or indexmap to produce a Dataframe with the specified names",
-  "proto_id": 48
+  "description": "Bind arguments as columns of an array to produce a larger array",
+  "proto_id": 68
 }

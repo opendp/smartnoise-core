@@ -49,7 +49,7 @@ impl Expandable for proto::Map {
                         let id_index_name = maximum_id;
                         let (patch_node, release) = get_literal(Value::from_index_key(partition_idx.clone())?, component.submission)?;
                         expansion.computation_graph.insert(id_index_name, patch_node);
-                        expansion.properties.insert(id_index_name, infer_property(&release.value, None)?);
+                        expansion.properties.insert(id_index_name, infer_property(&release.value, None, id_index_name)?);
                         expansion.releases.insert(id_index_name, release);
 
                         maximum_id += 1;

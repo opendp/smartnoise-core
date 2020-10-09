@@ -118,7 +118,7 @@ impl Expandable for proto::SnappingMechanism {
             if let Some(lower_id) = lower_id {
                 let (patch_node, release) = get_literal(Value::Array(data_property.lower()?), component.submission)?;
                 expansion.computation_graph.insert(lower_id, patch_node);
-                expansion.properties.insert(lower_id, infer_property(&release.value, None)?);
+                expansion.properties.insert(lower_id, infer_property(&release.value, None, lower_id)?);
                 expansion.releases.insert(lower_id, release);
                 component.insert_argument(&"lower".into(), lower_id);
             }
@@ -126,7 +126,7 @@ impl Expandable for proto::SnappingMechanism {
             if let Some(upper_id) = upper_id {
                 let (patch_node, release) = get_literal(Value::Array(data_property.upper()?), component.submission)?;
                 expansion.computation_graph.insert(upper_id, patch_node);
-                expansion.properties.insert(upper_id, infer_property(&release.value, None)?);
+                expansion.properties.insert(upper_id, infer_property(&release.value, None, upper_id)?);
                 expansion.releases.insert(upper_id, release);
                 component.insert_argument(&"upper".into(), upper_id);
             }
@@ -148,9 +148,10 @@ impl Mechanism for proto::SnappingMechanism {
             .map_err(prepend("data:"))?;
 
         Some(release_usage.unwrap_or_else(|| &self.privacy_usage).iter()
-            .zip(data_property.c_stability.iter())
-            .map(|(usage, c_stab)|
-                usage.effective_to_actual(1., *c_stab as f64, privacy_definition.group_size))
+            .map(|usage| usage.effective_to_actual(
+                data_property.sample_proportion.unwrap_or(1.),
+                data_property.c_stability,
+                privacy_definition.group_size))
             .collect::<Result<Vec<proto::PrivacyUsage>>>()).transpose()
     }
 }
@@ -275,7 +276,7 @@ pub fn get_smallest_greater_or_eq_power_of_two(x: f64) -> Result<i16> {
 /// # Returns
 /// Functional epsilon that will determine amount of noise.
 pub fn redefine_epsilon(epsilon: f64, b: f64, precision: u32) -> f64 {
-    let eta = 2_f64.powi(-(precision as i32));
+    let eta = (-(precision as f64)).exp2();
     (epsilon - 2.0 * eta) / (1.0 + 12.0 * b * eta)
 }
 
@@ -296,7 +297,7 @@ pub fn epsilon_to_accuracy(
 ) -> Result<f64> {
     let precision = compute_precision(epsilon)?;
     let epsilon = redefine_epsilon(epsilon, b, precision);
-    let Lambda = 2f64.powi(get_smallest_greater_or_eq_power_of_two(1.0 / epsilon)? as i32); // 2^m
+    let Lambda = (get_smallest_greater_or_eq_power_of_two(1.0 / epsilon)? as f64).exp2(); // 2^m
     Ok((Lambda / 2. - alpha.ln() / epsilon) * sensitivity)
 }
 
@@ -329,8 +330,6 @@ pub fn accuracy_to_epsilon(
         let eps_mid = eps_inf + (eps_sup - eps_inf) / 2.;
         let acc_candidate = epsilon_to_accuracy(alpha, eps_mid, sensitivity, b)?;
 
-        // println!("{},{},{}, {:?}", eps_inf, eps_mid, eps_sup, acc_candidate);
-
         match accuracy.partial_cmp(&acc_candidate) {
             Some(Ordering::Less) => eps_inf = eps_mid,
             Some(Ordering::Greater) => eps_sup = eps_mid,
@@ -338,13 +337,10 @@ pub fn accuracy_to_epsilon(
             None => return Err(Error::from("non-comparable accuracy"))
         }
 
-        // let is_stuck = (acc_prior - acc_candidate).abs() <= tol;
         let is_stuck= acc_prior == acc_candidate;
         let is_close = acc_candidate < accuracy && (accuracy - acc_candidate) <= tol;
 
-
         if is_close || is_stuck {
-            // println!("is_stuck: {}, is_close: {}", is_stuck, is_close);
             return Ok(eps_sup)
         }
         acc_prior = acc_candidate;

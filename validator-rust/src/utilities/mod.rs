@@ -8,7 +8,7 @@ use ndarray::prelude::*;
 use noisy_float::prelude::n64;
 
 use crate::{base, Float, proto, Warnable};
-use crate::base::{IndexKey, NodeProperties, Release, SensitivitySpace, Value, ValueProperties};
+use crate::base::{IndexKey, NodeProperties, Release, SensitivitySpace, Value, ValueProperties, ArrayProperties};
 // import all trait implementations
 use crate::components::*;
 use crate::errors::*;
@@ -105,7 +105,7 @@ pub fn propagate_properties(
         .map(|(node_id, release_node)|
             Ok((*node_id, infer_property(
                 &release_node.value,
-                properties.get(node_id))?)))
+                properties.get(node_id), *node_id)?)))
         .collect::<Result<HashMap<u32, ValueProperties>>>()?);
 
 
@@ -186,7 +186,7 @@ pub fn propagate_properties(
             // println!("inferring property");
             Ok(Warnable(infer_property(
                 &release_node.unwrap().value,
-                properties.get(&node_id))?, vec![]))
+                properties.get(&node_id), node_id)?, vec![]))
         } else {
             // if node has not been evaluated, propagate properties over it
             computation_graph.get(&node_id).unwrap()
@@ -302,6 +302,20 @@ pub fn get_sinks(computation_graph: &HashMap<u32, proto::Component>) -> HashSet<
     node_ids
 }
 
+
+/// Sets the node id of properties
+///
+pub fn set_node_id(property: &mut ValueProperties, node_id: u32) -> () {
+    match property {
+        ValueProperties::Array(array) => array.node_id = node_id as i64,
+        ValueProperties::Dataframe(dataframe) => dataframe.children.iter_mut()
+            .for_each(|(_k, v)| set_node_id(v, node_id)),
+        ValueProperties::Partitions(partitions) => partitions.children.iter_mut()
+            .for_each(|(_k, v)| set_node_id(v, node_id)),
+        ValueProperties::Jagged(_) => (),
+        ValueProperties::Function(_) => ()
+    };
+}
 
 /// Given an array, conduct well-formedness checks and broadcast
 ///
@@ -509,11 +523,11 @@ pub fn expand_mechanism(
         .ok_or_else(|| "privacy definition must be defined")?;
 
     // always overwrite sensitivity. This is not something a user may configure
-    let data_property = properties.get::<IndexKey>(&"data".into())
+    let data_property: ArrayProperties = properties.get::<IndexKey>(&"data".into())
         .ok_or("data: missing")?.array()
         .map_err(prepend("data:"))?.clone();
 
-    let aggregator = data_property.aggregator
+    let aggregator = data_property.aggregator.as_ref()
         .ok_or_else(|| Error::from("aggregator: missing"))?;
 
     // sensitivity scaling
@@ -523,7 +537,7 @@ pub fn expand_mechanism(
         &sensitivity_type)?;
 
     // TODO: debug axes in lipschitz constant arrays
-    let lipschitz = aggregator.lipschitz_constants.array()?.float()?;
+    let lipschitz = aggregator.lipschitz_constants.clone().array()?.float()?;
     if lipschitz.iter().any(|v| v != &1.) {
         let mut sensitivity = sensitivity_value.array()?.float()?;
         sensitivity *= &lipschitz;
@@ -534,7 +548,7 @@ pub fn expand_mechanism(
     let id_sensitivity = maximum_id;
     let (patch_node, release) = get_literal(sensitivity_value.clone(), component.submission)?;
     expansion.computation_graph.insert(id_sensitivity, patch_node);
-    expansion.properties.insert(id_sensitivity, infer_property(&release.value, None)?);
+    expansion.properties.insert(id_sensitivity, infer_property(&release.value, None, id_sensitivity)?);
     expansion.releases.insert(id_sensitivity, release);
 
     // spread privacy usage over each column
@@ -544,24 +558,28 @@ pub fn expand_mechanism(
 
     // convert to effective usage
     let effective_usages = spread_usages.into_iter()
-        .zip(data_property.c_stability.iter())
         // reduce epsilon allowed to algorithm based on c-stability and group size
-        .map(|(usage, c_stab)|
-            usage.actual_to_effective(1., *c_stab as f64, privacy_definition.group_size))
+        .map(|usage| usage.actual_to_effective(
+            data_property.sample_proportion.unwrap_or(1.),
+            data_property.c_stability,
+            privacy_definition.group_size))
         .collect::<Result<Vec<proto::PrivacyUsage>>>()?;
 
     // insert sensitivity and usage
     let mut noise_component = component.clone();
     noise_component.insert_argument(&"sensitivity".into(), id_sensitivity);
 
-    match noise_component.variant
-        .as_mut().ok_or_else(|| "variant must be defined")? {
-        proto::component::Variant::LaplaceMechanism(variant) => variant.privacy_usage = effective_usages,
-        proto::component::Variant::GaussianMechanism(variant) => variant.privacy_usage = effective_usages,
-        proto::component::Variant::ExponentialMechanism(variant) => variant.privacy_usage = effective_usages,
-        proto::component::Variant::SimpleGeometricMechanism(variant) => variant.privacy_usage = effective_usages,
-        _ => ()
-    };
+    macro_rules! assign_usage {
+        ($($variant:ident),*) => {
+            match noise_component.variant.as_mut() {
+                $(Some(proto::component::Variant::$variant(variant)) =>
+                    variant.privacy_usage = effective_usages,)*
+                _ => return Err(Error::from("unrecognized component in expand_mechanism"))
+            }
+        }
+    }
+    assign_usage!(LaplaceMechanism, GaussianMechanism, SimpleGeometricMechanism, SnappingMechanism);
+
     expansion.computation_graph.insert(component_id, noise_component);
 
     Ok(expansion)

@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 
 use itertools::Itertools;
 
-use crate::{Float, proto};
+use crate::proto;
 use crate::base::{GroupId, IndexKey, Release, ValueProperties};
 use crate::components::Mechanism;
 use crate::errors::*;
@@ -485,7 +485,7 @@ pub fn get_group_id_path(arguments: Vec<Vec<GroupId>>) -> Result<Vec<GroupId>> {
         .ok_or_else(|| "partition paths of all arguments must match".into())
 }
 
-pub fn get_c_stability_multiplier(arguments: Vec<Vec<GroupId>>) -> Result<Float> {
+pub fn get_c_stability_multiplier(arguments: Vec<Vec<GroupId>>) -> Result<u32> {
     let partition_depth = get_common_value(&arguments.iter()
         .map(|group_ids| group_ids.len())
         .collect())
@@ -495,7 +495,7 @@ pub fn get_c_stability_multiplier(arguments: Vec<Vec<GroupId>>) -> Result<Float>
         return Err("c-stability cannot be determined on an empty argument set".into());
     }
     if partition_depth == 0 {
-        return Ok(1.);
+        return Ok(1);
     }
 
     if partition_depth > 1 && !(0..partition_depth - 1).all(|depth|
@@ -518,5 +518,5 @@ pub fn get_c_stability_multiplier(arguments: Vec<Vec<GroupId>>) -> Result<Float>
     group_ids.into_iter().for_each(|group_id|
         *counts.entry(group_id.index).or_insert(0) += 1);
 
-    Ok(*counts.values().max().unwrap() as Float)
+    Ok(*counts.values().max().unwrap())
 }

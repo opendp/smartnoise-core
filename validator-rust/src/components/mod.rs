@@ -21,7 +21,9 @@ mod digitize;
 mod dp_count;
 mod dp_variance;
 mod dp_covariance;
+mod dp_gumbel_median;
 mod dp_histogram;
+mod dp_linear_regression;
 mod dp_maximum;
 mod dp_median;
 mod dp_minimum;
@@ -42,11 +44,13 @@ mod quantile;
 mod reshape;
 mod mean;
 mod exponential_mechanism;
-mod gaussian_mechanism;
+pub mod gaussian_mechanism;
 mod laplace_mechanism;
 mod simple_geometric_mechanism;
 pub mod snapping_mechanism;
 mod resize;
+mod theil_sen;
+mod to_dataframe;
 mod sum;
 mod union;
 mod variance;
@@ -54,6 +58,7 @@ mod variance;
 use crate::base::{IndexKey, Value, NodeProperties, SensitivitySpace, ValueProperties};
 use crate::{proto, Warnable, base};
 use crate::utilities::json::{JSONRelease};
+use crate::utilities::set_node_id;
 use indexmap::map::IndexMap;
 
 /// Universal Component trait
@@ -242,8 +247,12 @@ impl Component for proto::Component {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = variant {
-                            return x.propagate_property(privacy_definition, public_arguments, properties, node_id)
-                                .chain_err(|| format!("node specification {:?}:", variant))
+                            let Warnable(mut property, warnings) = x.propagate_property(
+                                privacy_definition, public_arguments, properties, node_id)
+                                .chain_err(|| format!("node specification {:?}:", variant))?;
+                            set_node_id(&mut property, node_id);
+
+                            return Ok(Warnable(property, warnings));
                        }
                     )*
                 }
@@ -254,13 +263,13 @@ impl Component for proto::Component {
             // INSERT COMPONENT LIST
             Cast, Clamp, ColumnBind, Count, Covariance, Digitize,
             Filter, Histogram, Impute, Index, Literal, Materialize, Mean,
-            Partition, Quantile, RawMoment, Reshape, Resize, Sum, Union, Variance,
+            Partition, Quantile, RawMoment, Reshape, Resize, Sum, ToDataframe, Union, Variance,
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism,
             SimpleGeometricMechanism, SnappingMechanism,
 
             Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
-            Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract
+            Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract, TheilSen, DpGumbelMedian
         );
 
         Err(format!("proto component {:?} is missing its Component trait", variant).into())
@@ -330,11 +339,11 @@ impl Expandable for proto::Component {
             // INSERT COMPONENT LIST
             Clamp, Digitize, Histogram, Impute, Map, Maximum, Median, Minimum, Partition, Resize,
 
-            DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian,
+            DpCount, DpCovariance, DpHistogram, DpLinearRegression, DpMaximum, DpMean, DpMedian,
             DpMinimum, DpQuantile, DpRawMoment, DpSum, DpVariance,
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism,
-            SimpleGeometricMechanism, SnappingMechanism,
+            SimpleGeometricMechanism, SnappingMechanism, DpGumbelMedian,
 
             ToBool, ToFloat, ToInt, ToString
         );
@@ -553,10 +562,10 @@ impl Named for proto::Component {
             }
         }
 
-        // TODO: transforms, covariance/cross-covariance, extended indexing
+        // TODO: transforms, covariance/cross-covariance, extended indexing, columnbind
         get_names!(
             // INSERT COMPONENT LIST
-            ColumnBind, Index, Literal, Materialize
+            ToDataframe, Index, Literal, Materialize
         );
 
         // default implementation

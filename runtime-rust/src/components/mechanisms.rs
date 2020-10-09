@@ -1,7 +1,7 @@
-use ndarray::{arr1, Axis};
+use ndarray::{arr0};
 
 use whitenoise_validator::{Float, Integer, proto};
-use whitenoise_validator::base::{Array, Jagged, ReleaseNode, Value};
+use whitenoise_validator::base::{Array, ReleaseNode, Value};
 use whitenoise_validator::errors::*;
 use whitenoise_validator::utilities::{array::broadcast_ndarray, privacy::{get_delta, get_epsilon, spread_privacy_usage}, take_argument};
 
@@ -142,12 +142,13 @@ impl Evaluable for proto::SimpleGeometricMechanism {
 }
 
 impl Evaluable for proto::ExponentialMechanism {
-    fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
-
+    fn evaluate(
+        &self, privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments,
+    ) -> Result<ReleaseNode> {
         let enforce_constant_time = privacy_definition.as_ref()
             .map(|v| v.protect_elapsed_time).unwrap_or(false);
 
-        let candidates = take_argument(&mut arguments, "candidates")?.jagged()?;
+        let candidates = take_argument(&mut arguments, "candidates")?.array()?;
 
         let sensitivity = take_argument(&mut arguments, "sensitivity")?.array()?.float()?
             .iter().cloned().collect::<Vec<Float>>();
@@ -155,73 +156,33 @@ impl Evaluable for proto::ExponentialMechanism {
         let usages = spread_privacy_usage(&self.privacy_usage, sensitivity.len())?;
         let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
-        let utilities = take_argument(&mut arguments, "utilities")?.jagged()?.float()?;
+        let utilities = take_argument(&mut arguments, "utilities")?.array()?.float()?;
 
-        let value = match candidates {
-            Jagged::Float(candidates) => {
-                let release_vec = candidates.iter().zip(utilities)
-                    .zip(sensitivity.iter().zip(epsilon.iter()))
-                    .map(|((cands, utils), (sens, eps))|
-                        exponential_mechanism(
-                            *eps, *sens as f64, cands,
-                            utils.into_iter().map(|v| v as f64).collect(),
+        macro_rules! apply_exponential {
+            ($candidates:ident) => {
+                {
+                    let mut release_vec = $candidates.gencolumns().into_iter()
+                        .zip(utilities.gencolumns().into_iter())
+                        .zip(sensitivity.iter().zip(epsilon.iter()))
+                        .map(|((cands, utils), (sens, eps))| exponential_mechanism(
+                            *eps, *sens as f64,
+                            &cands.to_vec(),
+                            utils.into_iter().map(|v| *v as f64).collect(),
                             enforce_constant_time))
-                    .collect::<Result<Vec<Float>>>()?;
+                        .collect::<Result<Vec<_>>>()?;
 
-                let mut release_array = arr1(&release_vec).into_dyn();
-                release_array.insert_axis_inplace(Axis(0));
-
-                Value::from(release_array)
-            },
-            Jagged::Int(candidates) => {
-                let release_vec = candidates.iter().zip(utilities)
-                    .zip(sensitivity.iter().zip(epsilon.iter()))
-                    .map(|((cands, utils), (sens, eps))|
-                        exponential_mechanism(
-                            *eps, *sens as f64, cands,
-                            utils.into_iter().map(|v| v as f64).collect(),
-                            enforce_constant_time))
-                    .collect::<Result<Vec<Integer>>>()?;
-
-                let mut release_array = arr1(&release_vec).into_dyn();
-                release_array.insert_axis_inplace(Axis(0));
-
-                Value::from(release_array)
-            },
-            Jagged::Str(candidates) => {
-                let release_vec = candidates.iter().zip(utilities)
-                    .zip(sensitivity.iter().zip(epsilon.iter()))
-                    .map(|((cands, utils), (sens, eps))|
-                        exponential_mechanism(
-                            *eps, *sens as f64, cands,
-                            utils.into_iter().map(|v| v as f64).collect(),
-                            enforce_constant_time))
-                    .collect::<Result<Vec<String>>>()?;
-
-                let mut release_array = arr1(&release_vec).into_dyn();
-                release_array.insert_axis_inplace(Axis(0));
-
-                Value::from(release_array)
-            },
-            Jagged::Bool(candidates) => {
-                let release_vec = candidates.iter().zip(utilities)
-                    .zip(sensitivity.iter().zip(epsilon.iter()))
-                    .map(|((cands, utils), (sens, eps))|
-                        exponential_mechanism(
-                            *eps, *sens as f64, cands,
-                            utils.into_iter().map(|v| v as f64).collect(),
-                            enforce_constant_time))
-                    .collect::<Result<Vec<bool>>>()?;
-
-                let mut release_array = arr1(&release_vec).into_dyn();
-                release_array.insert_axis_inplace(Axis(0));
-
-                Value::from(release_array)
+                    Value::from(arr0(release_vec.remove(0)).into_dyn())
+                }
             }
-        };
+        }
 
         Ok(ReleaseNode {
-            value,
+            value: match candidates {
+                Array::Float(candidates) => apply_exponential!(candidates),
+                Array::Int(candidates) => apply_exponential!(candidates),
+                Array::Str(candidates) => apply_exponential!(candidates),
+                Array::Bool(candidates) => apply_exponential!(candidates)
+            },
             privacy_usages: Some(usages),
             public: true,
         })

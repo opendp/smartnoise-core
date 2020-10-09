@@ -24,16 +24,18 @@ impl Component for proto::Materialize {
                     num_columns: Some(1),
                     nullity: true,
                     releasable: self.public,
-                    c_stability: vec![1.],
+                    c_stability: 1,
                     aggregator: None,
                     nature: None,
                     data_type: DataType::Str,
                     dataset_id: Some(node_id as i64),
+                    node_id: node_id as i64,
                     // this is a library-wide assumption - that datasets initially have more than zero rows
                     is_not_empty: true,
                     dimensionality: Some(1),
                     group_id: vec![],
-                    naturally_ordered: true
+                    naturally_ordered: true,
+                    sample_proportion: None
                 }))).collect(),
         }).into())
     }

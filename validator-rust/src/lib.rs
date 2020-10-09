@@ -11,6 +11,7 @@
 //! - [Top-level documentation](https://opendifferentialprivacy.github.io/whitenoise-core/)
 
 #![warn(unused_extern_crates)]
+#![forbid(unsafe_code)]
 #![allow(clippy::implicit_hasher)]
 
 // `error_chain!` can recurse deeply
@@ -326,15 +327,18 @@ pub fn expand_component(
     component_id: u32,
     maximum_id: u32,
 ) -> Result<base::ComponentExpansion> {
+    let argument_ids = component.arguments();
 
     for (k, v) in &public_arguments {
         if !v.public {
             return Err("private data should not be sent to the validator".into())
         }
-        properties.insert(k.clone(),
-                          utilities::inference::infer_property(
-                              &v.value,
-                              properties.get(k))?);
+        let node_id = argument_ids.get(k)
+            .ok_or_else(|| Error::from(format!("unrecognized argument: {:?}", k)))?;
+
+        properties.insert(
+            k.clone(),
+            utilities::inference::infer_property(&v.value, properties.get(k), *node_id)?);
     }
 
     let public_values = public_arguments.iter()

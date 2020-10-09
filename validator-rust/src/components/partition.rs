@@ -100,7 +100,7 @@ impl Expandable for proto::Partition {
                 let id_categories = maximum_id;
                 let (patch_node, release) = get_literal(Value::Jagged(categories), component.submission)?;
                 expansion.computation_graph.insert(id_categories, patch_node);
-                expansion.properties.insert(id_categories, infer_property(&release.value, None)?);
+                expansion.properties.insert(id_categories, infer_property(&release.value, None, id_categories)?);
                 expansion.releases.insert(id_categories, release);
 
                 let mut component = component.clone();
@@ -145,8 +145,7 @@ fn get_partition_properties(
         properties.is_not_empty = num_records.unwrap_or(0) != 0;
 
         if neighboring_definition == proto::privacy_definition::Neighboring::Substitute {
-            properties.c_stability = properties.c_stability
-                .into_iter().map(|v| v * 2.).collect();
+            properties.c_stability = properties.c_stability * 2
         }
 
         properties

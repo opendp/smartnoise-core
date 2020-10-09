@@ -2,7 +2,11 @@ use indexmap::map::IndexMap;
 use ndarray::prelude::*;
 
 use crate::{base, Float, proto, Warnable};
-use crate::base::{AggregatorProperties, DataType, IndexKey, JaggedProperties, NodeProperties, SensitivitySpace, Value, ValueProperties};
+use crate::base::{
+    AggregatorProperties, DataType, IndexKey,
+    NodeProperties, SensitivitySpace, Value, ValueProperties,
+    ArrayProperties, Nature, NatureContinuous, Vector1DNull
+};
 use crate::components::{Component, Expandable, Sensitivity};
 use crate::errors::*;
 use crate::utilities::prepend;
@@ -12,56 +16,83 @@ impl Component for proto::Quantile {
         &self,
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         public_arguments: IndexMap<base::IndexKey, &Value>,
-        properties: base::NodeProperties,
-        _node_id: u32
+        mut properties: base::NodeProperties,
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get::<IndexKey>(&"data".into())
+        let mut data_property: ArrayProperties = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
         if !data_property.releasable {
             data_property.assert_is_not_aggregated()?;
         }
-        data_property.assert_is_not_empty()?;
 
         if data_property.data_type != DataType::Float && data_property.data_type != DataType::Int {
             return Err("data: atomic type must be numeric".into());
         }
 
-        Ok(match public_arguments.get::<IndexKey>(&"candidates".into()) {
-            Some(candidates) => {
-                let candidates = candidates.ref_jagged()?;
+        let has_bounds = public_arguments.contains_key(&IndexKey::from("lower"))
+            && public_arguments.contains_key(&IndexKey::from("upper"));
 
-                if data_property.data_type != candidates.data_type() {
+        Ok(match properties.remove::<IndexKey>(&"candidates".into()) {
+            Some(candidates_property) => {
+                let candidates_property: &ArrayProperties = candidates_property.array()
+                    .map_err(prepend("candidates:"))?;
+
+                if data_property.data_type != candidates_property.data_type {
                     return Err("data_type of data must match data_type of candidates".into())
                 }
 
-                let num_columns = data_property.num_columns()?;
-                ValueProperties::Jagged(JaggedProperties {
-                    num_records: Some(candidates.num_records()),
-                    nullity: false,
-                    aggregator: Some(AggregatorProperties {
-                        component: proto::component::Variant::Quantile(self.clone()),
-                        properties,
-                        lipschitz_constants: ndarray::Array::from_shape_vec(
-                            vec![1, num_columns as usize],
-                            (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
-                    }),
-                    nature: None,
+                if data_property.num_columns()? != candidates_property.num_columns()? {
+                    return Err("candidates is not column-conformable with the data".into())
+                }
+
+                // upper bound for n * max(a, 1 - a) - |(1 - a) * #z - a * (n - #z)|
+                //               = n * max(a, 1 - a) - |#z - an|
+                //              <= n * max(a, 1 - a) (because |#z - an| minimized when #z = an)
+                let utility_upper_bound = candidates_property.num_records
+                    .map(|n| n as f64 * self.alpha.max(1. - self.alpha));
+
+                // bounds make the quantile nan-robust
+                if !has_bounds {
+                    data_property.assert_non_null()?;
+                    data_property.assert_is_not_empty()?;
+                }
+
+                ValueProperties::Array(ArrayProperties {
+                    num_records: candidates_property.num_records,
+                    num_columns: data_property.num_columns,
+                    nullity: candidates_property.nullity,
+                    releasable: data_property.releasable && candidates_property.releasable,
+                    c_stability: data_property.c_stability.clone(),
+                    aggregator: Some(AggregatorProperties::new(
+                        proto::component::Variant::Quantile(self.clone()),
+                        properties, data_property.num_columns()?)),
+                    nature: Some(Nature::Continuous(NatureContinuous {
+                        lower: Vector1DNull::Float((0..data_property.num_columns()?)
+                            .map(|_| Some(0.)).collect()),
+                        upper: Vector1DNull::Float((0..data_property.num_columns()?)
+                            .map(|_| utility_upper_bound).collect())
+                    })),
                     data_type: DataType::Float,
-                    releasable: false
+                    dataset_id: None,
+                    node_id: node_id as i64,
+                    is_not_empty: true,
+                    dimensionality: candidates_property.dimensionality,
+                    group_id: data_property.group_id,
+                    naturally_ordered: data_property.naturally_ordered,
+                    sample_proportion: None
                 }).into()
             },
             None => {
-                let num_columns = data_property.num_columns()?;
+                if has_bounds { return Err("bounds are only useful when evaluating candidates".into()) }
+
+                data_property.assert_is_not_empty()?;
                 // save a snapshot of the state when aggregating
-                data_property.aggregator = Some(AggregatorProperties {
-                    component: proto::component::Variant::Quantile(self.clone()),
+                data_property.aggregator = Some(AggregatorProperties::new(
+                    proto::component::Variant::Quantile(self.clone()),
                     properties,
-                    lipschitz_constants: ndarray::Array::from_shape_vec(
-                        vec![1, num_columns as usize],
-                        (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
-                });
+                    data_property.num_columns()?));
 
                 data_property.num_records = Some(1);
 
@@ -83,7 +114,6 @@ impl Sensitivity for proto::Quantile {
             .map_err(prepend("data:"))?.clone();
 
         data_property.assert_is_not_aggregated()?;
-        data_property.assert_non_null()?;
 
         match sensitivity_type {
             SensitivitySpace::KNorm(_k) => {
@@ -100,7 +130,10 @@ impl Sensitivity for proto::Quantile {
 
                 Ok(array_sensitivity.into())
             }
+
+            // SensitivitySpace::Exponential(implementation) if implementation == "standard" => {
             SensitivitySpace::Exponential => {
+                data_property.assert_non_null()?;
 
                 let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
                     .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
@@ -119,6 +152,31 @@ impl Sensitivity for proto::Quantile {
 
                 Ok(array_sensitivity.into())
             }
+
+            // this implementation is robust to nans, but only supports alpha == .5
+            // SensitivitySpace::Exponential(implementation) if implementation == "NaN-robust" => {
+            //
+            //     if self.alpha != 0.5 {
+            //         return Err(Error::from("alpha must be 0.5 to use the NaN-robust quantile"))
+            //     }
+            //
+            //     let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
+            //         .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
+            //     use proto::privacy_definition::Neighboring;
+            //     let cell_sensitivity = match neighboring_type {
+            //         Neighboring::AddRemove => self.alpha.max(1. - self.alpha),
+            //         Neighboring::Substitute => 1.
+            //     } as Float;
+            //
+            //     let row_sensitivity = (0..data_property.num_columns()?)
+            //         .map(|_| cell_sensitivity)
+            //         .collect::<Vec<Float>>();
+            //
+            //     let array_sensitivity = Array::from(row_sensitivity).into_dyn();
+            //     // array_sensitivity.insert_axis_inplace(Axis(0));
+            //
+            //     Ok(array_sensitivity.into())
+            // }
             _ => Err("Quantile sensitivity is not implemented for the specified sensitivity space".into())
         }
     }

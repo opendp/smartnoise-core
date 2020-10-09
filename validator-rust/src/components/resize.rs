@@ -1,7 +1,7 @@
 use indexmap::map::IndexMap;
 
 use crate::{base, Float, Warnable};
-use crate::base::{DataType, IndexKey, Jagged, Nature, NatureCategorical, NatureContinuous, Value, ValueProperties, Vector1DNull};
+use crate::base::{DataType, IndexKey, Jagged, Nature, NatureCategorical, NatureContinuous, Value, ValueProperties, Vector1DNull, ArrayProperties};
 use crate::components::{Component, Expandable};
 use crate::errors::*;
 use crate::proto;
@@ -17,7 +17,7 @@ impl Component for proto::Resize {
         _node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
 
-        let mut data_property = properties.get::<IndexKey>(&"data".into())
+        let mut data_property: ArrayProperties = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -42,7 +42,6 @@ impl Component for proto::Resize {
             }
             data_property.num_columns = Some(num_columns);
             data_property.nature = None;
-            data_property.c_stability = (0..num_columns).map(|_| 1.).collect::<Vec<Float>>();
             data_property.dimensionality = Some(2);
         }
 
@@ -232,6 +231,25 @@ impl Component for proto::Resize {
             _ => return Err("bounds for imputation must be numeric".into())
         }
 
+        let sample_proportion: Option<Float> = public_arguments.get(&IndexKey::from("sample_proportion"))
+            .and_then(|v| v.ref_array().ok()?.first_float().ok());
+        if let Some(sample_proportion) = sample_proportion {
+            if sample_proportion <= 0. {
+                return Err("sample_proportion must be positive".into())
+            }
+        }
+        data_property.c_stability = data_property.c_stability * sample_proportion.unwrap_or(1.).ceil() as u32;
+        data_property.sample_proportion = match (data_property.sample_proportion, sample_proportion) {
+            (Some(_), Some(_)) => return Err(Error::from("multiple samplings is not currently supported")),
+            (Some(prior_prop), None) => Some(prior_prop),
+            (None, Some(new_prop)) => Some(new_prop / new_prop.ceil()),
+            (None, None) => None
+        };
+
+        if data_property.sample_proportion.is_some() {
+            data_property.naturally_ordered = false;
+        }
+
         Ok(ValueProperties::Array(data_property).into())
     }
 }
@@ -270,7 +288,7 @@ impl Expandable for proto::Resize {
                 let (patch_node, release) = get_literal(
                     Value::Array(data_property.lower()?), component.submission)?;
                 expansion.computation_graph.insert(id_lower, patch_node);
-                expansion.properties.insert(id_lower, infer_property(&release.value, None)?);
+                expansion.properties.insert(id_lower, infer_property(&release.value, None, id_lower)?);
                 expansion.releases.insert(id_lower, release);
                 component.insert_argument(&"lower".into(), id_lower);
             }
@@ -280,7 +298,7 @@ impl Expandable for proto::Resize {
                 let (patch_node, release) = get_literal(
                     Value::Array(data_property.upper()?), component.submission)?;
                 expansion.computation_graph.insert(id_upper, patch_node);
-                expansion.properties.insert(id_upper, infer_property(&release.value, None)?);
+                expansion.properties.insert(id_upper, infer_property(&release.value, None, id_upper)?);
                 expansion.releases.insert(id_upper, release);
                 component.insert_argument(&"upper".into(), id_upper);
             }
@@ -292,7 +310,7 @@ impl Expandable for proto::Resize {
             let (patch_node, release) = get_literal(
                 Value::Jagged(data_property.categories()?), component.submission)?;
             expansion.computation_graph.insert(id_categories, patch_node);
-            expansion.properties.insert(id_categories, infer_property(&release.value, None)?);
+            expansion.properties.insert(id_categories, infer_property(&release.value, None, id_categories)?);
             expansion.releases.insert(id_categories, release);
             component.insert_argument(&"categories".into(), id_categories);
         }

@@ -1,18 +1,19 @@
 use std::{cmp, f64::consts, mem};
 
 use ieee754::Ieee754;
+use noisy_float::types::n64;
 use probability::distribution::{Inverse, Laplace};
 #[cfg(not(feature="use-mpfr"))]
 use probability::prelude::Gaussian;
 #[cfg(feature="use-mpfr")]
 use rug::{Float, rand::{ThreadRandGen, ThreadRandState}};
 
+use whitenoise_validator::components::snapping_mechanism::{compute_precision, get_smallest_greater_or_eq_power_of_two, redefine_epsilon};
 use whitenoise_validator::errors::*;
 use whitenoise_validator::Integer;
 
 use crate::utilities;
 use crate::utilities::get_closest_multiple_of_lambda;
-use whitenoise_validator::components::snapping_mechanism::{get_smallest_greater_or_eq_power_of_two, redefine_epsilon, compute_precision};
 
 // Give MPFR ability to draw randomness from OpenSSL
 #[cfg(feature="use-mpfr")]
@@ -76,11 +77,7 @@ pub fn censored_specific_geom(enforce_constant_time: bool) -> Result<i16> {
 ///
 /// # Arguments
 /// * `prob`- The desired probability of success (bit = 1).
-///
-/// * `shift` - f64, the center of the distribution
-/// * `scale` - f64, the scaling parameter of the distribution
-/// * `min` - f64, the minimum value of random variables pulled from the distribution.
-/// * `max` - f64, the maximum value of random variables pulled from the distribution
+/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time
 ///
 /// # Return
 /// A bit that is 1 with probability "prob"
@@ -136,6 +133,21 @@ pub fn sample_bit_prob(prob: f64, enforce_constant_time: bool) -> Result<bool> {
         // retrieve the bit at `i` slots shifted from the left
         i => mantissa & (1_u64 << (52 - i as usize)) != 0
     })
+}
+
+/// Sample from the binomial distribution.
+///
+/// # Arguments
+/// * `n` - Number of trials
+/// * `prob`- The desired probability of success (bit = 1).
+/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time
+///
+/// # Return
+/// Number of successful trials
+pub fn sample_binomial(n: i64, prob: f64, enforce_constant_time: bool) -> Result<i64> {
+    (0..n).try_fold(0, |sum, _|
+        sample_bit_prob(prob, enforce_constant_time)
+            .map(|v| sum + if v {1} else {0}))
 }
 
 #[cfg(test)]
@@ -396,9 +408,9 @@ mod test_uniform {
     }
 }
 
-/// Generates a draw from Unif[min, max] using the MPFR library.
+/// Returns random sample from Uniform[min,max) using the MPFR library.
 ///
-/// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
+/// If [min, max) == [0, 1),then this is done in a way that respects exact rounding.
 /// Otherwise, the return will be the result of a composition of two operations that
 /// respect exact rounding (though the result will not necessarily).
 ///
@@ -451,7 +463,6 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
 /// # n.unwrap();
 /// ```
 pub fn sample_laplace(shift: f64, scale: f64, enforce_constant_time: bool) -> Result<f64> {
-    // nothing in sample_uniform can throw an error
     let probability: f64 = sample_uniform(0., 1., enforce_constant_time)?;
     Ok(Laplace::new(shift, scale).inverse(probability))
 }
@@ -478,9 +489,9 @@ pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> R
     Ok(Gaussian::new(shift, scale).inverse(probability))
 }
 
-/// Generates a draw from a Gaussian distribution using the MPFR library.
+/// Generates a draw from a Gaussian(loc, scale) distribution using the MPFR library.
 ///
-/// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
+/// If shift = 0 and scale = 1, sampling is done in a way that respects exact rounding.
 /// Otherwise, the return will be the result of a composition of two operations that
 /// respect exact rounding (though the result will not necessarily).
 ///
@@ -489,7 +500,7 @@ pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> R
 /// * `scale` - The scaling parameter (standard deviation) of the Gaussian distribution.
 ///
 /// # Return
-/// Draw from Gaussian(min, max)
+/// Draw from Gaussian(loc, scale)
 ///
 /// # Example
 /// ```
@@ -710,4 +721,39 @@ pub fn snapping_mechanism(
     mechanism_input: &f64, epsilon: &f64, b: &f64, sensitivity: &f64
 ) -> Result<f64> {
     Err(Error::from("Crate must be compiled with gmp-mpfr to use the snapping mechanism."))
+}
+
+/// Sample noise from the Gumbel Distribution
+///
+/// Based on C implementation from https://github.com/numpy/numpy/blob/d329a66dbb9710aefd03cce6a8b0f46da51490ca/numpy/random/src/distributions/distributions.c
+///
+/// # Arguments
+/// * `loc` - location parameter
+/// * `scale` - scale parameter
+///
+/// # Return
+///  Noise according to the Gumbel Distribution
+pub fn sample_gumbel(loc: f64, scale: f64) -> f64 {
+    let rug_loc = Float::with_val(120, loc);
+    let rug_scale = Float::with_val(120, scale);
+    let u = Float::with_val(120, sample_uniform_mpfr(0.0, 1.0).unwrap());
+    // Accept if u > 0, otherwise reject and call function again
+    if u.gt(&Float::with_val(120, 0.0)) {
+        let negative_log = -(u.ln());
+        let log_term = negative_log.ln();
+        (-rug_scale.mul_add(&log_term, &rug_loc)).to_f64()
+    } else {
+        sample_gumbel(loc, scale)
+    }
+}
+
+/// Shuffle a vector
+///
+pub fn shuffle<T>(vector: Vec<T>, enforce_constant_time: bool) -> Result<Vec<T>> {
+    let mut vector = vector
+        .into_iter()
+        .map(|v| Ok((v, n64(sample_uniform(0., 1., enforce_constant_time)?))))
+        .collect::<Result<Vec<_>>>()?;
+    vector.sort_unstable_by_key(|v| v.1);
+    Ok(vector.into_iter().map(|(v, _)| v).collect())
 }

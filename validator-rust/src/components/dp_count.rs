@@ -57,7 +57,7 @@ impl Expandable for proto::DpCount {
                     let id_count_min = maximum_id;
                     let (patch_node, count_min_release) = get_literal(0.into(), component.submission)?;
                     expansion.computation_graph.insert(id_count_min, patch_node);
-                    expansion.properties.insert(id_count_min, infer_property(&count_min_release.value, None)?);
+                    expansion.properties.insert(id_count_min, infer_property(&count_min_release.value, None, id_count_min)?);
                     expansion.releases.insert(id_count_min, count_min_release);
                     id_count_min
                 }
@@ -85,7 +85,7 @@ impl Expandable for proto::DpCount {
                     let id_count_max = maximum_id;
                     let (patch_node, count_max_release) = get_literal(count_max.into(), component.submission)?;
                     expansion.computation_graph.insert(id_count_max, patch_node);
-                    expansion.properties.insert(id_count_max, infer_property(&count_max_release.value, None)?);
+                    expansion.properties.insert(id_count_max, infer_property(&count_max_release.value, None, id_count_max)?);
                     expansion.releases.insert(id_count_max, count_max_release);
                     id_count_max
                 }

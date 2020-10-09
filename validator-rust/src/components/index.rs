@@ -17,7 +17,7 @@ impl Component for proto::Index {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         mut public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
         let data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.clone();
@@ -113,7 +113,7 @@ impl Component for proto::Index {
             ValueProperties::Function(_) => Err("indexing is not suppported on functions".into())
         }?;
 
-        stack_properties(&properties, dimensionality).map(Warnable::new)
+        stack_properties(&properties, dimensionality, node_id).map(Warnable::new)
     }
 }
 

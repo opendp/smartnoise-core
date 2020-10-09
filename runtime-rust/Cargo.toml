@@ -21,7 +21,6 @@ ieee754 = "0.2.6"
 itertools = "0.9.0"
 error-chain = "0.12.2"
 noisy_float = "0.1.12"
-libmath = "0.2.1"
 statrs = "0.12.0"
 
     [dependencies.openssl]
