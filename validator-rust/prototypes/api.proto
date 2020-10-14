@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package whitenoise;
+package smartnoise;
 
 import "base.proto";
 import "components.proto";

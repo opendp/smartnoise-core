@@ -1,15 +1,15 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{Array, ReleaseNode, Value, IndexKey};
-use whitenoise_validator::utilities::{take_argument, get_common_value};
-use whitenoise_validator::components::partition::{even_split_lengths, make_dense_partition_keys};
+use smartnoise_validator::base::{Array, ReleaseNode, Value, IndexKey};
+use smartnoise_validator::utilities::{take_argument, get_common_value};
+use smartnoise_validator::components::partition::{even_split_lengths, make_dense_partition_keys};
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Axis};
 
-use whitenoise_validator::{proto, Integer};
+use smartnoise_validator::{proto, Integer};
 
-use whitenoise_validator::utilities::array::slow_select;
+use smartnoise_validator::utilities::array::slow_select;
 use indexmap::map::IndexMap;
 
 
@@ -59,8 +59,8 @@ type ColName = IndexKey;
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr1, arr2};
-/// use whitenoise_runtime::components::partition::partition_ndarray_evenly;
-/// use whitenoise_validator::base::IndexKey;
+/// use smartnoise_runtime::components::partition::partition_ndarray_evenly;
+/// use smartnoise_validator::base::IndexKey;
 ///
 /// let data = arr2(&[ [1, 2], [4, 5], [7, 8], [10, 11] ]).into_dyn();
 /// let partitioned = partition_ndarray_evenly(&data, 3);

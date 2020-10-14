@@ -1,12 +1,12 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{Array, ReleaseNode};
+use smartnoise_validator::base::{Array, ReleaseNode};
 use crate::components::Evaluable;
 use ndarray::ArrayD;
 
-use whitenoise_validator::{proto, Integer};
-use whitenoise_validator::utilities::take_argument;
+use smartnoise_validator::{proto, Integer};
+use smartnoise_validator::utilities::take_argument;
 use crate::utilities::get_num_columns;
 use noisy_float::types::n64;
 use indexmap::map::IndexMap;

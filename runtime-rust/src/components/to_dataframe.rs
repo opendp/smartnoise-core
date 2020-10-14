@@ -1,12 +1,12 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use ndarray::prelude::*;
 use crate::NodeArguments;
-use whitenoise_validator::base::{Value, Array, ReleaseNode, IndexKey};
+use smartnoise_validator::base::{Value, Array, ReleaseNode, IndexKey};
 use crate::components::Evaluable;
 
-use whitenoise_validator::proto;
-use whitenoise_validator::utilities::{array::get_ith_column, take_argument};
+use smartnoise_validator::proto;
+use smartnoise_validator::utilities::{array::get_ith_column, take_argument};
 use crate::utilities::standardize_columns;
 use indexmap::map::IndexMap;
 

@@ -1,10 +1,10 @@
 use ndarray::prelude::*;
 use ndarray::stack;
 
-use whitenoise_validator::proto;
-use whitenoise_validator::base::{Array, ReleaseNode};
-use whitenoise_validator::errors::*;
-use whitenoise_validator::utilities::array::slow_stack;
+use smartnoise_validator::proto;
+use smartnoise_validator::base::{Array, ReleaseNode};
+use smartnoise_validator::errors::*;
+use smartnoise_validator::utilities::array::slow_stack;
 
 use crate::components::Evaluable;
 use crate::NodeArguments;

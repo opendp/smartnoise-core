@@ -1,18 +1,18 @@
-//! The Whitenoise rust runtime is an execution engine for evaluating differentially private analyses.
+//! The SmartNoise rust runtime is an execution engine for evaluating differentially private analyses.
 //! 
 //! The runtime contains implementations of basic data transformations and aggregations, 
 //! statistics, and privatizing mechanisms. These functions are combined in the 
-//! Whitenoise validator to create more complex differentially private analyses.
+//! SmartNoise validator to create more complex differentially private analyses.
 //!
-//! - [Top-level documentation](https://opendifferentialprivacy.github.io/whitenoise-core/)
+//! - [Top-level documentation](https://opendifferentialprivacy.github.io/smartnoise-core/)
 
 #![warn(unused_extern_crates)]
 // s! macros for slicing from ndarray use unsafe code
 #![deny(unsafe_code)]
 #![allow(clippy::implicit_hasher)]
 
-pub use whitenoise_validator::proto;
-use whitenoise_validator::errors::*;
+pub use smartnoise_validator::proto;
+use smartnoise_validator::errors::*;
 
 pub mod utilities;
 pub mod components;
@@ -21,8 +21,8 @@ pub mod base;
 use std::collections::{HashMap, HashSet};
 use std::vec::Vec;
 
-use whitenoise_validator::base::{Value, ReleaseNode, Release, IndexKey, ComponentExpansion, ValueProperties};
-use whitenoise_validator::utilities::{get_sinks, get_input_properties, get_dependents};
+use smartnoise_validator::base::{Value, ReleaseNode, Release, IndexKey, ComponentExpansion, ValueProperties};
+use smartnoise_validator::utilities::{get_sinks, get_input_properties, get_dependents};
 
 use crate::components::Evaluable;
 
@@ -66,7 +66,7 @@ pub fn release(
     let mut traversal: Vec<u32> = get_sinks(&computation_graph).into_iter().collect();
 
     // derive properties for any private nodes in the release
-    let (mut properties, mut warnings) = whitenoise_validator::get_properties(
+    let (mut properties, mut warnings) = smartnoise_validator::get_properties(
         privacy_definition.clone(),
         computation_graph.clone(),
         release.clone(),
@@ -121,7 +121,7 @@ pub fn release(
             .collect::<IndexMap<IndexKey, ReleaseNode>>();
 
         // expand the current node
-        let mut expansion: ComponentExpansion = match whitenoise_validator::expand_component(
+        let mut expansion: ComponentExpansion = match smartnoise_validator::expand_component(
             component.clone(),
             node_properties,
             public_arguments,

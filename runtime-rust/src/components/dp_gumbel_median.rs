@@ -1,10 +1,10 @@
 use std::cmp::Ordering;
 
-use whitenoise_validator::{Float, proto};
-use whitenoise_validator::base::ReleaseNode;
-use whitenoise_validator::errors::*;
-use whitenoise_validator::utilities::privacy::get_epsilon;
-use whitenoise_validator::utilities::take_argument;
+use smartnoise_validator::{Float, proto};
+use smartnoise_validator::base::ReleaseNode;
+use smartnoise_validator::errors::*;
+use smartnoise_validator::utilities::privacy::get_epsilon;
+use smartnoise_validator::utilities::take_argument;
 
 use crate::components::Evaluable;
 use crate::NodeArguments;
@@ -85,9 +85,9 @@ fn dp_gumbel_median(
 pub mod test {
     use ndarray::ArrayD;
 
-    use whitenoise_validator::{Float, Integer};
-    use whitenoise_validator::errors::*;
-    use whitenoise_validator::proto::privacy_definition::Neighboring;
+    use smartnoise_validator::{Float, Integer};
+    use smartnoise_validator::errors::*;
+    use smartnoise_validator::proto::privacy_definition::Neighboring;
 
     use crate::components::dp_gumbel_median::{dp_gumbel_median};
     use crate::components::theil_sen::{theil_sen_transform, theil_sen_transform_k_match};

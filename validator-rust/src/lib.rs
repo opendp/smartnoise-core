@@ -1,14 +1,14 @@
-//! The Whitenoise rust validator contains methods for evaluating and constructing
+//! The SmartNoise rust validator contains methods for evaluating and constructing
 //! differentially private analyses.
 //!
 //! The validator defines a set of statically checkable properties that are
 //! necessary for a differentially private analysis, and then checks that the submitted analysis
 //! satisfies the properties.
 //!
-//! The validator also takes simple components from the Whitenoise runtime and combines them
+//! The validator also takes simple components from the SmartNoise runtime and combines them
 //! into more complex mechanisms.
 //!
-//! - [Top-level documentation](https://opendifferentialprivacy.github.io/whitenoise-core/)
+//! - [Top-level documentation](https://opendifferentialprivacy.github.io/smartnoise-core/)
 
 #![warn(unused_extern_crates)]
 #![forbid(unsafe_code)]
@@ -63,7 +63,7 @@ pub mod docs;
 
 // include protobuf-generated traits
 pub mod proto {
-    include!(concat!(env!("OUT_DIR"), "/whitenoise.rs"));
+    include!(concat!(env!("OUT_DIR"), "/smartnoise.rs"));
 }
 
 // define the useful macro for building hashmaps globally

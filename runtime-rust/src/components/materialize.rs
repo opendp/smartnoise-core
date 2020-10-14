@@ -1,12 +1,12 @@
-use whitenoise_validator::errors::*;
-use whitenoise_validator::components::Named;
+use smartnoise_validator::errors::*;
+use smartnoise_validator::components::Named;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{Value, ReleaseNode, IndexKey};
+use smartnoise_validator::base::{Value, ReleaseNode, IndexKey};
 use indexmap::IndexMap;
 use crate::components::Evaluable;
 
-use whitenoise_validator::{proto};
+use smartnoise_validator::{proto};
 
 impl Evaluable for proto::Materialize {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, arguments: NodeArguments) -> Result<ReleaseNode> {
@@ -32,7 +32,7 @@ impl Evaluable for proto::Materialize {
         // parse from csv into response
         reader.deserialize().try_for_each(|result: std::result::Result<Vec<String>, _>| {
 
-            // parse each record into the whitenoise internal format
+            // parse each record into the smartnoise internal format
             match result {
                 Ok(record) => record.into_iter().enumerate()
                     .filter(|(idx, _)| idx < &num_columns)

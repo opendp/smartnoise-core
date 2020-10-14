@@ -1,10 +1,10 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{Array, ReleaseNode};
-use whitenoise_validator::utilities::{take_argument};
+use smartnoise_validator::base::{Array, ReleaseNode};
+use smartnoise_validator::utilities::{take_argument};
 use crate::components::Evaluable;
-use whitenoise_validator::proto;
+use smartnoise_validator::proto;
 use ndarray::{ArrayD};
 use std::ops::Add;
 use crate::utilities::get_num_columns;
@@ -31,7 +31,7 @@ impl Evaluable for proto::Sum {
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use whitenoise_runtime::components::sum::sum;
+/// use smartnoise_runtime::components::sum::sum;
 /// let data = arr2(&[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();
 /// let sums = sum(&data).unwrap();
 /// assert!(sums == arr2(&[[6., 60.]]).into_dyn());

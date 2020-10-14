@@ -2,15 +2,15 @@
 
 ---
 
-[![Build Status](https://travis-ci.com/opendifferentialprivacy/whitenoise-core.svg?branch=develop)](https://travis-ci.com/opendifferentialprivacy/whitenoise-core)
+[![Build Status](https://travis-ci.com/opendifferentialprivacy/smartnoise-core.svg?branch=develop)](https://travis-ci.com/opendifferentialprivacy/smartnoise-core)
 
 
-<a href="http://opendp.io"><img src="images/WhiteNoise Logo/SVG/LogoMark_color.svg" align="left" height="70" vspace="8" hspace="18"></a>
+<a href="http://opendp.io"><img src="images/SmartNoise Logo/SVG/LogoMark_color.svg" align="left" height="70" vspace="8" hspace="18"></a>
 
 
 ## <br/>Core Differential Privacy Library <br/>
 
-See also the accompanying [system repository](https://github.com/opendifferentialprivacy/whitenoise-system) and [samples repository](https://github.com/opendifferentialprivacy/whitenoise-samples) accompanying repositories for this system.
+See also the accompanying [system repository](https://github.com/opendifferentialprivacy/smartnoise-system) and [samples repository](https://github.com/opendifferentialprivacy/smartnoise-samples) accompanying repositories for this system.
 
 ---
 
@@ -41,7 +41,7 @@ Differentially private computations are specified as an analysis graph that can 
 ### Components
 
 The primary releases available in the library, and the mechanisms for generating these releases, are enumerated below.
-For a full listing of the extensive set of components available in the library [see this documentation.](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_validator/docs/components/index.html)
+For a full listing of the extensive set of components available in the library [see this documentation.](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_validator/docs/components/index.html)
 
 | Statistics    | Mechanisms | Utilities  |
 | ------------- |------------|------------|
@@ -70,9 +70,9 @@ The core library, is the `validator`, which provides a suite of utilities for ch
 There must also be a medium to execute the analysis, called a `runtime`. There is a reference runtime written in Rust, but runtimes may be written using any computation framework--be it SQL, Spark or Dask--to address your individual data needs.
 
 #### 3. Bindings
-  - Python Bindings: [core-python](https://github.com/opendifferentialprivacy/whitenoise-core-python)
-  - R Bindings (in progress): [core-R](https://github.com/opendifferentialprivacy/whitenoise-core-R)
-  - Rust Bindings (in progress): [core-Rust](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_validator/bindings/index.html)
+  - Python Bindings: [core-python](https://github.com/opendifferentialprivacy/smartnoise-core-python)
+  - R Bindings (in progress): [core-R](https://github.com/opendifferentialprivacy/smartnoise-core-R)
+  - Rust Bindings (in progress): [core-Rust](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_validator/bindings/index.html)
 
 Finally, there are helper libraries for building analyses, called `bindings`. Bindings may be written for any language, and are thin wrappers over the validator and/or runtime(s). Language bindings are currently available for Python, with support for at minimum R, Rust and SQL forthcoming.
 
@@ -93,14 +93,14 @@ At some point the projects have compiled cross-platform (more testing needed). T
 Refer to [troubleshooting.md](troubleshooting.md) for install problems.
 
 #### PyPi packages
-Refer to [core-python](https://github.com/opendifferentialprivacy/whitenoise-core-python) which contains python bindings, including links to PyPi packages.
+Refer to [core-python](https://github.com/opendifferentialprivacy/smartnoise-core-python) which contains python bindings, including links to PyPi packages.
 
 #### Crates.io
 The crates are intended for library consumers.
 
 The Rust Validator and Runtime are available as crates:
-- Validator: [validator](https://crates.io/crates/whitenoise_validator) on crates.io
-- Runtime: [runtime](https://crates.io/crates/whitenoise_runtime) on crates.io
+- Validator: [validator](https://crates.io/crates/smartnoise_validator) on crates.io
+- Runtime: [runtime](https://crates.io/crates/smartnoise_runtime) on crates.io
 
 ### From Source
 The source install is intended for library developers.
@@ -108,13 +108,13 @@ The source install is intended for library developers.
 You may find it easier to use the library with this repository set up as a submodule of some set of language bindings. 
 In this case, switch to the language bindings setup.
 You can still push commits and branches from the core submodule of whatever bindings language you prefer.
-- [Python](https://github.com/opendifferentialprivacy/whitenoise-core-python#from-source)
-- [R (WIP)](https://github.com/opendifferentialprivacy/whitenoise-core-R#installation)
-- [Rust (WIP)](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_validator/bindings/index.html)
+- [Python](https://github.com/opendifferentialprivacy/smartnoise-core-python#from-source)
+- [R (WIP)](https://github.com/opendifferentialprivacy/smartnoise-core-R#installation)
+- [Rust (WIP)](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_validator/bindings/index.html)
 
 1. Clone the repository
     
-        git clone git@github.com:opendifferentialprivacy/whitenoise-core.git
+        git clone git@github.com:opendifferentialprivacy/smartnoise-core.git
 
 2. Install system dependencies (rust, gcc)   
     Mac:
@@ -158,28 +158,28 @@ Switch between crates via `cd`, or by setting the manifest path `--manifest-path
 
 ### Jupyter Notebook Examples
 
-We have [numerous Jupyter notebooks](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis) demonstrating the use of the Core library and validator through our Python bindings.  These are in our accompanying [samples repository](https://github.com/opendifferentialprivacy/whitenoise-samples) which has exemplars, notebooks and sample code demonstrating most facets of this project.
+We have [numerous Jupyter notebooks](https://github.com/opendifferentialprivacy/smartnoise-samples/tree/master/analysis) demonstrating the use of the Core library and validator through our Python bindings.  These are in our accompanying [samples repository](https://github.com/opendifferentialprivacy/smartnoise-samples) which has exemplars, notebooks and sample code demonstrating most facets of this project.
 
-[<img src="images/figs/plugin_mean_comparison.png" alt="Relative error distributions" height="100">](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis)
-[<img src="images/figs/example_size.png" alt="Release box plots" height="100">](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis)
-[<img src="images/figs/example_education.png" alt="Histogram releases" height="100">](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis)
-[<img src="images/figs/example_utility.png" alt="Utility simulations" height="100">](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis)
-[<img src="images/figs/example_simulations.png" alt="Bias simulations" height="100">](https://github.com/opendifferentialprivacy/whitenoise-samples/tree/master/analysis)
+[<img src="images/figs/plugin_mean_comparison.png" alt="Relative error distributions" height="100">](https://github.com/opendifferentialprivacy/smartnoise-samples/tree/master/analysis)
+[<img src="images/figs/example_size.png" alt="Release box plots" height="100">](https://github.com/opendifferentialprivacy/smartnoise-samples/tree/master/analysis)
+[<img src="images/figs/example_education.png" alt="Histogram releases" height="100">](https://github.com/opendifferentialprivacy/smartnoise-samples/tree/master/analysis)
+[<img src="images/figs/example_utility.png" alt="Utility simulations" height="100">](https://github.com/opendifferentialprivacy/smartnoise-samples/tree/master/analysis)
+[<img src="images/figs/example_simulations.png" alt="Bias simulations" height="100">](https://github.com/opendifferentialprivacy/smartnoise-samples/tree/master/analysis)
 
 ### Core Rust Documentation
 
-The [Rust documentation](https://opendifferentialprivacy.github.io/whitenoise-core/) includes full documentation on all pieces of the library and validator, including extensive [component by component descriptions with examples](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_runtime/components/index.html).
+The [Rust documentation](https://opendifferentialprivacy.github.io/smartnoise-core/) includes full documentation on all pieces of the library and validator, including extensive [component by component descriptions with examples](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_runtime/components/index.html).
 
 ## Communication
 
-- Please use [GitHub issues](https://github.com/opendifferentialprivacy/whitenoise-core/issues) for bug reports, feature requests, install issues, and ideas.
-- [Gitter](https://gitter.im/opendifferentialprivacy/WhiteNoise) is available for general chat and online discussions.
-- For other requests, please contact us at [whitenoise@opendp.io](mailto:whitenoise@opendp.io).
-  - _Note: We encourage you to use [GitHub issues](https://github.com/opendifferentialprivacy/whitenoise-core/issues), especially for bugs._
+- Please use [GitHub issues](https://github.com/opendifferentialprivacy/smartnoise-core/issues) for bug reports, feature requests, install issues, and ideas.
+- [Gitter](https://gitter.im/opendifferentialprivacy/SmartNoise) is available for general chat and online discussions.
+- For other requests, please contact us at [smartnoise@opendp.io](mailto:smartnoise@opendp.io).
+  - _Note: We encourage you to use [GitHub issues](https://github.com/opendifferentialprivacy/smartnoise-core/issues), especially for bugs._
 
 ## Releases and Contributing
 
-Please let us know if you encounter a bug by [creating an issue](https://github.com/opendifferentialprivacy/whitenoise-core/issues).
+Please let us know if you encounter a bug by [creating an issue](https://github.com/opendifferentialprivacy/smartnoise-core/issues).
 
 We appreciate all contributions. We welcome pull requests with bug-fixes without prior discussion.
 

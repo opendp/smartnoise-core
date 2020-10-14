@@ -1,12 +1,12 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{Value, Array, ReleaseNode};
+use smartnoise_validator::base::{Value, Array, ReleaseNode};
 use crate::components::Evaluable;
 use ndarray::ArrayD;
-use whitenoise_validator::{proto, Float, Integer};
+use smartnoise_validator::{proto, Float, Integer};
 use crate::utilities::noise;
-use whitenoise_validator::utilities::take_argument;
+use smartnoise_validator::utilities::take_argument;
 
 
 impl Evaluable for proto::Cast {

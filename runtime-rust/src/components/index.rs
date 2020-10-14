@@ -1,14 +1,14 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{Value, Array, DataType, ReleaseNode, IndexKey};
+use smartnoise_validator::base::{Value, Array, DataType, ReleaseNode, IndexKey};
 use crate::components::Evaluable;
-use whitenoise_validator::proto;
-use whitenoise_validator::utilities::array::{slow_stack, slow_select};
+use smartnoise_validator::proto;
+use smartnoise_validator::utilities::array::{slow_stack, slow_select};
 use ndarray::prelude::*;
 
-use whitenoise_validator::components::index::{to_name_vec};
-use whitenoise_validator::utilities::take_argument;
+use smartnoise_validator::components::index::{to_name_vec};
+use smartnoise_validator::utilities::take_argument;
 use crate::utilities::to_nd;
 use indexmap::map::IndexMap;
 

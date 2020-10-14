@@ -1,10 +1,10 @@
 use indexmap::indexmap;
 use ndarray;
 
-use whitenoise_validator::{Float, Integer, proto};
-use whitenoise_validator::base::{ReleaseNode, Value};
-use whitenoise_validator::errors::*;
-use whitenoise_validator::utilities::take_argument;
+use smartnoise_validator::{Float, Integer, proto};
+use smartnoise_validator::base::{ReleaseNode, Value};
+use smartnoise_validator::errors::*;
+use smartnoise_validator::utilities::take_argument;
 
 use crate::components::Evaluable;
 use crate::NodeArguments;

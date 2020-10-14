@@ -3,8 +3,8 @@ use core::iter::Iterator;
 /// Beginnings of DP Linear Regression
 /// Borrowing heavily from the crate 'linreg'
 
-use whitenoise_validator::errors::*;
-use whitenoise_validator::Float;
+use smartnoise_validator::errors::*;
+use smartnoise_validator::Float;
 
 use crate::utilities::mechanisms::laplace_mechanism;
 

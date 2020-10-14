@@ -1,15 +1,15 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use ndarray::prelude::*;
 use crate::NodeArguments;
-use whitenoise_validator::base::{Array, ReleaseNode};
-use whitenoise_validator::utilities::take_argument;
+use smartnoise_validator::base::{Array, ReleaseNode};
+use smartnoise_validator::utilities::take_argument;
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Axis, Array1};
 
-use whitenoise_validator::proto;
+use smartnoise_validator::proto;
 
-use whitenoise_validator::utilities::array::slow_select;
+use smartnoise_validator::utilities::array::slow_select;
 use crate::utilities::to_nd;
 
 
@@ -38,7 +38,7 @@ impl Evaluable for proto::Filter {
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr1, arr2};
-/// use whitenoise_runtime::components::filter::filter;
+/// use smartnoise_runtime::components::filter::filter;
 ///
 /// let data = arr2(&[ [1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12] ]).into_dyn();
 /// let mask = arr1(&[true, false, true, false]).into_dyn();

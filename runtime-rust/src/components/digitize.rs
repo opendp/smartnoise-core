@@ -1,13 +1,13 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{Array, Jagged, ReleaseNode};
+use smartnoise_validator::base::{Array, Jagged, ReleaseNode};
 use crate::components::Evaluable;
 use ndarray::ArrayD;
-use whitenoise_validator::{proto, Integer};
+use smartnoise_validator::{proto, Integer};
 use crate::utilities::get_num_columns;
 use std::ops::{Div, Add};
-use whitenoise_validator::utilities::{take_argument, standardize_categorical_argument, standardize_numeric_argument, standardize_float_argument};
+use smartnoise_validator::utilities::{take_argument, standardize_categorical_argument, standardize_numeric_argument, standardize_float_argument};
 
 impl Evaluable for proto::Digitize {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
@@ -46,10 +46,10 @@ impl Evaluable for proto::Digitize {
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr2, arr1};
-/// use whitenoise_runtime::components::digitize::{bin_index, digitize};
-/// use whitenoise_validator::utilities::standardize_float_argument;
-/// use whitenoise_runtime::utilities::get_num_columns;
-/// use whitenoise_validator::Float;
+/// use smartnoise_runtime::components::digitize::{bin_index, digitize};
+/// use smartnoise_validator::utilities::standardize_float_argument;
+/// use smartnoise_runtime::utilities::get_num_columns;
+/// use smartnoise_validator::Float;
 ///
 /// let data: ArrayD<Float> = arr1(&[1.1, 2., 2.9, 4.1, 6.4]).into_dyn();
 /// let edges = vec![vec![0., 1., 2., 3., 4., 5.]];
@@ -109,7 +109,7 @@ pub fn digitize<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Outp
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::components::digitize::bin_index;
+/// use smartnoise_runtime::components::digitize::bin_index;
 ///
 /// let data = vec![1.1, 2., 2.9, 4.1, 6.4];
 /// let edges = vec![0., 1., 2., 3., 4., 5.];

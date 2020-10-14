@@ -1,9 +1,9 @@
 use ndarray::{arr0};
 
-use whitenoise_validator::{Float, Integer, proto};
-use whitenoise_validator::base::{Array, ReleaseNode, Value};
-use whitenoise_validator::errors::*;
-use whitenoise_validator::utilities::{array::broadcast_ndarray, privacy::{get_delta, get_epsilon, spread_privacy_usage}, take_argument};
+use smartnoise_validator::{Float, Integer, proto};
+use smartnoise_validator::base::{Array, ReleaseNode, Value};
+use smartnoise_validator::errors::*;
+use smartnoise_validator::utilities::{array::broadcast_ndarray, privacy::{get_delta, get_epsilon, spread_privacy_usage}, take_argument};
 
 use crate::components::Evaluable;
 use crate::NodeArguments;

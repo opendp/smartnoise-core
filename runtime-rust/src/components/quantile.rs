@@ -7,10 +7,10 @@ use ndarray_stats::QuantileExt;
 use noisy_float::types::n64;
 use num::{FromPrimitive, ToPrimitive};
 
-use whitenoise_validator::{Float, proto};
-use whitenoise_validator::base::{Array, IndexKey, ReleaseNode, Value};
-use whitenoise_validator::errors::*;
-use whitenoise_validator::utilities::take_argument;
+use smartnoise_validator::{Float, proto};
+use smartnoise_validator::base::{Array, IndexKey, ReleaseNode, Value};
+use smartnoise_validator::errors::*;
+use smartnoise_validator::utilities::take_argument;
 
 use crate::components::Evaluable;
 use crate::NodeArguments;
@@ -68,9 +68,9 @@ impl Evaluable for proto::Quantile {
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use whitenoise_runtime::components::quantile::quantile;
+/// use smartnoise_runtime::components::quantile::quantile;
 /// use noisy_float::types::n64;
-/// use whitenoise_validator::Float;
+/// use smartnoise_validator::Float;
 /// let data: ArrayD<Float> = arr2(&[ [0., 1., 2.], [2., 3., 4.] ]).into_dyn();
 /// let median = quantile(data.mapv(|v| n64(v as f64)), 0.5, &"midpoint".to_string()).unwrap();
 /// println!("{:?}", median);

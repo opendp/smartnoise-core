@@ -1,12 +1,12 @@
 # ------------------------------------------------------------------
 # Travis CI
-# https://travis-ci.com/github/opendifferentialprivacy/whitenoise-core
+# https://travis-ci.com/github/opendifferentialprivacy/smartnoise-core
 #
-# - WhiteNoise Core Validator and runtime
+# - SmartNoise Core Validator and runtime
 #   - Build and test Rust componets
 # - Documentation
 #   - For the master branch, build Rust docs and deploy on:
-#     - https://opendifferentialprivacy.github.io/whitenoise-core/
+#     - https://opendifferentialprivacy.github.io/smartnoise-core/
 # ------------------------------------------------------------------
 
 branches:

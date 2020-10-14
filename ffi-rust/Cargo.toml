@@ -1,12 +1,12 @@
 [package]
-name = "whitenoise_ffi"
+name = "smartnoise_ffi"
 version = "0.2.1"
-authors = ["OpenDP-WhiteNoise <whitenoise@opendp.io>"]
-description = "A wrapper library for interfacing with the Whitenoise over ffi."
+authors = ["OpenDP-SmartNoise <smartnoise@opendp.io>"]
+description = "A wrapper library for interfacing with the SmartNoise over ffi."
 readme = "README.md"
 keywords = ["differential-privacy", "data-privacy", "privacy"]
 categories = ["cryptography", "science"] # up to 5 allowed, must match those listed at https://crates.io/category_slugs
-repository = "https://github.com/opendifferentialprivacy/whitenoise-core"
+repository = "https://github.com/opendifferentialprivacy/smartnoise-core"
 edition = "2018"
 license = "MIT"
 
@@ -15,11 +15,11 @@ prost = "0.6.1"
 ffi-support = "0.4.0"
 indexmap = "1.4.0"
 
-[dependencies.whitenoise_validator]
+[dependencies.smartnoise_validator]
 path = "../validator-rust/"
 version = "0.2.1"
 
-[dependencies.whitenoise_runtime]
+[dependencies.smartnoise_runtime]
 path = "../runtime-rust/"
 version = "0.2.1"
 optional = true
@@ -29,15 +29,15 @@ default-features = false
 # by default, include runtime with secure noise
 default = ["use-runtime", "use-mpfr"]
 
-# runtime is dependent on the whitenoise_runtime crate
-use-runtime = ["whitenoise_runtime"]
-# re-export use-mpfr from whitenoise_runtime (feature is dependent on use-runtime)
-use-mpfr = ["use-runtime", "whitenoise_runtime/use-mpfr"]
-# re-export use-system-libs from whitenoise_runtime (feature is dependent on use-runtime and use-mpfr)
-use-system-libs = ["use-runtime", "use-mpfr", "whitenoise_runtime/use-system-libs"]
+# runtime is dependent on the smartnoise_runtime crate
+use-runtime = ["smartnoise_runtime"]
+# re-export use-mpfr from smartnoise_runtime (feature is dependent on use-runtime)
+use-mpfr = ["use-runtime", "smartnoise_runtime/use-mpfr"]
+# re-export use-system-libs from smartnoise_runtime (feature is dependent on use-runtime and use-mpfr)
+use-system-libs = ["use-runtime", "use-mpfr", "smartnoise_runtime/use-system-libs"]
 # direct access to mechanisms
 use-direct-api = []
 
 [lib]
-name = "whitenoise_ffi"
+name = "smartnoise_ffi"
 crate-type = ["rlib", "cdylib", "staticlib"]

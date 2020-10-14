@@ -2,10 +2,10 @@ use std::hash::Hash;
 
 use ndarray::ArrayD;
 
-use whitenoise_validator::{Float, proto};
-use whitenoise_validator::base::{Array, IndexKey, Jagged, ReleaseNode, Value};
-use whitenoise_validator::errors::*;
-use whitenoise_validator::utilities::{standardize_categorical_argument, standardize_null_candidates_argument, standardize_numeric_argument, standardize_weight_argument, take_argument};
+use smartnoise_validator::{Float, proto};
+use smartnoise_validator::base::{Array, IndexKey, Jagged, ReleaseNode, Value};
+use smartnoise_validator::errors::*;
+use smartnoise_validator::utilities::{standardize_categorical_argument, standardize_null_candidates_argument, standardize_numeric_argument, standardize_weight_argument, take_argument};
 
 use crate::components::Evaluable;
 use crate::NodeArguments;
@@ -99,8 +99,8 @@ impl Evaluable for proto::Impute {
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use whitenoise_runtime::components::impute::impute_float_uniform_arrayd;
-/// use whitenoise_validator::Float;
+/// use smartnoise_runtime::components::impute::impute_float_uniform_arrayd;
+/// use smartnoise_validator::Float;
 ///
 /// let data: ArrayD<Float> = arr2(&[ [1., Float::NAN, 3., Float::NAN], [2., 2., Float::NAN, Float::NAN] ]).into_dyn();
 /// let lower: ArrayD<Float> = arr1(&[0., 2., 3., 4.]).into_dyn();
@@ -161,8 +161,8 @@ pub fn impute_float_uniform<'a, I: Iterator<Item=&'a mut Float>>(
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use whitenoise_runtime::components::impute::impute_float_gaussian_arrayd;
-/// use whitenoise_validator::Float;
+/// use smartnoise_runtime::components::impute::impute_float_gaussian_arrayd;
+/// use smartnoise_validator::Float;
 /// let data: ArrayD<Float> = arr1(&[1., Float::NAN, 3., Float::NAN]).into_dyn();
 /// let lower: ArrayD<Float> = arr1(&[0.0]).into_dyn();
 /// let upper: ArrayD<Float> = arr1(&[10.0]).into_dyn();
@@ -226,7 +226,7 @@ pub fn impute_float_gaussian<'a, I: Iterator<Item=&'a mut Float>>(
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use whitenoise_runtime::components::impute::impute_categorical_arrayd;
+/// use smartnoise_runtime::components::impute::impute_categorical_arrayd;
 /// let data: ArrayD<String> = arr2(&[["a".to_string(), "b".to_string(), "null_3".to_string()],
 ///                                   ["c".to_string(), "null_2".to_string(), "a".to_string()]]).into_dyn();
 /// let categories: Vec<Vec<String>> = vec![vec!["a".to_string(), "c".to_string()],
