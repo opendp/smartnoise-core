@@ -41,6 +41,7 @@ pub mod to_dataframe;
 pub mod transforms;
 pub mod union;
 pub mod variance;
+mod sgd;
 
 /// Evaluable component trait
 ///
