@@ -5,7 +5,7 @@
 [![Build Status](https://travis-ci.com/opendifferentialprivacy/smartnoise-core.svg?branch=develop)](https://travis-ci.com/opendifferentialprivacy/smartnoise-core)
 
 
-<a href="http://opendp.io"><img src="images/SmartNoise Logo/SVG/LogoMark_color.svg" align="left" height="70" vspace="8" hspace="18"></a>
+<a href="http://opendp.io"><img src="images/SmartNoise/SVG/LogoMark_color.svg" align="left" height="70" vspace="8" hspace="18"></a>
 
 
 ## <br/>SmartNoise Core Differential Privacy Library <br/>
