@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["quantile","Accepts data and returns desired quantile of each column in the data."],["quantile_utilities",""]]});

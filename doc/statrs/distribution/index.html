@@ -1,105 +1,107 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `distribution` mod in crate `statrs`."><meta name="keywords" content="rust, rustlang, rust-lang, distribution"><title>statrs::distribution - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../statrs/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a><p class='location'>Module distribution</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#traits">Traits</a></li></ul></div><p class='location'><a href='../index.html'>statrs</a></p><script>window.sidebarCurrent = {name: 'distribution', ty: 'mod', relpath: '../'};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
-                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class='fqn'><span class='out-of-band'><span id='render-detail'><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class='inner'>&#x2212;</span>]</a></span><a class='srclink' href='../../src/statrs/distribution/mod.rs.html#1-265' title='goto source code'>[src]</a></span><span class='in-band'>Module <a href='../index.html'>statrs</a>::<wbr><a class="mod" href=''>distribution</a></span></h1><div class='docblock'><p>Defines common interfaces for interacting with statistical distributions
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `distribution` mod in crate `statrs`."><meta name="keywords" content="rust, rustlang, rust-lang, distribution"><title>statrs::distribution - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../statrs/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a><p class="location">Module distribution</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#traits">Traits</a></li></ul></div><p class="location"><a href="../index.html">statrs</a></p><script>window.sidebarCurrent = {name: "distribution", ty: "mod", relpath: "../"};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span><a class="srclink" href="../../src/statrs/distribution/mod.rs.html#1-265" title="goto source code">[src]</a></span><span class="in-band">Module <a href="../index.html">statrs</a>::<wbr><a class="mod" href="">distribution</a></span></h1><div class="docblock"><p>Defines common interfaces for interacting with statistical distributions
 and provides
 concrete implementations for a variety of distributions.</p>
-</div><h2 id='structs' class='section-header'><a href="#structs">Structs</a></h2>
-<table><tr class='module-item'><td><a class="struct" href="struct.Bernoulli.html" title='statrs::distribution::Bernoulli struct'>Bernoulli</a></td><td class='docblock-short'><p>Implements the
+</div><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2>
+<table><tr class="module-item"><td><a class="struct" href="struct.Bernoulli.html" title="statrs::distribution::Bernoulli struct">Bernoulli</a></td><td class="docblock-short"><p>Implements the
 <a href="https://en.wikipedia.org/wiki/Bernoulli_distribution">Bernoulli</a>
 distribution which is a special case of the
 <a href="https://en.wikipedia.org/wiki/Binomial_distribution">Binomial</a>
 distribution where <code>n = 1</code> (referenced <a href="./struct.Binomial.html">Here</a>)</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Beta.html" title='statrs::distribution::Beta struct'>Beta</a></td><td class='docblock-short'><p>Implements the <a href="https://en.wikipedia.org/wiki/Beta_distribution">Beta</a>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Beta.html" title="statrs::distribution::Beta struct">Beta</a></td><td class="docblock-short"><p>Implements the <a href="https://en.wikipedia.org/wiki/Beta_distribution">Beta</a>
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Binomial.html" title='statrs::distribution::Binomial struct'>Binomial</a></td><td class='docblock-short'><p>Implements the
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Binomial.html" title="statrs::distribution::Binomial struct">Binomial</a></td><td class="docblock-short"><p>Implements the
 <a href="https://en.wikipedia.org/wiki/Binomial_distribution">Binomial</a>
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Categorical.html" title='statrs::distribution::Categorical struct'>Categorical</a></td><td class='docblock-short'><p>Implements the
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Categorical.html" title="statrs::distribution::Categorical struct">Categorical</a></td><td class="docblock-short"><p>Implements the
 <a href="https://en.wikipedia.org/wiki/Categorical_distribution">Categorical</a>
 distribution, also known as the generalized Bernoulli or discrete
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Cauchy.html" title='statrs::distribution::Cauchy struct'>Cauchy</a></td><td class='docblock-short'><p>Implements the <a href="https://en.wikipedia.org/wiki/Cauchy_distribution">Cauchy</a>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Cauchy.html" title="statrs::distribution::Cauchy struct">Cauchy</a></td><td class="docblock-short"><p>Implements the <a href="https://en.wikipedia.org/wiki/Cauchy_distribution">Cauchy</a>
 distribution, also known as the Lorentz distribution.</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Chi.html" title='statrs::distribution::Chi struct'>Chi</a></td><td class='docblock-short'><p>Implements the <a href="https://en.wikipedia.org/wiki/Chi_distribution">Chi</a>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Chi.html" title="statrs::distribution::Chi struct">Chi</a></td><td class="docblock-short"><p>Implements the <a href="https://en.wikipedia.org/wiki/Chi_distribution">Chi</a>
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.ChiSquared.html" title='statrs::distribution::ChiSquared struct'>ChiSquared</a></td><td class='docblock-short'><p>Implements the
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.ChiSquared.html" title="statrs::distribution::ChiSquared struct">ChiSquared</a></td><td class="docblock-short"><p>Implements the
 <a href="https://en.wikipedia.org/wiki/Chi-squared_distribution">Chi-squared</a>
 distribution which is a special case of the
 <a href="https://en.wikipedia.org/wiki/Gamma_distribution">Gamma</a> distribution
 (referenced <a href="./struct.Gamma.html">Here</a>)</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Dirichlet.html" title='statrs::distribution::Dirichlet struct'>Dirichlet</a></td><td class='docblock-short'><p>Implements the
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Dirichlet.html" title="statrs::distribution::Dirichlet struct">Dirichlet</a></td><td class="docblock-short"><p>Implements the
 <a href="https://en.wikipedia.org/wiki/Dirichlet_distribution">Dirichlet</a>
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.DiscreteUniform.html" title='statrs::distribution::DiscreteUniform struct'>DiscreteUniform</a></td><td class='docblock-short'><p>Implements the <a href="https://en.wikipedia.org/wiki/Discrete_uniform_distribution">Discrete
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.DiscreteUniform.html" title="statrs::distribution::DiscreteUniform struct">DiscreteUniform</a></td><td class="docblock-short"><p>Implements the <a href="https://en.wikipedia.org/wiki/Discrete_uniform_distribution">Discrete
 Uniform</a>
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Erlang.html" title='statrs::distribution::Erlang struct'>Erlang</a></td><td class='docblock-short'><p>Implements the <a href="https://en.wikipedia.org/wiki/Erlang_distribution">Erlang</a>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Erlang.html" title="statrs::distribution::Erlang struct">Erlang</a></td><td class="docblock-short"><p>Implements the <a href="https://en.wikipedia.org/wiki/Erlang_distribution">Erlang</a>
 distribution
 which is a special case of the
 <a href="https://en.wikipedia.org/wiki/Gamma_distribution">Gamma</a>
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Exponential.html" title='statrs::distribution::Exponential struct'>Exponential</a></td><td class='docblock-short'><p>Implements the
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Exponential.html" title="statrs::distribution::Exponential struct">Exponential</a></td><td class="docblock-short"><p>Implements the
 <a href="https://en.wikipedia.org/wiki/Exponential_distribution">Exponential</a>
 distribution and is a special case of the
 <a href="https://en.wikipedia.org/wiki/Gamma_distribution">Gamma</a> distribution
 (referenced <a href="./struct.Gamma.html">here</a>)</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.FisherSnedecor.html" title='statrs::distribution::FisherSnedecor struct'>FisherSnedecor</a></td><td class='docblock-short'><p>Implements the
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.FisherSnedecor.html" title="statrs::distribution::FisherSnedecor struct">FisherSnedecor</a></td><td class="docblock-short"><p>Implements the
 <a href="https://en.wikipedia.org/wiki/F-distribution">Fisher-Snedecor</a> distribution
 also commonly known as the F-distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Gamma.html" title='statrs::distribution::Gamma struct'>Gamma</a></td><td class='docblock-short'><p>Implements the <a href="https://en.wikipedia.org/wiki/Gamma_distribution">Gamma</a>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Gamma.html" title="statrs::distribution::Gamma struct">Gamma</a></td><td class="docblock-short"><p>Implements the <a href="https://en.wikipedia.org/wiki/Gamma_distribution">Gamma</a>
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Geometric.html" title='statrs::distribution::Geometric struct'>Geometric</a></td><td class='docblock-short'><p>Implements the
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Geometric.html" title="statrs::distribution::Geometric struct">Geometric</a></td><td class="docblock-short"><p>Implements the
 <a href="https://en.wikipedia.org/wiki/Geometric_distribution">Geometric</a>
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Hypergeometric.html" title='statrs::distribution::Hypergeometric struct'>Hypergeometric</a></td><td class='docblock-short'><p>Implements the
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Hypergeometric.html" title="statrs::distribution::Hypergeometric struct">Hypergeometric</a></td><td class="docblock-short"><p>Implements the
 <a href="http://en.wikipedia.org/wiki/Hypergeometric_distribution">Hypergeometric</a>
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.InverseGamma.html" title='statrs::distribution::InverseGamma struct'>InverseGamma</a></td><td class='docblock-short'><p>Implements the <a href="https://en.wikipedia.org/wiki/Inverse-gamma_distribution">Inverse
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.InverseGamma.html" title="statrs::distribution::InverseGamma struct">InverseGamma</a></td><td class="docblock-short"><p>Implements the <a href="https://en.wikipedia.org/wiki/Inverse-gamma_distribution">Inverse
 Gamma</a>
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.LogNormal.html" title='statrs::distribution::LogNormal struct'>LogNormal</a></td><td class='docblock-short'><p>Implements the
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.LogNormal.html" title="statrs::distribution::LogNormal struct">LogNormal</a></td><td class="docblock-short"><p>Implements the
 <a href="https://en.wikipedia.org/wiki/Log-normal_distribution">Log-normal</a>
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Multinomial.html" title='statrs::distribution::Multinomial struct'>Multinomial</a></td><td class='docblock-short'><p>Implements the
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Multinomial.html" title="statrs::distribution::Multinomial struct">Multinomial</a></td><td class="docblock-short"><p>Implements the
 <a href="https://en.wikipedia.org/wiki/Multinomial_distribution">Multinomial</a>
 distribution which is a generalization of the
 <a href="https://en.wikipedia.org/wiki/Binomial_distribution">Binomial</a>
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Normal.html" title='statrs::distribution::Normal struct'>Normal</a></td><td class='docblock-short'><p>Implements the <a href="https://en.wikipedia.org/wiki/Normal_distribution">Normal</a>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Normal.html" title="statrs::distribution::Normal struct">Normal</a></td><td class="docblock-short"><p>Implements the <a href="https://en.wikipedia.org/wiki/Normal_distribution">Normal</a>
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Pareto.html" title='statrs::distribution::Pareto struct'>Pareto</a></td><td class='docblock-short'><p>Implements the <a href="https://en.wikipedia.org/wiki/Pareto_distribution">Pareto</a>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Pareto.html" title="statrs::distribution::Pareto struct">Pareto</a></td><td class="docblock-short"><p>Implements the <a href="https://en.wikipedia.org/wiki/Pareto_distribution">Pareto</a>
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Poisson.html" title='statrs::distribution::Poisson struct'>Poisson</a></td><td class='docblock-short'><p>Implements the <a href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson</a>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Poisson.html" title="statrs::distribution::Poisson struct">Poisson</a></td><td class="docblock-short"><p>Implements the <a href="https://en.wikipedia.org/wiki/Poisson_distribution">Poisson</a>
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.StudentsT.html" title='statrs::distribution::StudentsT struct'>StudentsT</a></td><td class='docblock-short'><p>Implements the <a href="https://en.wikipedia.org/wiki/Student%27s_t-distribution">Student's
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.StudentsT.html" title="statrs::distribution::StudentsT struct">StudentsT</a></td><td class="docblock-short"><p>Implements the <a href="https://en.wikipedia.org/wiki/Student%27s_t-distribution">Student's
 T</a> distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Triangular.html" title='statrs::distribution::Triangular struct'>Triangular</a></td><td class='docblock-short'><p>Implements the
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Triangular.html" title="statrs::distribution::Triangular struct">Triangular</a></td><td class="docblock-short"><p>Implements the
 <a href="https://en.wikipedia.org/wiki/Triangular_distribution">Triangular</a>
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Uniform.html" title='statrs::distribution::Uniform struct'>Uniform</a></td><td class='docblock-short'><p>Implements the <a href="https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)">Continuous
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Uniform.html" title="statrs::distribution::Uniform struct">Uniform</a></td><td class="docblock-short"><p>Implements the <a href="https://en.wikipedia.org/wiki/Uniform_distribution_(continuous)">Continuous
 Uniform</a>
 distribution</p>
-</td></tr><tr class='module-item'><td><a class="struct" href="struct.Weibull.html" title='statrs::distribution::Weibull struct'>Weibull</a></td><td class='docblock-short'><p>Implements the <a href="https://en.wikipedia.org/wiki/Weibull_distribution">Weibull</a>
+</td></tr><tr class="module-item"><td><a class="struct" href="struct.Weibull.html" title="statrs::distribution::Weibull struct">Weibull</a></td><td class="docblock-short"><p>Implements the <a href="https://en.wikipedia.org/wiki/Weibull_distribution">Weibull</a>
 distribution</p>
-</td></tr></table><h2 id='traits' class='section-header'><a href="#traits">Traits</a></h2>
-<table><tr class='module-item'><td><a class="trait" href="trait.CheckedContinuous.html" title='statrs::distribution::CheckedContinuous trait'>CheckedContinuous</a></td><td class='docblock-short'><p>The <code>CheckedContinuous</code> trait provides an interface for
+</td></tr></table><h2 id="traits" class="section-header"><a href="#traits">Traits</a></h2>
+<table><tr class="module-item"><td><a class="trait" href="trait.CheckedContinuous.html" title="statrs::distribution::CheckedContinuous trait">CheckedContinuous</a></td><td class="docblock-short"><p>The <code>CheckedContinuous</code> trait provides an interface for
 interacting with continuous statistical distributions with possible
 failure modes</p>
-</td></tr><tr class='module-item'><td><a class="trait" href="trait.CheckedDiscrete.html" title='statrs::distribution::CheckedDiscrete trait'>CheckedDiscrete</a></td><td class='docblock-short'><p>The <code>CheckedDiscrete</code> trait provides an interface for interacting
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.CheckedDiscrete.html" title="statrs::distribution::CheckedDiscrete trait">CheckedDiscrete</a></td><td class="docblock-short"><p>The <code>CheckedDiscrete</code> trait provides an interface for interacting
 with discrete statistical distributions with possible failure modes</p>
-</td></tr><tr class='module-item'><td><a class="trait" href="trait.CheckedInverseCDF.html" title='statrs::distribution::CheckedInverseCDF trait'>CheckedInverseCDF</a></td><td class='docblock-short'><p>The <code>CheckedInverseCDF</code> trait is used to specify an interface
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.CheckedInverseCDF.html" title="statrs::distribution::CheckedInverseCDF trait">CheckedInverseCDF</a></td><td class="docblock-short"><p>The <code>CheckedInverseCDF</code> trait is used to specify an interface
 for  distributions with a closed form solution to the inverse
 cumulative distribution function with possible failure modes.
 This trait should be merged into a <code>CheckedUnivarite</code> trait
 alongside <code>InverseCDF</code> in a future release.</p>
-</td></tr><tr class='module-item'><td><a class="trait" href="trait.Continuous.html" title='statrs::distribution::Continuous trait'>Continuous</a></td><td class='docblock-short'><p>The <code>Continuous</code> trait  provides an interface for interacting with
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.Continuous.html" title="statrs::distribution::Continuous trait">Continuous</a></td><td class="docblock-short"><p>The <code>Continuous</code> trait  provides an interface for interacting with
 continuous statistical distributions</p>
-</td></tr><tr class='module-item'><td><a class="trait" href="trait.Discrete.html" title='statrs::distribution::Discrete trait'>Discrete</a></td><td class='docblock-short'><p>The <code>Discrete</code> trait provides an interface for interacting with discrete
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.Discrete.html" title="statrs::distribution::Discrete trait">Discrete</a></td><td class="docblock-short"><p>The <code>Discrete</code> trait provides an interface for interacting with discrete
 statistical distributions</p>
-</td></tr><tr class='module-item'><td><a class="trait" href="trait.InverseCDF.html" title='statrs::distribution::InverseCDF trait'>InverseCDF</a></td><td class='docblock-short'><p>The <code>InverseCDF</code> trait is used to specify an interface for distributions
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.InverseCDF.html" title="statrs::distribution::InverseCDF trait">InverseCDF</a></td><td class="docblock-short"><p>The <code>InverseCDF</code> trait is used to specify an interface for distributions
 with a closed form solution to the inverse cumulative distribution function.
 This trait will probably be merged into <code>Univariate</code> in a future release
 when already implemented distributions have <code>InverseCDF</code> back ported</p>
-</td></tr><tr class='module-item'><td><a class="trait" href="trait.Univariate.html" title='statrs::distribution::Univariate trait'>Univariate</a></td><td class='docblock-short'><p>The <code>Univariate</code> trait is used to specify an interface for univariate
+</td></tr><tr class="module-item"><td><a class="trait" href="trait.Univariate.html" title="statrs::distribution::Univariate trait">Univariate</a></td><td class="docblock-short"><p>The <code>Univariate</code> trait is used to specify an interface for univariate
 distributions e.g. distributions that have a closed form cumulative
 distribution
 function</p>

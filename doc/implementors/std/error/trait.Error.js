@@ -10,6 +10,7 @@ implementors["num_bigint"] = [{"text":"impl Error for ParseBigIntError","synthet
 implementors["num_complex"] = [{"text":"impl&lt;E:&nbsp;Error&gt; Error for ParseComplexError&lt;E&gt;","synthetic":false,"types":[]}];
 implementors["num_rational"] = [{"text":"impl Error for ParseRatioError","synthetic":false,"types":[]}];
 implementors["openssl"] = [{"text":"impl Error for ErrorStack","synthetic":false,"types":[]},{"text":"impl Error for Error","synthetic":false,"types":[]},{"text":"impl Error for Error","synthetic":false,"types":[]},{"text":"impl&lt;S:&nbsp;Debug&gt; Error for HandshakeError&lt;S&gt;","synthetic":false,"types":[]},{"text":"impl Error for X509VerifyResult","synthetic":false,"types":[]}];
+implementors["proc_macro2"] = [{"text":"impl Error for LexError","synthetic":false,"types":[]}];
 implementors["prost"] = [{"text":"impl Error for DecodeError","synthetic":false,"types":[]},{"text":"impl Error for EncodeError","synthetic":false,"types":[]}];
 implementors["rand"] = [{"text":"impl Error for BernoulliError","synthetic":false,"types":[]},{"text":"impl Error for WeightedError","synthetic":false,"types":[]},{"text":"impl Error for ReadError","synthetic":false,"types":[]}];
 implementors["rand_core"] = [{"text":"impl Error for Error","synthetic":false,"types":[]}];

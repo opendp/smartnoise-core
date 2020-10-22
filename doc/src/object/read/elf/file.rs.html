@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/object-0.20.0/src/read/elf/file.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>file.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled ><script src="../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="shortcut icon" href="../../../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../object/index.html'><div class='logo-container rust-logo'><img src='../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/object-0.21.1/src/read/elf/file.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>file.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled ><script src="../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../object/index.html'><div class='logo-container rust-logo'><img src='../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../../../settings.html"><img src="../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -690,6 +692,24 @@
 <span id="689">689</span>
 <span id="690">690</span>
 <span id="691">691</span>
+<span id="692">692</span>
+<span id="693">693</span>
+<span id="694">694</span>
+<span id="695">695</span>
+<span id="696">696</span>
+<span id="697">697</span>
+<span id="698">698</span>
+<span id="699">699</span>
+<span id="700">700</span>
+<span id="701">701</span>
+<span id="702">702</span>
+<span id="703">703</span>
+<span id="704">704</span>
+<span id="705">705</span>
+<span id="706">706</span>
+<span id="707">707</span>
+<span id="708">708</span>
+<span id="709">709</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">alloc</span>::<span class="ident">vec</span>::<span class="ident">Vec</span>;
 <span class="kw">use</span> <span class="ident">core</span>::<span class="ident">fmt</span>::<span class="ident">Debug</span>;
@@ -702,9 +722,9 @@
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">elf</span>, <span class="ident">endian</span>, <span class="ident">Bytes</span>, <span class="ident">Endian</span>, <span class="ident">Endianness</span>, <span class="ident">Pod</span>, <span class="ident">U32</span>};
 
 <span class="kw">use</span> <span class="kw">super</span>::{
-    <span class="ident">parse_symbol</span>, <span class="ident">CompressionHeader</span>, <span class="ident">ElfSection</span>, <span class="ident">ElfSectionIterator</span>, <span class="ident">ElfSegment</span>,
-    <span class="ident">ElfSegmentIterator</span>, <span class="ident">ElfSymbolIterator</span>, <span class="ident">NoteHeader</span>, <span class="ident">ProgramHeader</span>, <span class="ident">Rela</span>, <span class="ident">RelocationSections</span>,
-    <span class="ident">SectionHeader</span>, <span class="ident">SectionTable</span>, <span class="ident">Sym</span>, <span class="ident">SymbolTable</span>,
+    <span class="ident">parse_symbol</span>, <span class="ident">CompressionHeader</span>, <span class="ident">ElfComdat</span>, <span class="ident">ElfComdatIterator</span>, <span class="ident">ElfSection</span>, <span class="ident">ElfSectionIterator</span>,
+    <span class="ident">ElfSegment</span>, <span class="ident">ElfSegmentIterator</span>, <span class="ident">ElfSymbolIterator</span>, <span class="ident">NoteHeader</span>, <span class="ident">ProgramHeader</span>, <span class="ident">Rela</span>,
+    <span class="ident">RelocationSections</span>, <span class="ident">SectionHeader</span>, <span class="ident">SectionTable</span>, <span class="ident">Sym</span>, <span class="ident">SymbolTable</span>,
 };
 
 <span class="doccomment">/// A 32-bit ELF object file.</span>
@@ -797,6 +817,8 @@
     <span class="kw">type</span> <span class="ident">SegmentIterator</span> <span class="op">=</span> <span class="ident">ElfSegmentIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">Section</span> <span class="op">=</span> <span class="ident">ElfSection</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">SectionIterator</span> <span class="op">=</span> <span class="ident">ElfSectionIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">Comdat</span> <span class="op">=</span> <span class="ident">ElfComdat</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">ComdatIterator</span> <span class="op">=</span> <span class="ident">ElfComdatIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">SymbolIterator</span> <span class="op">=</span> <span class="ident">ElfSymbolIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span><span class="op">&gt;</span>;
 
     <span class="kw">fn</span> <span class="ident">architecture</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Architecture</span> {
@@ -806,6 +828,15 @@
             <span class="ident">elf</span>::<span class="ident">EM_386</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Architecture</span>::<span class="ident">I386</span>,
             <span class="ident">elf</span>::<span class="ident">EM_X86_64</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Architecture</span>::<span class="ident">X86_64</span>,
             <span class="ident">elf</span>::<span class="ident">EM_MIPS</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Architecture</span>::<span class="ident">Mips</span>,
+            <span class="ident">elf</span>::<span class="ident">EM_S390</span> <span class="op">=</span><span class="op">&gt;</span> {
+                <span class="comment">// This is either s390 or s390x, depending on the ELF class.</span>
+                <span class="comment">// We only support the 64-bit variant s390x here.</span>
+                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_64</span>() {
+                    <span class="ident">Architecture</span>::<span class="ident">S390x</span>
+                } <span class="kw">else</span> {
+                    <span class="ident">Architecture</span>::<span class="ident">Unknown</span>
+                }
+            }
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Architecture</span>::<span class="ident">Unknown</span>,
         }
     }
@@ -846,6 +877,13 @@
 
     <span class="kw">fn</span> <span class="ident">sections</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;file</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ElfSectionIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span><span class="op">&gt;</span> {
         <span class="ident">ElfSectionIterator</span> {
+            <span class="ident">file</span>: <span class="self">self</span>,
+            <span class="ident">iter</span>: <span class="self">self</span>.<span class="ident">sections</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>(),
+        }
+    }
+
+    <span class="kw">fn</span> <span class="ident">comdats</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;file</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ElfComdatIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span>, <span class="ident">Elf</span><span class="op">&gt;</span> {
+        <span class="ident">ElfComdatIterator</span> {
             <span class="ident">file</span>: <span class="self">self</span>,
             <span class="ident">iter</span>: <span class="self">self</span>.<span class="ident">sections</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>(),
         }

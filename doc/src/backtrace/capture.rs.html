@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source to the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.50/src/capture.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>capture.rs.html -- source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="shortcut icon" href="../../favicon.ico"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../backtrace/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/backtrace-0.3.53/src/capture.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>capture.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../backtrace/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -479,6 +481,48 @@
 <span id="478">478</span>
 <span id="479">479</span>
 <span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
+<span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">PrintFmt</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">resolve</span>, <span class="ident">resolve_frame</span>, <span class="ident">trace</span>, <span class="ident">BacktraceFmt</span>, <span class="ident">Symbol</span>, <span class="ident">SymbolName</span>};
@@ -540,6 +584,7 @@
     <span class="ident">Deserialized</span> {
         <span class="ident">ip</span>: <span class="ident">usize</span>,
         <span class="ident">symbol_address</span>: <span class="ident">usize</span>,
+        <span class="ident">module_base_address</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
     },
 }
 
@@ -555,6 +600,16 @@
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
             <span class="ident">Frame</span>::<span class="ident">Raw</span>(<span class="kw-2">ref</span> <span class="ident">f</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">symbol_address</span>(),
             <span class="ident">Frame</span>::<span class="ident">Deserialized</span> { <span class="ident">symbol_address</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">symbol_address</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>,
+        }
+    }
+
+    <span class="kw">fn</span> <span class="ident">module_base_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
+            <span class="ident">Frame</span>::<span class="ident">Raw</span>(<span class="kw-2">ref</span> <span class="ident">f</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">f</span>.<span class="ident">module_base_address</span>(),
+            <span class="ident">Frame</span>::<span class="ident">Deserialized</span> {
+                <span class="ident">module_base_address</span>,
+                ..
+            } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">module_base_address</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">addr</span><span class="op">|</span> <span class="ident">addr</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>),
         }
     }
 }
@@ -576,6 +631,7 @@
     <span class="ident">addr</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
     <span class="ident">filename</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">PathBuf</span><span class="op">&gt;</span>,
     <span class="ident">lineno</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
+    <span class="ident">colno</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">Backtrace</span> {
@@ -695,6 +751,7 @@
                         <span class="ident">addr</span>: <span class="ident">symbol</span>.<span class="ident">addr</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span> <span class="kw">as</span> <span class="ident">usize</span>),
                         <span class="ident">filename</span>: <span class="ident">symbol</span>.<span class="ident">filename</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">to_owned</span>()),
                         <span class="ident">lineno</span>: <span class="ident">symbol</span>.<span class="ident">lineno</span>(),
+                        <span class="ident">colno</span>: <span class="ident">symbol</span>.<span class="ident">colno</span>(),
                     });
                 };
                 <span class="kw">match</span> <span class="ident">frame</span>.<span class="ident">frame</span> {
@@ -743,6 +800,18 @@
     <span class="doccomment">/// enabled, and the `std` feature is enabled by default.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">symbol_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span> {
         <span class="self">self</span>.<span class="ident">frame</span>.<span class="ident">symbol_address</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>
+    }
+
+    <span class="doccomment">/// Same as `Frame::module_base_address`</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Required features</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This function requires the `std` feature of the `backtrace` crate to be</span>
+    <span class="doccomment">/// enabled, and the `std` feature is enabled by default.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">module_base_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">frame</span>
+            .<span class="ident">module_base_address</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">addr</span><span class="op">|</span> <span class="ident">addr</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">c_void</span>)
     }
 
     <span class="doccomment">/// Returns the list of symbols that this frame corresponds to.</span>
@@ -803,6 +872,16 @@
     <span class="doccomment">/// enabled, and the `std` feature is enabled by default.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">lineno</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">lineno</span>
+    }
+
+    <span class="doccomment">/// Same as `Symbol::colno`</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Required features</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This function requires the `std` feature of the `backtrace` crate to be</span>
+    <span class="doccomment">/// enabled, and the `std` feature is enabled by default.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">colno</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">colno</span>
     }
 }
 
@@ -865,6 +944,7 @@
             .<span class="ident">field</span>(<span class="string">&quot;addr&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">addr</span>())
             .<span class="ident">field</span>(<span class="string">&quot;filename&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">filename</span>())
             .<span class="ident">field</span>(<span class="string">&quot;lineno&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">lineno</span>())
+            .<span class="ident">field</span>(<span class="string">&quot;colno&quot;</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">colno</span>())
             .<span class="ident">finish</span>()
     }
 }
@@ -878,6 +958,7 @@
     <span class="kw">struct</span> <span class="ident">SerializedFrame</span> {
         <span class="ident">ip</span>: <span class="ident">usize</span>,
         <span class="ident">symbol_address</span>: <span class="ident">usize</span>,
+        <span class="ident">module_base_address</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
         <span class="ident">symbols</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BacktraceSymbol</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     }
 
@@ -891,6 +972,7 @@
                 <span class="ident">frame</span>: <span class="ident">Frame</span>::<span class="ident">Deserialized</span> {
                     <span class="ident">ip</span>: <span class="ident">frame</span>.<span class="ident">ip</span>,
                     <span class="ident">symbol_address</span>: <span class="ident">frame</span>.<span class="ident">symbol_address</span>,
+                    <span class="ident">module_base_address</span>: <span class="ident">frame</span>.<span class="ident">module_base_address</span>,
                 },
                 <span class="ident">symbols</span>: <span class="ident">frame</span>.<span class="ident">symbols</span>,
             })
@@ -906,6 +988,7 @@
             <span class="ident">SerializedFrame</span> {
                 <span class="ident">ip</span>: <span class="ident">frame</span>.<span class="ident">ip</span>() <span class="kw">as</span> <span class="ident">usize</span>,
                 <span class="ident">symbol_address</span>: <span class="ident">frame</span>.<span class="ident">symbol_address</span>() <span class="kw">as</span> <span class="ident">usize</span>,
+                <span class="ident">module_base_address</span>: <span class="ident">frame</span>.<span class="ident">module_base_address</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">addr</span><span class="op">|</span> <span class="ident">addr</span> <span class="kw">as</span> <span class="ident">usize</span>),
                 <span class="ident">symbols</span>: <span class="ident">symbols</span>.<span class="ident">clone</span>(),
             }
             .<span class="ident">encode</span>(<span class="ident">e</span>)
@@ -926,6 +1009,7 @@
     <span class="kw">struct</span> <span class="ident">SerializedFrame</span> {
         <span class="ident">ip</span>: <span class="ident">usize</span>,
         <span class="ident">symbol_address</span>: <span class="ident">usize</span>,
+        <span class="ident">module_base_address</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>,
         <span class="ident">symbols</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">BacktraceSymbol</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     }
 
@@ -938,6 +1022,7 @@
             <span class="ident">SerializedFrame</span> {
                 <span class="ident">ip</span>: <span class="ident">frame</span>.<span class="ident">ip</span>() <span class="kw">as</span> <span class="ident">usize</span>,
                 <span class="ident">symbol_address</span>: <span class="ident">frame</span>.<span class="ident">symbol_address</span>() <span class="kw">as</span> <span class="ident">usize</span>,
+                <span class="ident">module_base_address</span>: <span class="ident">frame</span>.<span class="ident">module_base_address</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">addr</span><span class="op">|</span> <span class="ident">addr</span> <span class="kw">as</span> <span class="ident">usize</span>),
                 <span class="ident">symbols</span>: <span class="ident">symbols</span>.<span class="ident">clone</span>(),
             }
             .<span class="ident">serialize</span>(<span class="ident">s</span>)
@@ -954,6 +1039,7 @@
                 <span class="ident">frame</span>: <span class="ident">Frame</span>::<span class="ident">Deserialized</span> {
                     <span class="ident">ip</span>: <span class="ident">frame</span>.<span class="ident">ip</span>,
                     <span class="ident">symbol_address</span>: <span class="ident">frame</span>.<span class="ident">symbol_address</span>,
+                    <span class="ident">module_base_address</span>: <span class="ident">frame</span>.<span class="ident">module_base_address</span>,
                 },
                 <span class="ident">symbols</span>: <span class="ident">frame</span>.<span class="ident">symbols</span>,
             })

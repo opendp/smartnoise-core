@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["theil_sen_transform","Compute parameters between all pairs of points where defined"],["theil_sen_transform_k_match","Implementation from paper Separate data into two bins, match members of each bin to form pairs Note: k is number of trials here"]]});
