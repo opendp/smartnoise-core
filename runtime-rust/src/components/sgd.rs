@@ -57,7 +57,7 @@ fn sgd(data: &ArrayD<Float>, data_size: usize, theta: &ArrayD<Float>,
     let mut theta_mutable = theta.clone();
     let mut thetas: Vec<Vec<Float>> = Vec::new();
 
-    for _ in 0..max_iters - 1 {
+    for _ in 0..max_iters {
         // Random sample of observations, without replacement, of fixed size sample_size 
         // New sample each iteration
         // TODO: This is used in loop for clipping?
@@ -68,7 +68,7 @@ fn sgd(data: &ArrayD<Float>, data_size: usize, theta: &ArrayD<Float>,
         let mut vec_sample: Vec<Integer> = range.choose_multiple(&mut rng, sample_size.clone()).cloned().collect();
         vec_sample.shuffle(&mut rng);
         // let mut data_temp: Vec<Vec<Float>> = Vec::new();
-        println!("Data Size: {:?}", data.shape().to_vec());
+        // println!("Data Size: {:?}", data.shape().to_vec());
         let data_temp = data.select(Axis(0), &vec_sample.into_iter().map(|x| x as usize).collect::<Vec<_>>());
 
         // Compute gradient
@@ -89,12 +89,12 @@ fn sgd(data: &ArrayD<Float>, data_size: usize, theta: &ArrayD<Float>,
         // Add noise
         let mut noisy_gradients = Vec::new();
         let mut multidim_gauss_noise = Vec::new();
-        for _ in 0..data_size.clone() - 1 {
+        for _ in 0..data_size.clone() {
             let noise = sample_gaussian_mpfr(0.0, noise_scale.powi(2) * gradient_norm_bound.powi(2));
             multidim_gauss_noise.push(noise);
         }
         let mut gradient_sum: Vec<Float> = Vec::new();
-        for i in 0..clipped_gradients.len()-1 {
+        for i in 0..clipped_gradients.len() {
             gradient_sum.push(clipped_gradients[i].iter().sum());
         }
         let mut sum = 0.0;
@@ -139,8 +139,8 @@ mod test_sgd {
     #[test]
     fn test_dp_sgd() {
         // Build large test dataset, with n rows, x~uniform; y~binomial(pi); pi = 1/(1+exp(-1 - 1x))
-        let n = 1000;
-        let m = 10;
+        let n = 100;
+        let m = 2;
         let mut data = Array::random((n, m), Uniform::new(0., 10.)); // arr2:random((1000,2), Uniform::new(0.0, 1.0));
         for i in 0..n-1 {
             data[[i,0]] = 1.0 /(1.0 + ((-1.0 - data[[i, 1]]) as Float).exp())
@@ -151,13 +151,14 @@ mod test_sgd {
         let noise_scale = 1.0;
         let group_size = 2;
         let gradient_norm_bound = 0.15;
-        let max_iters = 100;
+        let max_iters = 1;
         let clipping_value = 1.0;
         let sample_size = 5 as usize;
         let theta_final: Vec<Vec<Float>> = sgd(&data.into_dyn(), data_size, &theta, learning_rate, noise_scale, group_size,
                                                gradient_norm_bound, max_iters, clipping_value, sample_size);
-        println!("This was changed");
-        // assert_eq!(10 as usize, m as usize);
-        // assert_eq!(theta_final.len(), m as usize);
+        println!("{:?}", theta_final);
+
+        assert_eq!(theta_final.len(), max_iters as usize);
+
     }
 }
