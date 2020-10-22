@@ -8,11 +8,11 @@
 //!
 //! Implementations of the Evaluable trait are distributed among the module files.
 
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 use crate::NodeArguments;
-use whitenoise_validator::base::ReleaseNode;
+use smartnoise_validator::base::ReleaseNode;
 
-use whitenoise_validator::proto;
+use smartnoise_validator::proto;
 
 //pub mod bin;
 pub mod cast;

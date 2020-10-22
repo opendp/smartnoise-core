@@ -8,9 +8,9 @@ use probability::prelude::Gaussian;
 #[cfg(feature="use-mpfr")]
 use rug::{Float, rand::{ThreadRandGen, ThreadRandState}};
 
-use whitenoise_validator::components::snapping_mechanism::{compute_precision, get_smallest_greater_or_eq_power_of_two, redefine_epsilon};
-use whitenoise_validator::errors::*;
-use whitenoise_validator::Integer;
+use smartnoise_validator::components::snapping_mechanism::{compute_precision, get_smallest_greater_or_eq_power_of_two, redefine_epsilon};
+use smartnoise_validator::errors::*;
+use smartnoise_validator::Integer;
 
 use crate::utilities;
 use crate::utilities::get_closest_multiple_of_lambda;
@@ -86,19 +86,19 @@ pub fn censored_specific_geom(enforce_constant_time: bool) -> Result<i16> {
 ///
 /// ```
 /// // returns a bit with Pr(bit = 1) = 0.7
-/// use whitenoise_runtime::utilities::noise::sample_bit_prob;
+/// use smartnoise_runtime::utilities::noise::sample_bit_prob;
 /// let n = sample_bit_prob(0.7, false);
 /// # n.unwrap();
 /// ```
 /// ```should_panic
 /// // fails because 1.3 not a valid probability
-/// use whitenoise_runtime::utilities::noise::sample_bit_prob;
+/// use smartnoise_runtime::utilities::noise::sample_bit_prob;
 /// let n = sample_bit_prob(1.3, false);
 /// # n.unwrap();
 /// ```
 /// ```should_panic
 /// // fails because -0.3 is not a valid probability
-/// use whitenoise_runtime::utilities::noise::sample_bit_prob;
+/// use smartnoise_runtime::utilities::noise::sample_bit_prob;
 /// let n = sample_bit_prob(-0.3, false);
 /// # n.unwrap();
 /// ```
@@ -254,14 +254,14 @@ mod test_sample_bit {
 ///
 /// ```
 /// // returns a uniform draw from the set {0,1,2}
-/// use whitenoise_runtime::utilities::noise::sample_uniform_int;
+/// use smartnoise_runtime::utilities::noise::sample_uniform_int;
 /// let n = sample_uniform_int(0, 2).unwrap();
 /// assert!(n == 0 || n == 1 || n == 2);
 /// ```
 ///
 /// ```should_panic
 /// // fails because min > max
-/// use whitenoise_runtime::utilities::noise::sample_uniform_int;
+/// use smartnoise_runtime::utilities::noise::sample_uniform_int;
 /// let n = sample_uniform_int(2, 0);
 /// # n.unwrap();
 /// ```
@@ -330,13 +330,13 @@ mod test_sample_uniform_int {
 /// # Example
 /// ```
 /// // valid draw from Unif[0,2)
-/// use whitenoise_runtime::utilities::noise::sample_uniform;
+/// use smartnoise_runtime::utilities::noise::sample_uniform;
 /// let unif = sample_uniform(0.0, 2.0, false);
 /// # unif.unwrap();
 /// ```
 /// ``` should_panic
 /// // fails because min > max
-/// use whitenoise_runtime::utilities::noise::sample_uniform;
+/// use smartnoise_runtime::utilities::noise::sample_uniform;
 /// let unif = sample_uniform(2.0, 0.0, false);
 /// # unif.unwrap();
 /// ```
@@ -423,7 +423,7 @@ mod test_uniform {
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::noise::sample_uniform_mpfr;
+/// use smartnoise_runtime::utilities::noise::sample_uniform_mpfr;
 /// let unif = sample_uniform_mpfr(0.0, 1.0);
 /// # unif.unwrap();
 /// ```
@@ -458,7 +458,7 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::noise::sample_laplace;
+/// use smartnoise_runtime::utilities::noise::sample_laplace;
 /// let n = sample_laplace(0.0, 2.0, false);
 /// # n.unwrap();
 /// ```
@@ -479,7 +479,7 @@ pub fn sample_laplace(shift: f64, scale: f64, enforce_constant_time: bool) -> Re
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::noise::sample_gaussian;
+/// use smartnoise_runtime::utilities::noise::sample_gaussian;
 /// let n = sample_gaussian(0.0, 2.0, false);
 /// # n.unwrap();
 /// ```
@@ -504,7 +504,7 @@ pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> R
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::noise::sample_gaussian;
+/// use smartnoise_runtime::utilities::noise::sample_gaussian;
 /// let gaussian = sample_gaussian(0.0, 1.0, false);
 /// ```
 #[cfg(feature = "use-mpfr")]
@@ -542,7 +542,7 @@ pub fn sample_gaussian(shift: f64, scale: f64, _enforce_constant_time: bool) -> 
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::noise::sample_gaussian_truncated;
+/// use smartnoise_runtime::utilities::noise::sample_gaussian_truncated;
 /// let n= sample_gaussian_truncated(0.0, 1.0, 0.0, 2.0, false);
 /// # n.unwrap();
 /// ```
@@ -576,7 +576,7 @@ pub fn sample_gaussian_truncated(
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::noise::sample_geometric_censored;
+/// use smartnoise_runtime::utilities::noise::sample_geometric_censored;
 /// let geom = sample_geometric_censored(0.1, 20, false);
 /// # geom.unwrap();
 /// ```
@@ -634,7 +634,7 @@ pub fn sample_geometric_censored(prob: f64, max_trials: i64, enforce_constant_ti
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use whitenoise_runtime::utilities::noise::sample_simple_geometric_mechanism;
+/// use smartnoise_runtime::utilities::noise::sample_simple_geometric_mechanism;
 /// let geom_noise = sample_simple_geometric_mechanism(1., 0, 100, false);
 /// ```
 pub fn sample_simple_geometric_mechanism(
@@ -671,7 +671,7 @@ pub fn sample_simple_geometric_mechanism(
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::noise::apply_snapping_noise;
+/// use smartnoise_runtime::utilities::noise::apply_snapping_noise;
 /// let value: f64 = 50.0;
 /// let epsilon: f64 = 1.0;
 /// let b: f64 = 100.0;

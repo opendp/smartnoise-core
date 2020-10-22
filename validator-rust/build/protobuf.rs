@@ -26,7 +26,7 @@ pub fn build_protobuf(components: &[ComponentJSON], output_path: PathBuf) {
 
 syntax = "proto3";
 
-package whitenoise;
+package smartnoise;
 import "value.proto";
 
 message Component {

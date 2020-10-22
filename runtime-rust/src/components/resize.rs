@@ -4,11 +4,11 @@ use std::hash::Hash;
 use ndarray::{ArrayD, Axis};
 use ndarray::prelude::*;
 
-use whitenoise_validator::{Float, Integer, proto};
-use whitenoise_validator::base::{Array, IndexKey, Jagged, ReleaseNode, Value};
-use whitenoise_validator::errors::*;
-use whitenoise_validator::utilities::{standardize_numeric_argument, take_argument};
-use whitenoise_validator::utilities::array::{slow_select, slow_stack};
+use smartnoise_validator::{Float, Integer, proto};
+use smartnoise_validator::base::{Array, IndexKey, Jagged, ReleaseNode, Value};
+use smartnoise_validator::errors::*;
+use smartnoise_validator::utilities::{standardize_numeric_argument, take_argument};
+use smartnoise_validator::utilities::array::{slow_select, slow_stack};
 
 use crate::components::Evaluable;
 use crate::components::impute::{impute_categorical_arrayd, impute_float_gaussian_arrayd, impute_float_uniform_arrayd};
@@ -551,7 +551,7 @@ pub fn resize_categorical<T>(
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::components::resize::create_sampling_indices;
+/// use smartnoise_runtime::components::resize::create_sampling_indices;
 /// let subset_indices = create_sampling_indices(5, 10, false);
 /// # subset_indices.unwrap();
 /// ```

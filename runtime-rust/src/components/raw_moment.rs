@@ -1,10 +1,10 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::ReleaseNode;
-use whitenoise_validator::utilities::take_argument;
+use smartnoise_validator::base::ReleaseNode;
+use smartnoise_validator::utilities::take_argument;
 use crate::components::Evaluable;
-use whitenoise_validator::{proto, Float};
+use smartnoise_validator::{proto, Float};
 use ndarray::ArrayD;
 use crate::components::mean::mean;
 
@@ -30,8 +30,8 @@ impl Evaluable for proto::RawMoment {
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr2, arr1};
-/// use whitenoise_runtime::components::raw_moment::raw_moment;
-/// use whitenoise_validator::Float;
+/// use smartnoise_runtime::components::raw_moment::raw_moment;
+/// use smartnoise_validator::Float;
 /// let data: ArrayD<Float> = arr2(&[ [1., 1., 1.], [2., 4., 6.] ]).into_dyn();
 /// let second_moments = raw_moment(&data, 2).unwrap();
 /// assert_eq!(second_moments, arr2(&[[2.5, 8.5, 18.5]]).into_dyn());

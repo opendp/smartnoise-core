@@ -1,9 +1,9 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use crate::utilities;
-use whitenoise_validator::Float;
+use smartnoise_validator::Float;
 use crate::utilities::{noise};
-use whitenoise_validator::components::gaussian_mechanism::get_analytic_gaussian_sigma;
+use smartnoise_validator::components::gaussian_mechanism::get_analytic_gaussian_sigma;
 
 /// Returns noise drawn according to the Laplace mechanism
 ///
@@ -25,7 +25,7 @@ use whitenoise_validator::components::gaussian_mechanism::get_analytic_gaussian_
 ///
 /// # Examples
 /// ```
-/// use whitenoise_runtime::utilities::mechanisms::laplace_mechanism;
+/// use smartnoise_runtime::utilities::mechanisms::laplace_mechanism;
 /// let n = laplace_mechanism(0.1, 2.0, false);
 /// ```
 pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: bool) -> Result<f64> {
@@ -55,7 +55,7 @@ pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: 
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::mechanisms::snapping_mechanism;
+/// use smartnoise_runtime::utilities::mechanisms::snapping_mechanism;
 /// let value: f64 = 50.0;
 /// let epsilon: f64 = 1.0;
 /// let min: f64 = -50.;
@@ -136,7 +136,7 @@ pub fn snapping_mechanism(
 ///
 /// # Examples
 /// ```
-/// use whitenoise_runtime::utilities::mechanisms::gaussian_mechanism;
+/// use smartnoise_runtime::utilities::mechanisms::gaussian_mechanism;
 /// let n = gaussian_mechanism(0.1, 0.0001, 2.0, false, false);
 /// ```
 pub fn gaussian_mechanism(
@@ -177,7 +177,7 @@ pub fn gaussian_mechanism(
 ///
 /// # Examples
 /// ```
-/// use whitenoise_runtime::utilities::mechanisms::simple_geometric_mechanism;
+/// use smartnoise_runtime::utilities::mechanisms::simple_geometric_mechanism;
 /// let n = simple_geometric_mechanism(0.1, 1., 0, 10, true);
 /// ```
 pub fn simple_geometric_mechanism(
@@ -209,7 +209,7 @@ pub fn simple_geometric_mechanism(
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use whitenoise_runtime::utilities::mechanisms::exponential_mechanism;
+/// use smartnoise_runtime::utilities::mechanisms::exponential_mechanism;
 /// // create utility function
 /// pub fn utility(x:&f64) -> f64 {
 ///     let util = *x as f64;

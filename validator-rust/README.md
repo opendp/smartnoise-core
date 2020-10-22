@@ -1,34 +1,34 @@
-[![Build Status](https://travis-ci.org/opendifferentialprivacy/whitenoise-core.svg?branch=develop)](https://travis-ci.org/opendifferentialprivacy/whitenoise-core)
+[![Build Status](https://travis-ci.org/opendifferentialprivacy/smartnoise-core.svg?branch=develop)](https://travis-ci.org/opendifferentialprivacy/smartnoise-core)
 
-## WhiteNoise Core <br/> Differential Privacy Library Validator <br/>
+## SmartNoise Core <br/> Differential Privacy Library Validator <br/>
 
-The validator is a sub-project of [Whitenoise-Core](https://github.com/opendifferentialprivacy/whitenoise-core).
-See also the accompanying [WhiteNoise-System](https://github.com/opendifferentialprivacy/whitenoise-system) and [WhiteNoise-Samples](https://github.com/opendifferentialprivacy/whitenoise-samples) repositories for this system.
+The validator is a sub-project of [SmartNoise-Core](https://github.com/opendifferentialprivacy/smartnoise-core).
+See also the accompanying [SmartNoise-System](https://github.com/opendifferentialprivacy/smartnoise-system) and [SmartNoise-Samples](https://github.com/opendifferentialprivacy/smartnoise-samples) repositories for this system.
 
 ##
 
-Differential privacy is the gold standard definition of privacy protection. The WhiteNoise project aims to connect theoretical solutions from the academic community with the practical lessons learned from real-world deployments, to make differential privacy broadly accessible to future deployments. Specifically, we provide several basic building blocks that can be used by people involved with sensitive data, with implementations based on vetted and mature differential privacy research. In WhiteNoise Core, we provide a pluggable open source library of differentially private algorithms and mechanisms for releasing privacy preserving queries and statistics, as well as APIs for defining an analysis and a validator for evaluating these analyses and composing the total privacy loss on a dataset. 
+Differential privacy is the gold standard definition of privacy protection. The SmartNoise project aims to connect theoretical solutions from the academic community with the practical lessons learned from real-world deployments, to make differential privacy broadly accessible to future deployments. Specifically, we provide several basic building blocks that can be used by people involved with sensitive data, with implementations based on vetted and mature differential privacy research. In SmartNoise Core, we provide a pluggable open source library of differentially private algorithms and mechanisms for releasing privacy preserving queries and statistics, as well as APIs for defining an analysis and a validator for evaluating these analyses and composing the total privacy loss on a dataset. 
 
 This library provides a language-agnostic set of utilities for running differentially private analyses. The validator takes in a high-level description of computation, called an Analysis, and checks if the data supplied to each component satisfies requirements necessary to maintain data privacy and derive sensitivities for mechanisms. The validator may also be used to compute the necessary noise scaling/sensitivities under a variety of definitions of privacy, as well as converting to/from accuracy estimates, summarizing releases, and dynamically validating individual components. 
 
-- [More about WhiteNoise Core Runtime](#more-about-whitenoise-core-validator)
+- [More about SmartNoise Core Runtime](#more-about-smartnoise-core-validator)
   - [Component List](#components)
   - [Architecture](#architecture)
-- [WhiteNoise Rust Documentation](#whitenoise-rust-documentation)
+- [SmartNoise Rust Documentation](#smartnoise-rust-documentation)
 - [Communication](#communication)
 - [Releases and Contributing](#releases-and-contributing)
 
 ---
 
-## More about WhiteNoise Core Validator
+## More about SmartNoise Core Validator
 
 ### Components
 
-For a full listing of the extensive set of components available in the library [see this documentation.](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_validator/docs/components/index.html)
+For a full listing of the extensive set of components available in the library [see this documentation.](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_validator/docs/components/index.html)
 
 ### Architecture
 
-The Whitenoise-core system architecture [is described in the parent project](https://github.com/opendifferentialprivacy/whitenoise-core#Architecture).
+The SmartNoise-core system architecture [is described in the parent project](https://github.com/opendifferentialprivacy/smartnoise-core#Architecture).
 This package provides language-agnostic utilities to aid in implementing differential privacy within your system.
 While the computational needs for constructing differentially private statistics may vary broadly depending on the data, the vast majority of differential privacy theory may be applied without ever having access to the data.
 The validator is designed such that it never has access to private data, which positions it well as a single library where DP theory may accumulate without concerns about the realities of loading physical databases.
@@ -39,9 +39,9 @@ Language bindings are also utility libraries, but for constructing analyses from
 
 ---
 
-### WhiteNoise Rust Documentation
+### SmartNoise Rust Documentation
 
-The [Rust documentation](https://opendifferentialprivacy.github.io/whitenoise-core/) includes full documentation on all pieces of the library and validator, including extensive [component by component descriptions with examples](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_runtime/components/index.html).
+The [Rust documentation](https://opendifferentialprivacy.github.io/smartnoise-core/) includes full documentation on all pieces of the library and validator, including extensive [component by component descriptions with examples](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_runtime/components/index.html).
 
 ### Communication
 
@@ -49,7 +49,7 @@ The [Rust documentation](https://opendifferentialprivacy.github.io/whitenoise-co
 
 ### Releases and Contributing
 
-Please let us know if you encounter a bug by [creating an issue](https://github.com/opendifferentialprivacy/whitenoise-core/issues).
+Please let us know if you encounter a bug by [creating an issue](https://github.com/opendifferentialprivacy/smartnoise-core/issues).
 
 We appreciate all contributions. We welcome pull requests with bug-fixes without prior discussion.
 

@@ -1,12 +1,12 @@
 use std::cmp::Ordering;
 
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 use ieee754::Ieee754;
 use ndarray::{ArrayD, Axis, Zip};
 use ndarray::prelude::IxDyn;
 use openssl::rand::rand_bytes;
 
-use whitenoise_validator::utilities::array::{slow_select, slow_stack};
+use smartnoise_validator::utilities::array::{slow_select, slow_stack};
 
 pub mod mechanisms;
 pub mod noise;
@@ -39,9 +39,9 @@ pub fn get_num_columns<T>(data: &ArrayD<T>) -> Result<i64> {
 ///
 /// # Example
 /// ```
-/// use whitenoise_validator::errors::*;
+/// use smartnoise_validator::errors::*;
 /// use ndarray::prelude::*;
-/// use whitenoise_runtime::utilities::broadcast_map;
+/// use smartnoise_runtime::utilities::broadcast_map;
 /// let left: ArrayD<f64> = arr1(&[1., -2., 3., 5.]).into_dyn();
 /// let right: ArrayD<f64> = arr1(&[2.]).into_dyn();
 /// let mapped: Result<ArrayD<f64>> = broadcast_map(left, right, &|l, r| l.max(r.clone()));
@@ -296,7 +296,7 @@ pub fn combine_components_into_ieee(
 /// Element from the candidate set
 #[cfg(feature="use-mpfr")]
 pub fn sample_from_set<T>(
-    candidate_set: &[T], weights: &[whitenoise_validator::Float],
+    candidate_set: &[T], weights: &[smartnoise_validator::Float],
     _enforce_constant_time: bool
 ) -> Result<T> where T: Clone {
 
@@ -334,7 +334,7 @@ pub fn sample_from_set<T>(
 
 #[cfg(not(feature="use-mpfr"))]
 pub fn sample_from_set<T>(
-    candidate_set: &[T], weights: &[whitenoise_validator::Float],
+    candidate_set: &[T], weights: &[smartnoise_validator::Float],
     enforce_constant_time: bool
 ) -> Result<T> where T: Clone {
 
@@ -367,7 +367,7 @@ pub fn sample_from_set<T>(
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::create_subset;
+/// use smartnoise_runtime::utilities::create_subset;
 /// let set = vec![1, 2, 3, 4, 5, 6];
 /// let weights = vec![1., 1., 1., 2., 2., 2.];
 /// let k = 3;
@@ -498,7 +498,7 @@ pub fn get_closest_multiple_of_lambda(x: f64, m: i16) -> Result<f64> {
 
 #[cfg(test)]
 mod test_get_closest_multiple_of_lambda {
-    use whitenoise_validator::hashmap;
+    use smartnoise_validator::hashmap;
     use crate::utilities::get_closest_multiple_of_lambda;
 
     #[test]

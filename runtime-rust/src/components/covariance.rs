@@ -1,12 +1,12 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{ReleaseNode, IndexKey};
-use whitenoise_validator::utilities::take_argument;
+use smartnoise_validator::base::{ReleaseNode, IndexKey};
+use smartnoise_validator::utilities::take_argument;
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Array};
 
-use whitenoise_validator::{proto, Float};
+use smartnoise_validator::{proto, Float};
 use crate::components::mean::mean;
 use ndarray::prelude::*;
 use std::iter::FromIterator;
@@ -49,7 +49,7 @@ impl Evaluable for proto::Covariance {
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr2};
-/// use whitenoise_runtime::components::covariance::matrix_covariance;
+/// use smartnoise_runtime::components::covariance::matrix_covariance;
 ///
 /// // covariance matrix is:
 /// // [12.5  7.5 -7.5]
@@ -97,7 +97,7 @@ pub fn matrix_covariance(data: &ArrayD<Float>, delta_degrees_of_freedom: usize) 
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr2};
-/// use whitenoise_runtime::components::covariance::matrix_cross_covariance;
+/// use smartnoise_runtime::components::covariance::matrix_cross_covariance;
 ///
 /// let left = arr2(&[ [1., 3., 5.,], [2., 4., 6.] ]).into_dyn();
 /// let right = arr2(&[ [2., 4., 6.], [1., 3., 5.] ]).into_dyn();
@@ -152,7 +152,7 @@ pub fn matrix_cross_covariance(
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr1};
-/// use whitenoise_runtime::components::covariance::covariance;
+/// use smartnoise_runtime::components::covariance::covariance;
 ///
 /// let left = arr1(&[1.,2.,3.]);
 /// let right = arr1(&[4.,5.,6.]);

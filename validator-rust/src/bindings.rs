@@ -7,7 +7,7 @@
 //!
 //! # Example
 //! ```
-//! use whitenoise_validator::bindings::Analysis;
+//! use smartnoise_validator::bindings::Analysis;
 //! use ndarray::arr1;
 //! let mut analysis = Analysis::new();
 //! let lit_2 = analysis.literal().value(2.0.into()).build();

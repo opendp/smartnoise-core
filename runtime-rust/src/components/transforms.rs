@@ -1,10 +1,10 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use crate::components::Evaluable;
 use crate::NodeArguments;
-use whitenoise_validator::base::{Value, Array, ReleaseNode};
-use whitenoise_validator::utilities::take_argument;
-use whitenoise_validator::{proto, Integer, Float};
+use smartnoise_validator::base::{Value, Array, ReleaseNode};
+use smartnoise_validator::utilities::take_argument;
+use smartnoise_validator::{proto, Integer, Float};
 use crate::utilities::broadcast_map;
 
 

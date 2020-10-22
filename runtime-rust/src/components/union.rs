@@ -1,11 +1,11 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{ReleaseNode, Array, Value};
+use smartnoise_validator::base::{ReleaseNode, Array, Value};
 use crate::components::Evaluable;
 
-use whitenoise_validator::{proto, Float, Integer};
-use whitenoise_validator::utilities::array::slow_stack;
+use smartnoise_validator::{proto, Float, Integer};
+use smartnoise_validator::utilities::array::slow_stack;
 use ndarray::{Axis, ArrayViewD, stack};
 use crate::utilities::to_nd;
 

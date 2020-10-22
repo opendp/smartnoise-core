@@ -1,22 +1,22 @@
-Contributing to WhiteNoise
+Contributing to SmartNoise
 =============================
-Contributions to WhiteNoise are welcome from all members of the community. This document is here to simplify the 
+Contributions to SmartNoise are welcome from all members of the community. This document is here to simplify the 
 on-boarding experience for contributors, contributions to this document are also welcome. 
 Please use the [GitHub issue board](https://github.com/orgs/opendifferentialprivacy/projects/1) to track and take ownership of issues. 
 
-Please let us know if you encounter a bug by [creating an issue](https://github.com/opendifferentialprivacy/whitenoise-core/issues). We appreciate all contributions. We welcome pull requests with bug-fixes without prior discussion.
+Please let us know if you encounter a bug by [creating an issue](https://github.com/opendifferentialprivacy/smartnoise-core/issues). We appreciate all contributions. We welcome pull requests with bug-fixes without prior discussion.
 
 If you plan to contribute new features, utility functions or extensions to the core, please first open an issue and 
 discuss the feature with us. Sending a PR without discussion might end up resulting in a rejected PR, because we might
  be taking the core in a different direction than you might be aware of.
 
-For a description of the library architecture and installation instructions, see [whitenoise-core/README.md](./README.md). 
+For a description of the library architecture and installation instructions, see [smartnoise-core/README.md](./README.md). 
 Before contributing, we recommend following the [Getting Started guide](./README.md#getting-started) in that README to get sample notebooks running and to gain some familiarity with the library structure.
 
 General Contribution Guidelines
 ===============================
 
-- Use [GitHub issues](https://github.com/opendifferentialprivacy/whitenoise-core/issues) including the [Github issue board](https://github.com/orgs/opendifferentialprivacy/projects/1).
+- Use [GitHub issues](https://github.com/opendifferentialprivacy/smartnoise-core/issues) including the [Github issue board](https://github.com/orgs/opendifferentialprivacy/projects/1).
 - Anything implemented from the differential privacy literature should contain clear citations and/or whitepapers 
 explaining any necessary derivations.
 - Code should be clearly documented and include testing. For more information, please see:
@@ -71,9 +71,9 @@ Contributing to the Rust Runtime
 Each [Component](runtime-rust/src/components) in the Rust runtime (`runtime-rust`) requires an `Evaluable` trait that describes how to evaluate a node of the computation graph. Any new component should include documentation for both the arguments to the `evaluate` function and the the return type(s). Additionally, doctests and test modules should be included.
 
 In order to contribute to underlying mechanisms and noise selection, which are implemented in the crate's [utility 
-functions](https://github.com/opendifferentialprivacy/whitenoise-core/tree/develop/runtime-rust/src/utilities), first read the noise whitepaper in [`whitepaper/noise`](whitepapers/noise) to understand the current design choices. Clearly document and test any code.
+functions](https://github.com/opendifferentialprivacy/smartnoise-core/tree/develop/runtime-rust/src/utilities), first read the noise whitepaper in [`whitepaper/noise`](whitepapers/noise) to understand the current design choices. Clearly document and test any code.
 
 Documentation and Testing
 =======================
 Code contributions should include both doctests and unit tests. We also encourage contributors to run the samples in 
-[whitenoise-samples](https://github.com/opendifferentialprivacy/whitenoise-samples) and to write their own samples that highlight their contributions. All code is integration tested and reviewed before merging. 
+[smartnoise-samples](https://github.com/opendifferentialprivacy/smartnoise-samples) and to write their own samples that highlight their contributions. All code is integration tested and reviewed before merging. 

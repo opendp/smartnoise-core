@@ -1,9 +1,9 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
-use whitenoise_validator::proto;
-use whitenoise_validator::base::{ReleaseNode, Value};
+use smartnoise_validator::proto;
+use smartnoise_validator::base::{ReleaseNode, Value};
 use std::collections::{HashMap};
-use whitenoise_validator::utilities::serial::{parse_release_node};
+use smartnoise_validator::utilities::serial::{parse_release_node};
 
 
 pub fn evaluate_function(

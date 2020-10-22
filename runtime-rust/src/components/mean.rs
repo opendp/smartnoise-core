@@ -1,12 +1,12 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{ReleaseNode};
-use whitenoise_validator::utilities::take_argument;
+use smartnoise_validator::base::{ReleaseNode};
+use smartnoise_validator::utilities::take_argument;
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Array};
 use crate::utilities::get_num_columns;
-use whitenoise_validator::{proto, Float};
+use smartnoise_validator::{proto, Float};
 
 impl Evaluable for proto::Mean {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
@@ -27,7 +27,7 @@ impl Evaluable for proto::Mean {
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use whitenoise_runtime::components::mean::mean;
+/// use smartnoise_runtime::components::mean::mean;
 /// let data = arr2(&[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();
 /// let means = mean(&data).unwrap();
 /// assert_eq!(means, arr2(&[[2., 20.]]).into_dyn());

@@ -5,7 +5,7 @@
 rustup install nightly
 
 # Rust documentation
-# current working directory must be in `whitenoise-core` root.
+# current working directory must be in `smartnoise-core` root.
 doc_command="cargo +nightly doc --verbose --target-dir=docs --manifest-path=ffi-rust/Cargo.toml"
 
 if [[ "${WN_USE_VULNERABLE_NOISE:-false}" != "false" ]]; then

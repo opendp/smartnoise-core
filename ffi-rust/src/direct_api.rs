@@ -1,4 +1,4 @@
-use whitenoise_runtime::utilities::mechanisms;
+use smartnoise_runtime::utilities::mechanisms;
 
 #[no_mangle]
 pub extern "C" fn laplace_mechanism(

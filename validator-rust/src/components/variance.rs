@@ -54,7 +54,7 @@ impl Component for proto::Variance {
 }
 
 impl Sensitivity for proto::Variance {
-    /// Variance sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/whitenoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/variance/variance.pdf)
+    /// Variance sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/smartnoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/variance/variance.pdf)
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,

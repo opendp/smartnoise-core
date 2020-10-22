@@ -25,7 +25,7 @@ ByteBuffer validate_analysis(const uint8_t *request_ptr, int32_t request_length)
 
 ByteBuffer release(const uint8_t *request_ptr, int32_t request_length);
 
-void whitenoise_destroy_bytebuffer(ByteBuffer buffer);
+void smartnoise_destroy_bytebuffer(ByteBuffer buffer);
 
 // direct api
 double laplace_mechanism(
