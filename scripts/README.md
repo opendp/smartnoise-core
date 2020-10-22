@@ -2,7 +2,7 @@
 
 ## Building a crate
 
-**IMPORTANT NOTE**: This is usually done in conjunction with building a PyPI version. Please look at the [smartnoise-core-python repository](https://github.com/opendifferentialprivacy/smartnoise-core-python), under scripts/README.md) 
+**IMPORTANT NOTE**: This is usually done in conjunction with building a PyPI version. Please look at the [smartnoise-core-python repository](https://github.com/opendifferentialprivacy/smartnoise-core-python), under scripts/README.md)
 
 The steps below describe how to build releases for crates.io
 
@@ -23,9 +23,9 @@ Notes:
     # vim or your editor of choice
     vim scripts/update_version.toml
     ```
-1. Run the `update_version.py` script. 
+1. Run the `update_version.py` script.
     ```
-    python scripts/update_version.py 
+    python scripts/update_version.py
     ```
     This command runs quickly and may generate no output. If it fails, follow the steps in the **IMPORTANT NOTE** above.
 1. Test publish the crate
