@@ -5,7 +5,7 @@
 [![Build Status](https://travis-ci.com/opendifferentialprivacy/smartnoise-core.svg?branch=develop)](https://travis-ci.com/opendifferentialprivacy/smartnoise-core)
 
 
-<a href="http://opendp.io"><img src="images/SmartNoise Logo/SVG/LogoMark_color.svg" align="left" height="70" vspace="8" hspace="18"></a>
+<a href="http://opendp.io"><img src="images/SmartNoise_Logos/SVG/LogoMark_color.svg" align="left" height="70" vspace="8" hspace="18"></a>
 
 
 ## <br/>Core Differential Privacy Library <br/>
@@ -105,7 +105,7 @@ The Rust Validator and Runtime are available as crates:
 ### From Source
 The source install is intended for library developers.
 
-You may find it easier to use the library with this repository set up as a submodule of some set of language bindings. 
+You may find it easier to use the library with this repository set up as a submodule of some set of language bindings.
 In this case, switch to the language bindings setup.
 You can still push commits and branches from the core submodule of whatever bindings language you prefer.
 - [Python](https://github.com/opendifferentialprivacy/smartnoise-core-python#from-source)
@@ -113,16 +113,16 @@ You can still push commits and branches from the core submodule of whatever bind
 - [Rust (WIP)](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_validator/bindings/index.html)
 
 1. Clone the repository
-    
+
         git clone git@github.com:opendifferentialprivacy/smartnoise-core.git
 
-2. Install system dependencies (rust, gcc)   
+2. Install system dependencies (rust, gcc)
     Mac:
     ```shell script
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
     xcode-select --install
     ```
-    
+
     Linux:
     ```shell script
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
@@ -132,23 +132,23 @@ You can still push commits and branches from the core submodule of whatever bind
     Windows:
     Install WSL and refer to the linux instructions.
 
-3. In a new terminal:  
+3. In a new terminal:
     Build crate
-    
+
         cargo build
-    
+
     Test crate
-    
+
         cargo test
-    
+
     Document crate
-    
+
         cargo rustdoc --open
-    
+
     Build production docs
-    
+
         ./build_docs.sh
-    
+
 There are crates in `validator-rust` and `runtime-rust`, and a virtual crate in root that runs commands on both.
 Switch between crates via `cd`, or by setting the manifest path `--manifest-path=validator-rust/Cargo.toml`.
 
