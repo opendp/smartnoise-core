@@ -1,4 +1,4 @@
-[**Please note that we are renaming the toolkit and will be introducing the new name in the coming weeks.**](https://projects.iq.harvard.edu/opendp/blog/building-inclusive-community)
+[**Please note that we have recently renamed this system.**](https://projects.iq.harvard.edu/opendp/blog/building-inclusive-community)
 
 ---
 
@@ -8,20 +8,20 @@
 <a href="http://opendp.io"><img src="images/SmartNoise Logo/SVG/LogoMark_color.svg" align="left" height="70" vspace="8" hspace="18"></a>
 
 
-## <br/>Core Differential Privacy Library <br/>
+## <br/>SmartNoise Core Differential Privacy Library <br/>
 
-See also the accompanying [system repository](https://github.com/opendifferentialprivacy/smartnoise-system) and [samples repository](https://github.com/opendifferentialprivacy/smartnoise-samples) accompanying repositories for this system.
+See also the accompanying [SmartNoise System repository](https://github.com/opendifferentialprivacy/smartnoise-system) and [SmartNoise Samples repository](https://github.com/opendifferentialprivacy/smartnoise-samples) accompanying repositories for this system.
 
 ---
 
-Differential privacy is the gold standard definition of privacy protection.  This project aims to connect theoretical solutions from the academic community with the practical lessons learned from real-world deployments, to make differential privacy broadly accessible to future deployments.  Specifically, we provide several basic building blocks that can be used by people involved with sensitive data, with implementations based on vetted and mature differential privacy research.  Here in the Core, we provide a pluggable open source library of differentially private algorithms and mechanisms for releasing privacy preserving queries and statistics, as well as APIs for defining an analysis and a validator for evaluating these analyses and composing the total privacy loss on a dataset.
+Differential privacy is the gold standard definition of privacy protection.  The SmartNoise project, in collaboration with OpenDP, aims to connect theoretical solutions from the academic community with the practical lessons learned from real-world deployments, to make differential privacy broadly accessible to future deployments.  Specifically, we provide several basic building blocks that can be used by people involved with sensitive data, with implementations based on vetted and mature differential privacy research.  Here in the Core, we provide a pluggable open source library of differentially private algorithms and mechanisms for releasing privacy preserving queries and statistics, as well as APIs for defining an analysis and a validator for evaluating these analyses and composing the total privacy loss on a dataset.
 
 The mechanisms library provides a fast, memory-safe native runtime for validating and running differentially private analyses.  The runtime and validator are built in Rust, while Python support is available and R support is forthcoming.
 
 Differentially private computations are specified as an analysis graph that can be validated and executed to produce differentially private releases of data.  Releases include metadata about accuracy of outputs and the complete privacy cost of the analysis.
 
 
-- [More about the Core Repository](#more-about-the-core)
+- [More about SmartNoise Core](#more-about-smartnoise-core)
   - [Components](#components)
   - [Architecture](#architecture)
 - [Installation](#installation)
@@ -29,14 +29,14 @@ Differentially private computations are specified as an analysis graph that can 
   - [From Source](#from-source)
 - [Getting Started](#getting-started)
   - [Jupyter Notebook Examples](#jupyter-notebook-examples)
-  - [Core Rust Documentation](#core-rust-documentation)
+  - [SmartNoise Core Rust Documentation](#smartnoise-core-rust-documentation)
 - [Communication](#communication)
 - [Releases and Contributing](#releases-and-contributing)
 - [Contributing Team](#contributing-team)
 
 ---
 
-## More about the Core
+## More about SmartNoise Core
 
 ### Components
 
@@ -166,7 +166,7 @@ We have [numerous Jupyter notebooks](https://github.com/opendifferentialprivacy/
 [<img src="images/figs/example_utility.png" alt="Utility simulations" height="100">](https://github.com/opendifferentialprivacy/smartnoise-samples/tree/master/analysis)
 [<img src="images/figs/example_simulations.png" alt="Bias simulations" height="100">](https://github.com/opendifferentialprivacy/smartnoise-samples/tree/master/analysis)
 
-### Core Rust Documentation
+### SmartNoise Core Rust Documentation
 
 The [Rust documentation](https://opendifferentialprivacy.github.io/smartnoise-core/) includes full documentation on all pieces of the library and validator, including extensive [component by component descriptions with examples](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_runtime/components/index.html).
 
