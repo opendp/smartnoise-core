@@ -1,12 +1,14 @@
-use crate::errors::*;
-
-use crate::{proto, base, Warnable, Float};
-
-use crate::components::{Component, Sensitivity};
-use crate::base::{Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, IndexKey};
-use crate::utilities::prepend;
-use ndarray::prelude::*;
 use indexmap::map::IndexMap;
+use ndarray::prelude::*;
+
+use crate::{base, Float, proto, Warnable};
+use crate::base::{
+    AggregatorProperties, DataType, IndexKey, Nature, NatureContinuous,
+    NodeProperties, SensitivitySpace, Value, ValueProperties, Vector1DNull,
+};
+use crate::components::{Component, Sensitivity};
+use crate::errors::*;
+use crate::utilities::prepend;
 
 impl Component for proto::Variance {
     fn propagate_property(
@@ -28,20 +30,23 @@ impl Component for proto::Variance {
 
         let num_columns = data_property.num_columns()?;
         // save a snapshot of the state when aggregating
-        data_property.aggregator = Some(AggregatorProperties {
-            component: proto::component::Variant::Variance(self.clone()),
-            properties,
-            lipschitz_constants: ndarray::Array::from_shape_vec(
-                vec![1, num_columns as usize],
-                (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
-        });
+        data_property.aggregator = Some(AggregatorProperties::new(
+            proto::component::Variant::Variance(self.clone()), properties, num_columns));
 
         if data_property.data_type != DataType::Float {
             return Err("data: atomic type must be float".into())
         }
 
+        data_property.nature = match (data_property.lower_float(), data_property.upper_float()) {
+            (Ok(lower), Ok(upper)) => Some(Nature::Continuous(NatureContinuous {
+                lower: Vector1DNull::Float((0..num_columns).map(|_| Some(0.)).collect()),
+                upper: Vector1DNull::Float(lower.iter().zip(upper)
+                    // Popoviciu's inequality
+                    .map(|(l, u)| Some((u - l).powi(2) / 4.)).collect()),
+            })),
+            _ => None
+        };
         data_property.num_records = Some(1);
-        data_property.nature = None;
         data_property.dataset_id = Some(node_id as i64);
 
         Ok(ValueProperties::Array(data_property).into())
@@ -49,7 +54,7 @@ impl Component for proto::Variance {
 }
 
 impl Sensitivity for proto::Variance {
-    /// Variance sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/whitenoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/variance/variance.pdf)
+    /// Variance sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/smartnoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/variance/variance.pdf)
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,

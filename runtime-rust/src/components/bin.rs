@@ -1,13 +1,13 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use crate::base::NodeArguments;
-use whitenoise_validator::base::{Value, Array, Jagged};
+use smartnoise_validator::base::{Value, Array, Jagged};
 use crate::components::Evaluable;
 use ndarray::{ArrayD};
-use whitenoise_validator::proto;
+use smartnoise_validator::proto;
 use crate::utilities::get_num_columns;
 use std::ops::{Div, Add};
-use whitenoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument, standardize_float_argument};
+use smartnoise_validator::utilities::{get_argument, standardize_categorical_argument, standardize_numeric_argument, standardize_float_argument};
 
 impl Evaluable for proto::Bin {
     fn evaluate(&self, _privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<Value> {
@@ -61,7 +61,7 @@ pub enum BinSide {
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr2, arr1};
-/// use whitenoise_runtime::components::bin::{bin, BinSide};
+/// use smartnoise_runtime::components::bin::{bin, BinSide};
 ///
 /// let data = arr1(&[1.1, 2., 2.9, 4.1, 6.4]).into_dyn();
 /// let edges = vec![vec![0., 1., 2., 3., 4., 5.]];
@@ -93,7 +93,7 @@ pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T>
         .zip(inclusive_left.iter())
         // for each pairing, iterate over the cells
         .for_each(|((mut column, (mut edges, null)), inclusive_left)| {
-            edges.sort_by(|a, b| a.partial_cmp(b).unwrap());
+            edges.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
             column.iter_mut()
                 // mutate the cell via the operator
                 .for_each(|v| {
@@ -146,7 +146,7 @@ pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T>
 //    /// ```
 //    /// // set up data
 //    /// use ndarray::{ArrayD, arr1, Array1};
-//    /// use whitenoise_runtime::utilities::transformations::bin;
+//    /// use smartnoise_runtime::utilities::transformations::bin;
 //    /// let data: ArrayD<f64> = arr1(&[1., 2., 3., 4., 5., 12., 19., 24., 90., 98.]).into_dyn();
 //    /// let edges: ArrayD<f64> = arr1(&[0., 10., 20., 30., 40., 50., 60., 70., 80., 90., 100.]).into_dyn();
 //    /// let inclusive_left: ArrayD<bool> = arr1(&[false]).into_dyn();
@@ -229,7 +229,7 @@ pub fn bin<T: std::cmp::PartialOrd + Clone + Div<T, Output=T> + Add<T, Output=T>
 /////
 ///// Example
 ///// ```
-///// use whitenoise_runtime::utilities::aggregations::get_bin_names;
+///// use smartnoise_runtime::utilities::aggregations::get_bin_names;
 ///// use ndarray::prelude::*;
 ///// let edges: ArrayD<f64> = arr1(&[0., 10., 20.]).into_dyn();
 /////

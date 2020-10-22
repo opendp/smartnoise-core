@@ -21,7 +21,9 @@ mod digitize;
 mod dp_count;
 mod dp_variance;
 mod dp_covariance;
+mod dp_gumbel_median;
 mod dp_histogram;
+mod dp_linear_regression;
 mod dp_maximum;
 mod dp_median;
 mod dp_minimum;
@@ -42,10 +44,13 @@ mod quantile;
 mod reshape;
 mod mean;
 mod exponential_mechanism;
-mod gaussian_mechanism;
+pub mod gaussian_mechanism;
 mod laplace_mechanism;
 mod simple_geometric_mechanism;
+pub mod snapping_mechanism;
 mod resize;
+mod theil_sen;
+mod to_dataframe;
 mod sum;
 mod union;
 mod variance;
@@ -53,6 +58,7 @@ mod variance;
 use crate::base::{IndexKey, Value, NodeProperties, SensitivitySpace, ValueProperties};
 use crate::{proto, Warnable, base};
 use crate::utilities::json::{JSONRelease};
+use crate::utilities::set_node_id;
 use indexmap::map::IndexMap;
 
 /// Universal Component trait
@@ -179,12 +185,14 @@ pub trait Accuracy {
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
         accuracies: &proto::Accuracies,
+        public_arguments: IndexMap<base::IndexKey, &Value>
     ) -> Result<Option<Vec<proto::PrivacyUsage>>>;
 
     fn privacy_usage_to_accuracy(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
         alpha: f64,
     ) -> Result<Option<Vec<proto::Accuracy>>>;
 }
@@ -239,8 +247,12 @@ impl Component for proto::Component {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = variant {
-                            return x.propagate_property(privacy_definition, public_arguments, properties, node_id)
-                                .chain_err(|| format!("node specification {:?}:", variant))
+                            let Warnable(mut property, warnings) = x.propagate_property(
+                                privacy_definition, public_arguments, properties, node_id)
+                                .chain_err(|| format!("node specification {:?}:", variant))?;
+                            set_node_id(&mut property, node_id);
+
+                            return Ok(Warnable(property, warnings));
                        }
                     )*
                 }
@@ -251,12 +263,13 @@ impl Component for proto::Component {
             // INSERT COMPONENT LIST
             Cast, Clamp, ColumnBind, Count, Covariance, Digitize,
             Filter, Histogram, Impute, Index, Literal, Materialize, Mean,
-            Partition, Quantile, RawMoment, Reshape, Resize, Sum, Union, Variance,
+            Partition, Quantile, RawMoment, Reshape, Resize, Sum, ToDataframe, Union, Variance,
 
-            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
+            ExponentialMechanism, GaussianMechanism, LaplaceMechanism,
+            SimpleGeometricMechanism, SnappingMechanism,
 
             Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
-            Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract
+            Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract, TheilSen, DpGumbelMedian
         );
 
         Err(format!("proto component {:?} is missing its Component trait", variant).into())
@@ -326,10 +339,11 @@ impl Expandable for proto::Component {
             // INSERT COMPONENT LIST
             Clamp, Digitize, Histogram, Impute, Map, Maximum, Median, Minimum, Partition, Resize,
 
-            DpCount, DpCovariance, DpHistogram, DpMaximum, DpMean, DpMedian,
+            DpCount, DpCovariance, DpHistogram, DpLinearRegression, DpMaximum, DpMean, DpMedian,
             DpMinimum, DpQuantile, DpRawMoment, DpSum, DpVariance,
 
-            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
+            ExponentialMechanism, GaussianMechanism, LaplaceMechanism,
+            SimpleGeometricMechanism, SnappingMechanism, DpGumbelMedian,
 
             ToBool, ToFloat, ToInt, ToString
         );
@@ -365,7 +379,8 @@ impl Mechanism for proto::Component {
 
         get_privacy_usage!(
             // INSERT COMPONENT LIST
-            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism
+            ExponentialMechanism, GaussianMechanism, LaplaceMechanism,
+            SimpleGeometricMechanism, SnappingMechanism
         );
 
         Ok(None)
@@ -414,6 +429,7 @@ impl Accuracy for proto::Component {
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
         accuracy: &proto::Accuracies,
+        public_arguments: IndexMap<base::IndexKey, &Value>
     ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
         let variant = self.variant.as_ref()
             .ok_or_else(|| "variant: must be defined")?;
@@ -423,7 +439,8 @@ impl Accuracy for proto::Component {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = variant {
-                            return x.accuracy_to_privacy_usage(privacy_definition, properties, accuracy)
+                            return x.accuracy_to_privacy_usage(
+                                privacy_definition, properties, accuracy, public_arguments)
                                 .chain_err(|| format!("node specification {:?}:", variant))
                        }
                     )*
@@ -434,7 +451,8 @@ impl Accuracy for proto::Component {
         accuracy_to_privacy_usage!(
              LaplaceMechanism,
              GaussianMechanism,
-             SimpleGeometricMechanism
+             SimpleGeometricMechanism,
+             SnappingMechanism
         );
 
         Ok(None)
@@ -447,6 +465,7 @@ impl Accuracy for proto::Component {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
+        public_arguments: IndexMap<base::IndexKey, &Value>,
         alpha: f64,
     ) -> Result<Option<Vec<proto::Accuracy>>> {
         let variant = self.variant.as_ref()
@@ -457,7 +476,8 @@ impl Accuracy for proto::Component {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = variant {
-                            return x.privacy_usage_to_accuracy(privacy_definition, properties, alpha)
+                            return x.privacy_usage_to_accuracy(
+                                privacy_definition, properties, public_arguments, alpha)
                                 .chain_err(|| format!("node specification {:?}:", variant))
                        }
                     )*
@@ -468,7 +488,8 @@ impl Accuracy for proto::Component {
         privacy_usage_to_accuracy!(
             LaplaceMechanism,
             GaussianMechanism,
-            SimpleGeometricMechanism
+            SimpleGeometricMechanism,
+            SnappingMechanism
         );
 
         Ok(None)
@@ -541,10 +562,10 @@ impl Named for proto::Component {
             }
         }
 
-        // TODO: transforms, covariance/cross-covariance, extended indexing
+        // TODO: transforms, covariance/cross-covariance, extended indexing, columnbind
         get_names!(
             // INSERT COMPONENT LIST
-            ColumnBind, Index, Literal, Materialize
+            ToDataframe, Index, Literal, Materialize
         );
 
         // default implementation

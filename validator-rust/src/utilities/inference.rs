@@ -212,12 +212,8 @@ pub fn infer_nullity(value: &Value) -> Result<bool> {
     }
 }
 
-pub fn infer_c_stability(value: &Array) -> Result<Vec<Float>> {
-    Ok((0..value.num_columns()?).map(|_| 1.).collect())
-}
-
 pub fn infer_property(
-    value: &Value, prior_property: Option<&ValueProperties>
+    value: &Value, prior_property: Option<&ValueProperties>, node_id: u32
 ) -> Result<ValueProperties> {
 
     Ok(match value {
@@ -230,10 +226,9 @@ pub fn infer_property(
                 nullity: infer_nullity(&value)?,
                 releasable: true,
                 nature: infer_nature(&value, prior_property)?,
-                c_stability: match prior_prop_arr {
-                    Some(p) => p.c_stability.clone(),
-                    None => infer_c_stability(&array)?
-                },
+                c_stability: prior_prop_arr
+                    .map(|prop| prop.c_stability)
+                    .unwrap_or(1),
                 num_columns: Some(array.num_columns()? as i64),
                 num_records: Some(array.num_records()? as i64),
                 aggregator: prior_prop_arr.and_then(|p| p.aggregator.clone()),
@@ -244,12 +239,14 @@ pub fn infer_property(
                     Array::Str(_) => DataType::Str,
                 },
                 dataset_id: prior_prop_arr.and_then(|p| p.dataset_id),
+                node_id: node_id as i64,
                 is_not_empty: array.num_records()? != 0,
                 dimensionality: Some(array.shape().len() as i64),
                 group_id: prior_prop_arr
                     .map(|v| v.group_id.clone())
                     .unwrap_or_else(Vec::new),
-                naturally_ordered: true
+                naturally_ordered: true,
+                sample_proportion: prior_prop_arr.and_then(|p| p.sample_proportion)
             }.into()
         },
         Value::Dataframe(dataframe) => match prior_property {
@@ -258,7 +255,7 @@ pub fn infer_property(
                     children: dataframe.iter()
                         .zip(prior_property.children.values())
                         .map(|((name, value), prop)|
-                            infer_property(value, Some(prop))
+                            infer_property(value, Some(prop), node_id)
                                 .map(|v| (name.clone(), v)))
                         .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
                 }.into(),
@@ -266,7 +263,7 @@ pub fn infer_property(
             None =>
                 DataframeProperties {
                     children: dataframe.iter()
-                        .map(|(name, value)| infer_property(value, None)
+                        .map(|(name, value)| infer_property(value, None, node_id)
                             .map(|v| (name.clone(), v)))
                         .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
                 }.into()
@@ -277,7 +274,7 @@ pub fn infer_property(
                     children: partitions.iter()
                         .zip(prior_property.children.values())
                         .map(|((name, value), prop)|
-                            infer_property(value, Some(prop))
+                            infer_property(value, Some(prop), node_id)
                                 .map(|v| (name.clone(), v)))
                         .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
                 }.into(),
@@ -285,7 +282,7 @@ pub fn infer_property(
             None =>
                 PartitionsProperties {
                     children: partitions.iter()
-                        .map(|(name, value)| infer_property(value, None)
+                        .map(|(name, value)| infer_property(value, None, node_id)
                             .map(|v| (name.clone(), v)))
                         .collect::<Result<IndexMap<IndexKey, ValueProperties>>>()?,
                 }.into()

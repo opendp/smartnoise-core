@@ -1,12 +1,12 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::ReleaseNode;
-use whitenoise_validator::utilities::take_argument;
+use smartnoise_validator::base::ReleaseNode;
+use smartnoise_validator::utilities::take_argument;
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Array};
 use crate::utilities::get_num_columns;
-use whitenoise_validator::{proto, Float};
+use smartnoise_validator::{proto, Float};
 use crate::components::mean::mean;
 
 impl Evaluable for proto::Variance {
@@ -31,7 +31,7 @@ impl Evaluable for proto::Variance {
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use whitenoise_runtime::components::variance::variance;
+/// use smartnoise_runtime::components::variance::variance;
 /// let data = arr2(&[ [1.,10.], [2., 20.], [3., 30.] ]).into_dyn();
 /// let variances = variance(&data, 1).unwrap();
 /// assert_eq!(variances, arr2(&[[1., 100.]]).into_dyn());

@@ -1,17 +1,19 @@
-use whitenoise_validator::errors::*;
-use probability::distribution::{Laplace, Inverse};
-use ieee754::Ieee754;
 use std::{cmp, f64::consts, mem};
 
-use crate::utilities;
-
+use ieee754::Ieee754;
+use noisy_float::types::n64;
+use probability::distribution::{Inverse, Laplace};
+#[cfg(not(feature="use-mpfr"))]
+use probability::prelude::Gaussian;
 #[cfg(feature="use-mpfr")]
 use rug::{Float, rand::{ThreadRandGen, ThreadRandState}};
 
-use whitenoise_validator::Integer;
+use smartnoise_validator::components::snapping_mechanism::{compute_precision, get_smallest_greater_or_eq_power_of_two, redefine_epsilon};
+use smartnoise_validator::errors::*;
+use smartnoise_validator::Integer;
 
-#[cfg(not(feature="use-mpfr"))]
-use probability::prelude::Gaussian;
+use crate::utilities;
+use crate::utilities::get_closest_multiple_of_lambda;
 
 // Give MPFR ability to draw randomness from OpenSSL
 #[cfg(feature="use-mpfr")]
@@ -21,7 +23,9 @@ struct GeneratorOpenSSL;
 impl ThreadRandGen for GeneratorOpenSSL {
     fn gen(&mut self) -> u32 {
         let mut buffer = [0u8; 4];
-        utilities::fill_bytes(&mut buffer);
+        // impossible not to panic here
+        //    cannot ignore errors with .ok(), because the buffer will remain 0
+        utilities::fill_bytes(&mut buffer).unwrap();
         u32::from_ne_bytes(buffer)
     }
 }
@@ -36,11 +40,11 @@ impl ThreadRandGen for GeneratorOpenSSL {
 /// only inside of the sample_bit_prob function. The major difference is that this function does not 
 /// call sample_bit_prob itself (whereas sample_geometric_censored does), so having this more specialized
 /// version allows us to avoid an infinite dependence loop.
-pub fn censored_specific_geom(enforce_constant_time: bool) -> i16 {
+pub fn censored_specific_geom(enforce_constant_time: bool) -> Result<i16> {
 
-    if enforce_constant_time {
+    Ok(if enforce_constant_time {
         let mut buffer = vec!(0_u8; 128);
-        utilities::fill_bytes(&mut buffer);
+        utilities::fill_bytes(&mut buffer)?;
 
         cmp::min(buffer.into_iter().enumerate()
             // ignore samples that contain no events
@@ -56,14 +60,14 @@ pub fn censored_specific_geom(enforce_constant_time: bool) -> i16 {
         // retrieve up to 128 bytes, each containing 8 trials
         for i in 0..128 {
             let mut buffer = vec!(0_u8; 1);
-            utilities::fill_bytes(&mut buffer);
+            utilities::fill_bytes(&mut buffer)?;
 
             if buffer[0] > 0 {
-                return cmp::min(i * 8 + buffer[0].leading_zeros() as i16, 1022)
+                return Ok(cmp::min(i * 8 + buffer[0].leading_zeros() as i16, 1022))
             }
         }
         1022
-    }
+    })
 }
 
 /// Sample a single bit with arbitrary probability of success
@@ -73,6 +77,7 @@ pub fn censored_specific_geom(enforce_constant_time: bool) -> i16 {
 ///
 /// # Arguments
 /// * `prob`- The desired probability of success (bit = 1).
+/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time
 ///
 /// # Return
 /// A bit that is 1 with probability "prob"
@@ -81,19 +86,19 @@ pub fn censored_specific_geom(enforce_constant_time: bool) -> i16 {
 ///
 /// ```
 /// // returns a bit with Pr(bit = 1) = 0.7
-/// use whitenoise_runtime::utilities::noise::sample_bit_prob;
+/// use smartnoise_runtime::utilities::noise::sample_bit_prob;
 /// let n = sample_bit_prob(0.7, false);
 /// # n.unwrap();
 /// ```
 /// ```should_panic
 /// // fails because 1.3 not a valid probability
-/// use whitenoise_runtime::utilities::noise::sample_bit_prob;
+/// use smartnoise_runtime::utilities::noise::sample_bit_prob;
 /// let n = sample_bit_prob(1.3, false);
 /// # n.unwrap();
 /// ```
 /// ```should_panic
 /// // fails because -0.3 is not a valid probability
-/// use whitenoise_runtime::utilities::noise::sample_bit_prob;
+/// use smartnoise_runtime::utilities::noise::sample_bit_prob;
 /// let n = sample_bit_prob(-0.3, false);
 /// # n.unwrap();
 /// ```
@@ -106,7 +111,7 @@ pub fn sample_bit_prob(prob: f64, enforce_constant_time: bool) -> Result<bool> {
     let (_sign, exponent, mantissa) = prob.decompose_raw();
 
     // repeatedly flip fair coin (up to 1023 times) and identify index (0-based) of first heads
-    let first_heads_index = censored_specific_geom(enforce_constant_time);
+    let first_heads_index = censored_specific_geom(enforce_constant_time)?;
 
     // if prob == 1., return after retrieving censored_specific_geom, to protect constant time
     if exponent == 1023 { return Ok(true) }
@@ -130,11 +135,27 @@ pub fn sample_bit_prob(prob: f64, enforce_constant_time: bool) -> Result<bool> {
     })
 }
 
+/// Sample from the binomial distribution.
+///
+/// # Arguments
+/// * `n` - Number of trials
+/// * `prob`- The desired probability of success (bit = 1).
+/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time
+///
+/// # Return
+/// Number of successful trials
+pub fn sample_binomial(n: i64, prob: f64, enforce_constant_time: bool) -> Result<i64> {
+    (0..n).try_fold(0, |sum, _|
+        sample_bit_prob(prob, enforce_constant_time)
+            .map(|v| sum + if v {1} else {0}))
+}
+
 #[cfg(test)]
 mod test_sample_bit_prob {
     use ieee754::Ieee754;
     use itertools::Itertools;
-    use crate::utilities::noise::{sample_uniform, sample_bit_prob};
+
+    use crate::utilities::noise::{sample_bit_prob, sample_uniform};
 
     fn check_bit_vs_string_equal(value: f64) {
         let (_sign, _exponent, mut mantissa) = value.decompose_raw();
@@ -200,10 +221,10 @@ mod test_sample_bit_prob {
     }
 }
 
-pub fn sample_bit() -> bool {
+pub fn sample_bit() -> Result<bool> {
     let mut buffer = [0u8; 1];
-    utilities::fill_bytes(&mut buffer);
-    buffer[0] & 1 == 1
+    utilities::fill_bytes(&mut buffer)?;
+    Ok(buffer[0] & 1 == 1)
 }
 
 
@@ -214,7 +235,7 @@ mod test_sample_bit {
     #[test]
     fn test_sample_bit() {
         (0..100).for_each(|_| {
-            dbg!(sample_bit());
+            dbg!(sample_bit().unwrap());
         });
     }
 }
@@ -223,23 +244,24 @@ mod test_sample_bit {
 ///
 /// # Arguments
 ///
-/// * `min` - Minimum value of distribution from which we sample.
-/// * `max` - Maximum value of distribution from which we sample.
+/// * `min` - &i64, minimum value of distribution to sample from
+/// * `max` - &i64, maximum value of distribution to sample from
 ///
 /// # Return
 /// Random uniform variable between min and max (inclusive).
 ///
 /// # Example
+///
 /// ```
 /// // returns a uniform draw from the set {0,1,2}
-/// use whitenoise_runtime::utilities::noise::sample_uniform_int;
-/// let n = sample_uniform_int(0, 2);
-/// # n.unwrap();
+/// use smartnoise_runtime::utilities::noise::sample_uniform_int;
+/// let n = sample_uniform_int(0, 2).unwrap();
+/// assert!(n == 0 || n == 1 || n == 2);
 /// ```
 ///
 /// ```should_panic
 /// // fails because min > max
-/// use whitenoise_runtime::utilities::noise::sample_uniform_int;
+/// use smartnoise_runtime::utilities::noise::sample_uniform_int;
 /// let n = sample_uniform_int(2, 0);
 /// # n.unwrap();
 /// ```
@@ -258,7 +280,7 @@ pub fn sample_uniform_int(min: Integer, max: Integer) -> Result<Integer> {
     // and rejecting integers that are too large
     let mut buffer = [0u8; mem::size_of::<Integer>()];
     loop {
-        utilities::fill_bytes(&mut buffer[..n_bytes]);
+        utilities::fill_bytes(&mut buffer[..n_bytes])?;
         let uniform_int = i64::from_le_bytes(buffer);
         if uniform_int < n_ints {
             return Ok(uniform_int + min)
@@ -299,8 +321,8 @@ mod test_sample_uniform_int {
 ///
 /// # Arguments
 ///
-/// `min` - Inclusive minimum of uniform distribution.
-/// `max` - Non-inclusive maximum of uniform distribution.
+/// `min`: f64 minimum of uniform distribution (inclusive)
+/// `max`: f64 maximum of uniform distribution (non-inclusive)
 ///
 /// # Return
 /// Random draw from Unif[min, max).
@@ -308,13 +330,13 @@ mod test_sample_uniform_int {
 /// # Example
 /// ```
 /// // valid draw from Unif[0,2)
-/// use whitenoise_runtime::utilities::noise::sample_uniform;
+/// use smartnoise_runtime::utilities::noise::sample_uniform;
 /// let unif = sample_uniform(0.0, 2.0, false);
 /// # unif.unwrap();
 /// ```
 /// ``` should_panic
 /// // fails because min > max
-/// use whitenoise_runtime::utilities::noise::sample_uniform;
+/// use smartnoise_runtime::utilities::noise::sample_uniform;
 /// let unif = sample_uniform(2.0, 0.0, false);
 /// # unif.unwrap();
 /// ```
@@ -325,7 +347,7 @@ pub fn sample_uniform(min: f64, max: f64, enforce_constant_time: bool) -> Result
     // Generate mantissa
     let mut mantissa_buffer = [0u8; 8];
     // mantissa bit index zero is implicit
-    utilities::fill_bytes(&mut mantissa_buffer[1..]);
+    utilities::fill_bytes(&mut mantissa_buffer[1..])?;
     // limit the buffer to 52 bits
     mantissa_buffer[1] %= 16;
 
@@ -333,7 +355,7 @@ pub fn sample_uniform(min: f64, max: f64, enforce_constant_time: bool) -> Result
     let mantissa_int = u64::from_be_bytes(mantissa_buffer);
 
     // Generate exponent. A saturated mantissa with implicit bit is ~2
-    let exponent: i16 = -(1 + censored_specific_geom(enforce_constant_time));
+    let exponent: i16 = -(1 + censored_specific_geom(enforce_constant_time)?);
 
     // Generate uniform random number from [0,1)
     let uniform_rand = f64::recompose(false, exponent, mantissa_int);
@@ -386,9 +408,9 @@ mod test_uniform {
     }
 }
 
-/// Generates a draw from Unif[min, max] using the MPFR library.
+/// Returns random sample from Uniform[min,max) using the MPFR library.
 ///
-/// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
+/// If [min, max) == [0, 1),then this is done in a way that respects exact rounding.
 /// Otherwise, the return will be the result of a composition of two operations that
 /// respect exact rounding (though the result will not necessarily).
 ///
@@ -401,7 +423,7 @@ mod test_uniform {
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::noise::sample_uniform_mpfr;
+/// use smartnoise_runtime::utilities::noise::sample_uniform_mpfr;
 /// let unif = sample_uniform_mpfr(0.0, 1.0);
 /// # unif.unwrap();
 /// ```
@@ -424,41 +446,6 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
     Ok(unif)
 }
 
-/// Generates a draw from a Gaussian distribution using the MPFR library.
-///
-/// If [min, max] == [0, 1],then this is done in a way that respects exact rounding.
-/// Otherwise, the return will be the result of a composition of two operations that
-/// respect exact rounding (though the result will not necessarily).
-///
-/// # Arguments
-/// * `shift` - The expectation of the Gaussian distribution.
-/// * `scale` - The scaling parameter (standard deviation) of the Gaussian distribution.
-///
-/// # Return
-/// Draw from Gaussian(min, max)
-///
-/// # Example
-/// ```
-/// use whitenoise_runtime::utilities::noise::sample_gaussian_mpfr;
-/// let gaussian = sample_gaussian_mpfr(0.0, 1.0);
-/// ```
-#[cfg(feature = "use-mpfr")]
-pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> rug::Float {
-    // initialize 64-bit floats within mpfr/rug
-    // NOTE: We square the scale here because we ask for the standard deviation as the function input, but
-    //       the mpfr library wants the variance. We ask for std. dev. to be consistent with the rest of the library.
-    let mpfr_shift = Float::with_val(53, shift);
-    let mpfr_scale = Float::with_val(53, Float::with_val(53, scale).square());
-
-    // initialize randomness
-    let mut rng = GeneratorOpenSSL {};
-    let mut state = ThreadRandState::new_custom(&mut rng);
-
-    // generate Gaussian(0,1) according to mpfr standard, then convert to correct scale
-    let gauss = Float::with_val(64, Float::random_normal(&mut state));
-    gauss.mul_add(&mpfr_scale, &mpfr_shift)
-}
-
 /// Sample from Laplace distribution centered at shift and scaled by scale.
 /// 
 /// # Arguments
@@ -471,13 +458,13 @@ pub fn sample_gaussian_mpfr(shift: f64, scale: f64) -> rug::Float {
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::noise::sample_laplace;
+/// use smartnoise_runtime::utilities::noise::sample_laplace;
 /// let n = sample_laplace(0.0, 2.0, false);
+/// # n.unwrap();
 /// ```
-pub fn sample_laplace(shift: f64, scale: f64, enforce_constant_time: bool) -> f64 {
-    // nothing in sample_uniform can throw an error
-    let probability: f64 = sample_uniform(0., 1., enforce_constant_time).unwrap();
-    Laplace::new(shift, scale).inverse(probability)
+pub fn sample_laplace(shift: f64, scale: f64, enforce_constant_time: bool) -> Result<f64> {
+    let probability: f64 = sample_uniform(0., 1., enforce_constant_time)?;
+    Ok(Laplace::new(shift, scale).inverse(probability))
 }
 
 /// Sample from Gaussian distribution centered at shift and scaled by scale.
@@ -492,18 +479,49 @@ pub fn sample_laplace(shift: f64, scale: f64, enforce_constant_time: bool) -> f6
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::noise::sample_gaussian;
+/// use smartnoise_runtime::utilities::noise::sample_gaussian;
 /// let n = sample_gaussian(0.0, 2.0, false);
+/// # n.unwrap();
 /// ```
 #[cfg(not(feature = "use-mpfr"))]
-pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> f64 {
-    let probability: f64 = sample_uniform(0., 1., enforce_constant_time).unwrap();
-    Gaussian::new(shift, scale).inverse(probability)
+pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> Result<f64> {
+    let probability: f64 = sample_uniform(0., 1., enforce_constant_time)?;
+    Ok(Gaussian::new(shift, scale).inverse(probability))
 }
 
+/// Generates a draw from a Gaussian(loc, scale) distribution using the MPFR library.
+///
+/// If shift = 0 and scale = 1, sampling is done in a way that respects exact rounding.
+/// Otherwise, the return will be the result of a composition of two operations that
+/// respect exact rounding (though the result will not necessarily).
+///
+/// # Arguments
+/// * `shift` - The expectation of the Gaussian distribution.
+/// * `scale` - The scaling parameter (standard deviation) of the Gaussian distribution.
+///
+/// # Return
+/// Draw from Gaussian(loc, scale)
+///
+/// # Example
+/// ```
+/// use smartnoise_runtime::utilities::noise::sample_gaussian;
+/// let gaussian = sample_gaussian(0.0, 1.0, false);
+/// ```
 #[cfg(feature = "use-mpfr")]
-pub fn sample_gaussian(shift: f64, scale: f64, _enforce_constant_time: bool) -> f64 {
-    sample_gaussian_mpfr(shift, scale).to_f64()
+pub fn sample_gaussian(shift: f64, scale: f64, _enforce_constant_time: bool) -> Result<f64> {
+    // initialize 64-bit floats within mpfr/rug
+    // NOTE: We square the scale here because we ask for the standard deviation as the function input, but
+    //       the mpfr library wants the variance. We ask for std. dev. to be consistent with the rest of the library.
+    let mpfr_shift = Float::with_val(53, shift);
+    let mpfr_scale = Float::with_val(53, Float::with_val(53, scale).square());
+
+    // initialize randomness
+    let mut rng = GeneratorOpenSSL {};
+    let mut state = ThreadRandState::new_custom(&mut rng);
+
+    // generate Gaussian(0,1) according to mpfr standard, then convert to correct scale
+    let gauss = Float::with_val(64, Float::random_normal(&mut state));
+    Ok(gauss.mul_add(&mpfr_scale, &mpfr_shift).to_f64())
 }
 
 /// Sample from truncated Gaussian distribution.
@@ -524,7 +542,7 @@ pub fn sample_gaussian(shift: f64, scale: f64, _enforce_constant_time: bool) -> 
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::noise::sample_gaussian_truncated;
+/// use smartnoise_runtime::utilities::noise::sample_gaussian_truncated;
 /// let n= sample_gaussian_truncated(0.0, 1.0, 0.0, 2.0, false);
 /// # n.unwrap();
 /// ```
@@ -537,7 +555,7 @@ pub fn sample_gaussian_truncated(
 
     // return draw from distribution only if it is in correct range
     loop {
-        let trunc_gauss = sample_gaussian(shift, scale, enforce_constant_time);
+        let trunc_gauss = sample_gaussian(shift, scale, enforce_constant_time)?;
         if trunc_gauss >= min && trunc_gauss <= max {
             return Ok(trunc_gauss)
         }
@@ -558,7 +576,7 @@ pub fn sample_gaussian_truncated(
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::noise::sample_geometric_censored;
+/// use smartnoise_runtime::utilities::noise::sample_geometric_censored;
 /// let geom = sample_geometric_censored(0.1, 20, false);
 /// # geom.unwrap();
 /// ```
@@ -616,23 +634,126 @@ pub fn sample_geometric_censored(prob: f64, max_trials: i64, enforce_constant_ti
 /// # Example
 /// ```
 /// use ndarray::prelude::*;
-/// use whitenoise_runtime::utilities::noise::sample_simple_geometric_mechanism;
+/// use smartnoise_runtime::utilities::noise::sample_simple_geometric_mechanism;
 /// let geom_noise = sample_simple_geometric_mechanism(1., 0, 100, false);
 /// ```
-pub fn sample_simple_geometric_mechanism(scale: f64, min: i64, max: i64, enforce_constant_time: bool) -> i64 {
+pub fn sample_simple_geometric_mechanism(
+    scale: f64, min: i64, max: i64, enforce_constant_time: bool
+) -> Result<i64> {
 
     let alpha: f64 = consts::E.powf(-1. / scale);
     let max_trials: i64 = max - min;
 
     // return 0 noise with probability (1-alpha) / (1+alpha), otherwise sample from geometric
-    let unif: f64 = sample_uniform(0., 1., enforce_constant_time).unwrap();
-    if unif < (1. - alpha) / (1. + alpha) {
+    let unif: f64 = sample_uniform(0., 1., enforce_constant_time)?;
+    Ok(if unif < (1. - alpha) / (1. + alpha) {
         0
     } else {
         // get random sign
-        let sign: i64 = 2 * sample_bit() as i64 - 1;
-        // sample from censored geometric. Unwrap is safe because (1. - alpha) is bounded by 1.
-        let geom: i64 = sample_geometric_censored(1. - alpha, max_trials, enforce_constant_time).unwrap();
+        let sign: i64 = 2 * sample_bit()? as i64 - 1;
+        // sample from censored geometric
+        let geom: i64 = sample_geometric_censored(1. - alpha, max_trials, enforce_constant_time)?;
         sign * geom
+    })
+}
+
+/// Apply noise to value according to the Snapping mechanism.
+/// Sensitivity is assumed to be 1 in L1 space.
+///
+/// # Arguments
+/// * `value` - Non-private value of the statistic to be privatized.
+/// * `epsilon` - Desired privacy guarantee.
+/// * `b` - Upper bound on function value being privatized.
+/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time;
+///
+/// # Returns
+/// Value of statistic with noise applied according to the Snapping mechanism.
+///
+/// # Example
+/// ```
+/// use smartnoise_runtime::utilities::noise::apply_snapping_noise;
+/// let value: f64 = 50.0;
+/// let epsilon: f64 = 1.0;
+/// let b: f64 = 100.0;
+/// let value = apply_snapping_noise(value, epsilon, b, false);
+/// println!("snapped value: {:?}", value.unwrap());
+/// ```
+#[cfg(feature = "use-mpfr")]
+pub fn apply_snapping_noise(
+    mut value: f64, mut epsilon: f64, b: f64,
+    enforce_constant_time: bool
+) -> Result<(f64, f64)> {
+    // must be computed before redefining epsilon
+    let precision = compute_precision(epsilon)?;
+
+    // ensure that precision is supported by the OS
+    if precision > rug::float::prec_max() {
+        return Err("Operating system does not support sufficient precision to use the Snapping Mechanism".into());
     }
+    macro_rules! to_rug {($v:expr) => {rug::Float::with_val(precision, $v)}};
+
+    // effective epsilon is reduced due to snapping mechanism
+    epsilon = redefine_epsilon(epsilon, b, precision);
+    if epsilon == 0.0 {
+        return Err("epsilon is zero due to floating-point round-off".into())
+    }
+
+    let sign = if sample_bit()? {-1.} else {1.};
+    // 1.0 because sensitivity has been scaled to one
+    let lambda = 1.0 / epsilon;
+    // draw from {d: d in Doubles && d in (0, 1)} with probability based on unit of least precision
+    let u_star_sample = to_rug!(sample_uniform(0., 1., enforce_constant_time)?);
+
+    // add noise
+    //    rug is mandatory for ln
+    //    rug is optional for sign * lambda
+    value += (to_rug!(sign * lambda) * u_star_sample.ln()).to_f64();
+
+    // snap to lambda
+    let m = get_smallest_greater_or_eq_power_of_two(lambda)?;
+    value = get_closest_multiple_of_lambda(value, m)?;
+
+    Ok((value, epsilon))
+}
+
+#[cfg(not(feature = "use-mpfr"))]
+pub fn snapping_mechanism(
+    mechanism_input: &f64, epsilon: &f64, b: &f64, sensitivity: &f64
+) -> Result<f64> {
+    Err(Error::from("Crate must be compiled with gmp-mpfr to use the snapping mechanism."))
+}
+
+/// Sample noise from the Gumbel Distribution
+///
+/// Based on C implementation from https://github.com/numpy/numpy/blob/d329a66dbb9710aefd03cce6a8b0f46da51490ca/numpy/random/src/distributions/distributions.c
+///
+/// # Arguments
+/// * `loc` - location parameter
+/// * `scale` - scale parameter
+///
+/// # Return
+///  Noise according to the Gumbel Distribution
+pub fn sample_gumbel(loc: f64, scale: f64) -> f64 {
+    let rug_loc = Float::with_val(120, loc);
+    let rug_scale = Float::with_val(120, scale);
+    let u = Float::with_val(120, sample_uniform_mpfr(0.0, 1.0).unwrap());
+    // Accept if u > 0, otherwise reject and call function again
+    if u.gt(&Float::with_val(120, 0.0)) {
+        let negative_log = -(u.ln());
+        let log_term = negative_log.ln();
+        (-rug_scale.mul_add(&log_term, &rug_loc)).to_f64()
+    } else {
+        sample_gumbel(loc, scale)
+    }
+}
+
+/// Shuffle a vector
+///
+pub fn shuffle<T>(vector: Vec<T>, enforce_constant_time: bool) -> Result<Vec<T>> {
+    let mut vector = vector
+        .into_iter()
+        .map(|v| Ok((v, n64(sample_uniform(0., 1., enforce_constant_time)?))))
+        .collect::<Result<Vec<_>>>()?;
+    vector.sort_unstable_by_key(|v| v.1);
+    Ok(vector.into_iter().map(|(v, _)| v).collect())
 }

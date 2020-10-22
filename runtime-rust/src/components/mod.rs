@@ -8,11 +8,11 @@
 //!
 //! Implementations of the Evaluable trait are distributed among the module files.
 
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 use crate::NodeArguments;
-use whitenoise_validator::base::ReleaseNode;
+use smartnoise_validator::base::ReleaseNode;
 
-use whitenoise_validator::proto;
+use smartnoise_validator::proto;
 
 //pub mod bin;
 pub mod cast;
@@ -21,10 +21,12 @@ pub mod count;
 pub mod covariance;
 pub mod column_bind;
 pub mod digitize;
+pub mod dp_gumbel_median;
 pub mod filter;
 pub mod histogram;
 pub mod impute;
 pub mod index;
+// pub mod linreg_noisy_stats;
 pub mod materialize;
 pub mod mean;
 pub mod mechanisms;
@@ -34,6 +36,8 @@ pub mod raw_moment;
 pub mod reshape;
 pub mod resize;
 pub mod sum;
+pub mod theil_sen;
+pub mod to_dataframe;
 pub mod transforms;
 pub mod union;
 pub mod variance;
@@ -83,12 +87,14 @@ impl Evaluable for proto::component::Variant {
             // INSERT COMPONENT LIST
             Cast, Clamp, ColumnBind, Count, Covariance, Digitize, Filter, Histogram, Impute, Index,
             Materialize, Mean, Partition,
-            Quantile, RawMoment, Reshape, Resize, Sum, Union, Variance,
+            Quantile, RawMoment, Reshape, Resize, Sum, ToDataframe, Union, Variance,
 
-            ExponentialMechanism, GaussianMechanism, LaplaceMechanism, SimpleGeometricMechanism,
+            ExponentialMechanism, GaussianMechanism,
+            LaplaceMechanism, SnappingMechanism,
+            SimpleGeometricMechanism,
 
             Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
-            Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract
+            Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract, TheilSen, DpGumbelMedian
         );
 
         Err(format!("Component type not implemented: {:?}", self).into())

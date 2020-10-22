@@ -1,0 +1,104 @@
+\documentclass[11pt]{scrartcl} % Font size
+\input{../structure.tex} % Include the file specifying the document structure and custom commands
+
+%----------------------------------------------------------------------------------------
+%	TITLE SECTION
+%----------------------------------------------------------------------------------------
+
+\title{
+	\normalfont\normalsize
+	\textsc{Harvard Privacy Tools Project}\\ % Your university, school and/or department name(s)
+	\vspace{25pt} % Whitespace
+	\rule{\linewidth}{0.5pt}\\ % Thin top horizontal rule
+	\vspace{20pt} % Whitespace
+	{\huge The Exponential Mechanism for Medians}\\ % The assignment title
+	\vspace{12pt} % Whitespace
+	\rule{\linewidth}{2pt}\\ % Thick bottom horizontal rule
+	\vspace{12pt} % Whitespace
+}
+
+% \author{\LARGE} % Your name
+
+\date{\normalsize\today} % Today's date (\today) or a custom date
+
+\begin{document}
+\maketitle
+
+\section{The Exponential Mechanism}
+
+Sometimes, the global sensitivity of a function is too great, so the Laplace mechanism will not produce meaningful results. The median is one such function. In many cases, the \textit{Exponential mechanism} is an alternate approach that gives reasonable utility.\footnote{This is not the \textit{only} advantage of the exponential mechanism. It is a way to compute differentially private queries on non-numeric data, unlike the Laplace mechanism it does not assume that the probability of outputting a response ought to be symmetric about the true response, etc.} Introduced in 2007 by McSherry and Talwar, the exponential mechanism posits that for a given database, users prefer some outputs over others. That those preferences may be encapsulated with a utility score, where a high utility score indicates a higher preference for that output. The exponential mechanism releases outputs with probability proportional (in the exponent) to the utility score and the sensitivity of the utility function. 
+
+\begin{definition}  
+Let $\mathcal{X}$ be a space of databases and let $[m,M]$ be an arbitrary range. Let $u: \mathcal{X} \times [m,M] \rightarrow \mathbb{R}$ be a utility function, which maps pairs of databases and outputs to a utility score. Let $\Delta u$ be the sensitivity of $u$ with respect to the database argument. The exponential mechanism outputs $r \in [m,M]$ with probability proportional to $\exp\left(\frac{\varepsilon u(x,r)}{2 \Delta u}\right)$ \cite{mcsherry2007mechanism, dwork2014algorithmic}.\footnote{The original definition is from \cite{mcsherry2007mechanism}, but here we state the version rewritten in \cite{dwork2014algorithmic} as it is slightly clearer.}
+\end{definition}
+
+\begin{theorem}
+The exponential mechanism preserves $(\varepsilon,0)$-differential privacy \cite{mcsherry2007mechanism, dwork2014algorithmic}.\footnote{As written in \cite{mcsherry2007mechanism}, the mechanism actually preserves $(2\varepsilon\Delta u,0)$-differential privacy; the main difference in the $\cite{dwork2014algorithmic}$ version is that it has the extra factor of $2\Delta u$ to avoid these extra terms.}
+\end{theorem}
+
+Note that the exponential mechanism may not be tractable in many cases, as it assumes the existence of a utility function, and even if one exists it may not be tractable to compute it efficiently. 
+
+\section{An Exponential Mechanism for a quantile}
+
+\subsection{Defining a sensible utility function}
+
+Note that a user will prefer an output that is closer to the true quantile over one that is further away. Let $x$ be an (ordered) data set, let $r$ be a possible output, and let $N$ be the size of the data set. Let $\#(Z>r)$ refer to the number of points in $x$ above $r$. Then, the following is a reasonable utility function for a release $r$ for the $\alpha$-quantile of $x$.
+
+\begin{equation}
+u(x,r) = \max(\alpha, (1-\alpha))N - \vert (1-\alpha)\#(Z<r) - \alpha\#(Z>r)\vert.
+\end{equation} 
+
+\subsection{Sensitivity of the utility function}
+
+\subsubsection{Neighboring Definition: Change One}
+\begin{lemma}
+The above utility function $u$ has $\ell_11$ sensitivity bounded above by 1 in the change one model.
+\end{lemma}
+
+\begin{proof}
+Let $c_1 = \#(Z<r)$ and $c_2 = \#(Z>r)$. In one worst case, $c_1$ increases by 1 and $c_2$ decreases by 1.
+Then, 
+\begin{align*}
+\Delta u &= \vert (1-\alpha) (c_1 + 1) - \alpha (c_2-1) \vert - \vert (1-\alpha) c_1 - \alpha c_2 \vert  \\
+ &\le \vert (1-\alpha) (c_1 + 1) - \alpha (c_2-1) - (1-\alpha) c_1 + \alpha c_2 \vert\\
+ & \le \vert c_1 + 1 - \alpha c_1 - \alpha - \alpha c_2 + \alpha - c_1 + \alpha c_1 + \alpha c_2 \vert\\
+&= 1
+\end{align*}
+If instead $c_2$ decreases by 1 and $c_1$ increases by 1, the same thing will happen except with a negative sign that will not impact the final result due to the absolute values.
+\end{proof}
+\subsubsection{Neighboring Definition: Add/Drop One}
+
+\begin{lemma}
+The above utility function $u$ has $\ell_11$ sensitivity bounded above by $\max(1-\alpha, \alpha)$ in the add/drop one model.
+\end{lemma}
+
+\begin{proof}
+Let $c_1 = \#(Z<r)$ and $c_2 = \#(Z>r)$.  Consider what happens if one point is added. There are two cases that would impact the utility function: 
+\begin{enumerate}
+\item $c_1$ increases by one and nothing happens to $c_2$.
+\item $c_2$ increases by one and nothing happens to $c_1$.
+\end{enumerate}
+
+Say the first case occurs. Then,
+
+\begin{align*}
+\Delta u &= | (1-\alpha) (c_1 + 1) - \alpha (c_2) | - | (1-\alpha) c_1 - \alpha c_2 |  \\
+ 	&\le | (1-\alpha) (c_1 + 1) - \alpha (c_2) - (1-\alpha) c_1 + \alpha c_2 | \\
+	&= 1 - \alpha
+\end{align*}
+
+In the second case,
+
+\begin{align*}
+\delta u &= \vert (1-\alpha) (c_1) - \alpha (c_2 + 1) \vert - \vert (1-\alpha) c_1 - \alpha c_2 \vert \\
+	&\le \vert c_1 -\alpha c_1 - \alpha c_2 - \alpha - c_1 + \alpha c_1 + \alpha c_2  \vert\\
+	&= \alpha 
+\end{align*}
+\end{proof}
+
+Subtracting a point leads to the same results. 
+
+\bibliographystyle{alpha}
+\nocite{*}
+\bibliography{expMechMedian}
+\end{document}

@@ -27,13 +27,8 @@ impl Component for proto::Mean {
 
         let num_columns = data_property.num_columns()?;
         // save a snapshot of the state when aggregating
-        data_property.aggregator = Some(AggregatorProperties {
-            component: proto::component::Variant::Mean(self.clone()),
-            properties,
-            lipschitz_constants: ndarray::Array::from_shape_vec(
-                vec![1, num_columns as usize],
-                (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
-        });
+        data_property.aggregator = Some(AggregatorProperties::new(
+            proto::component::Variant::Mean(self.clone()), properties, num_columns));
 
         if data_property.data_type != DataType::Float {
             return Err("data: atomic type must be float".into())
@@ -44,12 +39,10 @@ impl Component for proto::Mean {
 
         Ok(ValueProperties::Array(data_property).into())
     }
-
-
 }
 
 impl Sensitivity for proto::Mean {
-    /// Mean sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/whitenoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/mean/mean.pdf).
+    /// Mean sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/smartnoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/mean/mean.pdf).
     fn compute_sensitivity(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,

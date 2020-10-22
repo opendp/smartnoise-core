@@ -1,11 +1,11 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{Value, Array, ReleaseNode};
+use smartnoise_validator::base::{Value, Array, ReleaseNode};
 use crate::components::Evaluable;
 use ndarray::{ArrayD, Axis, arr0};
-use whitenoise_validator::{proto, Integer};
-use whitenoise_validator::utilities::take_argument;
+use smartnoise_validator::{proto, Integer};
+use smartnoise_validator::utilities::take_argument;
 use std::collections::HashSet;
 use crate::utilities::get_num_columns;
 use std::iter::FromIterator;
@@ -51,7 +51,7 @@ impl Evaluable for proto::Count {
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr1, arr2};
-/// use whitenoise_runtime::components::count::count;
+/// use smartnoise_runtime::components::count::count;
 /// let data = arr2(&[ [false, false, true], [true, true, true] ]).into_dyn();
 /// let n = count(&data).unwrap();
 /// assert!(n.first().unwrap() == &2);
@@ -71,7 +71,7 @@ pub fn count<T>(data: &ArrayD<T>) -> Result<ArrayD<Integer>> {
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr1, arr2};
-/// use whitenoise_runtime::components::count::count_distinct;
+/// use smartnoise_runtime::components::count::count_distinct;
 /// let data = arr2(&[ [false, false, true], [true, false, true] ]).into_dyn();
 /// let distinct = count_distinct(&data).unwrap();
 /// assert_eq!(distinct, arr2(&[ [2, 1, 1] ]).into_dyn());

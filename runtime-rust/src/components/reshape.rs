@@ -1,11 +1,11 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{Value, Array, ReleaseNode, IndexKey};
-use whitenoise_validator::utilities::take_argument;
+use smartnoise_validator::base::{Value, Array, ReleaseNode, IndexKey};
+use smartnoise_validator::utilities::take_argument;
 use crate::components::Evaluable;
 use ndarray::ArrayD;
-use whitenoise_validator::{proto, Integer};
+use smartnoise_validator::{proto, Integer};
 use indexmap::map::IndexMap;
 
 
@@ -87,7 +87,7 @@ pub enum Layout {
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr1, arr2};
-/// use whitenoise_runtime::components::reshape::{reshape, Layout};
+/// use smartnoise_runtime::components::reshape::{reshape, Layout};
 /// let data = arr2(&[ [false, false, true] ]).into_dyn();
 /// let n = reshape(&data, true, &Layout::Row, &vec![2, 2]).unwrap();
 /// assert_eq!(n[0], arr2(&[ [false, false], [false, true] ]).into_dyn());

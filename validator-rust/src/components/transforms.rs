@@ -12,6 +12,8 @@ use crate::base::{IndexKey, Value, NatureContinuous};
 use num::{CheckedAdd, CheckedSub, Zero};
 use indexmap::map::IndexMap;
 use std::ops::{Mul, Div};
+use std::cmp::Ordering;
+use itertools::Itertools;
 
 
 impl Component for proto::Abs {
@@ -62,12 +64,12 @@ impl Component for proto::Add {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get(&IndexKey::from("left"))
+        let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get::<IndexKey>(&"right".into())
+        let right_property: ArrayProperties = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
@@ -80,9 +82,11 @@ impl Component for proto::Add {
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -119,19 +123,22 @@ impl Component for proto::Add {
                         _ => None
                     })))
             }, num_columns)?,
-            c_stability: broadcast(&left_property.c_stability, num_columns)?.iter()
-                .zip(broadcast(&right_property.c_stability, num_columns)?)
-                .map(|(l, r)| l.max(r)).collect(),
+            // checks to ensure this is correct are made in propagate_binary_shape
+            c_stability: left_property.c_stability
+                .max(right_property.c_stability),
             num_columns: Some(num_columns),
             num_records,
             aggregator: None,
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            naturally_ordered: true
+            naturally_ordered: true,
+            // checks are made within propagate_binary_shape that sampling proportion is equal and permissible
+            sample_proportion: left_property.sample_proportion
         }).into())
     }
 }
@@ -144,18 +151,20 @@ impl Component for proto::And {
         properties: base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut left_property = properties.get(&IndexKey::from("left"))
+        let mut left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get::<IndexKey>(&"right".into())
+        let right_property: ArrayProperties = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -173,9 +182,9 @@ impl Component for proto::And {
                 bool: Some(Box::new(|l: &bool, r: &bool| Ok(*l && *r))),
             }, &OptimizeBinaryOperators { float: None, int: None },
             num_columns)?;
-        left_property.c_stability = broadcast(&left_property.c_stability, num_columns)?.iter()
-            .zip(broadcast(&right_property.c_stability, num_columns)?)
-            .map(|(l, r)| l.max(r)).collect();
+        // checks to ensure this is correct are made in propagate_binary_shape
+        left_property.c_stability = left_property.c_stability
+            .max(right_property.c_stability);
         left_property.num_columns = Some(num_columns);
         left_property.num_records = num_records;
 
@@ -196,20 +205,22 @@ impl Component for proto::Divide {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get(&IndexKey::from("left"))
+        let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get::<IndexKey>(&"right".into())
+        let right_property: ArrayProperties = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -249,47 +260,22 @@ impl Component for proto::Divide {
         fn optimize<T: PartialOrd + Div<Output=T> + Zero + Copy>(
             a: T, c: T, d: T, f: T
         ) -> Result<(Option<T>, Option<T>)> {
+            let compare = |x: &T, y: &T| x.partial_cmp(y).unwrap_or(Ordering::Equal);
+            // if denominator interval does not contain zero
+            if T::zero() < d || f < T::zero() {
+                let (min, max) = vec![a / f, a / d, c / f, c / d].into_iter()
+                    .minmax_by(compare).into_option().unwrap();
+                return Ok((Some(min), Some(max)))
+            }
 
-            let zero = T::zero();
-            // maximize {b * d | a <= b <= c && d <= e <= f}
-            let max = match (a, c, d, f) {
-
-                // if either interval is a point
-                (a, c, d, f) if a == c || d == f =>
-                    Some(c / f),
-
-                // if both intervals are not points
-                (a, c, d, f) if a > zero && a < c && ((f == zero && d < zero) && (d < f && f < zero)) =>
-                    Some(a / d),
-                (a, c, d, f) if d > zero && d < f && c > zero && a < c =>
-                    Some(c / d),
-                (a, c, d, f) if (a < c || c > zero) && d < f && f < zero && (a <= zero || c <= zero) =>
-                    Some(a / f),
-                (a, c, d, f) if f > zero && a < c && c <= zero && (d == zero || (d >= zero && d < f)) =>
-                    Some(c / f),
-
-                _ => return Err("potential division by zero".into())
-            };
-
-            // minimize {b * d | a <= b <= c && d <= e <= f}
-            let min = match (a, c, d, f) {
-                // if either interval is a point
-                (a, c, d, f) if a == c || d == f =>
-                    Some(a / d),
-
-                // if both intervals are not points
-                (a, c, d, f) if zero < d && d < f && (a < zero || c <= zero) && (a < c && c > zero) =>
-                    Some(a / d),
-                (a, c, d, f) if a < c && c <= zero && ((f == zero && d < zero) || (d < f && f < zero)) =>
-                    Some(c / d),
-                (a, c, d, f) if (d == zero || (zero < d && d < f)) && zero < a && a < c && f > zero =>
-                    Some(a / f),
-                (a, c, d, f) if f < zero && d < f && c > zero && a < c =>
-                    Some(c / f),
-
-                _ => return Err("potential division by zero".into())
-            };
-            Ok((min, max))
+            // if one arm of denominator is zero
+            if d.is_zero() && !f.is_zero() {
+                return Ok((None, vec![a / f, c / f].into_iter().max_by(compare)))
+            }
+            if !d.is_zero() && f.is_zero() {
+                return Ok((vec![a / d, c / d].into_iter().min_by(compare), None))
+            }
+            Ok((None, None))
         }
 
         fn optimize_wrapper<T: PartialOrd + Div<Output=T> + Zero + Copy>(
@@ -344,19 +330,22 @@ impl Component for proto::Divide {
                 float: Some(&optimize_wrapper),
                 int: Some(&optimize_wrapper)
             }, num_columns)?,
-            c_stability: broadcast(&left_property.c_stability, num_columns)?.iter()
-                .zip(broadcast(&right_property.c_stability, num_columns)?)
-                .map(|(l, r)| l.max(r)).collect(),
+            // checks to ensure this is correct are made in propagate_binary_shape
+            c_stability: left_property.c_stability
+                .max(right_property.c_stability),
             num_columns: Some(num_columns),
             num_records,
             aggregator: None,
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            naturally_ordered: true
+            naturally_ordered: true,
+            // checks are made within propagate_binary_shape that sampling proportion is equal and permissible
+            sample_proportion: left_property.sample_proportion
         }).into())
     }
 }
@@ -367,20 +356,22 @@ impl Component for proto::Equal {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get(&IndexKey::from("left"))
+        let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get::<IndexKey>(&"right".into())
+        let right_property: ArrayProperties = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         if left_property.data_type != right_property.data_type {
@@ -395,18 +386,21 @@ impl Component for proto::Equal {
             nature: Some(Nature::Categorical(NatureCategorical {
                 categories: Jagged::Bool((0..num_columns).map(|_| vec![true, false]).collect())
             })),
-            c_stability: broadcast(&left_property.c_stability, num_columns)?.iter()
-                .zip(broadcast(&right_property.c_stability, num_columns)?)
-                .map(|(l, r)| l.max(r)).collect(),
+            // checks to ensure this is correct are made in propagate_binary_shape
+            c_stability: left_property.c_stability
+                .max(right_property.c_stability),
             num_columns: Some(num_columns),
             num_records,
             aggregator: None,
             data_type: DataType::Bool,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality.max(right_property.dimensionality),
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
-            naturally_ordered: true
+            naturally_ordered: true,
+            // checks are made within propagate_binary_shape that sampling proportion is equal and permissible
+            sample_proportion: left_property.sample_proportion
         }).into())
     }
 }
@@ -418,20 +412,22 @@ impl Component for proto::GreaterThan {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get(&IndexKey::from("left"))
+        let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get::<IndexKey>(&"right".into())
+        let right_property: ArrayProperties = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         if left_property.data_type != right_property.data_type {
@@ -452,19 +448,22 @@ impl Component for proto::GreaterThan {
             nature: Some(Nature::Categorical(NatureCategorical {
                 categories: Jagged::Bool((0..num_columns).map(|_| vec![true, false]).collect())
             })),
-            c_stability: broadcast(&left_property.c_stability, num_columns)?.iter()
-                .zip(broadcast(&right_property.c_stability, num_columns)?)
-                .map(|(l, r)| l.max(r)).collect(),
+            // checks to ensure this is correct are made in propagate_binary_shape
+            c_stability: left_property.c_stability
+                .max(right_property.c_stability),
             num_columns: Some(num_columns),
             num_records,
             aggregator: None,
             data_type: DataType::Bool,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
-            naturally_ordered: true
+            naturally_ordered: true,
+            // checks are made within propagate_binary_shape that sampling proportion is equal and permissible
+            sample_proportion: left_property.sample_proportion
         }).into())
     }
 }
@@ -476,20 +475,22 @@ impl Component for proto::LessThan {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get(&IndexKey::from("left"))
+        let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get::<IndexKey>(&"right".into())
+        let right_property: ArrayProperties = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         if left_property.data_type != right_property.data_type {
@@ -510,19 +511,22 @@ impl Component for proto::LessThan {
             nature: Some(Nature::Categorical(NatureCategorical {
                 categories: Jagged::Bool((0..num_columns).map(|_| vec![true, false]).collect())
             })),
-            c_stability: broadcast(&left_property.c_stability, num_columns)?.iter()
-                .zip(broadcast(&right_property.c_stability, num_columns)?)
-                .map(|(l, r)| l.max(r)).collect(),
+            // checks to ensure this is correct are made in propagate_binary_shape
+            c_stability: left_property.c_stability
+                .max(right_property.c_stability),
             num_columns: Some(num_columns),
             num_records,
             aggregator: None,
             data_type: DataType::Bool,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
-            naturally_ordered: true
+            naturally_ordered: true,
+            // checks are made within propagate_binary_shape that sampling proportion is equal and permissible
+            sample_proportion: left_property.sample_proportion
         }).into())
     }
 }
@@ -536,18 +540,20 @@ impl Component for proto::Log {
         properties: base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get(&IndexKey::from("data"))
+        let mut data_property: ArrayProperties = properties.get(&IndexKey::from("data"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let base_property = properties.get::<IndexKey>(&"base".into())
+        let base_property: ArrayProperties = properties.get::<IndexKey>(&"base".into())
             .ok_or("base: missing")?.array()
             .map_err(prepend("base:"))?.clone();
 
         if !data_property.releasable {
             data_property.assert_is_not_aggregated()?;
+            data_property.assert_is_not_sampled()?;
         }
         if !base_property.releasable {
             base_property.assert_is_not_aggregated()?;
+            base_property.assert_is_not_sampled()?;
         }
 
         if data_property.data_type != DataType::Float {
@@ -599,18 +605,20 @@ impl Component for proto::Modulo {
         properties: base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut left_property = properties.get(&IndexKey::from("left"))
+        let mut left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get::<IndexKey>(&"right".into())
+        let right_property: ArrayProperties = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         match (left_property.data_type.clone(), right_property.data_type.clone()) {
@@ -669,20 +677,22 @@ impl Component for proto::Multiply {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get(&IndexKey::from("left"))
+        let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get::<IndexKey>(&"right".into())
+        let right_property: ArrayProperties = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -694,55 +704,13 @@ impl Component for proto::Multiply {
         fn optimize<T: PartialOrd + Mul<Output=T> + Zero + Copy>(
             a: T, c: T, d: T, f: T
         ) -> Result<(Option<T>, Option<T>)> {
-
-            let zero = T::zero();
-            // maximize {b * d | a <= b <= c && d <= e <= f}
-            let max = match (a, c, d, f) {
-
-                // if either interval is a point
-                (a, c, d, f) if a == c || d == f =>
-                    Some(c * f),
-
-                // if both intervals are not points
-                (a, c, d, f) if (d < zero && ((c > zero && ((f == zero && a < zero) || (a * d > c * f && f > zero && d + f >= zero))) || (a < c && f >= zero && c <= zero)))
-                    || (a < c && c <= zero && ((d < f && f < zero) || (f > zero && d + f < zero)))
-                    || (c > zero && ((d < f && f < zero && a <= zero) || (f > zero && d + f < zero && a * d <= c * f))) =>
-                    Some(a * d),
-                (a, c, d, f) if zero <= d && d < f && c <= zero && a < c =>
-                    Some(c * d),
-                (a, c, d, f) if f < zero && d < f && zero < a && a < c =>
-                    Some(a * f),
-                (a, c, d, f) if c > zero && f > zero && a < c
-                    && ((a * d >= c * f && d + f >= zero && d < zero) || (d < f && d >= zero) || (c * f < a * d && d + f < zero)) =>
-                    Some(c * f),
-
-                // Prior cases should cover all
-                _ => None
-            };
-
-            // minimize {b * d | a <= b <= c && d <= e <= f}
-            let min = match (a, c, d, f) {
-                // if either interval is a point
-                (a, c, d, f) if a == c || d == f =>
-                    Some(a * d),
-
-                // if both intervals are not points
-                (a, c, d, f) if d > zero && d < f && a > zero && a < c =>
-                    Some(a * d),
-                (a, c, d, f) if c > zero && a < c && ((f > zero && a * f > c * d && d < zero)
-                    || (d < f && f <= zero)) =>
-                    Some(c * d),
-                (a, c, d, f) if f > zero && ((c > zero && ((a < zero && (d == zero || (d >= zero && d < f)
-                    || (d <= zero && a * f <= c * d))) || (d < zero && a * f <= c * d)))
-                    || (a < c && c <= zero && (d < f || d <= zero))) =>
-                    Some(a * f),
-                (a, c, d, f) if f <= zero && d < f && c <= zero && a < c =>
-                    Some(c * f),
-
-                // Prior cases should cover all
-                _ => None
-            };
-            Ok((min, max))
+            let corners = vec![a * d, a * f, c * d, c * f];
+            Ok((
+                corners.iter().min_by(|x, y|
+                    x.partial_cmp(y).unwrap_or(Ordering::Equal)).cloned(),
+                corners.iter().max_by(|x, y|
+                    x.partial_cmp(y).unwrap_or(Ordering::Equal)).cloned()
+            ))
         }
 
         fn optimize_wrapper<T: PartialOrd + Mul<Output=T> + Zero + Copy>(
@@ -786,19 +754,22 @@ impl Component for proto::Multiply {
                 float: Some(&optimize_wrapper),
                 int: Some(&optimize_wrapper),
             }, num_columns)?,
-            c_stability: broadcast(&left_property.c_stability, num_columns)?.iter()
-                .zip(broadcast(&right_property.c_stability, num_columns)?)
-                .map(|(l, r)| l.max(r)).collect(),
+            // checks to ensure this is correct are made in propagate_binary_shape
+            c_stability: left_property.c_stability
+                .max(right_property.c_stability),
             num_columns: Some(num_columns),
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
             data_type: left_property.data_type,
             num_records,
             aggregator: None,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            naturally_ordered: true
+            naturally_ordered: true,
+            // checks are made within propagate_binary_shape that sampling proportion is equal and permissible
+            sample_proportion: left_property.sample_proportion
         }).into())
     }
 }
@@ -812,7 +783,7 @@ impl Component for proto::Negate {
         properties: base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get(&IndexKey::from("data"))
+        let mut data_property: ArrayProperties = properties.get(&IndexKey::from("data"))
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -842,7 +813,7 @@ impl Component for proto::Negative {
         properties: base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get(&IndexKey::from("data"))
+        let mut data_property: ArrayProperties = properties.get(&IndexKey::from("data"))
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
@@ -878,18 +849,20 @@ impl Component for proto::Or {
         properties: base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut left_property = properties.get(&IndexKey::from("left"))
+        let mut left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get::<IndexKey>(&"right".into())
+        let right_property: ArrayProperties = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -907,9 +880,9 @@ impl Component for proto::Or {
                 bool: Some(Box::new(|l: &bool, r: &bool| Ok(*l || *r))),
             }, &OptimizeBinaryOperators { float: None, int: None },
             num_columns)?;
-        left_property.c_stability = broadcast(&left_property.c_stability, num_columns)?.iter()
-            .zip(broadcast(&right_property.c_stability, num_columns)?)
-            .map(|(l, r)| l.max(r)).collect();
+        // checks to ensure this is correct are made in propagate_binary_shape
+        left_property.c_stability = left_property.c_stability
+            .max(left_property.c_stability);
         left_property.num_columns = Some(num_columns);
         left_property.num_records = num_records;
 
@@ -932,18 +905,20 @@ impl Component for proto::Power {
         properties: base::NodeProperties,
         _node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let mut data_property = properties.get(&IndexKey::from("data"))
+        let mut data_property: ArrayProperties = properties.get(&IndexKey::from("data"))
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
-        let radical_property = properties.get::<IndexKey>(&"radical".into())
+        let radical_property: ArrayProperties = properties.get::<IndexKey>(&"radical".into())
             .ok_or("radical: missing")?.array()
             .map_err(prepend("radical:"))?.clone();
 
         if !data_property.releasable {
             data_property.assert_is_not_aggregated()?;
+            data_property.assert_is_not_sampled()?;
         }
         if !radical_property.releasable {
             radical_property.assert_is_not_aggregated()?;
+            radical_property.assert_is_not_sampled()?;
         }
 
         match (data_property.data_type.clone(), radical_property.data_type.clone()) {
@@ -1001,20 +976,22 @@ impl Component for proto::RowMax {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get(&IndexKey::from("left"))
+        let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get::<IndexKey>(&"right".into())
+        let right_property: ArrayProperties = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -1058,19 +1035,22 @@ impl Component for proto::RowMax {
                     }
                 )))
             }, num_columns)?,
-            c_stability: broadcast(&left_property.c_stability, num_columns)?.iter()
-                .zip(broadcast(&right_property.c_stability, num_columns)?)
-                .map(|(l, r)| l.max(r)).collect(),
+            // checks to ensure this is correct are made in propagate_binary_shape
+            c_stability: left_property.c_stability
+                .max(right_property.c_stability),
             num_columns: Some(num_columns),
             num_records,
             aggregator: None,
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            naturally_ordered: true
+            naturally_ordered: true,
+            // checks are made within propagate_binary_shape that sampling proportion is equal and permissible
+            sample_proportion: left_property.sample_proportion
         }).into())
     }
 }
@@ -1081,20 +1061,22 @@ impl Component for proto::RowMin {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get(&IndexKey::from("left"))
+        let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get::<IndexKey>(&"right".into())
+        let right_property: ArrayProperties = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -1138,19 +1120,22 @@ impl Component for proto::RowMin {
                     }
                 )))
             }, num_columns)?,
-            c_stability: broadcast(&left_property.c_stability, num_columns)?.iter()
-                .zip(broadcast(&right_property.c_stability, num_columns)?)
-                .map(|(l, r)| l.max(r)).collect(),
+            // checks to ensure this is correct are made in propagate_binary_shape
+            c_stability: left_property.c_stability
+                .max(right_property.c_stability),
             num_columns: Some(num_columns),
             num_records,
             aggregator: None,
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            naturally_ordered: true
+            naturally_ordered: true,
+            // checks are made within propagate_binary_shape that sampling proportion is equal and permissible
+            sample_proportion: left_property.sample_proportion
         }).into())
     }
 }
@@ -1161,20 +1146,22 @@ impl Component for proto::Subtract {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: base::NodeProperties,
-        _node_id: u32
+        node_id: u32
     ) -> Result<Warnable<ValueProperties>> {
-        let left_property = properties.get(&IndexKey::from("left"))
+        let left_property: ArrayProperties = properties.get(&IndexKey::from("left"))
             .ok_or("left: missing")?.array()
             .map_err(prepend("left:"))?.clone();
-        let right_property = properties.get::<IndexKey>(&"right".into())
+        let right_property: ArrayProperties = properties.get::<IndexKey>(&"right".into())
             .ok_or("right: missing")?.array()
             .map_err(prepend("right:"))?.clone();
 
         if !left_property.releasable {
             left_property.assert_is_not_aggregated()?;
+            left_property.assert_is_not_sampled()?;
         }
         if !right_property.releasable {
             right_property.assert_is_not_aggregated()?;
+            right_property.assert_is_not_sampled()?;
         }
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
@@ -1211,19 +1198,22 @@ impl Component for proto::Subtract {
                         _ => None
                     })))
             }, num_columns)?,
-            c_stability: broadcast(&left_property.c_stability, num_columns)?.iter()
-                .zip(broadcast(&right_property.c_stability, num_columns)?)
-                .map(|(l, r)| l.max(r)).collect(),
+            // checks to ensure this is correct are made in propagate_binary_shape
+            c_stability: left_property.c_stability
+                .max(right_property.c_stability),
             num_columns: Some(num_columns),
             num_records,
             aggregator: None,
             group_id: propagate_binary_group_id(&left_property, &right_property)?,
             data_type: left_property.data_type,
             dataset_id: left_property.dataset_id,
+            node_id: node_id as i64,
             is_not_empty: left_property.is_not_empty && right_property.is_not_empty,
             dimensionality: left_property.dimensionality
                 .max(right_property.dimensionality),
-            naturally_ordered: true
+            naturally_ordered: true,
+            // checks are made within propagate_binary_shape that sampling proportion is equal and permissible
+            sample_proportion: left_property.sample_proportion
         }).into())
     }
 }
@@ -1266,13 +1256,21 @@ pub struct OptimizeBinaryOperators<'a> {
     pub int: BinaryOptimizer<'a, Integer>,
 }
 
-pub fn propagate_binary_shape(left_property: &ArrayProperties, right_property: &ArrayProperties) -> Result<(i64, Option<i64>)> {
+pub fn propagate_binary_shape(
+    left_property: &ArrayProperties, right_property: &ArrayProperties
+) -> Result<(i64, Option<i64>)> {
+
     if !left_property.releasable && !right_property.releasable && left_property.group_id != right_property.group_id {
         return Err("data from separate partitions may not be mixed".into())
     }
 
-    if !left_property.naturally_ordered || !right_property.naturally_ordered {
-        return Err("left or right columns may have been reordered".into())
+    if !left_property.releasable && !right_property.releasable {
+        if left_property.dataset_id != right_property.dataset_id {
+            return Err("left and right argument must share dataset ids or be public/releasable".into())
+        }
+        if left_property.c_stability != right_property.c_stability {
+            return Err("left and right argument must share c-stabilities".into())
+        }
     }
 
     let left_num_columns = left_property.num_columns()?;
@@ -1541,7 +1539,7 @@ fn propagate_binary_categorical_nature(
 }
 
 
-fn propagate_binary_group_id(
+pub fn propagate_binary_group_id(
     left_property: &ArrayProperties, right_property: &ArrayProperties
 ) -> Result<Vec<GroupId>> {
     if left_property.releasable {

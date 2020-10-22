@@ -1,13 +1,13 @@
-[![Build Status](https://travis-ci.org/opendifferentialprivacy/whitenoise-core.svg?branch=develop)](https://travis-ci.org/opendifferentialprivacy/whitenoise-core)
+[![Build Status](https://travis-ci.org/opendifferentialprivacy/smartnoise-core.svg?branch=develop)](https://travis-ci.org/opendifferentialprivacy/smartnoise-core)
 
-## WhiteNoise Core <br/> Differential Privacy Library FFI <br/>
+## SmartNoise Core <br/> Differential Privacy Library FFI <br/>
 
-The FFI interface is a sub-project of [Whitenoise-Core](https://github.com/opendifferentialprivacy/whitenoise-core).
-See also the accompanying [WhiteNoise-System](https://github.com/opendifferentialprivacy/whitenoise-system) and [WhiteNoise-Samples](https://github.com/opendifferentialprivacy/whitenoise-samples) repositories for this system.
+The FFI interface is a sub-project of [SmartNoise-Core](https://github.com/opendifferentialprivacy/smartnoise-core).
+See also the accompanying [SmartNoise-System](https://github.com/opendifferentialprivacy/smartnoise-system) and [SmartNoise-Samples](https://github.com/opendifferentialprivacy/smartnoise-samples) repositories for this system.
 
 ##
 
-This library provides an FFI interface for the `whitenoise_validator` and `whitenoise_runtime` crates. Refer to those crates for relevant documentation.  
+This library provides an FFI interface for the `smartnoise_validator` and `smartnoise_runtime` crates. Refer to those crates for relevant documentation.  
 
 Different combinations of feature flags may be set.
 

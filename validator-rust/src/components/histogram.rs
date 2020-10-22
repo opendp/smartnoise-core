@@ -36,23 +36,19 @@ impl Component for proto::Histogram {
         if categories.num_columns() != 1 {
             return Err("data must contain one column".into())
         }
-        data_property.num_records = Some(categories.num_records()[0] as i64);
         let num_columns = data_property.num_columns()?;
 
         // save a snapshot of the state when aggregating
-        data_property.aggregator = Some(AggregatorProperties {
-            component: proto::component::Variant::Histogram(self.clone()),
-            properties,
-            lipschitz_constants: ndarray::Array::from_shape_vec(
-                vec![1, num_columns as usize],
-                (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
-        });
+        data_property.aggregator = Some(AggregatorProperties::new(
+            proto::component::Variant::Histogram(self.clone()),
+            properties, num_columns));
 
         data_property.nature = Some(Nature::Continuous(NatureContinuous {
             lower: Vector1DNull::Int((0..num_columns).map(|_| Some(0)).collect()),
-            upper: Vector1DNull::Int((0..num_columns).map(|_| None).collect()),
+            upper: Vector1DNull::Int((0..num_columns).map(|_| data_property.num_records.clone()).collect()),
         }));
         data_property.data_type = DataType::Int;
+        data_property.num_records = Some(categories.num_records()[0] as i64);
         data_property.dataset_id = Some(node_id as i64);
 
         Ok(ValueProperties::Array(data_property).into())
@@ -151,7 +147,7 @@ impl Expandable for proto::Histogram {
                 };
                 let (patch_node, categories_release) = get_literal(value, component.submission)?;
                 expansion.computation_graph.insert(id_categories, patch_node);
-                expansion.properties.insert(id_categories, infer_property(&categories_release.value, None)?);
+                expansion.properties.insert(id_categories, infer_property(&categories_release.value, None, id_categories)?);
                 expansion.releases.insert(id_categories, categories_release);
                 component.insert_argument(&"categories".into(), id_categories);
             }
@@ -167,7 +163,7 @@ impl Expandable for proto::Histogram {
 
 
 impl Sensitivity for proto::Histogram {
-    /// Histogram sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/whitenoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/counts/counts.pdf).
+    /// Histogram sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/smartnoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/counts/counts.pdf).
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,

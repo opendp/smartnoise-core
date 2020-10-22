@@ -1,22 +1,38 @@
-//! The Whitenoise rust validator contains methods for evaluating and constructing
+//! The SmartNoise rust validator contains methods for evaluating and constructing
 //! differentially private analyses.
 //!
 //! The validator defines a set of statically checkable properties that are
 //! necessary for a differentially private analysis, and then checks that the submitted analysis
 //! satisfies the properties.
 //!
-//! The validator also takes simple components from the Whitenoise runtime and combines them
+//! The validator also takes simple components from the SmartNoise runtime and combines them
 //! into more complex mechanisms.
 //!
-//! - [Top-level documentation](https://opendifferentialprivacy.github.io/whitenoise-core/)
+//! - [Top-level documentation](https://opendifferentialprivacy.github.io/smartnoise-core/)
 
 #![warn(unused_extern_crates)]
+#![forbid(unsafe_code)]
 #![allow(clippy::implicit_hasher)]
 
 // `error_chain!` can recurse deeply
 #![recursion_limit = "1024"]
 #[macro_use]
 extern crate error_chain;
+#[macro_use] extern crate indexmap;
+
+use std::collections::{HashMap, HashSet};
+use std::iter::FromIterator;
+
+use indexmap::map::IndexMap;
+
+#[doc(hidden)]
+pub use errors::*;
+
+use crate::base::{IndexKey, Release, Value, ValueProperties};
+// import all trait implementations
+use crate::components::*;
+use crate::utilities::get_public_arguments;
+use crate::utilities::privacy::compute_graph_privacy_usage;
 
 #[doc(hidden)]
 pub mod errors {
@@ -37,8 +53,6 @@ impl<T: std::fmt::Debug> From<T> for Warnable<T> {
     }
 }
 
-#[doc(hidden)]
-pub use errors::*;
 // trait which holds `display_chain`
 
 pub mod base;
@@ -47,20 +61,11 @@ pub mod utilities;
 pub mod components;
 pub mod docs;
 
-// import all trait implementations
-use crate::components::*;
-use std::collections::{HashMap, HashSet};
-use crate::base::{Value, IndexKey, ValueProperties};
-use std::iter::FromIterator;
-use crate::utilities::privacy::compute_graph_privacy_usage;
-use indexmap::map::IndexMap;
-
 // include protobuf-generated traits
 pub mod proto {
-    include!(concat!(env!("OUT_DIR"), "/whitenoise.rs"));
+    include!(concat!(env!("OUT_DIR"), "/smartnoise.rs"));
 }
 
-#[macro_use] extern crate indexmap;
 // define the useful macro for building hashmaps globally
 #[macro_export]
 #[doc(hidden)]
@@ -128,13 +133,13 @@ pub fn compute_privacy_usage(
 /// Generate a json string with a summary/report of the Analysis and Release
 pub fn generate_report(
     privacy_definition: proto::PrivacyDefinition,
-    mut computation_graph: HashMap<u32, proto::Component>,
+    computation_graph: HashMap<u32, proto::Component>,
     mut release: base::Release
 ) -> Result<String> {
 
     let graph_properties = utilities::propagate_properties(
         &Some(privacy_definition),
-        &mut computation_graph,
+        &mut computation_graph.clone(),
         &mut release, None, false)?.0;
 
     // variable names
@@ -168,6 +173,7 @@ pub fn generate_report(
 
     });
 
+    // generate summaries for any component that has a release, and has summarize implemented on it
     let release_schemas = computation_graph.iter()
         .map(|(node_id, component)| {
             let public_arguments = utilities::get_public_arguments(&component, &release)?;
@@ -204,13 +210,18 @@ pub fn generate_report(
 pub fn accuracy_to_privacy_usage(
     component: proto::Component,
     privacy_definition: proto::PrivacyDefinition,
-    properties: IndexMap<IndexKey, base::ValueProperties>,
-    accuracies: proto::Accuracies
+    mut properties: IndexMap<IndexKey, base::ValueProperties>,
+    accuracies: proto::Accuracies,
+    mut public_arguments: IndexMap<IndexKey, base::ReleaseNode>
 ) -> Result<proto::PrivacyUsages> {
 
     let proto_properties = component.arguments().iter()
-        .filter_map(|(name, idx)| Some((*idx, properties.get(name)?.clone())))
+        .filter_map(|(name, idx)| Some((*idx, properties.remove(name)?)))
         .collect::<HashMap<u32, base::ValueProperties>>();
+
+    let mut release = component.arguments().iter()
+        .filter_map(|(name, idx)| Some((*idx, public_arguments.remove(name)?)))
+        .collect::<Release>();
 
     let mut computation_graph = hashmap![
         component.arguments().values().max().cloned().unwrap_or(0) + 1 => component
@@ -219,7 +230,7 @@ pub fn accuracy_to_privacy_usage(
     let (properties, _) = utilities::propagate_properties(
         &Some(privacy_definition.clone()),
             &mut computation_graph,
-        &mut HashMap::new(),
+        &mut release,
         Some(proto_properties),
         true,
     )?;
@@ -229,11 +240,12 @@ pub fn accuracy_to_privacy_usage(
             .filter_map(|(name, idx)| Some((name.clone(), properties.get(idx)?.clone())))
             .collect::<IndexMap<base::IndexKey, base::ValueProperties>>();
 
-        Ok(match component.accuracy_to_privacy_usage(
-            &privacy_definition, &component_properties, &accuracies)? {
-            Some(accuracies) => Some((*idx, accuracies)),
-            None => None
-        })
+        Ok(component.accuracy_to_privacy_usage(
+            &privacy_definition,
+            &component_properties,
+            &accuracies,
+            get_public_arguments(&component, &release)?)?
+            .and_then(|usages| Some((*idx, usages))))
     })
         .collect::<Result<Vec<Option<(u32, Vec<proto::PrivacyUsage>)>>>>()?
         .into_iter().filter_map(|v| v)
@@ -254,12 +266,17 @@ pub fn privacy_usage_to_accuracy(
     component: proto::Component,
     privacy_definition: proto::PrivacyDefinition,
     properties: IndexMap<IndexKey, base::ValueProperties>,
+    mut public_arguments: IndexMap<IndexKey, base::ReleaseNode>,
     alpha: f64
 ) -> Result<proto::Accuracies> {
 
     let proto_properties = component.arguments().iter()
         .filter_map(|(name, idx)| Some((*idx, properties.get(name)?.clone())))
         .collect::<HashMap<u32, base::ValueProperties>>();
+
+    let mut release: Release = component.arguments().iter()
+        .filter_map(|(name, idx)| Some((*idx, public_arguments.remove(name)?)))
+        .collect();
 
     let mut computation_graph = hashmap![
         component.arguments().values().max().cloned().unwrap_or(0) + 1 => component
@@ -268,7 +285,7 @@ pub fn privacy_usage_to_accuracy(
     let (properties, _) = utilities::propagate_properties(
         &Some(privacy_definition.clone()),
         &mut computation_graph,
-        &mut HashMap::new(),
+        &mut release,
         Some(proto_properties),
         false,
     )?;
@@ -278,11 +295,13 @@ pub fn privacy_usage_to_accuracy(
             .filter_map(|(name, idx)| Some((name.clone(), properties.get(idx)?.clone())))
             .collect::<IndexMap<IndexKey, base::ValueProperties>>();
 
-        Ok(match component.privacy_usage_to_accuracy(
-            &privacy_definition, &component_properties, alpha)? {
-            Some(accuracies) => Some((*idx, accuracies)),
-            None => None
-        })
+        Ok(component.privacy_usage_to_accuracy(
+            &privacy_definition,
+            &component_properties,
+            get_public_arguments(&component, &release)?,
+            alpha,
+        )?
+            .and_then(|accuracies| Some((*idx, accuracies))))
     })
         .collect::<Result<Vec<Option<(u32, Vec<proto::Accuracy>)>>>>()?
         .into_iter().filter_map(|v| v)
@@ -308,15 +327,18 @@ pub fn expand_component(
     component_id: u32,
     maximum_id: u32,
 ) -> Result<base::ComponentExpansion> {
+    let argument_ids = component.arguments();
 
     for (k, v) in &public_arguments {
         if !v.public {
             return Err("private data should not be sent to the validator".into())
         }
-        properties.insert(k.clone(),
-                          utilities::inference::infer_property(
-                              &v.value,
-                              properties.get(k))?);
+        let node_id = argument_ids.get(k)
+            .ok_or_else(|| Error::from(format!("unrecognized argument: {:?}", k)))?;
+
+        properties.insert(
+            k.clone(),
+            utilities::inference::infer_property(&v.value, properties.get(k), *node_id)?);
     }
 
     let public_values = public_arguments.iter()
@@ -331,6 +353,20 @@ pub fn expand_component(
         component_id,
         maximum_id,
     ).chain_err(|| format!("at node_id {:?}", component_id))?;
+
+    // annoying block to ensure that
+    //    component, properties and public values are updated after the expansion
+    let component = if let Some(v) = result.computation_graph
+        .get(&component_id) { v.clone() } else { component };
+    let argument_indices = component.arguments();
+    let properties = argument_indices.iter()
+        .filter_map(|(k, id)| Some((k.clone(), result.properties.get(&id).or_else(|| properties.get(k))?.clone())))
+        .collect::<IndexMap<_, _>>();
+    let public_values = argument_indices.iter()
+        .filter_map(|(k, id)| Some((k.clone(), result.releases.get(&id)
+            .or_else(|| public_arguments.get(k))
+            .map(|v| &v.value)?)))
+        .collect::<IndexMap<IndexKey, &Value>>();
 
     if result.traversal.is_empty() {
         let Warnable(propagated_property, propagation_warnings) = component

@@ -1,12 +1,12 @@
 [package]
-name = "whitenoise_runtime"
+name = "smartnoise_runtime"
 version = "0.2.1"
-authors = ["OpenDP-WhiteNoise <whitenoise@opendp.io>"]
+authors = ["OpenDP-SmartNoise <smartnoise@opendp.io>"]
 description = "A library of algorithms for differentially private data analysis."
 readme = "README.md"
 keywords = ["differential-privacy", "data-privacy", "privacy"]
 categories = ["cryptography", "science"] # up to 5 allowed, must match those listed at https://crates.io/category_slugs
-repository = "https://github.com/opendifferentialprivacy/whitenoise-core"
+repository = "https://github.com/opendifferentialprivacy/smartnoise-core"
 edition = "2018"
 license = "MIT"
 
@@ -21,6 +21,7 @@ ieee754 = "0.2.6"
 itertools = "0.9.0"
 error-chain = "0.12.2"
 noisy_float = "0.1.12"
+statrs = "0.12.0"
 
     [dependencies.openssl]
     version = "0.10.29"
@@ -38,7 +39,7 @@ noisy_float = "0.1.12"
     features = ["mpfr"]
     optional = true
 
-    [dependencies.whitenoise_validator]
+    [dependencies.smartnoise_validator]
     version = "0.2.1"
     path = "../validator-rust/"
 
@@ -49,5 +50,5 @@ use-mpfr = ["gmp-mpfr-sys", "rug"]
 use-system-libs = ["use-mpfr", "gmp-mpfr-sys/use-system-libs"]
 
 [lib]
-name = "whitenoise_runtime"
+name = "smartnoise_runtime"
 crate-type = ["rlib"]

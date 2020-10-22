@@ -1,21 +1,21 @@
 #![warn(unused_extern_crates)]
 
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use prost::Message;
-use whitenoise_validator::proto;
+use smartnoise_validator::proto;
 
 mod utilities;
 
 #[cfg(feature = "use-direct-api")]
 mod direct_api;
 
-use whitenoise_validator::utilities::serial::{
+use smartnoise_validator::utilities::serial::{
     serialize_error, parse_release, serialize_release, parse_argument_properties,
     serialize_value_properties, parse_indexmap_release_node, serialize_component_expansion
 };
 use crate::utilities::{ptr_to_buffer, buffer_to_ptr};
-use whitenoise_validator::base::Release;
+use smartnoise_validator::base::Release;
 use std::collections::HashMap;
 use indexmap::map::IndexMap;
 
@@ -52,7 +52,7 @@ pub extern "C" fn validate_analysis(
                     let computation_graph = computation_graph
                         .ok_or_else(|| Error::from("computation_graph must be defined"))?.value;
 
-                    whitenoise_validator::validate_analysis(privacy_definition, computation_graph, release)
+                    smartnoise_validator::validate_analysis(privacy_definition, computation_graph, release)
                 };
 
                 match run() {
@@ -108,7 +108,7 @@ pub extern "C" fn compute_privacy_usage(
                     let computation_graph = computation_graph
                         .ok_or_else(|| Error::from("computation_graph must be defined"))?.value;
 
-                    whitenoise_validator::compute_privacy_usage(privacy_definition, computation_graph, release)
+                    smartnoise_validator::compute_privacy_usage(privacy_definition, computation_graph, release)
                 };
 
                 match run() {
@@ -156,7 +156,7 @@ pub extern "C" fn generate_report(
                     let computation_graph = computation_graph
                         .ok_or_else(|| Error::from("computation_graph must be defined"))?.value;
 
-                    whitenoise_validator::generate_report(privacy_definition, computation_graph, release)
+                    smartnoise_validator::generate_report(privacy_definition, computation_graph, release)
                 };
 
                 match run() {
@@ -192,7 +192,7 @@ pub extern "C" fn accuracy_to_privacy_usage(
         value: match proto::RequestAccuracyToPrivacyUsage::decode(request_buffer) {
             Ok(request) => {
                 let proto::RequestAccuracyToPrivacyUsage {
-                    component, privacy_definition, properties, accuracies
+                    component, privacy_definition, properties, accuracies, public_arguments
                 } = request;
 
 
@@ -206,9 +206,11 @@ pub extern "C" fn accuracy_to_privacy_usage(
                         .ok_or_else(|| Error::from("properties must be defined"))?);
                     let accuracies: proto::Accuracies = accuracies
                         .ok_or_else(|| Error::from("accuracies must be defined"))?;
+                    let public_arguments = public_arguments
+                        .map_or_else(IndexMap::new, parse_indexmap_release_node);
 
-                    whitenoise_validator::accuracy_to_privacy_usage(
-                        component, privacy_definition, properties, accuracies,
+                    smartnoise_validator::accuracy_to_privacy_usage(
+                        component, privacy_definition, properties, accuracies, public_arguments
                     )
                 };
 
@@ -246,7 +248,7 @@ pub extern "C" fn privacy_usage_to_accuracy(
         value: match proto::RequestPrivacyUsageToAccuracy::decode(request_buffer) {
             Ok(request) => {
                 let proto::RequestPrivacyUsageToAccuracy {
-                    component, privacy_definition, properties, alpha
+                    component, privacy_definition, properties, alpha, public_arguments
                 } = request;
 
                 let run = || -> Result<proto::Accuracies> {
@@ -256,9 +258,11 @@ pub extern "C" fn privacy_usage_to_accuracy(
                         .ok_or_else(|| Error::from("privacy definition must be defined"))?;
                     let properties = parse_argument_properties(properties
                         .ok_or_else(|| Error::from("properties must be defined"))?);
+                    let public_arguments = public_arguments
+                        .map_or_else(IndexMap::new, parse_indexmap_release_node);
 
-                    whitenoise_validator::privacy_usage_to_accuracy(
-                        component, privacy_definition, properties, alpha)
+                    smartnoise_validator::privacy_usage_to_accuracy(
+                        component, privacy_definition, properties, public_arguments, alpha)
                 };
 
                 match run() {
@@ -308,7 +312,7 @@ pub extern "C" fn get_properties(
                     let computation_graph = computation_graph
                         .ok_or_else(|| Error::from("computation_graph must be defined"))?.value;
 
-                    let (properties, warnings) = whitenoise_validator::get_properties(
+                    let (properties, warnings) = smartnoise_validator::get_properties(
                         privacy_definition, computation_graph, release, node_ids)?;
 
                     Ok(proto::GraphProperties {
@@ -365,7 +369,7 @@ pub extern "C" fn expand_component(
                     let properties = properties
                         .map_or_else(IndexMap::new, parse_argument_properties);
 
-                    Ok(serialize_component_expansion(whitenoise_validator::expand_component(
+                    Ok(serialize_component_expansion(smartnoise_validator::expand_component(
                         component,
                         properties,
                         public_arguments,
@@ -424,7 +428,7 @@ pub extern "C" fn release(
                     let filter_level = proto::FilterLevel::from_i32(filter_level)
                         .ok_or_else(|| Error::from(format!("unrecognized filter level {:?}", filter_level)))?;
 
-                    let (release, warnings) = whitenoise_runtime::release(
+                    let (release, warnings) = smartnoise_runtime::release(
                         privacy_definition, computation_graph, release, filter_level)?;
 
                     Ok((release, warnings.into_iter().map(serialize_error).collect()))
@@ -449,4 +453,4 @@ pub extern "C" fn release(
 }
 
 
-ffi_support::define_bytebuffer_destructor!(whitenoise_destroy_bytebuffer);
+ffi_support::define_bytebuffer_destructor!(smartnoise_destroy_bytebuffer);

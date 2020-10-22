@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package whitenoise;
+package smartnoise;
 
 
 message BoolNull {oneof data {bool option = 1;}}

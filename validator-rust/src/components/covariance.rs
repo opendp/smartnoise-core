@@ -1,13 +1,11 @@
-use crate::errors::*;
-
-
-use crate::{proto, base, Warnable, Float};
-
-use crate::components::{Component, Sensitivity};
-use crate::base::{IndexKey, Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType};
-use crate::utilities::prepend;
-use ndarray::prelude::*;
 use indexmap::map::IndexMap;
+use ndarray::prelude::*;
+
+use crate::{base, Float, proto, Warnable};
+use crate::base::{AggregatorProperties, DataType, IndexKey, Nature, NatureContinuous, NodeProperties, SensitivitySpace, Value, ValueProperties, Vector1DNull};
+use crate::components::{Component, Sensitivity};
+use crate::errors::*;
+use crate::utilities::prepend;
 
 impl Component for proto::Covariance {
     fn propagate_property(
@@ -31,21 +29,9 @@ impl Component for proto::Covariance {
             let num_columns = data_property.num_columns()?;
             let num_columns = num_columns * (num_columns + 1) / 2;
 
-            data_property.c_stability = data_property.c_stability.iter().enumerate()
-                .map(|(i, l_stab)| data_property.c_stability.iter().enumerate()
-                    .filter(|(j, _)| i <= *j)
-                    .map(|(_, r_stab)| l_stab * r_stab)
-                    .collect::<Vec<Float>>())
-                .flatten().collect::<Vec<Float>>();
-
             // save a snapshot of the state when aggregating
-            data_property.aggregator = Some(AggregatorProperties {
-                component: proto::component::Variant::Covariance(self.clone()),
-                properties,
-                lipschitz_constants: ndarray::Array::from_shape_vec(
-                    vec![1, num_columns as usize],
-                    (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
-            });
+            data_property.aggregator = Some(AggregatorProperties::new(
+                proto::component::Variant::Covariance(self.clone()), properties, num_columns));
 
             data_property.num_records = Some(1);
             data_property.num_columns = Some(num_columns);
@@ -53,8 +39,28 @@ impl Component for proto::Covariance {
             if data_property.data_type != DataType::Float {
                 return Err("data: atomic type must be float".into());
             }
-            // min/max of data is not known after computing covariance
-            data_property.nature = None;
+
+            data_property.nature = match (
+                data_property.lower_float(),
+                data_property.upper_float()) {
+                (Ok(l), Ok(u)) => {
+                    let bounds = l.into_iter().zip(u.into_iter()).collect::<Vec<_>>();
+
+                    let upper_bound = bounds.iter().enumerate()
+                        .map(|(i, l_bounds)| bounds.iter().enumerate()
+                            .filter(|(j, _)| i <= *j)
+                            .map(|(_, r_bounds)| (l_bounds.1 - l_bounds.0) * (r_bounds.1 - r_bounds.0) / 4.)
+                            .collect::<Vec<Float>>())
+                        .flatten()
+                        .collect::<Vec<Float>>();
+
+                    Some(Nature::Continuous(NatureContinuous {
+                        lower: Vector1DNull::Float(upper_bound.iter().map(|v| Some(-v)).collect()),
+                        upper: Vector1DNull::Float(upper_bound.into_iter().map(Some).collect())
+                    }))
+                },
+                _ => None
+            };
             data_property.dataset_id = Some(node_id as i64);
             Ok(ValueProperties::Array(data_property).into())
         } else if properties.contains_key::<IndexKey>(&"left".into()) && properties.contains_key::<IndexKey>(&"right".into()) {
@@ -84,11 +90,19 @@ impl Component for proto::Covariance {
                 right_property.assert_is_not_aggregated()?;
             }
 
-            let num_columns = left_property.num_columns()? * right_property.num_columns()?;
+            if !left_property.releasable && !right_property.releasable && left_property.group_id != right_property.group_id {
+                return Err("data from separate partitions may not be mixed".into())
+            }
 
-            left_property.c_stability = left_property.c_stability.iter()
-                .map(|l| right_property.c_stability.iter()
-                    .map(|r| l * r).collect::<Vec<_>>()).flatten().collect();
+            if left_property.dataset_id != right_property.dataset_id {
+                return Err("left and right arguments must share the same dataset id".into())
+            }
+            // this check should be un-necessary due to the dataset id check
+            if left_property.c_stability != right_property.c_stability {
+                return Err(Error::from("left and right datasets must share the same stabilities"))
+            }
+
+            let num_columns = left_property.num_columns()? * right_property.num_columns()?;
 
             // save a snapshot of the state when aggregating
             left_property.aggregator = Some(AggregatorProperties {
@@ -99,7 +113,29 @@ impl Component for proto::Covariance {
                     (0..num_columns).map(|_| 1.).collect())?.into_dyn().into()
             });
 
-            left_property.nature = None;
+            left_property.nature = match (
+                left_property.lower_float(),
+                left_property.upper_float(),
+                right_property.lower_float(),
+                right_property.upper_float()) {
+                (Ok(l_l), Ok(l_u), Ok(r_l), Ok(r_u)) => {
+                    let l_bounds = l_l.into_iter().zip(l_u.into_iter()).collect::<Vec<_>>();
+                    let r_bounds = r_l.into_iter().zip(r_u.into_iter()).collect::<Vec<_>>();
+
+                    let upper_bound = l_bounds.iter()
+                        .map(|l_bounds| r_bounds.iter()
+                            .map(|r_bounds| (l_bounds.1 - l_bounds.0) * (r_bounds.1 - r_bounds.0) / 4.)
+                            .collect::<Vec<Float>>())
+                        .flatten()
+                        .collect::<Vec<Float>>();
+
+                    Some(Nature::Continuous(NatureContinuous {
+                        lower: Vector1DNull::Float(upper_bound.iter().map(|v| Some(-v)).collect()),
+                        upper: Vector1DNull::Float(upper_bound.into_iter().map(Some).collect())
+                    }))
+                },
+                _ => None
+            };
             left_property.releasable = left_property.releasable && right_property.releasable;
 
             left_property.num_records = Some(1);
@@ -113,7 +149,7 @@ impl Component for proto::Covariance {
 }
 
 impl Sensitivity for proto::Covariance {
-    /// Covariance sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/whitenoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/covariance/covariance.pdf).
+    /// Covariance sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/smartnoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/covariance/covariance.pdf).
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,

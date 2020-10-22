@@ -1,16 +1,15 @@
+use std::cmp::Ordering;
+
+use smartnoise_validator::errors::*;
+use ieee754::Ieee754;
+use ndarray::{ArrayD, Axis, Zip};
+use ndarray::prelude::IxDyn;
+use openssl::rand::rand_bytes;
+
+use smartnoise_validator::utilities::array::{slow_select, slow_stack};
+
 pub mod mechanisms;
 pub mod noise;
-
-use whitenoise_validator::errors::*;
-
-use openssl::rand::rand_bytes;
-use ieee754::Ieee754;
-
-use ndarray::{ArrayD, Zip, Axis};
-use std::cmp::Ordering;
-use whitenoise_validator::utilities::array::{slow_select, slow_stack};
-use ndarray::prelude::IxDyn;
-
 
 ///  Accepts an ndarray and returns the number of columns.
 ///
@@ -21,29 +20,28 @@ use ndarray::prelude::IxDyn;
 /// Number of columns in data.
 pub fn get_num_columns<T>(data: &ArrayD<T>) -> Result<i64> {
     match data.ndim() {
-        0 => Err("data is a scalar".into()),
-        1 => Ok(1),
+        0 | 1 => Ok(1),
         2 => Ok(data.len_of(Axis(1)) as i64),
         _ => Err("data may be at most 2-dimensional".into())
     }
 }
 
 
-/// Broadcast left and right to match each other, and map an operator over the pairs
+/// Broadcast left and right to match each other, and map an operator over the pairs.
 ///
 /// # Arguments
-/// * `left` - left vector to map over
-/// * `right` - right vector to map over
-/// * `operator` - function to apply to each pair
+/// * `left` - Left vector to map over.
+/// * `right` - Right vector to map over.
+/// * `operator` - Function to apply to each pair.
 ///
 /// # Return
-/// An array of mapped data
+/// An array of mapped data.
 ///
 /// # Example
 /// ```
-/// use whitenoise_validator::errors::*;
+/// use smartnoise_validator::errors::*;
 /// use ndarray::prelude::*;
-/// use whitenoise_runtime::utilities::broadcast_map;
+/// use smartnoise_runtime::utilities::broadcast_map;
 /// let left: ArrayD<f64> = arr1(&[1., -2., 3., 5.]).into_dyn();
 /// let right: ArrayD<f64> = arr1(&[2.]).into_dyn();
 /// let mapped: Result<ArrayD<f64>> = broadcast_map(left, right, &|l, r| l.max(r.clone()));
@@ -59,17 +57,17 @@ pub fn broadcast_map<T, U>(
         Ordering::Greater => left.shape()
     }.to_vec();
 
-//    println!("shape {:?}", shape);
-//    println!("left shape {:?}", left.shape());
-//    println!("right shape {:?}", right.shape());
+   // println!("shape {:?}", shape);
+   // println!("left shape {:?}", left.shape());
+   // println!("right shape {:?}", right.shape());
 
     let left = to_nd(left, shape.len())?;
     let right = to_nd(right, shape.len())?;
 
-//    println!("shape {:?}", shape);
-//    println!("left shape {:?}", left.shape());
-//    println!("right shape {:?}", right.shape());
-//    println!();
+   // println!("shape {:?}", shape);
+   // println!("left shape {:?}", left.shape());
+   // println!("right shape {:?}", right.shape());
+   // println!();
 
     let mut output: ArrayD<U> = ndarray::Array::default(shape.clone());
     Zip::from(&mut output)
@@ -84,6 +82,7 @@ pub fn broadcast_map<T, U>(
 #[cfg(test)]
 mod test_broadcast_map {
     use ndarray::{arr0, arr1, arr2};
+
     use crate::utilities::broadcast_map;
 
     #[test]
@@ -185,10 +184,10 @@ pub fn standardize_columns<T: Default + Clone>(array: ArrayD<T>, column_len: usi
 ///
 /// # Return
 /// The `String` representation of the bytes.
-pub fn get_bytes(n_bytes: usize) -> String {
+pub fn get_bytes(n_bytes: usize) -> Result<String> {
     // read random bytes from OpenSSL
     let mut buffer = vec!(0_u8; n_bytes);
-    rand_bytes(&mut buffer).unwrap();
+    fill_bytes(&mut buffer)?;
 
     // create new buffer of binary representations, rather than u8
     let new_buffer = buffer.into_iter()
@@ -196,13 +195,16 @@ pub fn get_bytes(n_bytes: usize) -> String {
         .collect::<Vec<String>>();
 
     // combine binary representations into single string and subset mantissa, and return
-    new_buffer.concat()
+    Ok(new_buffer.concat())
 }
 
 // TODO: substitute implementation with different generators
-pub fn fill_bytes(mut buffer: &mut [u8]) {
-    rand_bytes(&mut buffer).ok();
+pub fn fill_bytes(mut buffer: &mut [u8]) -> Result<()> {
+    if let Err(e) = rand_bytes(&mut buffer) {
+        Err(format!("OpenSSL Error: {}", e).into())
+    } else { Ok(()) }
 }
+
 
 /// Converts an `f64` to `String` of length 64, yielding the IEEE-754 binary representation of the `f64`.
 ///
@@ -239,21 +241,21 @@ pub fn f64_to_binary(num: f64) -> String {
 ///
 /// # Return
 /// * `num`: f64 version of the String
-pub fn binary_to_f64(binary_string: &str) -> f64 {
+pub fn binary_to_f64(binary_string: &str) -> Result<f64> {
     // get sign and convert to bool as recompose expects
     let sign = &binary_string[0..1];
-    let sign_bool = sign.parse::<i32>().unwrap() != 0;
+    let sign_bool = sign.parse::<i32>()? != 0;
 
     // convert exponent to int
     let exponent = &binary_string[1..12];
-    let exponent_int = u16::from_str_radix(exponent, 2).unwrap();
+    let exponent_int = u16::from_str_radix(exponent, 2)?;
 
     // convert mantissa to int
     let mantissa = &binary_string[12..];
-    let mantissa_int = u64::from_str_radix(mantissa, 2).unwrap();
+    let mantissa_int = u64::from_str_radix(mantissa, 2)?;
 
     // combine elements into f64 and return
-    f64::recompose_raw(sign_bool, exponent_int, mantissa_int)
+    Ok(f64::recompose_raw(sign_bool, exponent_int, mantissa_int))
 }
 
 /// Takes `String` of form `{0,1}^64` and splits it into a sign, exponent, and mantissa
@@ -263,9 +265,9 @@ pub fn binary_to_f64(binary_string: &str) -> f64 {
 /// * `binary_string` - 64-bit binary string.
 ///
 /// # Return
-/// * `(sign, exponent, mantissa)` - where each is a `String`.
-pub fn split_ieee_into_components(binary_string: &str) -> (String, String, String) {
-    (binary_string[0..1].to_string(), binary_string[1..12].to_string(), binary_string[12..].to_string())
+/// (sign, exponent, mantissa) - where each is a `String`.
+pub fn split_ieee_into_components(binary_string: String) -> (String, String, String) {
+    return (binary_string[0..1].to_string(), binary_string[1..12].to_string(), binary_string[12..].to_string());
 }
 
 /// Combines `String` versions of sign, exponent, and mantissa into
@@ -278,7 +280,9 @@ pub fn split_ieee_into_components(binary_string: &str) -> (String, String, Strin
 ///
 /// # Return
 /// Concatenation of sign, exponent, and mantissa.
-pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) -> String {
+pub fn combine_components_into_ieee(
+    (sign, exponent, mantissa): (String, String, String)
+) -> String {
     vec![sign, exponent, mantissa].concat()
 }
 
@@ -292,7 +296,7 @@ pub fn combine_components_into_ieee(sign: &str, exponent: &str, mantissa: &str) 
 /// Element from the candidate set
 #[cfg(feature="use-mpfr")]
 pub fn sample_from_set<T>(
-    candidate_set: &[T], weights: &[whitenoise_validator::Float],
+    candidate_set: &[T], weights: &[smartnoise_validator::Float],
     _enforce_constant_time: bool
 ) -> Result<T> where T: Clone {
 
@@ -330,7 +334,7 @@ pub fn sample_from_set<T>(
 
 #[cfg(not(feature="use-mpfr"))]
 pub fn sample_from_set<T>(
-    candidate_set: &[T], weights: &[whitenoise_validator::Float],
+    candidate_set: &[T], weights: &[smartnoise_validator::Float],
     enforce_constant_time: bool
 ) -> Result<T> where T: Clone {
 
@@ -363,7 +367,7 @@ pub fn sample_from_set<T>(
 ///
 /// # Example
 /// ```
-/// use whitenoise_runtime::utilities::create_subset;
+/// use smartnoise_runtime::utilities::create_subset;
 /// let set = vec![1, 2, 3, 4, 5, 6];
 /// let weights = vec![1., 1., 1., 2., 2., 2.];
 /// let k = 3;
@@ -398,7 +402,8 @@ pub fn create_subset<T>(
 
     // sort key/index tuples by key and identify top k indices
     let mut top_indices: Vec<usize> = Vec::with_capacity(k);
-    key_vec.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+    key_vec.sort_by(|a, b|
+        b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
     top_indices.extend(key_vec.iter()
         .take(k).map(|v| v.1));
 
@@ -429,12 +434,99 @@ pub fn create_subset<T>(
 
     // generate key/index tuples
     let mut key_vec = (0..set.len())
-        .map(|i| Ok((noise::sample_uniform(0., 1., enforce_constant_time)?.powf(1. / probabilities[i]), i)))
+        .map(|i| Ok((
+            noise::sample_uniform(0., 1., enforce_constant_time)?
+                .powf(1. / probabilities[i]),
+            i
+        )))
         .collect::<Result<Vec<(f64, usize)>>>()?;
 
     // sort key/index tuples by key and identify top k indices
-    key_vec.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap());
+    key_vec.sort_by(|a, b|
+        b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
 
     // subsample based on top k indices
     Ok(key_vec.iter().take(k).map(|v| set[v.1].clone()).collect())
+}
+
+
+/// Finds the closest number to x that is a multiple of Lambda.
+///
+/// # Arguments
+/// * `x` - Number to be rounded to closest multiple of Lambda.
+/// * `m` - Integer such that Lambda = 2^m.
+///
+/// # Returns
+/// Closest multiple of Lambda to x.
+pub fn get_closest_multiple_of_lambda(x: f64, m: i16) -> Result<f64> {
+    let (sign, mut exponent, mantissa) = x.decompose();
+    exponent -= m;
+
+    let (sign, mut exponent, mantissa) = match exponent {
+        // original components already represent an integer (decimal shifted >= 52 places on mantissa)
+        exponent if exponent >= 52 => (sign, exponent, mantissa),
+        // round int to +- 1
+        exponent if exponent == -1 => (sign, 0, 0),
+        // round int to 0, and keep it zero after adding m
+        exponent if exponent < -1 => (sign, -1023 - m, 0),
+        // round to int when decimal is within range of mantissa
+        _ => {
+            // get elements of mantissa that represent integers (after decimal is shifted by "exponent" places)
+            //     shift 1 "exponent" places to the left (no overflow because exponent < 64)
+            //     subtract one to set "exponent" bits to one
+            //     shift the mask to the left for a 52-bit mask that keeps the top #"exponent" bits
+            let integer_mask: u64 = ((1u64 << exponent) - 1) << (52 - exponent);
+            let integer_mantissa: u64 = mantissa & integer_mask;
+
+            // check if digit after exponent point is set
+            if mantissa & (1u64 << (52 - (exponent + 1))) == 0u64 {
+                (sign, exponent, integer_mantissa)
+            } else {
+                // if integer part of mantissa is all 1s, rounding needs to be reflected in the exponent instead
+                if integer_mantissa == integer_mask {
+                    (sign, exponent + 1, 0)
+                } else {
+                    (sign, exponent, integer_mantissa + (1u64 << (52 - exponent)))
+                }
+            }
+        }
+    };
+
+    exponent += m;
+    Ok(f64::recompose(sign, exponent, mantissa))
+}
+
+#[cfg(test)]
+mod test_get_closest_multiple_of_lambda {
+    use smartnoise_validator::hashmap;
+    use crate::utilities::get_closest_multiple_of_lambda;
+
+    #[test]
+    fn test_get_closest_multiple_of_lambda_range() {
+        (0..100).for_each(|i| {
+            let x = 1. - 0.01 * (i as f64);
+            println!("{}: {}", x, get_closest_multiple_of_lambda(x, -1).unwrap())
+        });
+    }
+
+    #[test]
+    fn test_get_closest_multiple_of_lambda() {
+        let input = vec![-30.01, -2.51, -1.01, -0.76, -0.51, -0.26, 0.0, 0.26, 0.51, 0.76, 1.01, 2.51, 30.01];
+
+        hashmap![
+            -2 => vec![-30., -2.5, -1.0, -0.75, -0.5, -0.25, 0.0, 0.25, 0.5, 0.75, 1.0, 2.5, 30.0],
+            -1 => vec![-30., -2.5, -1.0, -1.0, -0.5, -0.5, 0.0, 0.5, 0.5, 1.0, 1.0, 2.5, 30.0],
+            0 => vec![-30., -3.0, -1.0, -1.0, -1.0, -0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 3.0, 30.0],
+            1 => vec![-30., -2.0, -2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 2.0, 2.0, 30.0],
+            2 => vec![-32., -4.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 4.0, 32.0]
+        ].into_iter().for_each(|(m, outputs)| {
+            input.iter().copied().zip(outputs.into_iter())
+                .for_each(|(input, expected)| {
+                    let actual = get_closest_multiple_of_lambda(input, m).unwrap();
+                    println!("m: {:?}, input: {:?}, actual: {:?}, expected: {:?}",
+                             m, input, actual, expected);
+                    assert_eq!(actual, expected)
+                })
+        });
+    }
 }

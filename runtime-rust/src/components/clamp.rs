@@ -1,12 +1,12 @@
-use whitenoise_validator::errors::*;
+use smartnoise_validator::errors::*;
 
 use crate::NodeArguments;
-use whitenoise_validator::base::{Value, Array, Jagged, ReleaseNode, IndexKey};
-use whitenoise_validator::utilities::{standardize_numeric_argument, standardize_categorical_argument, standardize_null_target_argument, take_argument};
+use smartnoise_validator::base::{Value, Array, Jagged, ReleaseNode, IndexKey};
+use smartnoise_validator::utilities::{standardize_numeric_argument, standardize_categorical_argument, standardize_null_target_argument, take_argument};
 use crate::components::Evaluable;
 use ndarray::ArrayD;
 use crate::utilities::get_num_columns;
-use whitenoise_validator::{proto, Float, Integer};
+use smartnoise_validator::{proto, Float, Integer};
 use std::hash::Hash;
 
 impl Evaluable for proto::Clamp {
@@ -58,8 +58,8 @@ impl Evaluable for proto::Clamp {
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr2, arr1};
-/// use whitenoise_runtime::components::clamp::clamp_numeric_float;
-/// use whitenoise_validator::Float;
+/// use smartnoise_runtime::components::clamp::clamp_numeric_float;
+/// use smartnoise_validator::Float;
 /// let data = arr2(&[ [1.,2.,3.], [7.,11.,9.] ]).into_dyn();
 /// let lower: ArrayD<Float> = arr1(&[0.5, 8., 4.]).into_dyn();
 /// let upper: ArrayD<Float> = arr1(&[2.5, 10., 12.]).into_dyn();
@@ -102,8 +102,8 @@ pub fn clamp_numeric_float(
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr2, arr1};
-/// use whitenoise_runtime::components::clamp::clamp_numeric_integer;
-/// use whitenoise_validator::Integer;
+/// use smartnoise_runtime::components::clamp::clamp_numeric_integer;
+/// use smartnoise_validator::Integer;
 /// let data = arr2(&[ [1, 2, 3], [7, 11, 9] ]).into_dyn();
 /// let lower: ArrayD<Integer> = arr1(&[0, 8, 4]).into_dyn();
 /// let upper: ArrayD<Integer> = arr1(&[2, 10, 12]).into_dyn();
@@ -150,7 +150,7 @@ pub fn clamp_numeric_integer(
 /// # Example
 /// ```
 /// use ndarray::{ArrayD, arr2, arr1};
-/// use whitenoise_runtime::components::clamp::clamp_categorical;
+/// use smartnoise_runtime::components::clamp::clamp_categorical;
 /// let data: ArrayD<String> = arr2(&[["a".to_string(), "b".to_string(), "3".to_string()],
 ///                                   ["a".to_string(), "2".to_string(), "b".to_string()]]).into_dyn();
 /// let categories: Vec<Vec<String>> = vec![vec!["a".to_string(), "b".to_string()],

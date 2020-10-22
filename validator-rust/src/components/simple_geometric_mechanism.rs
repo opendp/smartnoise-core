@@ -105,7 +105,7 @@ impl Expandable for proto::SimpleGeometricMechanism {
             if let Some(lower_id) = lower_id {
                 let (patch_node, release) = get_literal(arr1(&data_property.lower_int()?).into_dyn().into(), component.submission)?;
                 expansion.computation_graph.insert(lower_id, patch_node);
-                expansion.properties.insert(lower_id, infer_property(&release.value, None)?);
+                expansion.properties.insert(lower_id, infer_property(&release.value, None, lower_id)?);
                 expansion.releases.insert(lower_id, release);
                 component.insert_argument(&"lower".into(), lower_id);
             }
@@ -113,7 +113,7 @@ impl Expandable for proto::SimpleGeometricMechanism {
             if let Some(upper_id) = upper_id {
                 let (patch_node, release) = get_literal(arr1(&data_property.upper_int()?).into_dyn().into(), component.submission)?;
                 expansion.computation_graph.insert(upper_id, patch_node);
-                expansion.properties.insert(upper_id, infer_property(&release.value, None)?);
+                expansion.properties.insert(upper_id, infer_property(&release.value, None, upper_id)?);
                 expansion.releases.insert(upper_id, release);
                 component.insert_argument(&"upper".into(), upper_id);
             }
@@ -136,9 +136,10 @@ impl Mechanism for proto::SimpleGeometricMechanism {
             .map_err(prepend("data:"))?;
 
         Some(release_usage.unwrap_or_else(|| &self.privacy_usage).iter()
-            .zip(data_property.c_stability.iter())
-            .map(|(usage, c_stab)|
-                usage.effective_to_actual(1., *c_stab as f64, privacy_definition.group_size))
+            .map(|usage| usage.effective_to_actual(
+                data_property.sample_proportion.unwrap_or(1.),
+                data_property.c_stability,
+                privacy_definition.group_size))
             .collect::<Result<Vec<proto::PrivacyUsage>>>()).transpose()
     }
 }
@@ -150,6 +151,7 @@ impl Accuracy for proto::SimpleGeometricMechanism {
         privacy_definition: &proto::PrivacyDefinition,
         properties: &base::NodeProperties,
         accuracies: &proto::Accuracies,
+        _public_arguments: IndexMap<base::IndexKey, &Value>
     ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
         let data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()
@@ -180,7 +182,8 @@ impl Accuracy for proto::SimpleGeometricMechanism {
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &base::NodeProperties,
-        alpha: f64
+        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        alpha: f64,
     ) -> Result<Option<Vec<proto::Accuracy>>> {
         let data_property = properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")?.array()

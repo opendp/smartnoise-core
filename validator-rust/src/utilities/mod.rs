@@ -1,29 +1,26 @@
+use std::collections::{HashMap, HashSet};
+use std::hash::Hash;
+use std::iter::FromIterator;
+
+use indexmap::map::IndexMap;
+use itertools::Itertools;
+use ndarray::prelude::*;
+use noisy_float::prelude::n64;
+
+use crate::{base, Float, proto, Warnable};
+use crate::base::{IndexKey, NodeProperties, Release, SensitivitySpace, Value, ValueProperties, ArrayProperties};
+// import all trait implementations
+use crate::components::*;
+use crate::errors::*;
+use crate::utilities::inference::infer_property;
+use crate::utilities::privacy::spread_privacy_usage;
+
 pub mod json;
 pub mod inference;
 pub mod serial;
 pub mod array;
 pub mod privacy;
 pub mod properties;
-
-use crate::errors::*;
-
-use crate::{proto, base, Warnable, Float};
-
-use crate::base::{Release, Value, ValueProperties, SensitivitySpace, NodeProperties, IndexKey};
-use std::collections::{HashMap, HashSet};
-use std::hash::Hash;
-use crate::utilities::inference::infer_property;
-
-use itertools::Itertools;
-use ndarray::prelude::*;
-
-// import all trait implementations
-use crate::components::*;
-use noisy_float::prelude::n64;
-use std::iter::FromIterator;
-use crate::utilities::privacy::spread_privacy_usage;
-use indexmap::map::IndexMap;
-
 
 /// Retrieve the specified Value from the arguments to a component.
 pub fn take_argument(
@@ -108,7 +105,7 @@ pub fn propagate_properties(
         .map(|(node_id, release_node)|
             Ok((*node_id, infer_property(
                 &release_node.value,
-                properties.get(node_id))?)))
+                properties.get(node_id), *node_id)?)))
         .collect::<Result<HashMap<u32, ValueProperties>>>()?);
 
 
@@ -183,12 +180,13 @@ pub fn propagate_properties(
         let release_node = release.get(&node_id);
         // println!("release node {:?}", release_node);
 
-        let propagation_result = if release_node.map(|release_node| release_node.public).unwrap_or(false) {
+        let propagation_result = if release_node
+            .map(|release_node| release_node.public).unwrap_or(false) {
             // if node has already been evaluated and is public, infer properties directly from the public data
             // println!("inferring property");
             Ok(Warnable(infer_property(
                 &release_node.unwrap().value,
-                properties.get(&node_id))?, vec![]))
+                properties.get(&node_id), node_id)?, vec![]))
         } else {
             // if node has not been evaluated, propagate properties over it
             computation_graph.get(&node_id).unwrap()
@@ -305,6 +303,20 @@ pub fn get_sinks(computation_graph: &HashMap<u32, proto::Component>) -> HashSet<
 }
 
 
+/// Sets the node id of properties
+///
+pub fn set_node_id(property: &mut ValueProperties, node_id: u32) -> () {
+    match property {
+        ValueProperties::Array(array) => array.node_id = node_id as i64,
+        ValueProperties::Dataframe(dataframe) => dataframe.children.iter_mut()
+            .for_each(|(_k, v)| set_node_id(v, node_id)),
+        ValueProperties::Partitions(partitions) => partitions.children.iter_mut()
+            .for_each(|(_k, v)| set_node_id(v, node_id)),
+        ValueProperties::Jagged(_) => (),
+        ValueProperties::Function(_) => ()
+    };
+}
+
 /// Given an array, conduct well-formedness checks and broadcast
 ///
 /// Typically used by functions when standardizing numeric arguments, but generally applicable.
@@ -312,7 +324,8 @@ pub fn get_sinks(computation_graph: &HashMap<u32, proto::Component>) -> HashSet<
 pub fn standardize_numeric_argument<T: Clone>(value: ArrayD<T>, length: i64) -> Result<ArrayD<T>> {
     match value.ndim() {
         0 => match value.first() {
-            Some(scalar) => Ok(Array::from((0..length).map(|_| scalar.clone()).collect::<Vec<T>>()).into_dyn()),
+            Some(scalar) => Ok(Array::from((0..length).map(|_| scalar.clone())
+                .collect::<Vec<T>>()).into_dyn()),
             None => Err("value must be non-empty".into())
         },
         1 => if value.len() as i64 == length {
@@ -342,7 +355,8 @@ pub fn standardize_float_argument(
         let original_length = col.len();
 
         // TODO cfg conditional compilation to n32
-        if deduplicate(col.into_iter().map(|v| n64(v as f64)).collect()).len() < original_length {
+        if deduplicate(col.into_iter()
+            .map(|v| n64(v as f64)).collect()).len() < original_length {
             return Err("floats must not contain duplicates".into());
         }
         Ok::<_, Error>(())
@@ -378,7 +392,8 @@ pub fn standardize_categorical_argument<T: Clone + Eq + Hash + Ord>(
 }
 
 
-/// Given a jagged null values array, conduct well-formedness checks, broadcast along columns, and flatten along rows.
+/// Given a jagged null values array,
+///    conduct well-formedness checks, broadcast along columns, and flatten along rows.
 #[doc(hidden)]
 pub fn standardize_null_candidates_argument<T: Clone>(
     mut value: Vec<Vec<T>>,
@@ -397,7 +412,8 @@ pub fn standardize_null_candidates_argument<T: Clone>(
     Ok(value)
 }
 
-/// Given a jagged null values array, conduct well-formedness checks, broadcast along columns, and flatten along rows.
+/// Given a jagged null values array,
+///    conduct well-formedness checks, broadcast along columns, and flatten along rows.
 #[doc(hidden)]
 pub fn standardize_null_target_argument<T: Clone>(
     value: ArrayD<T>,
@@ -420,7 +436,8 @@ pub fn standardize_null_target_argument<T: Clone>(
     bail!("length of null must be one, or {}", length)
 }
 
-/// Given categories and a jagged categories weights array, conduct well-formedness checks and return a standardized set of probabilities.
+/// Given categories and a jagged categories weights array,
+///    conduct well-formedness checks and return a standardized set of probabilities.
 #[doc(hidden)]
 pub fn standardize_weight_argument(
     weights: &Option<Vec<Vec<Float>>>,
@@ -455,7 +472,8 @@ pub fn standardize_weight_argument(
                 }).collect::<Result<Vec<Vec<Float>>>>()
         }
         _ => if lengths.len() == weights.len() {
-            weights.iter().map(|v| normalize_probabilities(v)).collect::<Result<Vec<Vec<Float>>>>()
+            weights.iter().map(|v| normalize_probabilities(v))
+                .collect::<Result<Vec<Vec<Float>>>>()
         } else {
             Err("category weights must be the same length as categories, or none".into())
         }
@@ -505,11 +523,11 @@ pub fn expand_mechanism(
         .ok_or_else(|| "privacy definition must be defined")?;
 
     // always overwrite sensitivity. This is not something a user may configure
-    let data_property = properties.get::<IndexKey>(&"data".into())
+    let data_property: ArrayProperties = properties.get::<IndexKey>(&"data".into())
         .ok_or("data: missing")?.array()
         .map_err(prepend("data:"))?.clone();
 
-    let aggregator = data_property.aggregator
+    let aggregator = data_property.aggregator.as_ref()
         .ok_or_else(|| Error::from("aggregator: missing"))?;
 
     // sensitivity scaling
@@ -519,7 +537,7 @@ pub fn expand_mechanism(
         &sensitivity_type)?;
 
     // TODO: debug axes in lipschitz constant arrays
-    let lipschitz = aggregator.lipschitz_constants.array()?.float()?;
+    let lipschitz = aggregator.lipschitz_constants.clone().array()?.float()?;
     if lipschitz.iter().any(|v| v != &1.) {
         let mut sensitivity = sensitivity_value.array()?.float()?;
         sensitivity *= &lipschitz;
@@ -530,7 +548,7 @@ pub fn expand_mechanism(
     let id_sensitivity = maximum_id;
     let (patch_node, release) = get_literal(sensitivity_value.clone(), component.submission)?;
     expansion.computation_graph.insert(id_sensitivity, patch_node);
-    expansion.properties.insert(id_sensitivity, infer_property(&release.value, None)?);
+    expansion.properties.insert(id_sensitivity, infer_property(&release.value, None, id_sensitivity)?);
     expansion.releases.insert(id_sensitivity, release);
 
     // spread privacy usage over each column
@@ -540,24 +558,28 @@ pub fn expand_mechanism(
 
     // convert to effective usage
     let effective_usages = spread_usages.into_iter()
-        .zip(data_property.c_stability.iter())
         // reduce epsilon allowed to algorithm based on c-stability and group size
-        .map(|(usage, c_stab)|
-            usage.actual_to_effective(1., *c_stab as f64, privacy_definition.group_size))
+        .map(|usage| usage.actual_to_effective(
+            data_property.sample_proportion.unwrap_or(1.),
+            data_property.c_stability,
+            privacy_definition.group_size))
         .collect::<Result<Vec<proto::PrivacyUsage>>>()?;
 
     // insert sensitivity and usage
     let mut noise_component = component.clone();
     noise_component.insert_argument(&"sensitivity".into(), id_sensitivity);
 
-    match noise_component.variant
-        .as_mut().ok_or_else(|| "variant must be defined")? {
-        proto::component::Variant::LaplaceMechanism(variant) => variant.privacy_usage = effective_usages,
-        proto::component::Variant::GaussianMechanism(variant) => variant.privacy_usage = effective_usages,
-        proto::component::Variant::ExponentialMechanism(variant) => variant.privacy_usage = effective_usages,
-        proto::component::Variant::SimpleGeometricMechanism(variant) => variant.privacy_usage = effective_usages,
-        _ => ()
-    };
+    macro_rules! assign_usage {
+        ($($variant:ident),*) => {
+            match noise_component.variant.as_mut() {
+                $(Some(proto::component::Variant::$variant(variant)) =>
+                    variant.privacy_usage = effective_usages,)*
+                _ => return Err(Error::from("unrecognized component in expand_mechanism"))
+            }
+        }
+    }
+    assign_usage!(LaplaceMechanism, GaussianMechanism, SimpleGeometricMechanism, SnappingMechanism);
+
     expansion.computation_graph.insert(component_id, noise_component);
 
     Ok(expansion)

@@ -3,6 +3,8 @@ use crate::errors::*;
 use crate::base::{ArrayProperties, ValueProperties, NatureContinuous, Nature, Vector1DNull, Jagged, NatureCategorical, DataType};
 use crate::utilities::get_common_value;
 use itertools::Itertools;
+use noisy_float::types::n64;
+use num::ToPrimitive;
 
 fn take<T: Clone>(vector: &[T], index: usize) -> Result<T> {
     match vector.get(index) {
@@ -13,7 +15,6 @@ fn take<T: Clone>(vector: &[T], index: usize) -> Result<T> {
 
 pub fn select_properties(properties: &ArrayProperties, index: usize) -> Result<ValueProperties> {
     let mut properties = properties.clone();
-    properties.c_stability = vec![take(&properties.c_stability, index)?];
     properties.num_columns = Some(1);
     properties.dimensionality = Some(1);
     if let Some(nature) = &properties.nature {
@@ -43,7 +44,9 @@ pub fn select_properties(properties: &ArrayProperties, index: usize) -> Result<V
     Ok(ValueProperties::Array(properties))
 }
 
-pub fn stack_properties(all_properties: &[ValueProperties], dimensionality: Option<i64>) -> Result<ValueProperties> {
+pub fn stack_properties(
+    all_properties: &[ValueProperties], dimensionality: Option<i64>, node_id: u32
+) -> Result<ValueProperties> {
     let all_properties = all_properties.iter()
         .map(|property| Ok(property.array()?.clone()))
         .collect::<Result<Vec<ArrayProperties>>>()?;
@@ -76,8 +79,16 @@ pub fn stack_properties(all_properties: &[ValueProperties], dimensionality: Opti
     let nature = get_common_continuous_nature(&natures, data_type.to_owned())
         .or_else(|| get_common_categorical_nature(&natures));
 
-    if !all_properties.iter().all(|prop| prop.naturally_ordered) {
+    if !all_properties.iter().all(|prop| prop.naturally_ordered) && dataset_id.is_none() {
         return Err("cannot stack columns that may have been reordered".into())
+    }
+
+    let sample_proportion = get_common_value(&all_properties.iter().map(|prop| prop.sample_proportion.map(n64)).collect())
+        .ok_or_else(|| Error::from("sample proportions must be shared in common"))?
+        .and_then(|v| v.to_f64());
+
+    if sample_proportion.is_some() && dataset_id.is_none() {
+        return Err(Error::from("sampled data must come from a common source"))
     }
 
     Ok(ValueProperties::Array(ArrayProperties {
@@ -87,16 +98,18 @@ pub fn stack_properties(all_properties: &[ValueProperties], dimensionality: Opti
             .try_fold(0, |total, num| num.map(|v| total + v)),
         nullity: get_common_value(&all_properties.iter().map(|prop| prop.nullity).collect()).unwrap_or(true),
         releasable: get_common_value(&all_properties.iter().map(|prop| prop.releasable).collect()).unwrap_or(true),
-        c_stability: all_properties.iter().flat_map(|prop| prop.c_stability.clone()).collect(),
+        c_stability: get_common_value(&all_properties.iter().map(|prop| prop.c_stability).collect())
+            .ok_or_else(|| Error::from("c-stabilities must be shared among all arguments"))?,
         aggregator: None,
         nature,
         data_type,
-        dataset_id: all_properties[0].dataset_id,
-        // this is a library-wide assumption - that datasets have more than zero rows
+        dataset_id,
+        node_id: node_id as i64,
         is_not_empty: all_properties.iter().all(|prop| prop.is_not_empty),
         dimensionality,
         group_id,
-        naturally_ordered: true
+        naturally_ordered: true,
+        sample_proportion
     }))
 }
 

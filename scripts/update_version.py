@@ -17,13 +17,13 @@ if "core" in config['paths']:
 
     def update_runtime(manifest):
         manifest['package']['version'] = VERSION
-        manifest['dependencies']['whitenoise_validator']['version'] = VERSION
+        manifest['dependencies']['smartnoise_validator']['version'] = VERSION
         return manifest
 
     def update_ffi(manifest):
         manifest['package']['version'] = VERSION
-        manifest['dependencies']['whitenoise_validator']['version'] = VERSION
-        manifest['dependencies']['whitenoise_runtime']['version'] = VERSION
+        manifest['dependencies']['smartnoise_validator']['version'] = VERSION
+        manifest['dependencies']['smartnoise_runtime']['version'] = VERSION
         return manifest
 
     crates = {

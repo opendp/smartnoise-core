@@ -1,14 +1,11 @@
-use crate::errors::*;
-
-
-use crate::{proto, Warnable, base, Float, Integer};
-
-use crate::components::{Component, Sensitivity};
-use crate::base::{IndexKey, Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull};
-use ndarray::{arr1};
-use itertools::Itertools;
 use indexmap::map::IndexMap;
+use ndarray::arr1;
 
+use crate::{base, Float, Integer, proto, Warnable};
+use crate::base::{AggregatorProperties, DataType, IndexKey, Nature, NatureContinuous, NodeProperties, SensitivitySpace, Value, ValueProperties, Vector1DNull};
+use crate::components::{Component, Sensitivity};
+use crate::errors::*;
+use crate::utilities::get_common_value;
 
 impl Component for proto::Count {
     fn propagate_property(
@@ -16,7 +13,7 @@ impl Component for proto::Count {
         _privacy_definition: &Option<proto::PrivacyDefinition>,
         _public_arguments: IndexMap<base::IndexKey, &Value>,
         properties: NodeProperties,
-        node_id: u32
+        node_id: u32,
     ) -> Result<Warnable<ValueProperties>> {
 
         let mut data_property = match properties.get::<IndexKey>(&"data".into()).ok_or("data: missing")?.clone() {
@@ -37,37 +34,26 @@ impl Component for proto::Count {
             data_property.assert_is_not_aggregated()?;
         }
 
-        data_property.num_records = Some(1);
-        data_property.num_columns = Some(1);
-
         let c_stability = match properties.get::<IndexKey>(&"data".into())
             .ok_or("data: missing")? {
             ValueProperties::Array(value) => {
                 value.assert_is_not_aggregated()?;
 
                 // overall c_stability is the maximum c_stability of any column
-                vec![value.c_stability.iter().copied().fold1(|l, r| l.max(r))
-                    .ok_or_else(|| "c_stability must be defined for each column")?]
+                value.c_stability
             },
             ValueProperties::Dataframe(value) => {
-
                 // overall c_stability is the maximal c_stability of any column
-                vec![value.children.values()
-                    .map(|v| v.array().map(|v| v.c_stability.clone()))
-                    .collect::<Result<Vec<Vec<Float>>>>()?.into_iter()
-                    .flatten()
-                    .fold1(|l, r| l.max(r))
-                    .ok_or_else(|| "c_stability must be defined for each column")?]
+                get_common_value(&value.children.values().map(|v| v.array().map(|v| v.c_stability))
+                    .collect::<Result<Vec<u32>>>()?)
+                    .ok_or_else(|| Error::from("all columns must share the same c_stability"))?
             },
             _ => return Err("data: must be an array or dataframe".into())
         };
 
         // save a snapshot of the state when aggregating
-        data_property.aggregator = Some(AggregatorProperties {
-            component: proto::component::Variant::Count(self.clone()),
-            properties,
-            lipschitz_constants: ndarray::Array::from_shape_vec(vec![1, 1], vec![1.0])?.into_dyn().into()
-        });
+        data_property.aggregator = Some(AggregatorProperties::new(
+            proto::component::Variant::Count(self.clone()), properties, 1));
         data_property.c_stability = c_stability;
 
         let data_num_records = data_property.num_records.map(|v| v as Integer);
@@ -77,40 +63,29 @@ impl Component for proto::Count {
         }));
         data_property.data_type = DataType::Int;
         data_property.dataset_id = Some(node_id as i64);
+        data_property.num_records = Some(1);
+        data_property.num_columns = Some(1);
 
         Ok(ValueProperties::Array(data_property).into())
     }
 }
 
 impl Sensitivity for proto::Count {
-    /// Count query sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/whitenoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/counts/counts.pdf).
+    /// Count query sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/smartnoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/counts/counts.pdf).
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
         properties: &NodeProperties,
         sensitivity_type: &SensitivitySpace
     ) -> Result<Value> {
-
-        let (num_records, c_stability) = match properties.get(&IndexKey::from("data"))
+        let num_records = match properties.get(&IndexKey::from("data"))
             .ok_or("data: missing")? {
             ValueProperties::Array(value) => {
                 value.assert_is_not_aggregated()?;
-
-                // overall c_stability is the maximal c_stability of any column
-                let c_stability = value.c_stability.iter().copied().fold1(|l, r| l.max(r))
-                    .ok_or_else(|| "c_stability must be defined for each column")?;
-                (value.num_records, c_stability)
+                value.num_records
             },
             ValueProperties::Dataframe(value) => {
-
-                // overall c_stability is the maximal c_stability of any column
-                let c_stability = value.children.values()
-                    .map(|v| v.array().map(|v| v.c_stability.clone()))
-                    .collect::<Result<Vec<Vec<Float>>>>()?.into_iter()
-                    .flatten()
-                    .fold1(|l, r| l.max(r))
-                    .ok_or_else(|| "c_stability must be defined for each column")?;
-                (value.num_records()?, c_stability)
+                value.num_records()?
             },
             _ => return Err("data: must be an array or dataframe".into())
         };
@@ -135,7 +110,7 @@ impl Sensitivity for proto::Count {
                     // unknown N
                     (AddRemove, None) => 1.,
                 };
-                Ok((arr1(&[sensitivity]).into_dyn() * c_stability).into())
+                Ok((arr1(&[sensitivity]).into_dyn()).into())
             },
             _ => Err("Count sensitivity is only implemented for KNorm".into())
         }

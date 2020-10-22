@@ -20,16 +20,18 @@ impl Component for proto::Literal {
             num_columns: None,
             nullity: true,
             releasable: false,
-            c_stability: vec![],
+            c_stability: 1,
             aggregator: None,
             nature: None,
             data_type: DataType::Unknown,
             dataset_id: Some(node_id as i64),
+            node_id: node_id as i64,
             // this is a library-wide assumption - that datasets initially have more than zero rows
             is_not_empty: true,
             dimensionality: None,
             group_id: vec![],
-            naturally_ordered: true
+            naturally_ordered: true,
+            sample_proportion: None
         }).into())
     }
 }

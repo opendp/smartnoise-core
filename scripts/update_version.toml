@@ -8,25 +8,25 @@ patch = 1
 # Locations of repositories to update
 #
 # ------------------------------------------------------
-# (1) Path to  repository "whitenoise-core-python"
-#   - e.g. "/Users/username/github/repos/whitenoise-core-python"
+# (1) Path to  repository "smartnoise-core-python"
+#   - e.g. "/Users/username/github/repos/smartnoise-core-python"
 # ------------------------------------------------------
 #
-#python = "/Users/michael/whitenoise/python"
-python = "/Users/ramanprasad/Documents/github-rp/whitenoise-core-python"
+#python = "/Users/michael/smartnoise/python"
+python = "/Users/ramanprasad/Documents/github-rp/smartnoise-core-python"
 #
 # ------------------------------------------------------
-# (2) Path to repository "whitenoise-core"
-#   - e.g. "/Users/username/github/repos/whitenoise-core-python/whitenoise-core"
-#   - Normally this is the submodule within whitenoise-core-python
+# (2) Path to repository "smartnoise-core"
+#   - e.g. "/Users/username/github/repos/smartnoise-core-python/smartnoise-core"
+#   - Normally this is the submodule within smartnoise-core-python
 # ------------------------------------------------------
 #
-#core = "/Users/michael/whitenoise/python/whitenoise-core"
-core = "/Users/ramanprasad/Documents/github-rp/whitenoise-core-python/whitenoise-core"
+#core = "/Users/michael/smartnoise/python/smartnoise-core"
+core = "/Users/ramanprasad/Documents/github-rp/smartnoise-core-python/smartnoise-core"
 #
 # ------------------------------------------------------
-# (3) Path to the repository "whitenoise-core-r"
+# (3) Path to the repository "smartnoise-core-r"
 #  ** Currently not in use **
 # ------------------------------------------------------
 #
-#R = "/Users/michael/whitenoise/R"
+#R = "/Users/michael/smartnoise/R"

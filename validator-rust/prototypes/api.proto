@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package whitenoise;
+package smartnoise;
 
 import "base.proto";
 import "components.proto";
@@ -32,12 +32,14 @@ message RequestAccuracyToPrivacyUsage {
 	Component component = 2;
     ArgumentProperties properties = 3;
 	Accuracies accuracies = 4;
+    IndexmapReleaseNode public_arguments = 5;
 }
 message RequestPrivacyUsageToAccuracy {
 	PrivacyDefinition privacy_definition = 1;
 	Component component = 2;
     ArgumentProperties properties = 3;
 	double alpha = 4;
+    IndexmapReleaseNode public_arguments = 5;
 }
 message RequestExpandComponent {
 	Component component = 1;

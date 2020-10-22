@@ -25,7 +25,7 @@ ByteBuffer validate_analysis(const uint8_t *request_ptr, int32_t request_length)
 
 ByteBuffer release(const uint8_t *request_ptr, int32_t request_length);
 
-void whitenoise_destroy_bytebuffer(ByteBuffer buffer);
+void smartnoise_destroy_bytebuffer(ByteBuffer buffer);
 
 // direct api
 double laplace_mechanism(
@@ -35,5 +35,13 @@ double gaussian_mechanism(
     double value, double epsilon, double delta, double sensitivity, bool enforce_constant_time);
 
 int64_t simple_geometric_mechanism(
-    int64_t value, float epsilon, float sensitivity, int64_t min, int64_t max, bool enforce_constant_time);
+    int64_t value, double epsilon, double sensitivity, int64_t min, int64_t max, bool enforce_constant_time);
+
+double snapping_mechanism(
+    double value, double epsilon, double sensitivity, double min, double max,
+    bool enforce_constant_time);
+
+double snapping_mechanism_binding(
+    double value, double epsilon, double sensitivity, double min, double max,
+    double binding_probability, bool enforce_constant_time);
 
