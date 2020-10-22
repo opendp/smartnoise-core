@@ -26,16 +26,16 @@ fn evaluate_function(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Float> {
     for i in 0..x_copy.len() {
         x_copy[i][0] = 1.0;
     }
-    let mut new_thing = col.clone();
-    let mut llik = new_thing.clone();
+    let mut pi = col.clone();
+    let mut llik = pi.clone();
 
     for i in 0..col.len() {
         let mut dot_sum = 0.0;
         for j in 0..theta.len() {
             dot_sum += theta[j]*x_copy[j];
         }
-        new_thing[i] = 1 / (1.0 + (-1.0 * dot_sum).exp());
-        llik[i] = col[i] * new_thing[i].ln() + (1.0 - col[i])*(1.0 - new_thing[i]).ln();
+        pi[i] = 1 / (1.0 + (-1.0 * dot_sum).exp());
+        llik[i] = col[i] * pi[i].ln() + (1.0 - col[i])*(1.0 - pi[i]).ln();
     }
     llik
 }
@@ -50,7 +50,8 @@ fn sgd(data: &ArrayD<Float>, data_size: usize, mut theta: &ArrayD<Float>,
     let mut thetas: Vec<Vec<Float>> = Vec::new();
 
     for t in 0..max_iters {
-        // Random Sample with P = L/N
+        // Random sample of observations, without replacement, of fixed size sample_size 
+        // New sample each iteration
         let mut L: Vec<Float> = Vec::new();
 
         let range = (0..data_size-1).map(Integer::from).collect::<Vec<Integer>>();
@@ -106,19 +107,33 @@ mod test_sgd {
     use ndarray::arr2;
     use crate::components::sgd::sgd;
     use whitenoise_validator::Float;
+    use ndarray_rand::RandomExt;
+    use ndarray_rand::rand_distr::Uniform;
 
+fn main() {
+    let a = Array::random((2, 5), Uniform::new(0., 10.));
+    println!("{:8.4}", a);
+    // Example Output:
+    // [[  8.6900,   6.9824,   3.8922,   6.5861,   2.4890],
+    //  [  0.0914,   5.5186,   5.8135,   5.2361,   3.1879]]
+}
+    
     #[test]
     fn test_dp_sgd() {
-        let data = arr2(&[[0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0],
-            [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0]]).into_dyn();
-        let data_size = 10 as usize;
-        let theta = arr2(&[[0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]]).into_dyn();
-        let learning_rate = 1.0;
+        // Build large test dataset, with n rows, x~uniform; y~binomial(pi); pi = 1/(1+exp(-1 - 1x))
+        let n = 1000
+        let mut data = arr2:random((1000,2), Uniform::new(0.0, 1.0))
+        for i in 0..n-1{
+            data[i][0] = 1/(1 + (-1 -data[i][1]).exp())   
+        }
+        let data_size = 5 as usize;
+        let theta = arr2(&[[0.0, 0.0]]).into_dyn();
+        let learning_rate = 0.1;
         let noise_scale = 1.0;
         let group_size = 2;
-        let gradient_norm_bound = 0.5;
+        let gradient_norm_bound = 0.15;
         let max_iters = 100;
-        let clipping_value = 2.0;
+        let clipping_value = 1.0;
         let sample_size = 5 as usize;
         let theta_final: Vec<Vec<Float>> = sgd(&data, data_size, &theta, learning_rate, noise_scale, group_size,
                     gradient_norm_bound, max_iters, clipping_value, sample_size);
