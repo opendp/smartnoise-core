@@ -46,6 +46,10 @@ fn sgd(data: &ArrayD<Float>, data_size: usize, mut theta: &ArrayD<Float>,
        sample_size: usize) -> Vec<Vec<Float>> {
 
     // TODO: Check theta size matches data
+    if (theta.len != data_size as int){
+        println("Starting parameters length does not match dataset dimensions!")   
+    }    
+                 
     let mut theta_mutable = theta.clone();
     let mut thetas: Vec<Vec<Float>> = Vec::new();
 
@@ -126,7 +130,7 @@ fn main() {
         for i in 0..n-1{
             data[i][0] = 1/(1 + (-1 -data[i][1]).exp())   
         }
-        let data_size = 5 as usize;
+        let data_size = 2 as usize;
         let theta = arr2(&[[0.0, 0.0]]).into_dyn();
         let learning_rate = 0.1;
         let noise_scale = 1.0;
