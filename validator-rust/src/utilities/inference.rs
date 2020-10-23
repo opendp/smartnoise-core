@@ -31,9 +31,10 @@ pub fn infer_lower(value: &Value) -> Result<Vector1DNull> {
                 },
                 1 => match array {
                     Array::Float(array) =>
-                        Vector1DNull::Float(array.iter().map(|v| Some(*v)).collect()),
+                        Vector1DNull::Float(vec![array.iter().cloned()
+                            .fold1(|lowest, v| lowest.min(v))]),
                     Array::Int(array) =>
-                        Vector1DNull::Int(array.iter().map(|v| Some(*v)).collect()),
+                        Vector1DNull::Int(vec![array.iter().max().cloned()]),
                     _ => return Err("Cannot infer numeric lower bounds on a non-numeric vector".into())
                 },
                 2 => match array {
@@ -84,9 +85,10 @@ pub fn infer_upper(value: &Value) -> Result<Vector1DNull> {
                 },
                 1 => match array {
                     Array::Float(array) =>
-                        Vector1DNull::Float(array.iter().map(|v| Some(*v)).collect()),
+                        Vector1DNull::Float(vec![array.iter().cloned()
+                            .fold1(|greatest, v| greatest.max(v))]),
                     Array::Int(array) =>
-                        Vector1DNull::Int(array.iter().map(|v| Some(*v)).collect()),
+                        Vector1DNull::Int(vec![array.iter().max().cloned()]),
                     _ => return Err("Cannot infer numeric upper bounds on a non-numeric vector".into())
                 },
                 2 => match array {
