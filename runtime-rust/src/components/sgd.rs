@@ -38,9 +38,22 @@ fn evaluate_function(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Float> {
     for i in 0..col.len() {
         let product = theta_unwrapped.dot(&x_unwrapped.t());
         let dot_sum = product.scalar_sum();
-        pi[i] = 1.0 / (1.0 + (-1.0 * dot_sum).exp());
-        llik[i] = col[i] * pi[i].ln() + (1.0 - col[i])*(1.0 - pi[i]).ln();
+        println!("dot sum: {:?}", dot_sum);
+        let tmp_exp = 1.0 / (1.0 + (-1.0 * dot_sum).exp());
+        println!("tmp_exp: {:?}", tmp_exp);
+        pi[i] = tmp_exp;
+        println!("col: {:?} pi: {:?}", col, pi);
+        // TODO: This is to prevent passing 0 into the ln() argument....
+        let mut log_argument = (1.0 - col[i])*(1.0 - pi[i]);
+        if log_argument == 0.0 {
+            log_argument = 1.0;
+        }
+        let llik_tmp = col[i] * pi[i].ln() + log_argument.ln();
+        println!("llik_tmp: {:?}", llik_tmp);
+        llik[i] = llik_tmp;
     }
+    println!("pi: {:?} llik: {:?}", pi, llik);
+
     llik
 }
 
