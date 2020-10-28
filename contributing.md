@@ -16,7 +16,7 @@ Before contributing, we recommend following the [Getting Started guide](./README
 General Contribution Guidelines
 ===============================
 
-- Use [GitHub issues](https://github.com/opendifferentialprivacy/smartnoise-core/issues) including the [Github issue board](https://github.com/orgs/opendifferentialprivacy/projects/1).
+- Use [GitHub issues](https://github.com/opendifferentialprivacy/smartnoise-core/issues) including the [Github issue board](https://github.com/orgs/opendifferentialprivacy/projects/2).
 - Anything implemented from the differential privacy literature should contain clear citations and/or whitepapers 
 explaining any necessary derivations.
 - Code should be clearly documented and include testing. For more information, please see:
