@@ -2,7 +2,7 @@ Contributing to SmartNoise
 =============================
 Contributions to SmartNoise are welcome from all members of the community. This document is here to simplify the 
 on-boarding experience for contributors, contributions to this document are also welcome. 
-Please use the [GitHub issue board](https://github.com/orgs/opendifferentialprivacy/projects/1) to track and take ownership of issues. 
+Please use the [GitHub issue board](https://github.com/orgs/opendifferentialprivacy/projects/2) to track and take ownership of issues. 
 
 Please let us know if you encounter a bug by [creating an issue](https://github.com/opendifferentialprivacy/smartnoise-core/issues). We appreciate all contributions. We welcome pull requests with bug-fixes without prior discussion.
 
