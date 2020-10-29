@@ -1,9 +1,11 @@
-use whitenoise_validator::{Float, Integer};
-use crate::utilities::noise::{sample_gaussian_mpfr};
-use ndarray::{ArrayD, Array};
+use smartnoise_validator::errors::*;
+use ndarray::ArrayD;
 use ndarray::prelude::*;
 use rand::seq::SliceRandom;
 
+use smartnoise_validator::{Float, Integer};
+
+use crate::utilities::noise::sample_gaussian;
 
 fn calculate_gradient(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Vec<Float>> {
     // TODO: Delta should be parameterized based on how we are scaling the data
@@ -57,10 +59,13 @@ fn evaluate_function(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Float> {
     llik
 }
 
-fn sgd(data: &ArrayD<Float>, data_size: usize, theta: &ArrayD<Float>,
-       learning_rate: Float, noise_scale: Float, group_size: Integer,
-       gradient_norm_bound: Float, max_iters: Integer, clipping_value: Float,
-       sample_size: usize) -> Vec<Vec<Float>> {
+fn sgd(
+    data: &ArrayD<Float>, data_size: usize, theta: &ArrayD<Float>,
+    learning_rate: Float, noise_scale: Float, group_size: Integer,
+    gradient_norm_bound: Float, max_iters: Integer, clipping_value: Float,
+    sample_size: usize,
+    enforce_constant_time: bool
+) -> Result<Vec<Vec<Float>>> {
 
     // TODO: Check theta size matches data
     if theta.len() != data_size {
@@ -103,7 +108,7 @@ fn sgd(data: &ArrayD<Float>, data_size: usize, theta: &ArrayD<Float>,
         let mut noisy_gradients = Vec::new();
         let mut multidim_gauss_noise = Vec::new();
         for _ in 0..data_size.clone() {
-            let noise = sample_gaussian_mpfr(0.0, noise_scale.powi(2) * gradient_norm_bound.powi(2));
+            let noise = sample_gaussian(0.0, noise_scale.powi(2) * gradient_norm_bound.powi(2), enforce_constant_time)?;
             multidim_gauss_noise.push(noise);
         }
         let mut gradient_sum: Vec<Float> = Vec::new();
@@ -112,7 +117,7 @@ fn sgd(data: &ArrayD<Float>, data_size: usize, theta: &ArrayD<Float>,
         }
         let mut sum = 0.0;
         for i in 0..gradient_sum.len() {
-            sum += gradient_sum[i] + sample_gaussian_mpfr(0.0, noise_scale.powi(2) * gradient_norm_bound.powi(2)).to_f64();
+            sum += gradient_sum[i] + sample_gaussian(0.0, noise_scale.powi(2) * gradient_norm_bound.powi(2), enforce_constant_time)?;
         }
         let noisy_grad = (1.0 / group_size.clone() as Float) * sum;
         noisy_gradients.push(noisy_grad);
@@ -124,21 +129,23 @@ fn sgd(data: &ArrayD<Float>, data_size: usize, theta: &ArrayD<Float>,
         }
         thetas.push(theta_mutable.clone().into_raw_vec());
     }
-    thetas
+    Ok(thetas)
 }
 
 
 #[cfg(test)]
 mod test_sgd {
-    use crate::components::sgd::sgd;
-    use ndarray_rand::RandomExt;
-    use ndarray_rand::rand_distr::Uniform;
-    use whitenoise_validator::Float;
+    use ndarray::Array;
     use ndarray::arr2;
-    use ndarray::{Array};
+    use ndarray_rand::rand_distr::Uniform;
+    use ndarray_rand::RandomExt;
 
-    // use ndarray::{arr2, Array};
-    // use whitenoise_validator::Float;
+    use smartnoise_validator::Float;
+
+    use crate::components::sgd::sgd;
+
+// use ndarray::{arr2, Array};
+    // use smartnoise_validator::Float;
 
     #[test]
     fn generate_random_array() {
@@ -165,10 +172,11 @@ mod test_sgd {
         let group_size = 2;
         let gradient_norm_bound = 0.15;
         let max_iters = 1;
+        let enforce_constant_time = false;
         let clipping_value = 1.0;
         let sample_size = 5 as usize;
         let theta_final: Vec<Vec<Float>> = sgd(&data.into_dyn(), data_size, &theta, learning_rate, noise_scale, group_size,
-                                               gradient_norm_bound, max_iters, clipping_value, sample_size);
+                                               gradient_norm_bound, max_iters, clipping_value, sample_size, enforce_constant_time).unwrap();
         println!("{:?}", theta_final);
 
         assert_eq!(theta_final.len(), max_iters as usize);
