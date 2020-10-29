@@ -41,7 +41,7 @@ pub mod to_dataframe;
 pub mod transforms;
 pub mod union;
 pub mod variance;
-mod sgd;
+pub mod sgd;
 
 /// Evaluable component trait
 ///
@@ -92,7 +92,7 @@ impl Evaluable for proto::component::Variant {
 
             ExponentialMechanism, GaussianMechanism,
             LaplaceMechanism, SnappingMechanism,
-            SimpleGeometricMechanism,
+            SimpleGeometricMechanism, DpSgd,
 
             Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
             Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract, TheilSen, DpGumbelMedian

@@ -1,11 +1,46 @@
-use smartnoise_validator::errors::*;
 use ndarray::ArrayD;
 use ndarray::prelude::*;
 use rand::seq::SliceRandom;
 
-use smartnoise_validator::{Float, Integer};
+use smartnoise_validator::{Float, Integer, proto};
+use smartnoise_validator::base::ReleaseNode;
+use smartnoise_validator::errors::*;
+use smartnoise_validator::utilities::take_argument;
 
+use crate::components::Evaluable;
+use crate::NodeArguments;
 use crate::utilities::noise::sample_gaussian;
+
+impl Evaluable for proto::Dpsgd {
+    fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
+        let enforce_constant_time = privacy_definition.as_ref()
+            .map(|v| v.protect_elapsed_time).unwrap_or(false);
+
+        let proto::Dpsgd {
+            learning_rate, noise_scale, group_size, gradient_norm_bound,
+            max_iters, clipping_value, sample_size
+        } = self.clone();
+
+        let theta = take_argument(&mut arguments, "theta")?.array()?.float()?;
+        let theta = Array::from_shape_vec(
+            theta.shape(),
+            sgd(
+                &take_argument(&mut arguments, "data")?.array()?.float()?,
+                &theta,
+                learning_rate, noise_scale, group_size.into(), gradient_norm_bound,
+                max_iters.into(), clipping_value, sample_size as usize, enforce_constant_time)?
+                .remove(max_iters as usize - 1),
+        )?.into_dyn();
+
+
+        Ok(ReleaseNode {
+            value: theta.into(),
+            // TODO: if the upper bound is not passed in, then I need a privacy usage back from sgd
+            privacy_usages: None,
+            public: true,
+        })
+    }
+}
 
 fn calculate_gradient(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Vec<Float>> {
     // TODO: Delta should be parameterized based on how we are scaling the data
@@ -60,17 +95,14 @@ fn evaluate_function(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Float> {
 }
 
 fn sgd(
-    data: &ArrayD<Float>, data_size: usize, theta: &ArrayD<Float>,
+    data: &ArrayD<Float>, theta: &ArrayD<Float>,
     learning_rate: Float, noise_scale: Float, group_size: Integer,
     gradient_norm_bound: Float, max_iters: Integer, clipping_value: Float,
     sample_size: usize,
-    enforce_constant_time: bool
+    enforce_constant_time: bool,
 ) -> Result<Vec<Vec<Float>>> {
-
     // TODO: Check theta size matches data
-    if theta.len() != data_size {
-        println!("Starting parameters length does not match dataset dimensions!")
-    }    
+    let data_size = theta.len();
                  
     let mut theta_mutable = theta.clone();
     let mut thetas: Vec<Vec<Float>> = Vec::new();
@@ -135,8 +167,8 @@ fn sgd(
 
 #[cfg(test)]
 mod test_sgd {
-    use ndarray::Array;
     use ndarray::arr2;
+    use ndarray::Array;
     use ndarray_rand::rand_distr::Uniform;
     use ndarray_rand::RandomExt;
 
@@ -165,7 +197,6 @@ mod test_sgd {
         for i in 0..n-1 {
             data[[i,0]] = 1.0 /(1.0 + ((-1.0 - data[[i, 1]]) as Float).exp())
         }
-        let data_size = 2 as usize;
         let theta = Array::random((n, m), Uniform::new(0., 10.)).into_dyn();
         let learning_rate = 0.1;
         let noise_scale = 1.0;
@@ -175,7 +206,7 @@ mod test_sgd {
         let enforce_constant_time = false;
         let clipping_value = 1.0;
         let sample_size = 5 as usize;
-        let theta_final: Vec<Vec<Float>> = sgd(&data.into_dyn(), data_size, &theta, learning_rate, noise_scale, group_size,
+        let theta_final: Vec<Vec<Float>> = sgd(&data.into_dyn(), &theta, learning_rate, noise_scale, group_size,
                                                gradient_norm_bound, max_iters, clipping_value, sample_size, enforce_constant_time).unwrap();
         println!("{:?}", theta_final);
 

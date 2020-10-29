@@ -46,6 +46,7 @@ mod mean;
 mod exponential_mechanism;
 pub mod gaussian_mechanism;
 mod laplace_mechanism;
+mod sgd;
 mod simple_geometric_mechanism;
 pub mod snapping_mechanism;
 mod resize;
@@ -266,7 +267,7 @@ impl Component for proto::Component {
             Partition, Quantile, RawMoment, Reshape, Resize, Sum, ToDataframe, Union, Variance,
 
             ExponentialMechanism, GaussianMechanism, LaplaceMechanism,
-            SimpleGeometricMechanism, SnappingMechanism,
+            SimpleGeometricMechanism, SnappingMechanism, DpSgd,
 
             Abs, Add, LogicalAnd, Divide, Equal, GreaterThan, LessThan, Log, Modulo, Multiply,
             Negate, Negative, LogicalOr, Power, RowMax, RowMin, Subtract, TheilSen, DpGumbelMedian
