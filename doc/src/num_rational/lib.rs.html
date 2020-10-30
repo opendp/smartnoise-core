@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/num-rational-0.3.0/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/num-rational-0.3.1/src/lib.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>lib.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
 <link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../num_rational/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
@@ -2937,6 +2937,49 @@
 <span id="2934">2934</span>
 <span id="2935">2935</span>
 <span id="2936">2936</span>
+<span id="2937">2937</span>
+<span id="2938">2938</span>
+<span id="2939">2939</span>
+<span id="2940">2940</span>
+<span id="2941">2941</span>
+<span id="2942">2942</span>
+<span id="2943">2943</span>
+<span id="2944">2944</span>
+<span id="2945">2945</span>
+<span id="2946">2946</span>
+<span id="2947">2947</span>
+<span id="2948">2948</span>
+<span id="2949">2949</span>
+<span id="2950">2950</span>
+<span id="2951">2951</span>
+<span id="2952">2952</span>
+<span id="2953">2953</span>
+<span id="2954">2954</span>
+<span id="2955">2955</span>
+<span id="2956">2956</span>
+<span id="2957">2957</span>
+<span id="2958">2958</span>
+<span id="2959">2959</span>
+<span id="2960">2960</span>
+<span id="2961">2961</span>
+<span id="2962">2962</span>
+<span id="2963">2963</span>
+<span id="2964">2964</span>
+<span id="2965">2965</span>
+<span id="2966">2966</span>
+<span id="2967">2967</span>
+<span id="2968">2968</span>
+<span id="2969">2969</span>
+<span id="2970">2970</span>
+<span id="2971">2971</span>
+<span id="2972">2972</span>
+<span id="2973">2973</span>
+<span id="2974">2974</span>
+<span id="2975">2975</span>
+<span id="2976">2976</span>
+<span id="2977">2977</span>
+<span id="2978">2978</span>
+<span id="2979">2979</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">// Copyright 2013-2014 The Rust Project Developers. See the COPYRIGHT</span>
 <span class="comment">// file at the top-level directory of this distribution and at</span>
@@ -3010,6 +3053,9 @@
 <span class="doccomment">/// These method are `const` for Rust 1.31 and later.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Ratio</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Creates a `Ratio` without checking for `denom == 0` or reducing.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **There are several methods that will panic if used on a `Ratio` with</span>
+    <span class="doccomment">/// `denom == 0`.**</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">const</span> <span class="kw">fn</span> <span class="ident">new_raw</span>(<span class="ident">numer</span>: <span class="ident">T</span>, <span class="ident">denom</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ratio</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="ident">Ratio</span> { <span class="ident">numer</span>, <span class="ident">denom</span> }
@@ -3029,7 +3075,9 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Integer</span><span class="op">&gt;</span> <span class="ident">Ratio</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Creates a new `Ratio`. Fails if `denom` is zero.</span>
+    <span class="doccomment">/// Creates a new `Ratio`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics if `denom` is zero.**</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">numer</span>: <span class="ident">T</span>, <span class="ident">denom</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ratio</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident">Ratio</span>::<span class="ident">new_raw</span>(<span class="ident">numer</span>, <span class="ident">denom</span>);
@@ -3055,7 +3103,9 @@
         <span class="self">self</span>.<span class="ident">denom</span>.<span class="ident">is_one</span>()
     }
 
-    <span class="doccomment">/// Puts self into lowest terms, with denom &gt; 0.</span>
+    <span class="doccomment">/// Puts self into lowest terms, with `denom` &gt; 0.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics if `denom` is zero.**</span>
     <span class="kw">fn</span> <span class="ident">reduce</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">denom</span>.<span class="ident">is_zero</span>() {
             <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;denominator == 0&quot;</span>);
@@ -3090,6 +3140,8 @@
     <span class="doccomment">///</span>
     <span class="doccomment">/// In general, it is not necessary to use this method, as the only</span>
     <span class="doccomment">/// method of procuring a non-reduced fraction is through `new_raw`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics if `denom` is zero.**</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">reduced</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ratio</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">clone</span>();
         <span class="ident">ret</span>.<span class="ident">reduce</span>();
@@ -3098,7 +3150,7 @@
 
     <span class="doccomment">/// Returns the reciprocal.</span>
     <span class="doccomment">///</span>
-    <span class="doccomment">/// Fails if the `Ratio` is zero.</span>
+    <span class="doccomment">/// **Panics if the `Ratio` is zero.**</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">recip</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ratio</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">clone</span>().<span class="ident">into_recip</span>()
@@ -3408,7 +3460,7 @@
             <span class="self">self</span>.<span class="ident">numer</span> <span class="kw-2">*</span><span class="op">=</span> <span class="ident">other</span>.<span class="ident">denom</span> <span class="op">/</span> <span class="ident">gcd_bd</span>.<span class="ident">clone</span>();
             <span class="self">self</span>.<span class="ident">denom</span> <span class="op">/</span><span class="op">=</span> <span class="ident">gcd_bd</span>;
             <span class="self">self</span>.<span class="ident">denom</span> <span class="kw-2">*</span><span class="op">=</span> <span class="ident">other</span>.<span class="ident">numer</span> <span class="op">/</span> <span class="ident">gcd_ac</span>;
-            <span class="self">self</span>.<span class="ident">reduce</span>(); <span class="comment">//TODO: remove this line. see #8.</span>
+            <span class="self">self</span>.<span class="ident">reduce</span>(); <span class="comment">// TODO: remove this line. see #8.</span>
         }
     }
 
@@ -3421,7 +3473,7 @@
             <span class="self">self</span>.<span class="ident">numer</span> <span class="kw-2">*</span><span class="op">=</span> <span class="ident">other</span>.<span class="ident">numer</span> <span class="op">/</span> <span class="ident">gcd_bc</span>.<span class="ident">clone</span>();
             <span class="self">self</span>.<span class="ident">denom</span> <span class="op">/</span><span class="op">=</span> <span class="ident">gcd_bc</span>;
             <span class="self">self</span>.<span class="ident">denom</span> <span class="kw-2">*</span><span class="op">=</span> <span class="ident">other</span>.<span class="ident">denom</span> <span class="op">/</span> <span class="ident">gcd_ad</span>;
-            <span class="self">self</span>.<span class="ident">reduce</span>(); <span class="comment">//TODO: remove this line. see #8.</span>
+            <span class="self">self</span>.<span class="ident">reduce</span>(); <span class="comment">// TODO: remove this line. see #8.</span>
         }
     }
 
@@ -3468,7 +3520,7 @@
             <span class="kw">let</span> <span class="ident">gcd</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">numer</span>.<span class="ident">gcd</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>);
             <span class="self">self</span>.<span class="ident">numer</span> <span class="op">/</span><span class="op">=</span> <span class="ident">gcd</span>.<span class="ident">clone</span>();
             <span class="self">self</span>.<span class="ident">denom</span> <span class="kw-2">*</span><span class="op">=</span> <span class="ident">other</span> <span class="op">/</span> <span class="ident">gcd</span>;
-            <span class="self">self</span>.<span class="ident">reduce</span>(); <span class="comment">//TODO: remove this line. see #8.</span>
+            <span class="self">self</span>.<span class="ident">reduce</span>(); <span class="comment">// TODO: remove this line. see #8.</span>
         }
     }
 
@@ -3477,7 +3529,7 @@
             <span class="kw">let</span> <span class="ident">gcd</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">denom</span>.<span class="ident">gcd</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>);
             <span class="self">self</span>.<span class="ident">denom</span> <span class="op">/</span><span class="op">=</span> <span class="ident">gcd</span>.<span class="ident">clone</span>();
             <span class="self">self</span>.<span class="ident">numer</span> <span class="kw-2">*</span><span class="op">=</span> <span class="ident">other</span> <span class="op">/</span> <span class="ident">gcd</span>;
-            <span class="self">self</span>.<span class="ident">reduce</span>(); <span class="comment">//TODO: remove this line. see #8.</span>
+            <span class="self">self</span>.<span class="ident">reduce</span>(); <span class="comment">// TODO: remove this line. see #8.</span>
         }
     }
 
@@ -3956,7 +4008,7 @@
                         <span class="macro">format</span><span class="macro">!</span>(<span class="macro">concat</span><span class="macro">!</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">fmt_str</span>, <span class="string">&quot;/&quot;</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">fmt_str</span>), <span class="self">self</span>.<span class="ident">numer</span>, <span class="self">self</span>.<span class="ident">denom</span>)
                     }
                 };
-                <span class="comment">//TODO: replace with strip_prefix, when stabalized</span>
+                <span class="comment">// TODO: replace with strip_prefix, when stabalized</span>
                 <span class="kw">let</span> (<span class="ident">pre_pad</span>, <span class="ident">non_negative</span>) <span class="op">=</span> {
                     <span class="kw">if</span> <span class="ident">pre_pad</span>.<span class="ident">starts_with</span>(<span class="string">&quot;-&quot;</span>) {
                         (<span class="kw-2">&amp;</span><span class="ident">pre_pad</span>[<span class="number">1</span>..], <span class="bool-val">false</span>)
@@ -4322,7 +4374,12 @@
             }
 
             <span class="kw">fn</span> <span class="ident">to_f64</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-                <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">numer</span>.<span class="ident">to_f64</span>().<span class="ident">unwrap</span>() <span class="op">/</span> <span class="self">self</span>.<span class="ident">denom</span>.<span class="ident">to_f64</span>().<span class="ident">unwrap</span>())
+                <span class="kw">let</span> <span class="ident">float</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">numer</span>.<span class="ident">to_f64</span>().<span class="ident">unwrap</span>() <span class="op">/</span> <span class="self">self</span>.<span class="ident">denom</span>.<span class="ident">to_f64</span>().<span class="ident">unwrap</span>();
+                <span class="kw">if</span> <span class="ident">float</span>.<span class="ident">is_nan</span>() {
+                    <span class="prelude-val">None</span>
+                } <span class="kw">else</span> {
+                    <span class="prelude-val">Some</span>(<span class="ident">float</span>)
+                }
             }
         }
     )<span class="kw-2">*</span>)
@@ -4355,10 +4412,15 @@
             }
 
             <span class="kw">fn</span> <span class="ident">to_f64</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">ratio_to_f64</span>(
+                <span class="kw">let</span> <span class="ident">float</span> <span class="op">=</span> <span class="ident">ratio_to_f64</span>(
                     <span class="self">self</span>.<span class="ident">numer</span> <span class="kw">as</span> <span class="ident">i128</span>,
                     <span class="self">self</span>.<span class="ident">denom</span> <span class="kw">as</span> <span class="ident">i128</span>
-                ))
+                );
+                <span class="kw">if</span> <span class="ident">float</span>.<span class="ident">is_nan</span>() {
+                    <span class="prelude-val">None</span>
+                } <span class="kw">else</span> {
+                    <span class="prelude-val">Some</span>(<span class="ident">float</span>)
+                }
             }
         }
     )<span class="kw-2">*</span>)
@@ -4389,16 +4451,21 @@
     }
 
     <span class="kw">fn</span> <span class="ident">to_f64</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> (<span class="self">self</span>.<span class="ident">numer</span>.<span class="ident">to_i64</span>(), <span class="self">self</span>.<span class="ident">denom</span>.<span class="ident">to_i64</span>()) {
-            (<span class="prelude-val">Some</span>(<span class="ident">numer</span>), <span class="prelude-val">Some</span>(<span class="ident">denom</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">ratio_to_f64</span>(
+        <span class="kw">let</span> <span class="ident">float</span> <span class="op">=</span> <span class="kw">match</span> (<span class="self">self</span>.<span class="ident">numer</span>.<span class="ident">to_i64</span>(), <span class="self">self</span>.<span class="ident">denom</span>.<span class="ident">to_i64</span>()) {
+            (<span class="prelude-val">Some</span>(<span class="ident">numer</span>), <span class="prelude-val">Some</span>(<span class="ident">denom</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">ratio_to_f64</span>(
                 <span class="op">&lt;</span><span class="ident">i128</span> <span class="kw">as</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">from</span>(<span class="ident">numer</span>),
                 <span class="op">&lt;</span><span class="ident">i128</span> <span class="kw">as</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">from</span>(<span class="ident">denom</span>),
-            )),
+            ),
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
                 <span class="kw">let</span> <span class="ident">numer</span>: <span class="ident">BigInt</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">numer</span>.<span class="ident">to_bigint</span>()<span class="question-mark">?</span>;
                 <span class="kw">let</span> <span class="ident">denom</span>: <span class="ident">BigInt</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">denom</span>.<span class="ident">to_bigint</span>()<span class="question-mark">?</span>;
-                <span class="prelude-val">Some</span>(<span class="ident">ratio_to_f64</span>(<span class="ident">numer</span>, <span class="ident">denom</span>))
+                <span class="ident">ratio_to_f64</span>(<span class="ident">numer</span>, <span class="ident">denom</span>)
             }
+        };
+        <span class="kw">if</span> <span class="ident">float</span>.<span class="ident">is_nan</span>() {
+            <span class="prelude-val">None</span>
+        } <span class="kw">else</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">float</span>)
         }
     }
 }
@@ -4438,10 +4505,9 @@
     <span class="kw">const</span> <span class="ident">MAX_EXACT_INT</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="number">1i64</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="ident">core</span>::<span class="ident">f64</span>::<span class="ident">MANTISSA_DIGITS</span>;
     <span class="kw">const</span> <span class="ident">MIN_EXACT_INT</span>: <span class="ident">i64</span> <span class="op">=</span> <span class="op">-</span><span class="ident">MAX_EXACT_INT</span>;
 
-    <span class="kw">let</span> <span class="ident">flo_sign</span> <span class="op">=</span> <span class="ident">numer</span>.<span class="ident">signum</span>().<span class="ident">to_f64</span>().<span class="ident">unwrap</span>() <span class="op">*</span> <span class="ident">denom</span>.<span class="ident">signum</span>().<span class="ident">to_f64</span>().<span class="ident">unwrap</span>();
-
-    <span class="kw">if</span> <span class="ident">numer</span>.<span class="ident">is_zero</span>() {
-        <span class="kw">return</span> <span class="number">0.0</span> <span class="op">*</span> <span class="ident">flo_sign</span>;
+    <span class="kw">let</span> <span class="ident">flo_sign</span> <span class="op">=</span> <span class="ident">numer</span>.<span class="ident">signum</span>().<span class="ident">to_f64</span>().<span class="ident">unwrap</span>() <span class="op">/</span> <span class="ident">denom</span>.<span class="ident">signum</span>().<span class="ident">to_f64</span>().<span class="ident">unwrap</span>();
+    <span class="kw">if</span> <span class="op">!</span><span class="ident">flo_sign</span>.<span class="ident">is_normal</span>() {
+        <span class="kw">return</span> <span class="ident">flo_sign</span>;
     }
 
     <span class="comment">// Fast track: both sides can losslessly be converted to f64s. In this case, letting the</span>
@@ -4886,7 +4952,7 @@
         <span class="macro">assert_fmt_eq</span><span class="macro">!</span>(<span class="macro">format_args</span><span class="macro">!</span>(<span class="string">&quot;{:-b}&quot;</span>, <span class="ident">_1_2</span>), <span class="string">&quot;1/10&quot;</span>);
         <span class="macro">assert_fmt_eq</span><span class="macro">!</span>(<span class="macro">format_args</span><span class="macro">!</span>(<span class="string">&quot;{:b}&quot;</span>, <span class="ident">_0</span>), <span class="string">&quot;0&quot;</span>);
         <span class="macro">assert_fmt_eq</span><span class="macro">!</span>(<span class="macro">format_args</span><span class="macro">!</span>(<span class="string">&quot;{:#b}&quot;</span>, <span class="ident">_1_2</span>), <span class="string">&quot;0b1/0b10&quot;</span>);
-        <span class="comment">//no std does not support padding</span>
+        <span class="comment">// no std does not support padding</span>
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
         <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="kw-2">&amp;</span><span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;{:010b}&quot;</span>, <span class="ident">_1_2</span>), <span class="string">&quot;0000001/10&quot;</span>);
         <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;std&quot;</span>)]</span>
@@ -5318,7 +5384,7 @@
                 <span class="ident">T</span>: <span class="ident">Integer</span> <span class="op">+</span> <span class="ident">Bounded</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Debug</span> <span class="op">+</span> <span class="ident">NumAssign</span>,
             {
                 <span class="kw">let</span> <span class="ident">two</span> <span class="op">=</span> <span class="ident">T</span>::<span class="ident">one</span>() <span class="op">+</span> <span class="ident">T</span>::<span class="ident">one</span>();
-                <span class="comment">//value near to maximum, but divisible by two</span>
+                <span class="comment">// value near to maximum, but divisible by two</span>
                 <span class="kw">let</span> <span class="ident">max_div2</span> <span class="op">=</span> <span class="ident">T</span>::<span class="ident">max_value</span>() <span class="op">/</span> <span class="ident">two</span>.<span class="ident">clone</span>() <span class="op">*</span> <span class="ident">two</span>.<span class="ident">clone</span>();
                 <span class="kw">let</span> <span class="ident">_1_max</span>: <span class="ident">Ratio</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Ratio</span>::<span class="ident">new</span>(<span class="ident">T</span>::<span class="ident">one</span>(), <span class="ident">max_div2</span>);
                 <span class="kw">let</span> <span class="ident">_1_two</span>: <span class="ident">Ratio</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Ratio</span>::<span class="ident">new</span>(<span class="ident">T</span>::<span class="ident">one</span>(), <span class="ident">two</span>);
@@ -5830,48 +5896,68 @@
                     .<span class="ident">unwrap</span>(),
                 <span class="string">&quot;3&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>()
             )
-            .<span class="ident">to_f64</span>()
-            .<span class="ident">unwrap</span>(),
-            <span class="number">411522630329218100000000000000000000000000000f64</span>
+            .<span class="ident">to_f64</span>(),
+            <span class="prelude-val">Some</span>(<span class="number">411522630329218100000000000000000000000000000f64</span>)
         );
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="ident">BigRational</span>::<span class="ident">new</span>(<span class="number">1</span>.<span class="ident">into</span>(), <span class="ident">BigInt</span>::<span class="ident">one</span>() <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1050</span>,)
-                .<span class="ident">to_f64</span>()
-                .<span class="ident">unwrap</span>(),
-            <span class="number">0f64</span>
+            <span class="ident">BigRational</span>::<span class="ident">new</span>(<span class="ident">BigInt</span>::<span class="ident">one</span>(), <span class="ident">BigInt</span>::<span class="ident">one</span>() <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1050</span>).<span class="ident">to_f64</span>(),
+            <span class="prelude-val">Some</span>(<span class="number">0f64</span>)
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="ident">BigRational</span>::<span class="ident">from</span>(<span class="ident">BigInt</span>::<span class="ident">one</span>() <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1050</span>).<span class="ident">to_f64</span>(),
+            <span class="prelude-val">Some</span>(<span class="ident">core</span>::<span class="ident">f64</span>::<span class="ident">INFINITY</span>)
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="ident">BigRational</span>::<span class="ident">from</span>((<span class="op">-</span><span class="ident">BigInt</span>::<span class="ident">one</span>()) <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">1050</span>).<span class="ident">to_f64</span>(),
+            <span class="prelude-val">Some</span>(<span class="ident">core</span>::<span class="ident">f64</span>::<span class="ident">NEG_INFINITY</span>)
         );
         <span class="macro">assert_eq</span><span class="macro">!</span>(
             <span class="ident">BigRational</span>::<span class="ident">new</span>(
                 <span class="string">&quot;1234567890987654321234567890&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>(),
                 <span class="string">&quot;987654321234567890987654321&quot;</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>()
             )
-            .<span class="ident">to_f64</span>()
-            .<span class="ident">unwrap</span>(),
-            <span class="number">1.2499999893125f64</span>
+            .<span class="ident">to_f64</span>(),
+            <span class="prelude-val">Some</span>(<span class="number">1.2499999893125f64</span>)
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="ident">BigRational</span>::<span class="ident">new_raw</span>(<span class="ident">BigInt</span>::<span class="ident">one</span>(), <span class="ident">BigInt</span>::<span class="ident">zero</span>()).<span class="ident">to_f64</span>(),
+            <span class="prelude-val">Some</span>(<span class="ident">core</span>::<span class="ident">f64</span>::<span class="ident">INFINITY</span>)
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="ident">BigRational</span>::<span class="ident">new_raw</span>(<span class="op">-</span><span class="ident">BigInt</span>::<span class="ident">one</span>(), <span class="ident">BigInt</span>::<span class="ident">zero</span>()).<span class="ident">to_f64</span>(),
+            <span class="prelude-val">Some</span>(<span class="ident">core</span>::<span class="ident">f64</span>::<span class="ident">NEG_INFINITY</span>)
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="ident">BigRational</span>::<span class="ident">new_raw</span>(<span class="ident">BigInt</span>::<span class="ident">zero</span>(), <span class="ident">BigInt</span>::<span class="ident">zero</span>()).<span class="ident">to_f64</span>(),
+            <span class="prelude-val">None</span>
         );
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">test_ratio_to_f64</span>() {
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">0.5f64</span>, <span class="ident">Ratio</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>::<span class="ident">new</span>(<span class="number">1</span>, <span class="number">2</span>).<span class="ident">to_f64</span>().<span class="ident">unwrap</span>());
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">0.5f64</span>, <span class="ident">Rational64</span>::<span class="ident">new</span>(<span class="number">1</span>, <span class="number">2</span>).<span class="ident">to_f64</span>().<span class="ident">unwrap</span>());
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="op">-</span><span class="number">0.5f64</span>, <span class="ident">Rational64</span>::<span class="ident">new</span>(<span class="number">1</span>, <span class="op">-</span><span class="number">2</span>).<span class="ident">to_f64</span>().<span class="ident">unwrap</span>());
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="number">0.0f64</span>, <span class="ident">Rational64</span>::<span class="ident">new</span>(<span class="number">0</span>, <span class="number">2</span>).<span class="ident">to_f64</span>().<span class="ident">unwrap</span>());
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="op">-</span><span class="number">0.0f64</span>, <span class="ident">Rational64</span>::<span class="ident">new</span>(<span class="number">0</span>, <span class="op">-</span><span class="number">2</span>).<span class="ident">to_f64</span>().<span class="ident">unwrap</span>());
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Ratio</span>::<span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>::<span class="ident">new</span>(<span class="number">1</span>, <span class="number">2</span>).<span class="ident">to_f64</span>(), <span class="prelude-val">Some</span>(<span class="number">0.5f64</span>));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Rational64</span>::<span class="ident">new</span>(<span class="number">1</span>, <span class="number">2</span>).<span class="ident">to_f64</span>(), <span class="prelude-val">Some</span>(<span class="number">0.5f64</span>));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Rational64</span>::<span class="ident">new</span>(<span class="number">1</span>, <span class="op">-</span><span class="number">2</span>).<span class="ident">to_f64</span>(), <span class="prelude-val">Some</span>(<span class="op">-</span><span class="number">0.5f64</span>));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Rational64</span>::<span class="ident">new</span>(<span class="number">0</span>, <span class="number">2</span>).<span class="ident">to_f64</span>(), <span class="prelude-val">Some</span>(<span class="number">0.0f64</span>));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Rational64</span>::<span class="ident">new</span>(<span class="number">0</span>, <span class="op">-</span><span class="number">2</span>).<span class="ident">to_f64</span>(), <span class="prelude-val">Some</span>(<span class="op">-</span><span class="number">0.0f64</span>));
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Rational64</span>::<span class="ident">new</span>((<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">57</span>) <span class="op">+</span> <span class="number">1</span>, <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">54</span>).<span class="ident">to_f64</span>(), <span class="prelude-val">Some</span>(<span class="number">8f64</span>));
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="number">8f64</span>,
-            <span class="ident">Rational64</span>::<span class="ident">new</span>((<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">57</span>) <span class="op">+</span> <span class="number">1</span>, <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">54</span>).<span class="ident">to_f64</span>().<span class="ident">unwrap</span>()
+            <span class="ident">Rational64</span>::<span class="ident">new</span>((<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">52</span>) <span class="op">+</span> <span class="number">1</span>, <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">52</span>).<span class="ident">to_f64</span>(),
+            <span class="prelude-val">Some</span>(<span class="number">1.0000000000000002f64</span>),
         );
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="number">1.0000000000000002f64</span>,
-            <span class="ident">Rational64</span>::<span class="ident">new</span>((<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">52</span>) <span class="op">+</span> <span class="number">1</span>, <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">52</span>).<span class="ident">to_f64</span>().<span class="ident">unwrap</span>()
+            <span class="ident">Rational64</span>::<span class="ident">new</span>((<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">60</span>) <span class="op">+</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">8</span>), <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">60</span>).<span class="ident">to_f64</span>(),
+            <span class="prelude-val">Some</span>(<span class="number">1.0000000000000002f64</span>),
         );
         <span class="macro">assert_eq</span><span class="macro">!</span>(
-            <span class="number">1.0000000000000002f64</span>,
-            <span class="ident">Rational64</span>::<span class="ident">new</span>((<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">60</span>) <span class="op">+</span> (<span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">8</span>), <span class="number">1</span> <span class="op">&lt;</span><span class="op">&lt;</span> <span class="number">60</span>)
-                .<span class="ident">to_f64</span>()
-                .<span class="ident">unwrap</span>()
+            <span class="ident">Ratio</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>::<span class="ident">new_raw</span>(<span class="number">1</span>, <span class="number">0</span>).<span class="ident">to_f64</span>(),
+            <span class="prelude-val">Some</span>(<span class="ident">core</span>::<span class="ident">f64</span>::<span class="ident">INFINITY</span>)
         );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(
+            <span class="ident">Ratio</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>::<span class="ident">new_raw</span>(<span class="op">-</span><span class="number">1</span>, <span class="number">0</span>).<span class="ident">to_f64</span>(),
+            <span class="prelude-val">Some</span>(<span class="ident">core</span>::<span class="ident">f64</span>::<span class="ident">NEG_INFINITY</span>)
+        );
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">Ratio</span>::<span class="op">&lt;</span><span class="ident">i32</span><span class="op">&gt;</span>::<span class="ident">new_raw</span>(<span class="number">0</span>, <span class="number">0</span>).<span class="ident">to_f64</span>(), <span class="prelude-val">None</span>);
     }
 }
 </pre></div>
