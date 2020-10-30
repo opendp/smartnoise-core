@@ -81,7 +81,11 @@ fn evaluate_function(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Float> {
         pi[i] = tmp_exp;
         println!("col: {:?} pi: {:?}", col, pi);
         // TODO: This is to prevent passing 0 into the ln() argument....
+        if pi[i] == 1.0 {
+            pi[i] = 0.99;
+        }
         let mut log_argument = (1.0 - col[i])*(1.0 - pi[i]).ln();
+        println!("log_argument: {:?}", log_argument);
         if log_argument == 0.0 {
             log_argument = 1.0;
         }
@@ -102,7 +106,7 @@ fn sgd(
     enforce_constant_time: bool,
 ) -> Result<Vec<Vec<Float>>> {
     // TODO: Check theta size matches data
-    let data_size = theta.len();
+    let data_size = theta.shape()[0];
                  
     let mut theta_mutable = theta.clone();
     let mut thetas: Vec<Vec<Float>> = Vec::new();
@@ -160,6 +164,7 @@ fn sgd(
             slice -= learning_rate.clone() * noisy_grad;
         }
         thetas.push(theta_mutable.clone().into_raw_vec());
+        // theta_mutable = thetas
     }
     Ok(thetas)
 }
@@ -175,6 +180,7 @@ mod test_sgd {
     use smartnoise_validator::Float;
 
     use crate::components::sgd::sgd;
+    use num::ToPrimitive;
 
 // use ndarray::{arr2, Array};
     // use smartnoise_validator::Float;
@@ -193,24 +199,36 @@ mod test_sgd {
         // Build large test dataset, with n rows, x~uniform; y~binomial(pi); pi = 1/(1+exp(-1 - 1x))
         let n = 100;
         let m = 2;
-        let mut data = Array::random((n, m), Uniform::new(0., 10.)); // arr2:random((1000,2), Uniform::new(0.0, 1.0));
-        for i in 0..n-1 {
+        let mut data = Array::random((n, m), Uniform::new(0., 0.01)); // arr2:random((1000,2), Uniform::new(0.0, 1.0));
+        for i in 0..n {
             data[[i,0]] = 1.0 /(1.0 + ((-1.0 - data[[i, 1]]) as Float).exp())
         }
-        let theta = Array::random((n, m), Uniform::new(0., 10.)).into_dyn();
+        let theta = Array::random((n, m), Uniform::new(0., 10.));
         let learning_rate = 0.1;
         let noise_scale = 1.0;
         let group_size = 2;
         let gradient_norm_bound = 0.15;
-        let max_iters = 1;
+        let max_iters = 10;
         let enforce_constant_time = false;
         let clipping_value = 1.0;
         let sample_size = 5 as usize;
-        let theta_final: Vec<Vec<Float>> = sgd(&data.into_dyn(), &theta, learning_rate, noise_scale, group_size,
+        let thetas: Vec<Vec<Float>> = sgd(&data.into_dyn(), &theta.into_dyn(), learning_rate, noise_scale, group_size,
                                                gradient_norm_bound, max_iters, clipping_value, sample_size, enforce_constant_time).unwrap();
-        println!("{:?}", theta_final);
+        // println!("thetas: {:?}", thetas);
 
-        assert_eq!(theta_final.len(), max_iters as usize);
-
+        assert_eq!(thetas.len(), max_iters as usize);
+        let mut sample: Vec<Float> = Vec::new();
+        let mut magnitudes: Vec<Float> = Vec::new();
+        for i  in 0..max_iters {
+            let mut magnitude: Float = 0.0;
+            for j in 0..n {
+                magnitude += thetas[i as usize][j as usize];
+            }
+            let magnitude_root: Float = magnitude.sqrt();
+            magnitudes.push(magnitude_root);
+            sample.push(thetas[0][i as usize]);
+        }
+        println!("thetas slice: {:?}", sample);
+        println!("magnitudes: {:?}", magnitudes);
     }
 }
