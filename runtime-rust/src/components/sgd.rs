@@ -91,7 +91,7 @@ fn evaluate_function(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Float> {
         }
         let llik_tmp = col[i] * pi[i].ln() + log_argument;
         println!("llik_tmp: {:?}", llik_tmp);
-        llik[i] = llik_tmp;
+        llik[i] = -llik_tmp;
     }
     println!("pi: {:?} llik: {:?}", pi, llik);
 
@@ -106,10 +106,11 @@ fn sgd(
     enforce_constant_time: bool,
 ) -> Result<Vec<Vec<Float>>> {
     // TODO: Check theta size matches data
-    let data_size = theta.shape()[0];
+    let data_size = theta.shape()[1];
                  
     let mut theta_mutable = theta.clone();
     let mut thetas: Vec<Vec<Float>> = Vec::new();
+    thetas.push(theta_mutable.clone().into_raw_vec());
 
     for _ in 0..max_iters {
         // Random sample of observations, without replacement, of fixed size sample_size 
@@ -148,23 +149,22 @@ fn sgd(
             multidim_gauss_noise.push(noise);
         }
         let mut gradient_sum: Vec<Float> = Vec::new();
-        for i in 0..clipped_gradients.len() {
-            gradient_sum.push(clipped_gradients[i].iter().sum());
-        }
-        let mut sum = 0.0;
-        for i in 0..gradient_sum.len() {
-            sum += gradient_sum[i] + sample_gaussian(0.0, noise_scale.powi(2) * gradient_norm_bound.powi(2), enforce_constant_time)?;
-        }
-        let noisy_grad = (1.0 / group_size.clone() as Float) * sum;
-        noisy_gradients.push(noisy_grad);
+        // TODO: Are these data_size and sample_size?
+        for i in 0..data_size {
+            let mut sum = 0.0;
+            for j in 0..sample_size {
+                sum += clipped_gradients[i][j];
+            }
+            sum += sample_gaussian(0.0, noise_scale.powi(2) * gradient_norm_bound.powi(2), enforce_constant_time)?;
 
+            let noisy_grad = (1.0 / group_size.clone() as Float) * sum;
+            noisy_gradients.push(noisy_grad);
+        }
         // Descent
-        for i in 0..theta_mutable.len_of(Axis(0)) {
-            let mut slice = theta_mutable.slice_mut(s![i, ..]);
-            slice -= learning_rate.clone() * noisy_grad;
+        for i in 0..theta_mutable.len() {
+            theta_mutable[i] -= learning_rate.clone() * noisy_gradients[i];
         }
         thetas.push(theta_mutable.clone().into_raw_vec());
-        // theta_mutable = thetas
     }
     Ok(thetas)
 }
@@ -181,6 +181,7 @@ mod test_sgd {
 
     use crate::components::sgd::sgd;
     use num::ToPrimitive;
+    use crate::utilities::noise::sample_binomial;
 
 // use ndarray::{arr2, Array};
     // use smartnoise_validator::Float;
@@ -201,34 +202,22 @@ mod test_sgd {
         let m = 2;
         let mut data = Array::random((n, m), Uniform::new(0., 0.01)); // arr2:random((1000,2), Uniform::new(0.0, 1.0));
         for i in 0..n {
-            data[[i,0]] = 1.0 /(1.0 + ((-1.0 - data[[i, 1]]) as Float).exp())
+             let transform = 1.0 /(1.0 + ((1.0 - 3.0 * data[[i, 1]]) as Float).exp());
+            data[[i,0]] = sample_binomial(1, transform, false).unwrap() as Float;
         }
-        let theta = Array::random((n, m), Uniform::new(0., 10.));
+        let theta = Array::random((1, m), Uniform::new(0.0, 0.01));
         let learning_rate = 0.1;
         let noise_scale = 1.0;
         let group_size = 2;
         let gradient_norm_bound = 0.15;
-        let max_iters = 10;
+        let max_iters = 2;
         let enforce_constant_time = false;
         let clipping_value = 1.0;
-        let sample_size = 5 as usize;
+        let sample_size = n as usize;
         let thetas: Vec<Vec<Float>> = sgd(&data.into_dyn(), &theta.into_dyn(), learning_rate, noise_scale, group_size,
                                                gradient_norm_bound, max_iters, clipping_value, sample_size, enforce_constant_time).unwrap();
-        // println!("thetas: {:?}", thetas);
-
+        println!("thetas: {:?}", thetas);
         assert_eq!(thetas.len(), max_iters as usize);
-        let mut sample: Vec<Float> = Vec::new();
-        let mut magnitudes: Vec<Float> = Vec::new();
-        for i  in 0..max_iters {
-            let mut magnitude: Float = 0.0;
-            for j in 0..n {
-                magnitude += thetas[i as usize][j as usize];
-            }
-            let magnitude_root: Float = magnitude.sqrt();
-            magnitudes.push(magnitude_root);
-            sample.push(thetas[0][i as usize]);
-        }
-        println!("thetas slice: {:?}", sample);
-        println!("magnitudes: {:?}", magnitudes);
+
     }
 }
