@@ -745,14 +745,14 @@ impl ArrayProperties {
         Ok(match (self.lower_float(), self.lower_int()) {
             (Ok(lower), Err(_)) => Array::Float(ndarray::arr1(&lower).into_dyn()),
             (Err(_), Ok(lower)) => Array::Int(ndarray::arr1(&lower).into_dyn()),
-            _ => return Err("lower bound must be known".into())
+            _ => return Err("Lower bound unknown. Use a clamp to set data bounds.".into())
         })
     }
     pub fn upper(&self) -> Result<Array> {
         Ok(match (self.upper_float(), self.upper_int()) {
             (Ok(upper), Err(_)) => Array::Float(ndarray::arr1(&upper).into_dyn()),
             (Err(_), Ok(upper)) => Array::Int(ndarray::arr1(&upper).into_dyn()),
-            _ => return Err("upper bound must be known".into())
+            _ => return Err("Upper bound unknown. Use a clamp to set data bounds.".into())
         })
     }
 
@@ -767,13 +767,13 @@ impl ArrayProperties {
                 },
                 _ => Err("lower must be an array".into())
             },
-            None => Err("continuous nature for lower is not defined".into())
+            None => Err("Continuous nature for lower is not defined. Use a clamp to set data bounds.".into())
         }
     }
     pub fn lower_float(&self) -> Result<Vec<Float>> {
         let bound = self.lower_float_option()?;
         let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<Float>>();
-        if bound.len() == value.len() { Ok(value) } else { Err("not all lower bounds are known".into()) }
+        if bound.len() == value.len() { Ok(value) } else { Err("Lower bound(s) unknown. Use a clamp to set data bounds.".into()) }
     }
     pub fn upper_float_option(&self) -> Result<Vec<Option<Float>>> {
         match self.nature.to_owned() {
@@ -786,13 +786,13 @@ impl ArrayProperties {
                 },
                 _ => Err("upper must be an array".into())
             },
-            None => Err("continuous nature for upper is not defined".into())
+            None => Err("Continuous nature for upper is not defined. Use a clamp to set data bounds.".into())
         }
     }
     pub fn upper_float(&self) -> Result<Vec<Float>> {
         let bound = self.upper_float_option()?;
         let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<Float>>();
-        if bound.len() == value.len() { Ok(value) } else { Err("not all upper bounds are known".into()) }
+        if bound.len() == value.len() { Ok(value) } else { Err("Upper bound(s) unknown. Use a clamp to set data bounds.".into()) }
     }
 
     pub fn lower_int_option(&self) -> Result<Vec<Option<Integer>>> {
@@ -804,13 +804,13 @@ impl ArrayProperties {
                 },
                 _ => Err("lower must be an array".into())
             },
-            None => Err("continuous nature for lower is not defined".into())
+            None => Err("Continuous nature for lower is not defined. Use a clamp to set data bounds.".into())
         }
     }
     pub fn lower_int(&self) -> Result<Vec<Integer>> {
         let bound = self.lower_int_option()?;
         let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<Integer>>();
-        if bound.len() == value.len() { Ok(value) } else { Err("not all lower bounds are known".into()) }
+        if bound.len() == value.len() { Ok(value) } else { Err("Lower bound(s) unknown. Use a clamp to set data bounds.".into()) }
     }
     pub fn upper_int_option(&self) -> Result<Vec<Option<Integer>>> {
         match self.nature.to_owned() {
@@ -821,38 +821,38 @@ impl ArrayProperties {
                 },
                 _ => Err("upper must be an array".into())
             },
-            None => Err("continuous nature for upper is not defined".into())
+            None => Err("Continuous nature for upper is not defined. Use a clamp to set data bounds.".into())
         }
     }
     pub fn upper_int(&self) -> Result<Vec<Integer>> {
         let bound = self.upper_int_option()?;
         let value = bound.iter().filter_map(|v| v.to_owned()).collect::<Vec<Integer>>();
-        if bound.len() == value.len() { Ok(value) } else { Err("not all upper bounds are known".into()) }
+        if bound.len() == value.len() { Ok(value) } else { Err("Upper bound(s) unknown. Use a clamp to set data bounds.".into()) }
     }
 
     pub fn categories(&self) -> Result<Jagged> {
         match self.nature.to_owned() {
             Some(nature) => match nature {
                 Nature::Categorical(nature) => Ok(nature.categories),
-                _ => Err("categories is not defined".into())
+                _ => Err("Categories is not defined. Use a clamp to restrict the data categories.".into())
             },
-            None => Err("categorical nature is not defined".into())
+            None => Err("Categorical nature is not defined. Use a clamp to restrict the data categories.".into())
         }
     }
     pub fn assert_non_null(&self) -> Result<()> {
-        if self.nullity { Err("data may contain nullity when non-nullity is required".into()) } else { Ok(()) }
+        if self.nullity { Err("Data may contain nullity when non-nullity is required. Use imputation to acquire this property.".into()) } else { Ok(()) }
     }
     pub fn assert_is_not_empty(&self) -> Result<()> {
-        if self.is_not_empty { Ok(()) } else { Err("data may be empty when non-emptiness is required".into()) }
+        if self.is_not_empty { Ok(()) } else { Err("Data may be empty when non-emptiness is required. Use a data resize to acquire this property.".into()) }
     }
     pub fn assert_is_releasable(&self) -> Result<()> {
         if self.releasable { Ok(()) } else { Err("data is not releasable when releasability is required".into()) }
     }
     pub fn num_columns(&self) -> Result<i64> {
-        self.num_columns.ok_or_else(|| "number of columns is not defined".into())
+        self.num_columns.ok_or_else(|| "Number of columns is not defined. Use a data resize to acquire this property.".into())
     }
     pub fn num_records(&self) -> Result<i64> {
-        self.num_records.ok_or_else(|| "number of records is not defined".into())
+        self.num_records.ok_or_else(|| "Number of records is not defined. Use a data resize to acquire this property.".into())
     }
     pub fn assert_is_not_aggregated(&self) -> Result<()> {
         if self.aggregator.is_some() { Err("aggregated data may not be manipulated".into()) } else { Ok(()) }
@@ -915,13 +915,13 @@ impl Nature {
     pub fn continuous(&self) -> Result<&NatureContinuous> {
         match self {
             Nature::Continuous(continuous) => Ok(continuous),
-            _ => Err("nature is categorical when expecting continuous".into())
+            _ => Err("Nature is categorical when expecting continuous. Use a clamp to change the nature.".into())
         }
     }
     pub fn categorical(&self) -> Result<&NatureCategorical> {
         match self {
             Nature::Categorical(categorical) => Ok(categorical),
-            _ => Err("nature is continuous when expecting categorical".into())
+            _ => Err("Nature is continuous when expecting categorical. Use a clamp to change the nature.".into())
         }
     }
 }
