@@ -81,7 +81,7 @@ fn evaluate_function(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Float> {
         pi[i] = tmp_exp;
         println!("col: {:?} pi: {:?}", col, pi);
         // TODO: This is to prevent passing 0 into the ln() argument....
-        let mut log_argument = (1.0 - col[i])*(1.0 - pi[i]).ln;
+        let mut log_argument = (1.0 - col[i])*(1.0 - pi[i]).ln();
         if log_argument == 0.0 {
             log_argument = 1.0;
         }
