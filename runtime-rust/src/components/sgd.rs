@@ -146,13 +146,7 @@ fn sgd(
         }
         // Add noise
         let mut noisy_gradients = Vec::new();
-        let mut multidim_gauss_noise = Vec::new();
-        for _ in 0..data_size.clone() {
-            let noise = sample_gaussian(0.0, noise_scale.powi(2) * gradient_norm_bound.powi(2), enforce_constant_time)?;
-            multidim_gauss_noise.push(noise);
-        }
         let mut gradient_sum: Vec<Float> = Vec::new();
-        // TODO: Are these data_size and sample_size?
         for i in 0..data_size {
             let mut sum = 0.0;
             for j in 0..sample_size {
