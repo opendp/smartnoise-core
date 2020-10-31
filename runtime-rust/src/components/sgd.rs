@@ -42,9 +42,9 @@ impl Evaluable for proto::Dpsgd {
 fn calculate_gradient(
     mut theta: Array1<Float>, data: &Array2<Float>, y: &Array1<Float>, delta: Float,
 ) -> Result<Array2<Float>> {
-    let initial_value = evaluate_nll(&theta, data, y);
+    let initial_nll = evaluate_nll(&theta, data, y);
     // each element contains the partials for each user, for one parameter
-    let perturbation_rows = (0..theta.len_of(Axis(0)))
+    let perturbed_nlls = (0..theta.len_of(Axis(0)))
         .into_iter()
         .map(|i_param| {
             theta[i_param] += delta;
@@ -54,16 +54,15 @@ fn calculate_gradient(
         })
         .collect::<Vec<_>>();
     // stack the perturbations into one array
-    let mut gradient = ndarray::stack(Axis(0), &perturbation_rows.iter()
+    let mut output = ndarray::stack(Axis(0), &perturbed_nlls.iter()
         .map(|v| v.view()).collect::<Vec<_>>())?;
-
-    gradient.sub_assign(&initial_value);
-    Ok(gradient.mapv(|v| v / delta))
+    output.sub_assign(&initial_nll);
+    Ok(output.mapv(|v| v / delta))
 }
 
 fn evaluate_nll(theta: &Array1<Float>, data: &Array2<Float>, y: &Array1<Float>) -> Array1<Float> {
     let mut x = data.dot(theta);
-    x.mapv_inplace(|v| num::clamp(1.0 / (1.0 + (-v).exp()), 0.001, 0.999));
+    x.mapv_inplace(|v| 1.0 / (1.0 + (-v).exp()));
     -(x.mapv(Float::ln) * y + (1.0 - y) * (1.0 - x).mapv(Float::ln))
 }
 
@@ -106,7 +105,7 @@ fn sgd(
         // clip - scale down by l2 norm and don't scale small elements
         gradients.div_assign(&Array1::from(gradients.gencolumns().into_iter()
             .map(|grad_i| (grad_i.dot(&grad_i).sqrt() / gradient_norm_bound).max(1.))
-            .collect::<Vec<Float>>()).insert_axis(Axis(1)));
+            .collect::<Vec<Float>>()).insert_axis(Axis(0)));
 
         // noise
         let sigma = (noise_scale * gradient_norm_bound).powi(2);
