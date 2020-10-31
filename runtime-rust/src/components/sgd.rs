@@ -1,4 +1,5 @@
-use ndarray::ArrayD;
+use std::ops::{DivAssign, SubAssign};
+
 use ndarray::prelude::*;
 use rand::seq::SliceRandom;
 
@@ -17,24 +18,20 @@ impl Evaluable for proto::Dpsgd {
             .map(|v| v.protect_elapsed_time).unwrap_or(false);
 
         let proto::Dpsgd {
-            learning_rate, noise_scale, group_size, gradient_norm_bound,
-            max_iters, clipping_value, sample_size
+            learning_rate, noise_scale, gradient_norm_bound,
+            max_iters, sample_size, ..
         } = self.clone();
 
-        let theta = take_argument(&mut arguments, "theta")?.array()?.float()?;
-        let theta = Array::from_shape_vec(
-            theta.shape(),
-            sgd(
-                &take_argument(&mut arguments, "data")?.array()?.float()?,
-                &theta,
-                learning_rate, noise_scale, group_size.into(), gradient_norm_bound,
-                max_iters.into(), clipping_value, sample_size as usize, enforce_constant_time)?
-                .remove(max_iters as usize - 1),
-        )?.into_dyn();
+        // unpack
+        let data = take_argument(&mut arguments, "data")?.array()?.float()?.into_dimensionality()?;
+        let theta = take_argument(&mut arguments, "theta")?.array()?.float()?.into_dimensionality()?;
 
+        // optimize
+        let theta_history = sgd(
+            data, theta, learning_rate, noise_scale, gradient_norm_bound, max_iters.into(), sample_size as usize, enforce_constant_time)?.into_dyn();
 
         Ok(ReleaseNode {
-            value: theta.into(),
+            value: theta_history.into(),
             // TODO: if the upper bound is not passed in, then I need a privacy usage back from sgd
             privacy_usages: None,
             public: true,
@@ -42,137 +39,94 @@ impl Evaluable for proto::Dpsgd {
     }
 }
 
-fn calculate_gradient(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Vec<Float>> {
-    // TODO: Delta should be parameterized based on how we are scaling the data
-    let delta = 0.0001;
-    let mut gradients: Vec<Vec<Float>> = Vec::new();
-    let initial_value = evaluate_function(theta, x);
-    for i in 0..theta.len_of(Axis(0)) {
-        let mut theta_temp = theta.clone();
-        let mut slice = theta_temp.slice_mut(s![i, ..]);
-        slice += delta.clone();
-        let function_value = evaluate_function(&theta_temp, x);
-        gradients.push(Vec::new());
-        for j in 0..function_value.len() {
-            gradients[i].push((initial_value.clone()[j] - function_value[j]) / delta.clone());
-        }
-    }
-    gradients
+fn calculate_gradient(
+    mut theta: Array1<Float>, data: &Array2<Float>, y: &Array1<Float>, delta: Float,
+) -> Result<Array2<Float>> {
+    let initial_value = evaluate_nll(&theta, data, y);
+    // each element contains the partials for each user, for one parameter
+    let perturbation_rows = (0..theta.len_of(Axis(0)))
+        .into_iter()
+        .map(|i_param| {
+            theta[i_param] += delta;
+            let perturbation_value = evaluate_nll(&theta, data, y).insert_axis(Axis(0));
+            theta[i_param] -= delta;
+            perturbation_value
+        })
+        .collect::<Vec<_>>();
+    // stack the perturbations into one array
+    let mut gradient = ndarray::stack(Axis(0), &perturbation_rows.iter()
+        .map(|v| v.view()).collect::<Vec<_>>())?;
+
+    gradient.sub_assign(&initial_value);
+    Ok(gradient.mapv(|v| v / delta))
 }
 
-fn evaluate_function(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Float> {
-    let col: Vec<Float> = x.clone().into_raw_vec();
-    let mut x_copy: ArrayD<Float> = x.clone();
-    for _ in 0..x.len() {
-        x_copy[[0,0]] = 1.0;
-    }
-    let mut pi = col.clone();
-    let mut llik = pi.clone();
-
-    // println!("theta shape: {:?} x_copy shape: {:?}", theta.shape(), x_copy.shape());
-    let x_unwrapped = x_copy.into_dimensionality::<ndarray::Ix2>().unwrap();
-    let theta_unwrapped = theta.clone().into_dimensionality::<ndarray::Ix2>().unwrap();
-    for i in 0..col.len() {
-        let product = theta_unwrapped.dot(&x_unwrapped.t());
-        let dot_sum = product.scalar_sum();
-        println!("dot sum: {:?}", dot_sum);
-        let tmp_exp = 1.0 / (1.0 + (-1.0 * dot_sum).exp());
-        println!("tmp_exp: {:?}", tmp_exp);
-        pi[i] = tmp_exp;
-        println!("col: {:?} pi: {:?}", col, pi);
-        // TODO: This is to prevent passing 0 into the ln() argument....
-        if pi[i] == 1.0 {
-            pi[i] = 0.99;
-        }
-        let mut log_argument = (1.0 - col[i])*(1.0 - pi[i]).ln();
-        println!("log_argument: {:?}", log_argument);
-        if log_argument == 0.0 {
-            log_argument = 1.0;
-        }
-        let llik_tmp = col[i] * pi[i].ln() + log_argument;
-        println!("llik_tmp: {:?}", llik_tmp);
-        llik[i] = llik_tmp;
-    }
-    println!("pi: {:?} llik: {:?}", pi, llik);
-
-    llik
+fn evaluate_nll(theta: &Array1<Float>, data: &Array2<Float>, y: &Array1<Float>) -> Array1<Float> {
+    let mut x = data.dot(theta);
+    x.mapv_inplace(|v| num::clamp(1.0 / (1.0 + (-v).exp()), 0.001, 0.999));
+    -(x.mapv(Float::ln) * y + (1.0 - y) * (1.0 - x).mapv(Float::ln))
 }
+
 
 fn sgd(
-    data: &ArrayD<Float>, theta: &ArrayD<Float>,
-    learning_rate: Float, noise_scale: Float, group_size: Integer,
-    gradient_norm_bound: Float, max_iters: Integer, clipping_value: Float,
+    mut data: Array2<Float>, mut theta: Array1<Float>,
+    learning_rate: Float, noise_scale: Float,
+    gradient_norm_bound: Float, max_iters: Integer,
     sample_size: usize,
     enforce_constant_time: bool,
-) -> Result<Vec<Vec<Float>>> {
-    // TODO: Check theta size matches data
-    let data_size = theta.shape()[0];
-                 
-    let mut theta_mutable = theta.clone();
-    let mut thetas: Vec<Vec<Float>> = Vec::new();
+) -> Result<Array2<Float>> {
+    let delta = 0.0001;
 
-    for _ in 0..max_iters {
-        // Random sample of observations, without replacement, of fixed size sample_size 
-        // New sample each iteration
-        // TODO: This is used in loop for clipping?
-        let clipping_loop_max: Vec<Float> = Vec::new();
-
-        let range = (0..data_size.clone() - 1).map(|x| x as Integer).collect::<Vec<Integer>>();
-        let mut rng = rand::thread_rng();
-        let mut vec_sample: Vec<Integer> = range.choose_multiple(&mut rng, sample_size.clone()).cloned().collect();
-        vec_sample.shuffle(&mut rng);
-        // let mut data_temp: Vec<Vec<Float>> = Vec::new();
-        // println!("Data Size: {:?}", data.shape().to_vec());
-        let data_temp = data.select(Axis(0), &vec_sample.into_iter().map(|x| x as usize).collect::<Vec<_>>());
-
-        // Compute gradient
-        let gradients: Vec<Vec<Float>> = calculate_gradient(&theta_mutable,
-                                                            &data_temp).to_vec();
-
-        // Clip gradient
-        let mut clipped_gradients = gradients.clone();
-        for j in 0..theta_mutable.len_of(Axis(0)) {
-            let gradient_sums: Vec<Float> = clipped_gradients.clone().iter().map(|x| x.iter().map(|y| y.powi(2)).sum()).collect();
-            let gradients_magnitude: Float = gradient_sums.iter().map(|x| x.powi(2)).sum();
-            if gradients_magnitude > clipping_value {
-                clipped_gradients[j] = gradients[j].iter().map(|&x| x * clipping_value.clone() / gradients_magnitude).collect();
-            } else {
-                clipped_gradients[j] = gradients[j].clone();
-            }
-        }
-        // Add noise
-        let mut noisy_gradients = Vec::new();
-        let mut multidim_gauss_noise = Vec::new();
-        for _ in 0..data_size.clone() {
-            let noise = sample_gaussian(0.0, noise_scale.powi(2) * gradient_norm_bound.powi(2), enforce_constant_time)?;
-            multidim_gauss_noise.push(noise);
-        }
-        let mut gradient_sum: Vec<Float> = Vec::new();
-        for i in 0..clipped_gradients.len() {
-            gradient_sum.push(clipped_gradients[i].iter().sum());
-        }
-        let mut sum = 0.0;
-        for i in 0..gradient_sum.len() {
-            sum += gradient_sum[i] + sample_gaussian(0.0, noise_scale.powi(2) * gradient_norm_bound.powi(2), enforce_constant_time)?;
-        }
-        let noisy_grad = (1.0 / group_size.clone() as Float) * sum;
-        noisy_gradients.push(noisy_grad);
-
-        // Descent
-        for i in 0..theta_mutable.len_of(Axis(0)) {
-            let mut slice = theta_mutable.slice_mut(s![i, ..]);
-            slice -= learning_rate.clone() * noisy_grad;
-        }
-        thetas.push(theta_mutable.clone().into_raw_vec());
-        // theta_mutable = thetas
+    if data.len_of(Axis(1)) != theta.len_of(Axis(0)) {
+        return Err(Error::from("data and theta are non-conformable"))
     }
-    Ok(thetas)
+
+    let num_rows = data.len_of(Axis(0));
+    let num_cols = data.len_of(Axis(1));
+    let mut rng = rand::thread_rng();
+    let mut indices: Vec<usize> = (0..num_rows).collect();
+    indices.shuffle(&mut rng);
+
+    // retrieve the target column as the first column of data
+    let y = data.slice(s![.., 0]).to_owned();
+    // repurpose first column as intercept
+    data.slice_mut(s![.., 0]).fill(1.);
+
+    // each column is an iteration
+    let mut theta_history: Array2<Float> = Array2::zeros((theta.shape()[0], max_iters as usize));
+
+    for i in 0..max_iters as usize {
+        let indices_sample = indices.choose_multiple(&mut rng, sample_size).cloned().collect::<Vec<_>>();
+        let data_sample = data.select(Axis(0), &indices_sample);
+        let y_sample = y.select(Axis(0), &indices_sample);
+
+        // one column per individual
+        let mut gradients: Array2<Float> = calculate_gradient(theta.clone(), &data_sample, &y_sample, delta)?;
+
+        // clip - scale down by l2 norm and don't scale small elements
+        gradients.div_assign(&Array1::from(gradients.genrows().into_iter()
+            .map(|row| (row.dot(&row).sqrt() / gradient_norm_bound).max(1.))
+            .collect::<Vec<Float>>()).insert_axis(Axis(1)));
+
+        // noise
+        let sigma = (noise_scale * gradient_norm_bound).powi(2);
+        let noise = arr1(&(0..num_cols)
+            .map(|_| sample_gaussian(0.0, sigma, enforce_constant_time))
+            .collect::<Result<Vec<_>>>()?);
+
+        // update
+        theta.sub_assign(&((gradients.sum_axis(Axis(1)) + noise) * (learning_rate / sample_size as Float)));
+
+        theta_history.slice_mut(s![.., i]).assign(&theta);
+    }
+
+    Ok(theta_history)
 }
 
 
 #[cfg(test)]
 mod test_sgd {
-    use ndarray::arr2;
+    use ndarray::Array2;
     use ndarray::Array;
     use ndarray_rand::rand_distr::Uniform;
     use ndarray_rand::RandomExt;
@@ -180,55 +134,43 @@ mod test_sgd {
     use smartnoise_validator::Float;
 
     use crate::components::sgd::sgd;
-    use num::ToPrimitive;
+    use crate::utilities::noise::sample_binomial;
 
 // use ndarray::{arr2, Array};
     // use smartnoise_validator::Float;
 
     #[test]
     fn generate_random_array() {
-        let a = Array::random((2, 5), Uniform::new(0., 10.));
-        println!("{:8.4}", a);
+        let _a = Array::random((2, 5), Uniform::new(0., 10.));
+        // println!("{:8.4}", a);
         // Example Output:
         // [[  8.6900,   6.9824,   3.8922,   6.5861,   2.4890],
         //  [  0.0914,   5.5186,   5.8135,   5.2361,   3.1879]]
     }
-    
+
     #[test]
     fn test_dp_sgd() {
         // Build large test dataset, with n rows, x~uniform; y~binomial(pi); pi = 1/(1+exp(-1 - 1x))
-        let n = 100;
+        let n = 1000;
         let m = 2;
         let mut data = Array::random((n, m), Uniform::new(0., 0.01)); // arr2:random((1000,2), Uniform::new(0.0, 1.0));
         for i in 0..n {
-            data[[i,0]] = 1.0 /(1.0 + ((-1.0 - data[[i, 1]]) as Float).exp())
+            let transform = 1.0 / (1.0 + ((1.0 - 3.0 * data[[i, 1]]) as Float).exp());
+            data[[i, 0]] = sample_binomial(1, transform, false).unwrap() as Float;
         }
-        let theta = Array::random((n, m), Uniform::new(0., 10.));
-        let learning_rate = 0.1;
-        let noise_scale = 1.0;
-        let group_size = 2;
-        let gradient_norm_bound = 0.15;
-        let max_iters = 10;
+        let mut theta = Array::random((m, ), Uniform::new(0.0, 1.0));
+        theta[[0]] = -0.5;
+        theta[[1]] = 2.0;
+        let learning_rate = 1.0;
+        let noise_scale = 0.1;
+        let gradient_norm_bound = 1.0;//0.15;
+        let max_iters = 1000;
         let enforce_constant_time = false;
-        let clipping_value = 1.0;
-        let sample_size = 5 as usize;
-        let thetas: Vec<Vec<Float>> = sgd(&data.into_dyn(), &theta.into_dyn(), learning_rate, noise_scale, group_size,
-                                               gradient_norm_bound, max_iters, clipping_value, sample_size, enforce_constant_time).unwrap();
-        // println!("thetas: {:?}", thetas);
+        let sample_size = 100 as usize;
+        let thetas: Array2<Float> = sgd(data, theta, learning_rate, noise_scale,
+                                        gradient_norm_bound, max_iters, sample_size, enforce_constant_time).unwrap();
+        println!("thetas: {:?}", thetas);
 
-        assert_eq!(thetas.len(), max_iters as usize);
-        let mut sample: Vec<Float> = Vec::new();
-        let mut magnitudes: Vec<Float> = Vec::new();
-        for i  in 0..max_iters {
-            let mut magnitude: Float = 0.0;
-            for j in 0..n {
-                magnitude += thetas[i as usize][j as usize];
-            }
-            let magnitude_root: Float = magnitude.sqrt();
-            magnitudes.push(magnitude_root);
-            sample.push(thetas[0][i as usize]);
-        }
-        println!("thetas slice: {:?}", sample);
-        println!("magnitudes: {:?}", magnitudes);
+        // assert_eq!(thetas.len()[0], max_iters as usize);
     }
 }
