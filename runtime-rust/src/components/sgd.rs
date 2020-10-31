@@ -52,7 +52,6 @@ fn calculate_gradient(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Vec<Float
         let mut theta_temp = theta.clone();
         theta_temp[[0,i]] += delta.clone();
         let function_value = evaluate_function(&theta_temp, x);
-        let function_value_len = function_value.len();
         let mut tmp = Vec::new();
         for j in 0..function_value.len() {
             tmp.push((initial_value.clone()[j] - function_value[j]) / delta.clone());
@@ -75,8 +74,14 @@ fn evaluate_function(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Float> {
     let theta_unwrapped = theta.clone().into_dimensionality::<ndarray::Ix2>().unwrap();
     for i in 0..col.len_of(Axis(0)) {
         let y = col[[i,0]];
-        let product = theta_unwrapped.dot(&x_unwrapped.t());
-        let dot_sum = product.scalar_sum();
+        //let product = theta_unwrapped.dot(&x_unwrapped.t());
+        //let dot_sum = product.scalar_sum();
+        
+        let mut dot_sum = 0.0;
+        for j in 0..col.len_of(Axis(1)) {
+            dot_sum += x_copy[[i,j]] * theta[[0,i]]   
+        }
+        
         // println!("dot sum: {:?}", dot_sum);
         let mut tmp_exp = 1.0 / (1.0 + (-1.0 * dot_sum).exp());
         // println!("tmp_exp: {:?}", tmp_exp);
