@@ -69,9 +69,9 @@ fn evaluate_function(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Float> {
     }
     let mut llik = Vec::new();
 
-    // // println!("theta shape: {:?} x_copy shape: {:?}", theta.shape(), x_copy.shape());
-    let x_unwrapped = x_copy.into_dimensionality::<ndarray::Ix2>().unwrap();
-    let theta_unwrapped = theta.clone().into_dimensionality::<ndarray::Ix2>().unwrap();
+    // println!("theta shape: {:?} x_copy shape: {:?}", theta.shape(), x_copy.shape());
+    //let x_unwrapped = x_copy.into_dimensionality::<ndarray::Ix2>().unwrap();
+    //let theta_unwrapped = theta.clone().into_dimensionality::<ndarray::Ix2>().unwrap();
     for i in 0..col.len_of(Axis(0)) {
         let y = col[[i,0]];
         //let product = theta_unwrapped.dot(&x_unwrapped.t());
@@ -79,7 +79,7 @@ fn evaluate_function(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Float> {
         
         let mut dot_sum = 0.0;
         for j in 0..col.len_of(Axis(1)) {
-            dot_sum += x_copy[[i,j]] * theta[[0,i]]   
+            dot_sum += &x_copy[[i,j]] * theta[[0,j]];
         }
         
         // println!("dot sum: {:?}", dot_sum);
@@ -206,12 +206,12 @@ mod test_sgd {
              let transform = 1.0 /(1.0 + ((1.0 - 3.0 * data[[i, 1]]) as Float).exp());
             data[[i,0]] = sample_binomial(1, transform, false).unwrap() as Float;
         }
-        let theta = Array::random((1, m), Uniform::new(0.0, 0.01));
-        let learning_rate = 0.1;
+        let theta = Array::random((1, m), Uniform::new(-0.5, 2.0));
+        let learning_rate = 1.0;
         let noise_scale = 0.1;
         let group_size = 2;
         let gradient_norm_bound = 0.15;
-        let max_iters = 100;
+        let max_iters = 1000;
         let enforce_constant_time = false;
         let clipping_value = 1.0;
         let sample_size = 100 as usize;
