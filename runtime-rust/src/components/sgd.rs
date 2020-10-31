@@ -104,13 +104,13 @@ fn sgd(
         let mut gradients: Array2<Float> = calculate_gradient(theta.clone(), &data_sample, &y_sample, delta)?;
 
         // clip - scale down by l2 norm and don't scale small elements
-        gradients.div_assign(&Array1::from(gradients.gencols().into_iter()
+        gradients.div_assign(&Array1::from(gradients.gencolumns().into_iter()
             .map(|grad_i| (grad_i.dot(&grad_i).sqrt() / gradient_norm_bound).max(1.))
             .collect::<Vec<Float>>()).insert_axis(Axis(1)));
 
         // noise
         let sigma = (noise_scale * gradient_norm_bound).powi(2);
-        let noise = arr1(&(0..num_cols)
+        let noise = Array1::from((0..num_cols)
             .map(|_| sample_gaussian(0.0, sigma, enforce_constant_time))
             .collect::<Result<Vec<_>>>()?);
 
