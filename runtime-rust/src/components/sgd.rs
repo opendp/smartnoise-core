@@ -206,11 +206,13 @@ mod test_sgd {
              let transform = 1.0 /(1.0 + ((1.0 - 3.0 * data[[i, 1]]) as Float).exp());
             data[[i,0]] = sample_binomial(1, transform, false).unwrap() as Float;
         }
-        let theta = Array::random((1, m), Uniform::new(-0.5, 2.0));
+        let mut theta = Array::random((1, m), Uniform::new(0.0, 1.0));
+        theta[[0,0]] = -0.5;
+        theta[[0,1]] = 2.0;
         let learning_rate = 1.0;
         let noise_scale = 0.1;
         let group_size = 2;
-        let gradient_norm_bound = 0.15;
+        let gradient_norm_bound = 1.0;//0.15;
         let max_iters = 1000;
         let enforce_constant_time = false;
         let clipping_value = 1.0;
