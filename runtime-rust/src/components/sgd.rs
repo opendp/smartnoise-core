@@ -83,22 +83,21 @@ fn evaluate_function(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Float> {
         }
         
         // println!("dot sum: {:?}", dot_sum);
-        let mut tmp_exp = 1.0 / (1.0 + (-1.0 * dot_sum).exp());
+        let mut pi = 1.0 / (1.0 + (-1.0 * dot_sum).exp());
         // println!("tmp_exp: {:?}", tmp_exp);
-        if tmp_exp > 0.999 {
-            tmp_exp = 0.999;
-        }
-        if tmp_exp < 0.001 {
-            tmp_exp = 0.001;
+        if pi > 0.999 {
+            pi = 0.999;
+        } else if pi < 0.001 {
+            pi = 0.001;
         }
         // println!("col: {:?} pi: {:?}", col, pi);
         // TODO: This is to prevent passing 0 into the ln() argument....
-        let mut log_argument = (1.0 - y)*(1.0 - tmp_exp).ln();
+        //let mut log_argument = (1.0 - y)*(1.0 - pi).ln();
         // println!("log_argument: {:?}", log_argument);
-        if log_argument == 0.0 {
-            log_argument = 1.0;
-        }
-        let llik_tmp = y * tmp_exp.ln() + log_argument;
+        //if log_argument == 0.0 {
+        //    log_argument = 1.0;
+        //}
+        let llik_tmp = y * pi.ln() + (1.0 - y)*(1.0 - pi).ln();
         // println!("llik_tmp: {:?}", llik_tmp);
         llik.push(-llik_tmp);
     }
