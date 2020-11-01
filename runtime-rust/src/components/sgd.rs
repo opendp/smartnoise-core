@@ -158,8 +158,8 @@ mod test_sgd {
             data[[i, 0]] = sample_binomial(1, transform, false).unwrap() as Float;
         }
         let mut theta = Array::random((m, ), Uniform::new(0.0, 1.0));
-        theta[[0]] = -0.5;
-        theta[[1]] = 2.0;
+        theta[[0]] = 0.0;
+        theta[[1]] = 0.0;
         let learning_rate = 1.0;
         let noise_scale = 0.1;
         let gradient_norm_bound = 1.0;//0.15;
