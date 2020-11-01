@@ -152,7 +152,7 @@ mod test_sgd {
         // Build large test dataset, with n rows, x~uniform; y~binomial(pi); pi = 1/(1+exp(-1 - 1x))
         let n = 1000;
         let m = 2;
-        let mut data = Array::random((n, m), Uniform::new(0., 0.01)); // arr2:random((1000,2), Uniform::new(0.0, 1.0));
+        let mut data = Array::random((n, m), Uniform::new(0.0, 1.0)); // arr2:random((1000,2), Uniform::new(0.0, 1.0));
         for i in 0..n {
             let transform = 1.0 / (1.0 + ((1.0 - 3.0 * data[[i, 1]]) as Float).exp());
             data[[i, 0]] = sample_binomial(1, transform, false).unwrap() as Float;
