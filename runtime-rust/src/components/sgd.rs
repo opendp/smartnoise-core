@@ -39,6 +39,16 @@ impl Evaluable for proto::Dpsgd {
     }
 }
 
+/// Calculates an approximate gradient using (f(x | theta + delta) - f(x |theta)) / delta
+///
+/// # Arguments
+/// * `theta` - network weights to perturb
+/// * `data` - data to evaluate forward pass of function on (x)
+/// * `y` - expected values of the function
+/// * `delta` - amount to perturb theta
+///
+/// # Return
+/// Approximation to gradient
 fn calculate_gradient(
     mut theta: Array1<Float>, data: &Array2<Float>, y: &Array1<Float>, delta: Float,
 ) -> Result<Array2<Float>> {
@@ -60,13 +70,35 @@ fn calculate_gradient(
     Ok(output.mapv(|v| v / delta))
 }
 
+/// Calculates the negative log-likelihood of a logistic regression model
+///
+/// # Arguments
+/// * `theta` - network weights to perturb
+/// * `data` - data to evaluate forward pass of function on (x)
+/// * `y` - expected values of the function
+///
+/// # Return
+/// Negative log-likelihood
 fn evaluate_nll(theta: &Array1<Float>, data: &Array2<Float>, y: &Array1<Float>) -> Array1<Float> {
     let mut x = data.dot(theta);
     x.mapv_inplace(|v| 1.0 / (1.0 + (-v).exp()));
     -(x.mapv(Float::ln) * y + (1.0 - y) * (1.0 - x).mapv(Float::ln))
 }
 
-
+/// Optimize the parameters of a logistic regression network using privacy-preserving gradient descent
+///
+/// # Arguments
+/// * `data` - dataset where the first column is the target variable
+/// * `theta` - network weights to perturb
+/// * `learning_rate` - scale the gradients at each step
+/// * `noise_scale` - scale the noise at each step
+/// * `gradient_norm_bound` - maximum gradient norm
+/// * `max_iters` - number of steps to run
+/// * `sample_size` - number of records to sample at each iteration
+/// * `enforce_constant_time` - enforce the elapsed time to sample noise is constant
+///
+/// # Return
+/// Approximation to gradient
 fn sgd(
     mut data: Array2<Float>, mut theta: Array1<Float>,
     learning_rate: Float, noise_scale: Float,
