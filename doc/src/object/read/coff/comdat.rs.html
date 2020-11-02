@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/object-0.21.1/src/read/coff/comdat.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>comdat.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/object-0.22.0/src/read/coff/comdat.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>comdat.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png">
 <link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../object/index.html'><div class='logo-container rust-logo'><img src='../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../../../settings.html"><img src="../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
@@ -181,6 +181,26 @@
 <span id="178">178</span>
 <span id="179">179</span>
 <span id="180">180</span>
+<span id="181">181</span>
+<span id="182">182</span>
+<span id="183">183</span>
+<span id="184">184</span>
+<span id="185">185</span>
+<span id="186">186</span>
+<span id="187">187</span>
+<span id="188">188</span>
+<span id="189">189</span>
+<span id="190">190</span>
+<span id="191">191</span>
+<span id="192">192</span>
+<span id="193">193</span>
+<span id="194">194</span>
+<span id="195">195</span>
+<span id="196">196</span>
+<span id="197">197</span>
+<span id="198">198</span>
+<span id="199">199</span>
+<span id="200">200</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">core</span>::<span class="ident">str</span>;
 
@@ -206,7 +226,12 @@
     <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
         <span class="kw">loop</span> {
             <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">index</span>;
-            <span class="kw">let</span> <span class="ident">symbol</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">file</span>.<span class="ident">symbols</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">pe</span>::<span class="ident">ImageSymbol</span><span class="op">&gt;</span>(<span class="ident">index</span>)<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">symbol</span> <span class="op">=</span> <span class="self">self</span>
+                .<span class="ident">file</span>
+                .<span class="ident">common</span>
+                .<span class="ident">symbols</span>
+                .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">pe</span>::<span class="ident">ImageSymbol</span><span class="op">&gt;</span>(<span class="ident">index</span>)
+                .<span class="ident">ok</span>()<span class="question-mark">?</span>;
             <span class="self">self</span>.<span class="ident">index</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span> <span class="op">+</span> <span class="ident">symbol</span>.<span class="ident">number_of_aux_symbols</span> <span class="kw">as</span> <span class="ident">usize</span>;
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">comdat</span>) <span class="op">=</span> <span class="ident">CoffComdat</span>::<span class="ident">parse</span>(<span class="self">self</span>.<span class="ident">file</span>, <span class="ident">symbol</span>, <span class="ident">index</span>) {
                 <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">comdat</span>);
@@ -243,7 +268,11 @@
         }
 
         <span class="comment">// Auxiliary record must have a non-associative selection.</span>
-        <span class="kw">let</span> <span class="ident">aux</span> <span class="op">=</span> <span class="ident">file</span>.<span class="ident">symbols</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">pe</span>::<span class="ident">ImageAuxSymbolSection</span><span class="op">&gt;</span>(<span class="ident">index</span> <span class="op">+</span> <span class="number">1</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">aux</span> <span class="op">=</span> <span class="ident">file</span>
+            .<span class="ident">common</span>
+            .<span class="ident">symbols</span>
+            .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">pe</span>::<span class="ident">ImageAuxSymbolSection</span><span class="op">&gt;</span>(<span class="ident">index</span> <span class="op">+</span> <span class="number">1</span>)
+            .<span class="ident">ok</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">selection</span> <span class="op">=</span> <span class="ident">aux</span>.<span class="ident">selection</span>;
         <span class="kw">if</span> <span class="ident">selection</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> <span class="op">|</span><span class="op">|</span> <span class="ident">selection</span> <span class="op">=</span><span class="op">=</span> <span class="ident">pe</span>::<span class="ident">IMAGE_COMDAT_SELECT_ASSOCIATIVE</span> {
             <span class="kw">return</span> <span class="prelude-val">None</span>;
@@ -255,7 +284,11 @@
         <span class="kw">let</span> <span class="ident">section_number</span> <span class="op">=</span> <span class="ident">section_symbol</span>.<span class="ident">section_number</span>.<span class="ident">get</span>(<span class="ident">LE</span>);
         <span class="kw">loop</span> {
             <span class="ident">symbol_index</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span> <span class="op">+</span> <span class="ident">symbol</span>.<span class="ident">number_of_aux_symbols</span> <span class="kw">as</span> <span class="ident">usize</span>;
-            <span class="ident">symbol</span> <span class="op">=</span> <span class="ident">file</span>.<span class="ident">symbols</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">pe</span>::<span class="ident">ImageSymbol</span><span class="op">&gt;</span>(<span class="ident">symbol_index</span>)<span class="question-mark">?</span>;
+            <span class="ident">symbol</span> <span class="op">=</span> <span class="ident">file</span>
+                .<span class="ident">common</span>
+                .<span class="ident">symbols</span>
+                .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">pe</span>::<span class="ident">ImageSymbol</span><span class="op">&gt;</span>(<span class="ident">symbol_index</span>)
+                .<span class="ident">ok</span>()<span class="question-mark">?</span>;
             <span class="kw">if</span> <span class="ident">section_number</span> <span class="op">=</span><span class="op">=</span> <span class="ident">symbol</span>.<span class="ident">section_number</span>.<span class="ident">get</span>(<span class="ident">LE</span>) {
                 <span class="kw">break</span>;
             }
@@ -296,7 +329,7 @@
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span> {
         <span class="comment">// Find the name of first symbol referring to the section.</span>
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">symbol</span>.<span class="ident">name</span>(<span class="self">self</span>.<span class="ident">file</span>.<span class="ident">symbols</span>.<span class="ident">strings</span>())<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">symbol</span>.<span class="ident">name</span>(<span class="self">self</span>.<span class="ident">file</span>.<span class="ident">common</span>.<span class="ident">symbols</span>.<span class="ident">strings</span>())<span class="question-mark">?</span>;
         <span class="ident">str</span>::<span class="ident">from_utf8</span>(<span class="ident">name</span>)
             .<span class="ident">ok</span>()
             .<span class="ident">read_error</span>(<span class="string">&quot;Non UTF-8 COFF COMDAT name&quot;</span>)
@@ -331,7 +364,12 @@
         <span class="comment">// TODO: it seems gcc doesn&#39;t use associated symbols for this</span>
         <span class="kw">loop</span> {
             <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">index</span>;
-            <span class="kw">let</span> <span class="ident">symbol</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">file</span>.<span class="ident">symbols</span>.<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">pe</span>::<span class="ident">ImageSymbol</span><span class="op">&gt;</span>(<span class="ident">index</span>)<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">symbol</span> <span class="op">=</span> <span class="self">self</span>
+                .<span class="ident">file</span>
+                .<span class="ident">common</span>
+                .<span class="ident">symbols</span>
+                .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">pe</span>::<span class="ident">ImageSymbol</span><span class="op">&gt;</span>(<span class="ident">index</span>)
+                .<span class="ident">ok</span>()<span class="question-mark">?</span>;
             <span class="self">self</span>.<span class="ident">index</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span> <span class="op">+</span> <span class="ident">symbol</span>.<span class="ident">number_of_aux_symbols</span> <span class="kw">as</span> <span class="ident">usize</span>;
 
             <span class="comment">// Must be a section symbol.</span>
@@ -347,8 +385,10 @@
 
             <span class="kw">let</span> <span class="ident">aux</span> <span class="op">=</span> <span class="self">self</span>
                 .<span class="ident">file</span>
+                .<span class="ident">common</span>
                 .<span class="ident">symbols</span>
-                .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">pe</span>::<span class="ident">ImageAuxSymbolSection</span><span class="op">&gt;</span>(<span class="ident">index</span> <span class="op">+</span> <span class="number">1</span>)<span class="question-mark">?</span>;
+                .<span class="ident">get</span>::<span class="op">&lt;</span><span class="ident">pe</span>::<span class="ident">ImageAuxSymbolSection</span><span class="op">&gt;</span>(<span class="ident">index</span> <span class="op">+</span> <span class="number">1</span>)
+                .<span class="ident">ok</span>()<span class="question-mark">?</span>;
             <span class="kw">if</span> <span class="ident">aux</span>.<span class="ident">selection</span> <span class="op">=</span><span class="op">=</span> <span class="ident">pe</span>::<span class="ident">IMAGE_COMDAT_SELECT_ASSOCIATIVE</span> {
                 <span class="comment">// TODO: use high_number for bigobj</span>
                 <span class="kw">if</span> <span class="ident">aux</span>.<span class="ident">number</span>.<span class="ident">get</span>(<span class="ident">LE</span>) <span class="op">=</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">section_number</span> {

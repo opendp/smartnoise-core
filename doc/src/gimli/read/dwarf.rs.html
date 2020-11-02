@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/gimli-0.22.0/src/read/dwarf.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>dwarf.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/gimli-0.23.0/src/read/dwarf.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>dwarf.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
 <link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../gimli/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
@@ -808,23 +808,32 @@
 <span id="805">805</span>
 <span id="806">806</span>
 <span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">alloc</span>::<span class="ident">string</span>::<span class="ident">String</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::{
     <span class="ident">DebugAddrBase</span>, <span class="ident">DebugAddrIndex</span>, <span class="ident">DebugInfoOffset</span>, <span class="ident">DebugLineStrOffset</span>, <span class="ident">DebugLocListsBase</span>,
     <span class="ident">DebugLocListsIndex</span>, <span class="ident">DebugRngListsBase</span>, <span class="ident">DebugRngListsIndex</span>, <span class="ident">DebugStrOffset</span>, <span class="ident">DebugStrOffsetsBase</span>,
-    <span class="ident">DebugStrOffsetsIndex</span>, <span class="ident">DebugTypesOffset</span>, <span class="ident">Encoding</span>, <span class="ident">LocationListsOffset</span>, <span class="ident">RangeListsOffset</span>,
-    <span class="ident">SectionId</span>, <span class="ident">UnitSectionOffset</span>,
+    <span class="ident">DebugStrOffsetsIndex</span>, <span class="ident">DebugTypesOffset</span>, <span class="ident">DwarfFileType</span>, <span class="ident">Encoding</span>, <span class="ident">LocationListsOffset</span>,
+    <span class="ident">RangeListsOffset</span>, <span class="ident">SectionId</span>, <span class="ident">UnitSectionOffset</span>,
 };
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">constants</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">read</span>::{
-    <span class="ident">Abbreviations</span>, <span class="ident">AttributeValue</span>, <span class="ident">CompilationUnitHeader</span>, <span class="ident">CompilationUnitHeadersIter</span>, <span class="ident">DebugAbbrev</span>,
-    <span class="ident">DebugAddr</span>, <span class="ident">DebugInfo</span>, <span class="ident">DebugLine</span>, <span class="ident">DebugLineStr</span>, <span class="ident">DebugStr</span>, <span class="ident">DebugStrOffsets</span>, <span class="ident">DebugTypes</span>,
+    <span class="ident">Abbreviations</span>, <span class="ident">AttributeValue</span>, <span class="ident">DebugAbbrev</span>, <span class="ident">DebugAddr</span>, <span class="ident">DebugInfo</span>, <span class="ident">DebugInfoUnitHeadersIter</span>,
+    <span class="ident">DebugLine</span>, <span class="ident">DebugLineStr</span>, <span class="ident">DebugStr</span>, <span class="ident">DebugStrOffsets</span>, <span class="ident">DebugTypes</span>, <span class="ident">DebugTypesUnitHeadersIter</span>,
     <span class="ident">DebuggingInformationEntry</span>, <span class="ident">EntriesCursor</span>, <span class="ident">EntriesRaw</span>, <span class="ident">EntriesTree</span>, <span class="ident">Error</span>,
     <span class="ident">IncompleteLineProgram</span>, <span class="ident">LocListIter</span>, <span class="ident">LocationLists</span>, <span class="ident">Range</span>, <span class="ident">RangeLists</span>, <span class="ident">Reader</span>, <span class="ident">ReaderOffset</span>,
-    <span class="ident">ReaderOffsetId</span>, <span class="prelude-ty">Result</span>, <span class="ident">RngListIter</span>, <span class="ident">Section</span>, <span class="ident">TypeUnitHeader</span>, <span class="ident">TypeUnitHeadersIter</span>, <span class="ident">UnitHeader</span>,
-    <span class="ident">UnitOffset</span>,
+    <span class="ident">ReaderOffsetId</span>, <span class="prelude-ty">Result</span>, <span class="ident">RngListIter</span>, <span class="ident">Section</span>, <span class="ident">UnitHeader</span>, <span class="ident">UnitOffset</span>,
 };
 
 <span class="doccomment">/// All of the commonly used DWARF sections, and other common information.</span>
@@ -862,6 +871,9 @@
 
     <span class="doccomment">/// The range lists in the `.debug_ranges` and `.debug_rnglists` sections.</span>
     <span class="kw">pub</span> <span class="ident">ranges</span>: <span class="ident">RangeLists</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>,
+
+    <span class="doccomment">/// The type of this file.</span>
+    <span class="kw">pub</span> <span class="ident">file_type</span>: <span class="ident">DwarfFileType</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Dwarf</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
@@ -896,6 +908,7 @@
             <span class="ident">debug_types</span>: <span class="ident">Section</span>::<span class="ident">load</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">section</span>)<span class="question-mark">?</span>,
             <span class="ident">locations</span>: <span class="ident">LocationLists</span>::<span class="ident">new</span>(<span class="ident">debug_loc</span>, <span class="ident">debug_loclists</span>),
             <span class="ident">ranges</span>: <span class="ident">RangeLists</span>::<span class="ident">new</span>(<span class="ident">debug_ranges</span>, <span class="ident">debug_rnglists</span>),
+            <span class="ident">file_type</span>: <span class="ident">DwarfFileType</span>::<span class="ident">Main</span>,
         })
     }
 
@@ -941,24 +954,24 @@
             <span class="ident">debug_types</span>: <span class="self">self</span>.<span class="ident">debug_types</span>.<span class="ident">borrow</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">borrow</span>),
             <span class="ident">locations</span>: <span class="self">self</span>.<span class="ident">locations</span>.<span class="ident">borrow</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">borrow</span>),
             <span class="ident">ranges</span>: <span class="self">self</span>.<span class="ident">ranges</span>.<span class="ident">borrow</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">borrow</span>),
+            <span class="ident">file_type</span>: <span class="self">self</span>.<span class="ident">file_type</span>,
         }
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Reader</span><span class="op">&gt;</span> <span class="ident">Dwarf</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Iterate the compilation- and partial-unit headers in the</span>
-    <span class="doccomment">/// `.debug_info` section.</span>
+    <span class="doccomment">/// Iterate the unit headers in the `.debug_info` section.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// Can be [used with</span>
     <span class="doccomment">/// `FallibleIterator`](./index.html#using-with-fallibleiterator).</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">units</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">CompilationUnitHeadersIter</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">units</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DebugInfoUnitHeadersIter</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">debug_info</span>.<span class="ident">units</span>()
     }
 
-    <span class="doccomment">/// Construct a new `Unit` from the given compilation unit header.</span>
+    <span class="doccomment">/// Construct a new `Unit` from the given unit header.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unit</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">header</span>: <span class="ident">CompilationUnitHeader</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Unit</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">unit</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">header</span>: <span class="ident">UnitHeader</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Unit</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="ident">Unit</span>::<span class="ident">new</span>(<span class="self">self</span>, <span class="ident">header</span>)
     }
 
@@ -967,27 +980,14 @@
     <span class="doccomment">/// Can be [used with</span>
     <span class="doccomment">/// `FallibleIterator`](./index.html#using-with-fallibleiterator).</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_units</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">TypeUnitHeadersIter</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_units</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DebugTypesUnitHeadersIter</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">debug_types</span>.<span class="ident">units</span>()
-    }
-
-    <span class="doccomment">/// Construct a new `Unit` from the given type unit header.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_unit</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">header</span>: <span class="ident">TypeUnitHeader</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Unit</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="ident">Unit</span>::<span class="ident">new_type_unit</span>(<span class="self">self</span>, <span class="ident">header</span>)
     }
 
     <span class="doccomment">/// Parse the abbreviations for a compilation unit.</span>
     <span class="comment">// TODO: provide caching of abbreviations</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">abbreviations</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">unit</span>: <span class="kw-2">&amp;</span><span class="ident">CompilationUnitHeader</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Abbreviations</span><span class="op">&gt;</span> {
-        <span class="ident">unit</span>.<span class="ident">abbreviations</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">debug_abbrev</span>)
-    }
-
-    <span class="doccomment">/// Parse the abbreviations for a type unit.</span>
-    <span class="comment">// TODO: provide caching of abbreviations</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">type_abbreviations</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">unit</span>: <span class="kw-2">&amp;</span><span class="ident">TypeUnitHeader</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Abbreviations</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">abbreviations</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">unit</span>: <span class="kw-2">&amp;</span><span class="ident">UnitHeader</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Abbreviations</span><span class="op">&gt;</span> {
         <span class="ident">unit</span>.<span class="ident">abbreviations</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">debug_abbrev</span>)
     }
 
@@ -1050,6 +1050,23 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">unit</span>: <span class="kw-2">&amp;</span><span class="ident">Unit</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>, <span class="ident">index</span>: <span class="ident">DebugAddrIndex</span><span class="op">&lt;</span><span class="ident">R</span>::<span class="ident">Offset</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">debug_addr</span>
             .<span class="ident">get_address</span>(<span class="ident">unit</span>.<span class="ident">encoding</span>().<span class="ident">address_size</span>, <span class="ident">unit</span>.<span class="ident">addr_base</span>, <span class="ident">index</span>)
+    }
+
+    <span class="doccomment">/// Try to return an attribute value as an address.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If the attribute value is one of:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// - a `DW_FORM_addr`</span>
+    <span class="doccomment">/// - a `DW_FORM_addrx` index into the `.debug_addr` entries for the unit</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// then return the address.</span>
+    <span class="doccomment">/// Returns `None` for other forms.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">attr_address</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">unit</span>: <span class="kw-2">&amp;</span><span class="ident">Unit</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>, <span class="ident">attr</span>: <span class="ident">AttributeValue</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="ident">attr</span> {
+            <span class="ident">AttributeValue</span>::<span class="ident">Addr</span>(<span class="ident">addr</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">addr</span>)),
+            <span class="ident">AttributeValue</span>::<span class="ident">DebugAddrIndex</span>(<span class="ident">index</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">address</span>(<span class="ident">unit</span>, <span class="ident">index</span>).<span class="ident">map</span>(<span class="prelude-val">Some</span>),
+            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>),
+        }
     }
 
     <span class="doccomment">/// Return the range list offset at the given index.</span>
@@ -1185,13 +1202,22 @@
         <span class="ident">unit</span>: <span class="kw-2">&amp;</span><span class="ident">Unit</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>,
         <span class="ident">offset</span>: <span class="ident">LocationListsOffset</span><span class="op">&lt;</span><span class="ident">R</span>::<span class="ident">Offset</span><span class="op">&gt;</span>,
     ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">LocListIter</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">locations</span>.<span class="ident">locations</span>(
-            <span class="ident">offset</span>,
-            <span class="ident">unit</span>.<span class="ident">encoding</span>(),
-            <span class="ident">unit</span>.<span class="ident">low_pc</span>,
-            <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">debug_addr</span>,
-            <span class="ident">unit</span>.<span class="ident">addr_base</span>,
-        )
+        <span class="kw">match</span> <span class="self">self</span>.<span class="ident">file_type</span> {
+            <span class="ident">DwarfFileType</span>::<span class="ident">Main</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">locations</span>.<span class="ident">locations</span>(
+                <span class="ident">offset</span>,
+                <span class="ident">unit</span>.<span class="ident">encoding</span>(),
+                <span class="ident">unit</span>.<span class="ident">low_pc</span>,
+                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">debug_addr</span>,
+                <span class="ident">unit</span>.<span class="ident">addr_base</span>,
+            ),
+            <span class="ident">DwarfFileType</span>::<span class="ident">Dwo</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>.<span class="ident">locations</span>.<span class="ident">locations_dwo</span>(
+                <span class="ident">offset</span>,
+                <span class="ident">unit</span>.<span class="ident">encoding</span>(),
+                <span class="ident">unit</span>.<span class="ident">low_pc</span>,
+                <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">debug_addr</span>,
+                <span class="ident">unit</span>.<span class="ident">addr_base</span>,
+            ),
+        }
     }
 
     <span class="doccomment">/// Try to return an attribute value as a location list offset.</span>
@@ -1291,9 +1317,6 @@
     <span class="ident">R</span>: <span class="ident">Reader</span><span class="op">&lt;</span><span class="ident">Offset</span> <span class="op">=</span> <span class="ident">Offset</span><span class="op">&gt;</span>,
     <span class="ident">Offset</span>: <span class="ident">ReaderOffset</span>,
 {
-    <span class="doccomment">/// The section offset of the unit.</span>
-    <span class="kw">pub</span> <span class="ident">offset</span>: <span class="ident">UnitSectionOffset</span><span class="op">&lt;</span><span class="ident">Offset</span><span class="op">&gt;</span>,
-
     <span class="doccomment">/// The header of the unit.</span>
     <span class="kw">pub</span> <span class="ident">header</span>: <span class="ident">UnitHeader</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Offset</span><span class="op">&gt;</span>,
 
@@ -1326,45 +1349,31 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">R</span>: <span class="ident">Reader</span><span class="op">&gt;</span> <span class="ident">Unit</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Construct a new `Unit` from the given compilation unit header.</span>
+    <span class="doccomment">/// Construct a new `Unit` from the given unit header.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">dwarf</span>: <span class="kw-2">&amp;</span><span class="ident">Dwarf</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>, <span class="ident">header</span>: <span class="ident">CompilationUnitHeader</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="self">Self</span>::<span class="ident">new_internal</span>(
-            <span class="ident">dwarf</span>,
-            <span class="ident">UnitSectionOffset</span>::<span class="ident">DebugInfoOffset</span>(<span class="ident">header</span>.<span class="ident">offset</span>()),
-            <span class="ident">header</span>.<span class="ident">header</span>(),
-        )
-    }
-
-    <span class="doccomment">/// Construct a new `Unit` from the given type unit header.</span>
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new_type_unit</span>(<span class="ident">dwarf</span>: <span class="kw-2">&amp;</span><span class="ident">Dwarf</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>, <span class="ident">header</span>: <span class="ident">TypeUnitHeader</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-        <span class="self">Self</span>::<span class="ident">new_internal</span>(
-            <span class="ident">dwarf</span>,
-            <span class="ident">UnitSectionOffset</span>::<span class="ident">DebugTypesOffset</span>(<span class="ident">header</span>.<span class="ident">offset</span>()),
-            <span class="ident">header</span>.<span class="ident">header</span>(),
-        )
-    }
-
-    <span class="kw">fn</span> <span class="ident">new_internal</span>(
-        <span class="ident">dwarf</span>: <span class="kw-2">&amp;</span><span class="ident">Dwarf</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>,
-        <span class="ident">offset</span>: <span class="ident">UnitSectionOffset</span><span class="op">&lt;</span><span class="ident">R</span>::<span class="ident">Offset</span><span class="op">&gt;</span>,
-        <span class="ident">header</span>: <span class="ident">UnitHeader</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">dwarf</span>: <span class="kw-2">&amp;</span><span class="ident">Dwarf</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>, <span class="ident">header</span>: <span class="ident">UnitHeader</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">abbreviations</span> <span class="op">=</span> <span class="ident">header</span>.<span class="ident">abbreviations</span>(<span class="kw-2">&amp;</span><span class="ident">dwarf</span>.<span class="ident">debug_abbrev</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">unit</span> <span class="op">=</span> <span class="ident">Unit</span> {
-            <span class="ident">offset</span>,
-            <span class="ident">header</span>,
             <span class="ident">abbreviations</span>,
             <span class="ident">name</span>: <span class="prelude-val">None</span>,
             <span class="ident">comp_dir</span>: <span class="prelude-val">None</span>,
             <span class="ident">low_pc</span>: <span class="number">0</span>,
-            <span class="comment">// Defaults to 0 for GNU extensions.</span>
-            <span class="ident">str_offsets_base</span>: <span class="ident">DebugStrOffsetsBase</span>(<span class="ident">R</span>::<span class="ident">Offset</span>::<span class="ident">from_u8</span>(<span class="number">0</span>)),
+            <span class="ident">str_offsets_base</span>: <span class="ident">DebugStrOffsetsBase</span>::<span class="ident">default_for_encoding_and_file</span>(
+                <span class="ident">header</span>.<span class="ident">encoding</span>(),
+                <span class="ident">dwarf</span>.<span class="ident">file_type</span>,
+            ),
+            <span class="comment">// NB: Because the .debug_addr section never lives in a .dwo, we can assume its base is always 0 or provided.</span>
             <span class="ident">addr_base</span>: <span class="ident">DebugAddrBase</span>(<span class="ident">R</span>::<span class="ident">Offset</span>::<span class="ident">from_u8</span>(<span class="number">0</span>)),
-            <span class="ident">loclists_base</span>: <span class="ident">DebugLocListsBase</span>(<span class="ident">R</span>::<span class="ident">Offset</span>::<span class="ident">from_u8</span>(<span class="number">0</span>)),
-            <span class="ident">rnglists_base</span>: <span class="ident">DebugRngListsBase</span>(<span class="ident">R</span>::<span class="ident">Offset</span>::<span class="ident">from_u8</span>(<span class="number">0</span>)),
+            <span class="ident">loclists_base</span>: <span class="ident">DebugLocListsBase</span>::<span class="ident">default_for_encoding_and_file</span>(
+                <span class="ident">header</span>.<span class="ident">encoding</span>(),
+                <span class="ident">dwarf</span>.<span class="ident">file_type</span>,
+            ),
+            <span class="ident">rnglists_base</span>: <span class="ident">DebugRngListsBase</span>::<span class="ident">default_for_encoding_and_file</span>(
+                <span class="ident">header</span>.<span class="ident">encoding</span>(),
+                <span class="ident">dwarf</span>.<span class="ident">file_type</span>,
+            ),
             <span class="ident">line_program</span>: <span class="prelude-val">None</span>,
+            <span class="ident">header</span>,
         };
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">name</span> <span class="op">=</span> <span class="prelude-val">None</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">comp_dir</span> <span class="op">=</span> <span class="prelude-val">None</span>;
@@ -1398,7 +1407,7 @@
                             <span class="ident">unit</span>.<span class="ident">str_offsets_base</span> <span class="op">=</span> <span class="ident">base</span>;
                         }
                     }
-                    <span class="ident">constants</span>::<span class="ident">DW_AT_addr_base</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="ident">constants</span>::<span class="ident">DW_AT_addr_base</span> <span class="op">|</span> <span class="ident">constants</span>::<span class="ident">DW_AT_GNU_addr_base</span> <span class="op">=</span><span class="op">&gt;</span> {
                         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">AttributeValue</span>::<span class="ident">DebugAddrBase</span>(<span class="ident">base</span>) <span class="op">=</span> <span class="ident">attr</span>.<span class="ident">value</span>() {
                             <span class="ident">unit</span>.<span class="ident">addr_base</span> <span class="op">=</span> <span class="ident">base</span>;
                         }
@@ -1408,7 +1417,7 @@
                             <span class="ident">unit</span>.<span class="ident">loclists_base</span> <span class="op">=</span> <span class="ident">base</span>;
                         }
                     }
-                    <span class="ident">constants</span>::<span class="ident">DW_AT_rnglists_base</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="ident">constants</span>::<span class="ident">DW_AT_rnglists_base</span> <span class="op">|</span> <span class="ident">constants</span>::<span class="ident">DW_AT_GNU_ranges_base</span> <span class="op">=</span><span class="op">&gt;</span> {
                         <span class="kw">if</span> <span class="kw">let</span> <span class="ident">AttributeValue</span>::<span class="ident">DebugRngListsBase</span>(<span class="ident">base</span>) <span class="op">=</span> <span class="ident">attr</span>.<span class="ident">value</span>() {
                             <span class="ident">unit</span>.<span class="ident">rnglists_base</span> <span class="op">=</span> <span class="ident">base</span>;
                         }
@@ -1474,6 +1483,17 @@
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">entries_raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">offset</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">UnitOffset</span><span class="op">&lt;</span><span class="ident">R</span>::<span class="ident">Offset</span><span class="op">&gt;</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">EntriesRaw</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">header</span>.<span class="ident">entries_raw</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">abbreviations</span>, <span class="ident">offset</span>)
     }
+
+    <span class="doccomment">/// Copy attributes that are subject to relocation from another unit. This is intended</span>
+    <span class="doccomment">/// to be used to copy attributes from a skeleton compilation unit to the corresponding</span>
+    <span class="doccomment">/// split compilation unit.</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">copy_relocated_attributes</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">Unit</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>) {
+        <span class="self">self</span>.<span class="ident">low_pc</span> <span class="op">=</span> <span class="ident">other</span>.<span class="ident">low_pc</span>;
+        <span class="self">self</span>.<span class="ident">addr_base</span> <span class="op">=</span> <span class="ident">other</span>.<span class="ident">addr_base</span>;
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">header</span>.<span class="ident">version</span>() <span class="op">&lt;</span> <span class="number">5</span> {
+            <span class="self">self</span>.<span class="ident">rnglists_base</span> <span class="op">=</span> <span class="ident">other</span>.<span class="ident">rnglists_base</span>;
+        }
+    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">ReaderOffset</span><span class="op">&gt;</span> <span class="ident">UnitSectionOffset</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
@@ -1484,7 +1504,7 @@
     <span class="kw">where</span>
         <span class="ident">R</span>: <span class="ident">Reader</span><span class="op">&lt;</span><span class="ident">Offset</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span>,
     {
-        <span class="kw">let</span> (<span class="ident">offset</span>, <span class="ident">unit_offset</span>) <span class="op">=</span> <span class="kw">match</span> (<span class="self">self</span>, <span class="ident">unit</span>.<span class="ident">offset</span>) {
+        <span class="kw">let</span> (<span class="ident">offset</span>, <span class="ident">unit_offset</span>) <span class="op">=</span> <span class="kw">match</span> (<span class="self">self</span>, <span class="ident">unit</span>.<span class="ident">header</span>.<span class="ident">offset</span>()) {
             (
                 <span class="ident">UnitSectionOffset</span>::<span class="ident">DebugInfoOffset</span>(<span class="ident">offset</span>),
                 <span class="ident">UnitSectionOffset</span>::<span class="ident">DebugInfoOffset</span>(<span class="ident">unit_offset</span>),
@@ -1515,12 +1535,12 @@
     <span class="kw">where</span>
         <span class="ident">R</span>: <span class="ident">Reader</span><span class="op">&lt;</span><span class="ident">Offset</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span>,
     {
-        <span class="kw">match</span> <span class="ident">unit</span>.<span class="ident">offset</span> {
+        <span class="kw">match</span> <span class="ident">unit</span>.<span class="ident">header</span>.<span class="ident">offset</span>() {
             <span class="ident">UnitSectionOffset</span>::<span class="ident">DebugInfoOffset</span>(<span class="ident">unit_offset</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">UnitSectionOffset</span>::<span class="ident">DebugInfoOffset</span>(<span class="ident">DebugInfoOffset</span>(<span class="ident">unit_offset</span>.<span class="number">0</span> <span class="op">+</span> <span class="self">self</span>.<span class="number">0</span>))
+                <span class="ident">DebugInfoOffset</span>(<span class="ident">unit_offset</span>.<span class="number">0</span> <span class="op">+</span> <span class="self">self</span>.<span class="number">0</span>).<span class="ident">into</span>()
             }
             <span class="ident">UnitSectionOffset</span>::<span class="ident">DebugTypesOffset</span>(<span class="ident">unit_offset</span>) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="ident">UnitSectionOffset</span>::<span class="ident">DebugTypesOffset</span>(<span class="ident">DebugTypesOffset</span>(<span class="ident">unit_offset</span>.<span class="number">0</span> <span class="op">+</span> <span class="self">self</span>.<span class="number">0</span>))
+                <span class="ident">DebugTypesOffset</span>(<span class="ident">unit_offset</span>.<span class="number">0</span> <span class="op">+</span> <span class="self">self</span>.<span class="number">0</span>).<span class="ident">into</span>()
             }
         }
     }
