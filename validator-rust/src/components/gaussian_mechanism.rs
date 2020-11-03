@@ -278,6 +278,7 @@ fn binary_search(
     s_mid
 }
 
+/// Compute the sigma to parameterize a gaussian distribution
 pub fn get_analytic_gaussian_sigma(epsilon: f64, delta: f64, sensitivity: f64) -> f64 {
     let delta_thr = case_a(epsilon, 0.);
 
@@ -287,8 +288,19 @@ pub fn get_analytic_gaussian_sigma(epsilon: f64, delta: f64, sensitivity: f64) -
         let (s_inf, s_sup) = doubling_trick(0., 1., epsilon, delta, delta_thr);
         let tol: f64 = 1e-10f64;
         let s_final = binary_search(s_inf, s_sup, epsilon, delta, delta_thr, tol);
-        (1. + s_final / 2.).sqrt() - (s_final / 2.).sqrt()
+        let sign = if delta >= delta_thr { -1. } else { 1. };
+        (1. + s_final / 2.).sqrt() + sign * (s_final / 2.).sqrt()
     };
 
     alpha * sensitivity / (2. * epsilon).sqrt()
+}
+
+#[cfg(test)]
+mod test_analytic_gaussian {
+    use crate::components::gaussian_mechanism::get_analytic_gaussian_sigma;
+
+    #[test]
+    fn test_analytic_gaussian_sigma() {
+        println!("{:?}", get_analytic_gaussian_sigma(0.5, 1E-10, 1.))
+    }
 }

@@ -410,7 +410,7 @@ mod test_uniform {
 
 /// Returns random sample from Uniform[min,max) using the MPFR library.
 ///
-/// If [min, max) == [0, 1),then this is done in a way that respects exact rounding.
+/// If [min, max) == [0, 1), then this is done in a way that respects exact rounding.
 /// Otherwise, the return will be the result of a composition of two operations that
 /// respect exact rounding (though the result will not necessarily).
 ///
@@ -664,7 +664,7 @@ pub fn sample_simple_geometric_mechanism(
 /// * `value` - Non-private value of the statistic to be privatized.
 /// * `epsilon` - Desired privacy guarantee.
 /// * `b` - Upper bound on function value being privatized.
-/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time;
+/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time
 ///
 /// # Returns
 /// Value of statistic with noise applied according to the Snapping mechanism.
