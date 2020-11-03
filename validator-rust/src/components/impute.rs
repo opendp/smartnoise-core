@@ -1,7 +1,7 @@
 use indexmap::map::IndexMap;
 
 use crate::{base, Warnable};
-use crate::base::{Array, DataType, IndexKey, Nature, NatureContinuous, Value, ValueProperties, Vector1DNull, NatureCategorical, Jagged};
+use crate::base::{DataType, IndexKey, Nature, NatureContinuous, Value, ValueProperties, Vector1DNull, NatureCategorical, Jagged};
 use crate::components::{Component, Expandable};
 use crate::errors::*;
 use crate::proto;
@@ -165,13 +165,12 @@ impl Expandable for proto::Impute {
 
         let mut expansion = base::ComponentExpansion::default();
 
-        if !properties.contains_key::<base::IndexKey>(&"categories".into()) {
-            if !properties.contains_key::<IndexKey>(&"lower".into()) {
+        if !properties.contains_key(&IndexKey::from("categories")) {
+            if !properties.contains_key(&IndexKey::from("lower")) {
                 maximum_id += 1;
                 let id_lower = maximum_id;
-                let value = Value::Array(Array::Float(
-                    ndarray::Array::from(properties.get::<IndexKey>(&"data".into())
-                        .unwrap().to_owned().array()?.lower_float()?).into_dyn()));
+                let value = Value::Array(properties.get(&IndexKey::from("data"))
+                    .unwrap().to_owned().array()?.lower()?);
                 let (patch_node, release) = get_literal(value, component.submission)?;
                 expansion.computation_graph.insert(id_lower, patch_node);
                 expansion.properties.insert(id_lower, infer_property(&release.value, None, id_lower)?);
@@ -182,9 +181,8 @@ impl Expandable for proto::Impute {
             if !properties.contains_key::<IndexKey>(&"upper".into()) {
                 maximum_id += 1;
                 let id_upper = maximum_id;
-                let value = Value::Array(Array::Float(
-                    ndarray::Array::from(properties.get::<IndexKey>(&"data".into())
-                        .unwrap().to_owned().array()?.upper_float()?).into_dyn()));
+                let value = Value::Array(properties.get(&IndexKey::from("data"))
+                    .unwrap().to_owned().array()?.upper()?);
                 let (patch_node, release) = get_literal(value, component.submission)?;
                 expansion.computation_graph.insert(id_upper, patch_node);
                 expansion.properties.insert(id_upper, infer_property(&release.value, None, id_upper)?);

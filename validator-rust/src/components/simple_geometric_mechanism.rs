@@ -10,7 +10,6 @@ use crate::utilities::privacy::{spread_privacy_usage, get_epsilon, privacy_usage
 use itertools::Itertools;
 use indexmap::map::IndexMap;
 use crate::utilities::inference::infer_property;
-use ndarray::arr1;
 
 
 impl Component for proto::SimpleGeometricMechanism {
@@ -103,7 +102,7 @@ impl Expandable for proto::SimpleGeometricMechanism {
                 .ok_or("data: missing")?.array()?.clone();
 
             if let Some(lower_id) = lower_id {
-                let (patch_node, release) = get_literal(arr1(&data_property.lower_int()?).into_dyn().into(), component.submission)?;
+                let (patch_node, release) = get_literal(Value::Array(data_property.lower()?), component.submission)?;
                 expansion.computation_graph.insert(lower_id, patch_node);
                 expansion.properties.insert(lower_id, infer_property(&release.value, None, lower_id)?);
                 expansion.releases.insert(lower_id, release);
@@ -111,7 +110,7 @@ impl Expandable for proto::SimpleGeometricMechanism {
             }
 
             if let Some(upper_id) = upper_id {
-                let (patch_node, release) = get_literal(arr1(&data_property.upper_int()?).into_dyn().into(), component.submission)?;
+                let (patch_node, release) = get_literal(Value::Array(data_property.upper()?), component.submission)?;
                 expansion.computation_graph.insert(upper_id, patch_node);
                 expansion.properties.insert(upper_id, infer_property(&release.value, None, upper_id)?);
                 expansion.releases.insert(upper_id, release);

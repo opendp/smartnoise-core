@@ -531,18 +531,18 @@ pub fn expand_mechanism(
         .ok_or_else(|| Error::from("aggregator: missing"))?;
 
     // sensitivity scaling
-    let mut sensitivity_value = aggregator.component.compute_sensitivity(
+    let sensitivity_value = aggregator.component.compute_sensitivity(
         privacy_definition,
         &aggregator.properties,
         &sensitivity_type)?;
 
     // TODO: debug axes in lipschitz constant arrays
-    let lipschitz = aggregator.lipschitz_constants.clone().array()?.float()?;
-    if lipschitz.iter().any(|v| v != &1.) {
-        let mut sensitivity = sensitivity_value.array()?.float()?;
-        sensitivity *= &lipschitz;
-        sensitivity_value = sensitivity.into();
-    }
+    // let lipschitz = aggregator.lipschitz_constants.clone().array()?.float()?;
+    // if lipschitz.iter().any(|v| v != &1.) {
+    //     let mut sensitivity = sensitivity_value.array()?.float()?;
+    //     sensitivity *= &lipschitz;
+    //     sensitivity_value = sensitivity.into();
+    // }
 
     maximum_id += 1;
     let id_sensitivity = maximum_id;
