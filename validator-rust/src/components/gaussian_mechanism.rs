@@ -189,7 +189,7 @@ impl Accuracy for proto::GaussianMechanism {
         let sensitivity_values = aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
-            &SensitivitySpace::KNorm(1))?;
+            &SensitivitySpace::KNorm(2))?;
 
         // take max sensitivity of each column
         let sensitivities: Vec<_> = sensitivity_values.array()?.cast_float()?
