@@ -513,7 +513,7 @@ pub fn sample_gaussian(shift: f64, scale: f64, _enforce_constant_time: bool) -> 
     // NOTE: We square the scale here because we ask for the standard deviation as the function input, but
     //       the mpfr library wants the variance. We ask for std. dev. to be consistent with the rest of the library.
     let mpfr_shift = Float::with_val(53, shift);
-    let mpfr_scale = Float::with_val(53, Float::with_val(53, scale));
+    let mpfr_scale = Float::with_val(53, scale);
 
     // initialize randomness
     let mut rng = GeneratorOpenSSL {};
