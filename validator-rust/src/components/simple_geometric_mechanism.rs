@@ -160,18 +160,22 @@ impl Accuracy for proto::SimpleGeometricMechanism {
         let aggregator = data_property.aggregator
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
+        // sensitivity must be computable
         let sensitivity_values = aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::KNorm(1))?;
 
-        // sensitivity must be computable
-        let sensitivities = sensitivity_values.array()?.float()?;
+        // take max sensitivity of each column
+        let sensitivities: Vec<_> = sensitivity_values.array()?.cast_float()?
+            .gencolumns().into_iter()
+            .map(|sensitivity_col| sensitivity_col.into_iter().copied().fold1(|l, r| l.max(r)).unwrap())
+            .collect();
 
         Ok(Some(sensitivities.into_iter().zip(accuracies.values.iter())
             .map(|(sensitivity, accuracy)| proto::PrivacyUsage {
                 distance: Some(proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                    epsilon: (1. / accuracy.alpha).ln() * (*sensitivity as f64 / accuracy.value),
+                    epsilon: (1. / accuracy.alpha).ln() * (sensitivity as f64 / accuracy.value),
                     delta: 0.,
                 }))
             })
@@ -189,7 +193,7 @@ impl Accuracy for proto::SimpleGeometricMechanism {
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        let aggregator = data_property.aggregator
+        let aggregator = data_property.aggregator.as_ref()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
         let sensitivity_values = aggregator.component.compute_sensitivity(
@@ -197,16 +201,20 @@ impl Accuracy for proto::SimpleGeometricMechanism {
             &aggregator.properties,
             &SensitivitySpace::KNorm(1))?;
 
-        // sensitivity must be computable
-        let sensitivities = sensitivity_values.array()?.float()?;
+        // take max sensitivity of each column
+        let sensitivities: Vec<_> = sensitivity_values.array()?.cast_float()?
+            .gencolumns().into_iter()
+            .map(|sensitivity_col| sensitivity_col.into_iter().copied().fold1(|l, r| l.max(r)).unwrap())
+            .collect();
 
-        let usages = spread_privacy_usage(&self.privacy_usage, sensitivities.len())?;
+        let usages = spread_privacy_usage(&self.privacy_usage, data_property.num_columns()? as usize)?;
         let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
         Ok(Some(sensitivities.into_iter().zip(epsilon.into_iter())
             .map(|(sensitivity, epsilon)| proto::Accuracy {
-                value: ((1. / alpha).ln() * (*sensitivity as f64 / epsilon)).ceil(),
+                value: ((1. / alpha).ln() * (sensitivity / epsilon) as f64).ceil(),
                 alpha
-            }).collect()))
+            })
+            .collect()))
     }
 }

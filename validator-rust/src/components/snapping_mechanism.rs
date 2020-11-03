@@ -1,17 +1,18 @@
+use std::cmp::Ordering;
+
+use ieee754::Ieee754;
 use indexmap::map::IndexMap;
 use itertools::Itertools;
 use ndarray;
 
 use crate::{base, proto, Warnable};
 use crate::base::{DataType, IndexKey, NodeProperties, SensitivitySpace, Value, ValueProperties};
-use crate::components::{Mechanism, Sensitivity, Accuracy};
+use crate::components::{Accuracy, Mechanism, Sensitivity};
 use crate::components::{Component, Expandable};
 use crate::errors::*;
 use crate::utilities::{expand_mechanism, get_literal, prepend, standardize_numeric_argument};
 use crate::utilities::inference::infer_property;
-use crate::utilities::privacy::{privacy_usage_check, spread_privacy_usage, get_epsilon};
-use ieee754::Ieee754;
-use std::cmp::Ordering;
+use crate::utilities::privacy::{get_epsilon, privacy_usage_check, spread_privacy_usage};
 
 impl Component for proto::SnappingMechanism {
     fn propagate_property(
@@ -53,10 +54,10 @@ impl Component for proto::SnappingMechanism {
         aggregator.component.compute_sensitivity(
             privacy_definition,
             &aggregator.properties,
-            &SensitivitySpace::KNorm(1))?.array()?.float()?;
+            &SensitivitySpace::KNorm(1))?.array()?.cast_float()?;
 
         // make sure lipschitz constants is available as a float array
-        aggregator.lipschitz_constants.array()?.float()?;
+        aggregator.lipschitz_constants.array()?.cast_float()?;
 
         let privacy_usage = self.privacy_usage.iter().cloned().map(Ok)
             .fold1(|l, r| l? + r?)
@@ -172,23 +173,27 @@ impl Accuracy for proto::SnappingMechanism {
         let aggregator = data_property.aggregator.as_ref()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
+        // sensitivity must be computable
         let sensitivity_values = aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::KNorm(1))?;
 
-        // sensitivity must be computable
-        let sensitivities = sensitivity_values.array()?.float()?;
+        // take max sensitivity of each column
+        let sensitivities: Vec<_> = sensitivity_values.array()?.cast_float()?
+            .gencolumns().into_iter()
+            .map(|sensitivity_col| sensitivity_col.into_iter().copied().fold1(|l, r| l.max(r)).unwrap())
+            .collect();
 
         let lower = standardize_numeric_argument(
             public_arguments.remove(&IndexKey::from("lower"))
-                .ok_or_else(|| Error::from("lower: missing"))?.clone().array()?.float()?,
+                .ok_or_else(|| Error::from("lower: missing"))?.clone().array()?.cast_float()?,
             data_property.num_columns()?)?
             .into_dimensionality::<ndarray::Ix1>()?.to_vec();
 
         let upper = standardize_numeric_argument(
             public_arguments.remove(&IndexKey::from("upper"))
-                .ok_or_else(|| Error::from("upper: missing"))?.clone().array()?.float()?,
+                .ok_or_else(|| Error::from("upper: missing"))?.clone().array()?.cast_float()?,
             data_property.num_columns()?)?
             .into_dimensionality::<ndarray::Ix1>()?.to_vec();
 
@@ -196,7 +201,7 @@ impl Accuracy for proto::SnappingMechanism {
             .zip(lower.into_iter().zip(upper.into_iter()))
             .map(|((sensitivity, accuracy), (lower, upper))| Ok(proto::PrivacyUsage {
                 distance: Some(proto::privacy_usage::Distance::Approximate(proto::privacy_usage::DistanceApproximate {
-                    epsilon: accuracy_to_epsilon(accuracy.value, accuracy.alpha, *sensitivity, (upper - lower) / 2.)?,
+                    epsilon: accuracy_to_epsilon(accuracy.value, accuracy.alpha, sensitivity as f64, (upper - lower) as f64 / 2.)?,
                     delta: 0.,
                 }))
             }))
@@ -217,35 +222,38 @@ impl Accuracy for proto::SnappingMechanism {
         let aggregator = data_property.aggregator.as_ref()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
+        // sensitivity must be computable
         let sensitivity_values = aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::KNorm(1))?;
 
-        // sensitivity must be computable
-        let sensitivities = sensitivity_values.array()?.float()?;
+        // take max sensitivity of each column
+        let sensitivities: Vec<_> = sensitivity_values.array()?.cast_float()?
+            .gencolumns().into_iter()
+            .map(|sensitivity_col| sensitivity_col.into_iter().copied().fold1(|l, r| l.max(r)).unwrap())
+            .collect();
 
-        let usages = spread_privacy_usage(&self.privacy_usage, sensitivities.len())?;
+        let usages = spread_privacy_usage(&self.privacy_usage, data_property.num_columns()? as usize)?;
         let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
         let lower = standardize_numeric_argument(
             public_arguments.remove(&IndexKey::from("lower"))
-                .ok_or_else(|| Error::from("lower: missing"))?.clone().array()?.float()?,
+                .ok_or_else(|| Error::from("lower: missing"))?.clone().array()?.cast_float()?,
             data_property.num_columns()?)?
             .into_dimensionality::<ndarray::Ix1>()?.to_vec();
 
         let upper = standardize_numeric_argument(
             public_arguments.remove(&IndexKey::from("upper"))
-                .ok_or_else(|| Error::from("upper: missing"))?.clone().array()?.float()?,
+                .ok_or_else(|| Error::from("upper: missing"))?.clone().array()?.cast_float()?,
             data_property.num_columns()?)?
             .into_dimensionality::<ndarray::Ix1>()?.to_vec();
 
         Some(sensitivities.into_iter().zip(epsilons.into_iter())
             .zip(lower.into_iter().zip(upper.into_iter()))
-            .map(|((sensitivity, epsilon), (lower, upper))| Ok(proto::Accuracy {
-                value: epsilon_to_accuracy(alpha, epsilon, *sensitivity, (upper - lower) / 2.)?,
-                alpha,
-            }))
+            .map(|((sensitivity, epsilon), (lower, upper))|
+                epsilon_to_accuracy(alpha, epsilon, sensitivity as f64, (upper - lower) as f64 / 2.)
+                    .map(|value| proto::Accuracy { value, alpha }))
             .collect::<Result<Vec<_>>>()).transpose()
     }
 }

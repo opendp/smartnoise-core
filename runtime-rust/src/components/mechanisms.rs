@@ -8,7 +8,7 @@ use smartnoise_validator::utilities::{array::broadcast_ndarray, privacy::{get_de
 use crate::components::Evaluable;
 use crate::NodeArguments;
 use crate::utilities;
-use crate::utilities::{get_num_columns, to_nd};
+use crate::utilities::{get_num_columns, to_nd, get_num_rows};
 use crate::utilities::mechanisms::exponential_mechanism;
 
 impl Evaluable for proto::LaplaceMechanism {
@@ -21,17 +21,21 @@ impl Evaluable for proto::LaplaceMechanism {
         let enforce_constant_time = privacy_definition.as_ref()
             .map(|v| v.protect_elapsed_time).unwrap_or(false);
 
-        let data = take_argument(&mut arguments, "data")?.array()?;
-        let num_columns = data.num_columns()?;
-        let mut data = match data {
-            Array::Float(data) => data,
-            Array::Int(data) => data.mapv(|v| v as Float),
-            _ => return Err("data must be numeric".into())
-        };
+        let mut data = take_argument(&mut arguments, "data")?.array()?.cast_float()?;
+        let num_columns = get_num_columns(&data)?;
+        let num_rows = get_num_rows(&data)?;
 
-        let sensitivity = take_argument(&mut arguments, "sensitivity")?.array()?.float()?;
+        let sensitivity = take_argument(&mut arguments, "sensitivity")?.array()?.cast_float()?;
+        let sens_num_columns = get_num_columns(&data)?;
+        let sens_num_rows = get_num_rows(&data)?;
+        if num_columns != sens_num_columns {
+            return Err(Error::from(format!("data has {:?} columns, while the expected shape has {:?} columns. This is likely an error from substituting data into the graph.", num_columns, sens_num_columns)))
+        }
+        if num_rows != sens_num_rows {
+            return Err(Error::from(format!("data has {:?} rows, while the expected shape has {:?} rows. This is likely an error from substituting data into the graph.", num_rows, sens_num_rows)))
+        }
 
-        let usages = spread_privacy_usage(&self.privacy_usage, num_columns)?;
+        let usages = spread_privacy_usage(&self.privacy_usage, num_columns as usize)?;
         let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
         data.gencolumns_mut().into_iter()
@@ -63,17 +67,21 @@ impl Evaluable for proto::GaussianMechanism {
         let enforce_constant_time = privacy_definition.as_ref()
             .map(|v| v.protect_elapsed_time).unwrap_or(false);
 
-        let data = take_argument(&mut arguments, "data")?.array()?;
-        let num_columns = data.num_columns()?;
-        let mut data = match data {
-            Array::Float(data) => data,
-            Array::Int(data) => data.mapv(|v| v as Float),
-            _ => return Err("data must be numeric".into())
-        };
+        let mut data = take_argument(&mut arguments, "data")?.array()?.cast_float()?;
+        let num_columns = get_num_columns(&data)?;
+        let num_rows = get_num_rows(&data)?;
 
-        let sensitivity = take_argument(&mut arguments, "sensitivity")?.array()?.float()?;
+        let sensitivity = take_argument(&mut arguments, "sensitivity")?.array()?.cast_float()?;
+        let sens_num_columns = get_num_columns(&data)?;
+        let sens_num_rows = get_num_rows(&data)?;
+        if num_columns != sens_num_columns {
+            return Err(Error::from(format!("data has {:?} columns, while the expected shape has {:?} columns. This is likely an error from substituting data into the graph.", num_columns, sens_num_columns)))
+        }
+        if num_rows != sens_num_rows {
+            return Err(Error::from(format!("data has {:?} rows, while the expected shape has {:?} rows. This is likely an error from substituting data into the graph.", num_rows, sens_num_rows)))
+        }
 
-        let usages = spread_privacy_usage(&self.privacy_usage, num_columns)?;
+        let usages = spread_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
         let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
         let delta = usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?;
@@ -104,13 +112,21 @@ impl Evaluable for proto::SimpleGeometricMechanism {
         let enforce_constant_time = privacy_definition.as_ref()
             .map(|v| v.protect_elapsed_time).unwrap_or(false);
 
-        let data = take_argument(&mut arguments, "data")?.array()?;
-        let num_columns = data.num_columns()?;
-        let mut data = data.int()?.to_owned();
+        let mut data = take_argument(&mut arguments, "data")?.array()?.int()?;
+        let num_columns = get_num_columns(&data)?;
+        let num_rows = get_num_rows(&data)?;
 
-        let sensitivity = take_argument(&mut arguments, "sensitivity")?.array()?.float()?;
+        let sensitivity = take_argument(&mut arguments, "sensitivity")?.array()?.int()?;
+        let sens_num_columns = get_num_columns(&data)?;
+        let sens_num_rows = get_num_rows(&data)?;
+        if num_columns != sens_num_columns {
+            return Err(Error::from(format!("data has {:?} columns, while the expected shape has {:?} columns. This is likely an error from substituting data into the graph.", num_columns, sens_num_columns)))
+        }
+        if num_rows != sens_num_rows {
+            return Err(Error::from(format!("data has {:?} rows, while the expected shape has {:?} rows. This is likely an error from substituting data into the graph.", num_rows, sens_num_rows)))
+        }
 
-        let usages = spread_privacy_usage(&self.privacy_usage, num_columns)?;
+        let usages = spread_privacy_usage(&self.privacy_usage, num_columns as usize)?;
         let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
         let lower = broadcast_ndarray(
@@ -150,13 +166,31 @@ impl Evaluable for proto::ExponentialMechanism {
 
         let candidates = take_argument(&mut arguments, "candidates")?.array()?;
 
-        let sensitivity = take_argument(&mut arguments, "sensitivity")?.array()?.float()?
+        // exponential mechanism only works for single columns. Sensitivity will always be one value
+        let sensitivity = take_argument(&mut arguments, "sensitivity")?.array()?.cast_float()?
             .iter().cloned().collect::<Vec<Float>>();
 
         let usages = spread_privacy_usage(&self.privacy_usage, sensitivity.len())?;
         let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
-        let utilities = take_argument(&mut arguments, "utilities")?.array()?.float()?;
+        let utilities = take_argument(&mut arguments, "utilities")?.array()?.cast_float()?;
+
+        let num_columns = get_num_columns(&utilities)?;
+        let num_rows = get_num_rows(&utilities)?;
+        let cand_num_columns = candidates.num_columns()? as i64;
+        let cand_num_rows = candidates.num_records()? as i64;
+        if cand_num_columns != 1 {
+            return Err(Error::from(format!("candidates has {:?} columns, but the exponential mechanism only works on single columns. This is likely an error from substituting data into the graph.", cand_num_columns)))
+        }
+        if num_columns != 1 {
+            return Err(Error::from(format!("utilities has {:?} columns, but the exponential mechanism only works on single columns. This is likely an error from substituting data into the graph.", num_columns)))
+        }
+        if num_rows != cand_num_rows {
+            return Err(Error::from(format!("utilities has {:?} rows, while the candidates has {:?} rows. This is likely an error from substituting data into the graph.", num_rows, cand_num_rows)))
+        }
+        if sensitivity.len() != 1 {
+            return Err(Error::from(format!("sensitivity has length {:?}, but should have length one. This is likely an error from substituting data into the graph.", sensitivity.len())))
+        }
 
         macro_rules! apply_exponential {
             ($candidates:ident) => {
@@ -191,41 +225,45 @@ impl Evaluable for proto::ExponentialMechanism {
 
 impl Evaluable for proto::SnappingMechanism {
     fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
-        let mut data = match take_argument(&mut arguments, "data")?.array()? {
-            Array::Float(data) => data.clone(),
-            Array::Int(data) => data.mapv(|v| v as f64),
-            _ => return Err("data must be numeric".into())
-        };
 
         let enforce_constant_time = privacy_definition.as_ref()
             .map(|v| v.protect_elapsed_time).unwrap_or(false);
 
+        let mut data = take_argument(&mut arguments, "data")?
+            .array()?.cast_float()?;
+        let num_columns = get_num_columns(&data)?;
+        let num_rows = get_num_rows(&data)?;
+
         let sensitivity = take_argument(&mut arguments, "sensitivity")?
-            .array()?.float()?;
+            .array()?.cast_float()?;
+        let sens_num_columns = get_num_columns(&data)?;
+        let sens_num_rows = get_num_rows(&data)?;
+        if num_columns != sens_num_columns {
+            return Err(Error::from(format!("data has {:?} columns, while the expected shape has {:?} columns. This is likely an error from substituting data into the graph.", num_columns, sens_num_columns)))
+        }
+        if num_rows != sens_num_rows {
+            return Err(Error::from(format!("data has {:?} rows, while the expected shape has {:?} rows. This is likely an error from substituting data into the graph.", num_rows, sens_num_rows)))
+        }
 
         let usages = spread_privacy_usage(
-            &self.privacy_usage, sensitivity.len())?;
+            &self.privacy_usage, num_columns as usize)?;
 
         let epsilon = ndarray::Array::from_shape_vec(
             data.shape(), usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?)?;
 
         let num_columns = get_num_columns(&data)? as usize;
 
-        let lower = to_nd(match take_argument(&mut arguments, "lower")?.array()? {
-            Array::Float(l) => l,
-            Array::Int(l) => l.mapv(|v| v as Float),
-            _ => return Err("lower: must be numeric".into())
-        }, 1)?.into_dimensionality::<ndarray::Ix1>()?.to_vec();
+        let lower = to_nd(
+            take_argument(&mut arguments, "lower")?.array()?.cast_float()?, 1)?
+            .into_dimensionality::<ndarray::Ix1>()?.to_vec();
 
         if num_columns != lower.len() {
             return Err("lower must share the same number of columns as data".into())
         }
 
-        let upper = to_nd(match take_argument(&mut arguments, "upper")?.array()? {
-            Array::Float(u) => u,
-            Array::Int(u) => u.mapv(|v| v as Float),
-            _ => return Err("upper: must be numeric".into())
-        }, 1)?.into_dimensionality::<ndarray::Ix1>()?.to_vec();
+        let upper = to_nd(
+            take_argument(&mut arguments, "upper")?.array()?.cast_float()?, 1)?
+            .into_dimensionality::<ndarray::Ix1>()?.to_vec();
 
         if num_columns != upper.len() {
             return Err("upper must share the same number of columns as data".into())

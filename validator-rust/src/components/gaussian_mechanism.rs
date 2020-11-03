@@ -44,10 +44,10 @@ impl Component for proto::GaussianMechanism {
         aggregator.component.compute_sensitivity(
             privacy_definition,
             &aggregator.properties,
-            &SensitivitySpace::KNorm(2))?.array()?.float()?;
+            &SensitivitySpace::KNorm(2))?.array()?.cast_float()?;
 
         // make sure lipschitz constants are available as float arrays
-        aggregator.lipschitz_constants.array()?.float()?;
+        aggregator.lipschitz_constants.array()?.cast_float()?;
 
         let privacy_usage = self.privacy_usage.iter().cloned().map(Ok)
             .fold1(|l, r| l? + r?).ok_or_else(|| "privacy_usage: must be defined")??;
@@ -134,17 +134,22 @@ impl Accuracy for proto::GaussianMechanism {
             .ok_or("data: missing")?.array()
             .map_err(prepend("data:"))?.clone();
 
-        let aggregator = data_property.aggregator
+        let aggregator = data_property.aggregator.as_ref()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
-        let sensitivity_value = aggregator.component.compute_sensitivity(
+        // sensitivity must be computable
+        let sensitivity_values = aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::KNorm(2))?;
 
-        // sensitivity must be computable
-        let sensitivities = sensitivity_value.array()?.float()?;
-        let usages = spread_privacy_usage(&self.privacy_usage, sensitivities.len())?;
+        // take max sensitivity of each column
+        let sensitivities: Vec<_> = sensitivity_values.array()?.cast_float()?
+            .gencolumns().into_iter()
+            .map(|sensitivity_col| sensitivity_col.into_iter().copied().fold1(|l, r| l.max(r)).unwrap())
+            .collect();
+
+        let usages = spread_privacy_usage(&self.privacy_usage, data_property.num_columns()? as usize)?;
         let delta = usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?;
         let iter = izip!(sensitivities.into_iter(), accuracies.values.iter(), delta.into_iter());
 
@@ -152,11 +157,11 @@ impl Accuracy for proto::GaussianMechanism {
 
         Some(iter.map(|(sensitivity, accuracy, delta)| {
             let sigma: f64 = if self.analytic {
-                let c: f64 = 2.0_f64 * (1.25_f64 / delta).ln();
-                c.sqrt() * *sensitivity as f64 / accuracy.value
-            } else {
                 return Err(Error::from("converting to privacy usage is not implemented for the analytic gaussian"))
+            } else {
+                (2.0 * (1.25 / delta).ln()).sqrt() * sensitivity as f64 / accuracy.value
             };
+
             Ok(proto::PrivacyUsage {
                 distance: Some(Distance::Approximate(DistanceApproximate {
                     epsilon: sigma * 2.0_f64.sqrt() * erf::erf_inv(1.0_f64 - accuracy.alpha),
@@ -180,34 +185,35 @@ impl Accuracy for proto::GaussianMechanism {
         let aggregator = data_property.aggregator
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
-        let sensitivities_value = aggregator.component.compute_sensitivity(
+        // sensitivity must be computable
+        let sensitivity_values = aggregator.component.compute_sensitivity(
             &privacy_definition,
             &aggregator.properties,
             &SensitivitySpace::KNorm(1))?;
 
-        // sensitivity must be computable
-        let sensitivities = sensitivities_value.array()?.float()?;
+        // take max sensitivity of each column
+        let sensitivities: Vec<_> = sensitivity_values.array()?.cast_float()?
+            .gencolumns().into_iter()
+            .map(|sensitivity_col| sensitivity_col.into_iter().copied().fold1(|l, r| l.max(r)).unwrap())
+            .collect();
 
         let usages = spread_privacy_usage(&self.privacy_usage, sensitivities.len())?;
         let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
         let deltas = usages.iter().map(get_delta).collect::<Result<Vec<f64>>>()?;
         let iter = izip!(sensitivities.into_iter(), epsilons.into_iter(), deltas.into_iter());
 
-        Ok(Some(
-            iter.map(|(sensitivity, epsilon, delta)| {
+        Ok(Some(iter.map(|(sensitivity, epsilon, delta)| {
+            let sigma: f64 = if self.analytic {
+                get_analytic_gaussian_sigma(epsilon, delta, sensitivity as f64)
+            } else {
+                sensitivity as f64 * (2.0 * (1.25 / delta).ln()).sqrt() / epsilon
+            };
 
-                let sigma: f64 = if self.analytic {
-                    let c: f64 = 2.0_f64 * (1.25_f64 / delta).ln();
-                    c.sqrt() * *sensitivity as f64 / epsilon
-                } else {
-                    get_analytic_gaussian_sigma(epsilon, delta, *sensitivity)
-                };
-
-                proto::Accuracy {
-                    value: sigma * 2.0_f64.sqrt() * erf::erf_inv(1.0_f64 - alpha),
-                    alpha
-                }
-            }).collect()))
+            proto::Accuracy {
+                value: sigma * 2.0_f64.sqrt() * erf::erf_inv(1.0_f64 - alpha),
+                alpha,
+            }
+        }).collect()))
     }
 }
 

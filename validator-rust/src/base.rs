@@ -243,6 +243,14 @@ impl Array {
             Array::Str(_) => Err("atomic type: expected float, got string".into()),
         }
     }
+    pub fn cast_float(self) -> Result<ArrayD<f64>> {
+        match self {
+            Array::Float(x) => Ok(x),
+            Array::Int(x) => Ok(x.mapv(|v| v as Float)),
+            Array::Bool(_) => Err("atomic type: expected float, got bool".into()),
+            Array::Str(_) => Err("atomic type: expected float, got string".into()),
+        }
+    }
     pub fn ref_float(&self) -> Result<&ArrayD<Float>> {
         match self {
             Array::Float(x) => Ok(x),

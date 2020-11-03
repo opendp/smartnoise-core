@@ -25,6 +25,13 @@ pub fn get_num_columns<T>(data: &ArrayD<T>) -> Result<i64> {
         _ => Err("data may be at most 2-dimensional".into())
     }
 }
+pub fn get_num_rows<T>(data: &ArrayD<T>) -> Result<i64> {
+    match data.ndim() {
+        0 => Ok(1),
+        1 | 2 => Ok(data.len_of(Axis(0)) as i64),
+        _ => Err("data may be at most 2-dimensional".into())
+    }
+}
 
 
 /// Broadcast left and right to match each other, and map an operator over the pairs.
