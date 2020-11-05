@@ -18,7 +18,7 @@
   "options": {},
   "return": {
     "type_value": "Array",
-    "description": "Array of integers."
+    "description": "Array containing the converted integer value(s)."
   },
   "description": "Cast data to a int atomic type.",
   "proto_id": 59
