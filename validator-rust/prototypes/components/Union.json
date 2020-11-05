@@ -12,7 +12,8 @@
     }
   },
   "return": {
-    "type_value": "Array"
+    "type_value": "Array",
+    "description": "the concatenation of all partitions"
   },
   "description": "Union the arrays in the arguments into one array.",
   "proto_id": 62
