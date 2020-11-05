@@ -3,6 +3,8 @@
 * Fixes for Gaussian and Analytic Gaussian accuracy
 * Compute sensitivities as integers whenever possible (counts, histograms, sums)
 * Added runtime sanity checks to detect violations of static properties in pre-aggregated data
+* O(n^2) -> O(n) runtime performance in exponential mechanism and categorical imputation
+* Fixed an incorrect inference of dataset size when transforming a dataset with unknown size against a broadcastable scalar
 
 ### v0.1
 * Renamed package to Smartnoise, version number reset
