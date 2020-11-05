@@ -326,7 +326,7 @@ pub fn sample_from_set<T>(
         }
     }
     // this should only ever be reachable from floating-point instability
-    return candidate_set[candidate_set.len() - 1].clone()
+    return Ok(candidate_set[candidate_set.len() - 1].clone())
 }
 
 #[cfg(not(feature="use-mpfr"))]
