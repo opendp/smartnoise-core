@@ -34,6 +34,10 @@ impl Evaluable for proto::LaplaceMechanism {
         if num_rows != sens_num_rows {
             return Err(Error::from(format!("data has {:?} rows, while the expected shape has {:?} rows. This is likely an error from substituting data into the graph.", num_rows, sens_num_rows)))
         }
+        if data.ndim() > 2 {
+            return Err(Error::from("data may not have dimensionality greater than 2"))
+        }
+
 
         let usages = spread_privacy_usage(&self.privacy_usage, num_columns as usize)?;
         let epsilon = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
@@ -80,6 +84,9 @@ impl Evaluable for proto::GaussianMechanism {
         if num_rows != sens_num_rows {
             return Err(Error::from(format!("data has {:?} rows, while the expected shape has {:?} rows. This is likely an error from substituting data into the graph.", num_rows, sens_num_rows)))
         }
+        if data.ndim() > 2 {
+            return Err(Error::from("data may not have dimensionality greater than 2"))
+        }
 
         let usages = spread_privacy_usage(&self.privacy_usage, num_columns as usize)?;
 
@@ -124,6 +131,9 @@ impl Evaluable for proto::SimpleGeometricMechanism {
         }
         if num_rows != sens_num_rows {
             return Err(Error::from(format!("data has {:?} rows, while the expected shape has {:?} rows. This is likely an error from substituting data into the graph.", num_rows, sens_num_rows)))
+        }
+        if data.ndim() > 2 {
+            return Err(Error::from("data may not have dimensionality greater than 2"))
         }
 
         let usages = spread_privacy_usage(&self.privacy_usage, num_columns as usize)?;
@@ -191,6 +201,12 @@ impl Evaluable for proto::ExponentialMechanism {
         if sensitivity.len() != 1 {
             return Err(Error::from(format!("sensitivity has length {:?}, but should have length one. This is likely an error from substituting data into the graph.", sensitivity.len())))
         }
+        if utilities.ndim() > 2 {
+            return Err(Error::from("utilities may not have dimensionality greater than 2"))
+        }
+        if candidates.shape().len() > 2 {
+            return Err(Error::from("candidates may not have dimensionality greater than 2"))
+        }
 
         macro_rules! apply_exponential {
             ($candidates:ident) => {
@@ -243,6 +259,9 @@ impl Evaluable for proto::SnappingMechanism {
         }
         if num_rows != sens_num_rows {
             return Err(Error::from(format!("data has {:?} rows, while the expected shape has {:?} rows. This is likely an error from substituting data into the graph.", num_rows, sens_num_rows)))
+        }
+        if data.ndim() > 2 {
+            return Err(Error::from("data may not have dimensionality greater than 2"))
         }
 
         let usages = spread_privacy_usage(

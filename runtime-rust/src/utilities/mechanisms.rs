@@ -29,8 +29,11 @@ use smartnoise_validator::components::gaussian_mechanism::get_analytic_gaussian_
 /// let n = laplace_mechanism(0.1, 2.0, false);
 /// ```
 pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: bool) -> Result<f64> {
-    if epsilon < 0. || sensitivity < 0. {
-        return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
+    if sensitivity < 0. {
+        return Err(format!("sensitivity ({}) must be non-negative", sensitivity).into());
+    }
+    if epsilon <= 0. {
+        return Err(format!("epsilon ({}) must be positive", epsilon).into())
     }
     let scale: f64 = sensitivity / epsilon;
     noise::sample_laplace(0., scale, enforce_constant_time)
@@ -114,11 +117,14 @@ pub fn snapping_mechanism(
 
 /// Returns noise drawn according to the Gaussian mechanism.
 ///
+/// If using the standard guassian,
 /// Let c = sqrt(2*ln(1.25/delta)). Noise is drawn from a Gaussian distribution with scale
 /// sensitivity*c/epsilon and centered about 0.
-///
 /// For more information, see the Gaussian mechanism in
 /// C. Dwork, A. Roth The Algorithmic Foundations of Differential Privacy, Chapter 3.5.3 Laplace versus Gauss p.53. August 2014.
+///
+/// If using the analytic gaussian,
+/// the noise scale is derived using [Balle (2018)](https://arxiv.org/pdf/1805.06530.pdf).
 ///
 /// NOTE: this implementation of Gaussian draws in likely non-private due to floating-point attacks
 /// See [Mironov (2012)](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.366.5957&rep=rep1&type=pdf)

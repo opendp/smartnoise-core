@@ -8,12 +8,13 @@ use ndarray::prelude::*;
 use noisy_float::prelude::n64;
 
 use crate::{base, Float, proto, Warnable};
-use crate::base::{IndexKey, NodeProperties, Release, SensitivitySpace, Value, ValueProperties, ArrayProperties};
+use crate::base::{IndexKey, NodeProperties, Release, SensitivitySpace, Value, ValueProperties, ArrayProperties, Array};
 // import all trait implementations
 use crate::components::*;
 use crate::errors::*;
 use crate::utilities::inference::infer_property;
 use crate::utilities::privacy::spread_privacy_usage;
+use std::ops::MulAssign;
 
 pub mod json;
 pub mod inference;
@@ -324,7 +325,7 @@ pub fn set_node_id(property: &mut ValueProperties, node_id: u32) -> () {
 pub fn standardize_numeric_argument<T: Clone>(value: ArrayD<T>, length: i64) -> Result<ArrayD<T>> {
     match value.ndim() {
         0 => match value.first() {
-            Some(scalar) => Ok(Array::from((0..length).map(|_| scalar.clone())
+            Some(scalar) => Ok(ndarray::Array::from((0..length).map(|_| scalar.clone())
                 .collect::<Vec<T>>()).into_dyn()),
             None => Err("value must be non-empty".into())
         },
@@ -531,18 +532,28 @@ pub fn expand_mechanism(
         .ok_or_else(|| Error::from("aggregator: missing"))?;
 
     // sensitivity scaling
-    let sensitivity_value = aggregator.component.compute_sensitivity(
+    let mut sensitivity_value = aggregator.component.compute_sensitivity(
         privacy_definition,
         &aggregator.properties,
         &sensitivity_type)?;
 
-    // TODO: debug axes in lipschitz constant arrays
-    // let lipschitz = aggregator.lipschitz_constants.clone().array()?.float()?;
-    // if lipschitz.iter().any(|v| v != &1.) {
-    //     let mut sensitivity = sensitivity_value.array()?.float()?;
-    //     sensitivity *= &lipschitz;
-    //     sensitivity_value = sensitivity.into();
-    // }
+    match aggregator.lipschitz_constants.clone().array()? {
+        Array::Float(lipschitz) => {
+            if lipschitz.iter().any(|v| v != &1.) {
+                let mut sensitivity = sensitivity_value.array()?.float()?;
+                sensitivity.mul_assign(&lipschitz);
+                sensitivity_value = sensitivity.into();
+            }
+        },
+        Array::Int(lipschitz) => {
+            if lipschitz.iter().any(|v| v != &1) {
+                let mut sensitivity = sensitivity_value.array()?.int()?;
+                sensitivity.mul_assign(&lipschitz);
+                sensitivity_value = sensitivity.into();
+            }
+        },
+        _ => return Err(Error::from("lipschitz constants must be numeric"))
+    };
 
     maximum_id += 1;
     let id_sensitivity = maximum_id;
