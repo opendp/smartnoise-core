@@ -1,11 +1,12 @@
 use std::cmp::Ordering;
+use std::ops::AddAssign;
 
-use smartnoise_validator::errors::*;
 use ieee754::Ieee754;
 use ndarray::{ArrayD, Axis, Zip};
 use ndarray::prelude::IxDyn;
 use openssl::rand::rand_bytes;
 
+use smartnoise_validator::errors::*;
 use smartnoise_validator::utilities::array::{slow_select, slow_stack};
 
 pub mod mechanisms;
@@ -306,37 +307,26 @@ pub fn sample_from_set<T>(
     candidate_set: &[T], weights: &[smartnoise_validator::Float],
     _enforce_constant_time: bool
 ) -> Result<T> where T: Clone {
-
-    use rug::Float;
-
-    // generate uniform random number on [0,1)
-    let unif: rug::Float = Float::with_val(53, noise::sample_uniform_mpfr(0., 1.)?);
+    macro_rules! to_rug {($v:expr) => {rug::Float::with_val(53, $v)}}
 
     // generate sum of weights
-    let weights_rug: Vec<rug::Float> = weights.iter().map(|w| Float::with_val(53, w)).collect();
-    let weights_sum: rug::Float = Float::with_val(53, Float::sum(weights_rug.iter()));
+    let weights_rug: Vec<rug::Float> = weights.iter().map(|w| to_rug!(w)).collect();
 
-    // NOTE: use this instead of the two lines above if we switch to accepting rug::Float rather than f64 weights
-    // let weights_sum: rug::Float = Float::with_val(53, Float::sum(weights.iter()));
+    // generate uniform random number on [0,1)
+    let sample: rug::Float = noise::sample_uniform_mpfr(
+        0.,
+        to_rug!(rug::Float::sum(weights_rug.iter())).to_f64())?;
 
-    // convert weights to probabilities
-    let probabilities: Vec<rug::Float> = weights_rug.iter().map(|w| w / weights_sum.clone()).collect();
-
-    // generate cumulative probability distribution
-    let mut cumulative_probability_vec: Vec<rug::Float> = Vec::with_capacity(weights.len() as usize);
-    for i in 0..weights.len() {
-        cumulative_probability_vec.push(Float::with_val(53, Float::sum(probabilities[0..(i + 1)].iter())));
-    }
-
+    let mut cum_prob = to_rug!(0.);
     // sample an element relative to its probability
-    let mut return_index: usize = 0;
-    for (i, cum_prob) in cumulative_probability_vec.into_iter().enumerate() {
-        if unif <= cum_prob {
-            return_index = i;
-            break;
+    for (i, weight) in weights_rug.into_iter().enumerate() {
+        cum_prob.add_assign(weight);
+        if cum_prob >= sample {
+            return Ok(candidate_set[i].clone())
         }
     }
-    Ok(candidate_set[return_index].clone())
+    // this should only ever be reachable from floating-point instability
+    return candidate_set[candidate_set.len() - 1].clone()
 }
 
 #[cfg(not(feature="use-mpfr"))]
@@ -506,6 +496,7 @@ pub fn get_closest_multiple_of_lambda(x: f64, m: i16) -> Result<f64> {
 #[cfg(test)]
 mod test_get_closest_multiple_of_lambda {
     use smartnoise_validator::hashmap;
+
     use crate::utilities::get_closest_multiple_of_lambda;
 
     #[test]

@@ -432,18 +432,16 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
     // initialize 64-bit floats within mpfr/rug
     let mpfr_min = Float::with_val(53, min);
     let mpfr_max = Float::with_val(53, max);
-    let mpfr_diff = Float::with_val(53, &mpfr_max - &mpfr_min);
 
     // initialize randomness
     let mut rng = GeneratorOpenSSL {};
     let mut state = ThreadRandState::new_custom(&mut rng);
 
     // generate Unif[0,1] according to mpfr standard, then convert to correct scale
-    let mut unif = Float::with_val(53, Float::random_cont(&mut state));
-    unif = unif.mul_add(&mpfr_diff, &mpfr_min);
+    let unif = Float::with_val(53, Float::random_cont(&mut state));
 
     // return uniform
-    Ok(unif)
+    Ok(unif.mul_add(&(mpfr_max - &mpfr_min), &mpfr_min))
 }
 
 /// Sample from Laplace distribution centered at shift and scaled by scale.

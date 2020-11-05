@@ -4,6 +4,7 @@ use crate::utilities;
 use smartnoise_validator::Float;
 use crate::utilities::{noise};
 use smartnoise_validator::components::gaussian_mechanism::get_analytic_gaussian_sigma;
+use std::ops::{Div};
 
 /// Returns noise drawn according to the Laplace mechanism
 ///
@@ -237,13 +238,14 @@ pub fn exponential_mechanism<T>(
     utilities: Vec<f64>,
     enforce_constant_time: bool
 ) -> Result<T> where T: Clone, {
-
-    // get vector of e^(util), then use to find probabilities
     macro_rules! to_rug {($v:expr) => {rug::Float::with_val(53, $v)}}
+
+    // get vector of e^(scaled util), then use to find probabilities
+    let scaling = to_rug!(epsilon).div(to_rug!(2. * sensitivity));
 
     // establish selection probabilities for each element
     let e_util_vec: Vec<rug::Float> = utilities.into_iter()
-        .map(|util| to_rug!(to_rug!(epsilon) * to_rug!(util) / (2. * to_rug!(sensitivity))).exp())
+        .map(|util| (to_rug!(util) * &scaling).exp())
         .collect();
     let sum_e_util_vec = to_rug!(rug::Float::sum(e_util_vec.iter()));
     let probability_vec: Vec<Float> = e_util_vec.into_iter()
