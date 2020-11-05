@@ -380,6 +380,7 @@ impl Component for proto::Equal {
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
+        println!("num_records: {:?}", num_records);
         Ok(ValueProperties::Array(ArrayProperties {
             nullity: false,
             releasable: left_property.releasable && right_property.releasable,
@@ -1299,9 +1300,9 @@ pub fn propagate_binary_shape(
     }
 
     // either left, right or both are broadcastable, so take the largest
-    let output_num_records = vec![l, r].iter().filter_map(|v| *v).max().unwrap();
+    let output_num_records = l.zip(r).map(|(l, r)| l.max(r));
 
-    Ok((output_num_columns, Some(output_num_records)))
+    Ok((output_num_columns, output_num_records))
 }
 
 pub fn propagate_unary_nature(
