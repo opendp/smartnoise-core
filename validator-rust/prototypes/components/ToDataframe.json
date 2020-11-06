@@ -14,8 +14,8 @@
   "options": {},
   "return": {
     "type_value": "Dataframe",
-    "description": "<a href='https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html'>pandas.DataFrame</a>"
+    "description": "Dataframe in target language, for example <a href=\"https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html\">pandas.DataFrame</a>."
   },
-  "description": "Name columns of an array to produce a Dataframe with the specified names",
+  "description": "Name columns of an array to produce a Dataframe with the specified names. Typically used when partitioning a dataframe with preprocessed columns.",
   "proto_id": 48
 }

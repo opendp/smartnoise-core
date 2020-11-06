@@ -1,10 +1,12 @@
 {
   "arguments": {
     "data_x": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "value(s) from the first coordinate axis"
     },
     "data_y": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "value(s) from the second coordinate axis"
     }
   },
   "id": "TheilSen",
