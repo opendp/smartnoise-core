@@ -90,7 +90,6 @@ impl Component for proto::Cast {
                 get_argument(&public_arguments, "upper")?.ref_array()?.first_int()
                     .map_err(prepend("type:"))?;
 
-                data_property.nature = None;
                 data_property.nature = match data_property.nature {
                     Some(nature) => match nature.clone() {
                         Nature::Categorical(cat_nature) => match cat_nature.categories {

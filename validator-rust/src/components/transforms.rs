@@ -380,7 +380,6 @@ impl Component for proto::Equal {
 
         let (num_columns, num_records) = propagate_binary_shape(&left_property, &right_property)?;
 
-        println!("num_records: {:?}", num_records);
         Ok(ValueProperties::Array(ArrayProperties {
             nullity: false,
             releasable: left_property.releasable && right_property.releasable,

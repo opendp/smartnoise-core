@@ -81,19 +81,22 @@ impl Expandable for proto::SnappingMechanism {
         &self,
         privacy_definition: &Option<proto::PrivacyDefinition>,
         component: &proto::Component,
-        public_arguments: &IndexMap<IndexKey, &Value>,
+        _public_arguments: &IndexMap<IndexKey, &Value>,
         properties: &base::NodeProperties,
         component_id: u32,
         mut maximum_id: u32,
     ) -> Result<base::ComponentExpansion> {
-        let lower_id = if public_arguments.contains_key::<IndexKey>(&"lower".into()) {
+
+        let lower_id = if properties.get(&IndexKey::from("lower"))
+            .and_then(|props| props.array().ok()).map(|props| props.releasable).unwrap_or(false) {
             None
         } else {
             maximum_id += 1;
             Some(maximum_id)
         };
 
-        let upper_id = if public_arguments.contains_key::<IndexKey>(&"upper".into()) {
+        let upper_id = if properties.get(&IndexKey::from("upper"))
+            .and_then(|props| props.array().ok()).map(|props| props.releasable).unwrap_or(false) {
             None
         } else {
             maximum_id += 1;
@@ -117,7 +120,8 @@ impl Expandable for proto::SnappingMechanism {
                 .ok_or("data: missing")?.array()?.clone();
 
             if let Some(lower_id) = lower_id {
-                let (patch_node, release) = get_literal(Value::Array(data_property.lower()?), component.submission)?;
+                let (patch_node, release) = get_literal(Value::Array(data_property.lower()
+                    .map_err(|_| Error::from("lower bound on the statistic is unknown for the snapping mechanism. Either pass lower as an argument or sufficiently preprocess the data to make a lower bound inferrable."))?), component.submission)?;
                 expansion.computation_graph.insert(lower_id, patch_node);
                 expansion.properties.insert(lower_id, infer_property(&release.value, None, lower_id)?);
                 expansion.releases.insert(lower_id, release);
@@ -125,7 +129,8 @@ impl Expandable for proto::SnappingMechanism {
             }
 
             if let Some(upper_id) = upper_id {
-                let (patch_node, release) = get_literal(Value::Array(data_property.upper()?), component.submission)?;
+                let (patch_node, release) = get_literal(Value::Array(data_property.lower()
+                    .map_err(|_| Error::from("upper bound on the statistic is unknown for the snapping mechanism. Either pass upper as an argument or sufficiently preprocess the data to make an upper bound inferrable."))?), component.submission)?;
                 expansion.computation_graph.insert(upper_id, patch_node);
                 expansion.properties.insert(upper_id, infer_property(&release.value, None, upper_id)?);
                 expansion.releases.insert(upper_id, release);
