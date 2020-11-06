@@ -5,6 +5,9 @@
 * Added runtime sanity checks to detect violations of static properties in pre-aggregated data
 * O(n^2) -> O(n) runtime performance in exponential mechanism and categorical imputation
 * Fixed an incorrect inference of dataset size when transforming a dataset with unknown size against a broadcastable scalar
+* Unions always permitted on public data
+* Added inference of nature (categories, bounds) to ToInt
+* Plug-in mean derives bounds for sum in laplace and geometric mechanism
 
 ### v0.1
 * Renamed package to Smartnoise, version number reset
