@@ -8,13 +8,13 @@
       "type_value": "Array",
       "default_python": "None",
       "default_rust": "None",
-      "description": "An estimate of the number of rows in the data. This could be the guess of the user, or the result of a DP release."
+      "description": "An estimate of the number of rows in the data. This could be the guess of the user, or the result of a DP release. Cannot be set with minimum_rows."
     },
     "number_columns": {
       "type_value": "Array",
       "default_python": "None",
       "default_rust": "None",
-      "description": "An estimate of the number of columns in the data. This must be the guess of the user, if not previously known (optional)."
+      "description": "An estimate of the number of columns in the data. This must be the guess of the user, if not previously known (optional). A non-empty value must be positive. A non-empty value is incompatiable with an attempt to resize number of columns and results in an error."
     },
     "lower": {
       "type_value": "Array",
@@ -32,7 +32,7 @@
       "type_value": "Jagged",
       "default_python": "None",
       "default_rust": "None",
-      "description": "The set of categories you want to be represented for each column of the data, if the data is categorical."
+      "description": "The set of categories you want to be represented for each column of the data, if the data is categorical. Atomic type of data must match atomic type of categories."
     },
     "weights": {
       "type_value": "Jagged",
