@@ -1,10 +1,12 @@
 {
   "arguments": {
     "left": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Member data type must match that of right."
     },
     "right": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Member data type must match that of left."
     }
   },
   "id": "RowMax",
@@ -13,6 +15,6 @@
   "return": {
     "type_value": "Array"
   },
-  "description": "Returns the maximum of the left and right arguments, per row.",
+  "description": "Returns the maximum of the left and right arguments, per row. Note that left and right arguments must share the same data types.",
   "proto_id": 51
 }
