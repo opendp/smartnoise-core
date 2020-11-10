@@ -1,7 +1,7 @@
 use indexmap::map::IndexMap;
 use ndarray::arr1;
 
-use crate::{base, Float, Integer, proto, Warnable};
+use crate::{base, Integer, proto, Warnable};
 use crate::base::{AggregatorProperties, DataType, IndexKey, Nature, NatureContinuous, NodeProperties, SensitivitySpace, Value, ValueProperties, Vector1DNull};
 use crate::components::{Component, Sensitivity};
 use crate::errors::*;
@@ -100,15 +100,15 @@ impl Sensitivity for proto::Count {
                     .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
 
                 // SENSITIVITY DERIVATIONS
-                let sensitivity: Float = match (neighboring_type, num_records) {
+                let sensitivity = match (neighboring_type, num_records) {
                     // known N. Applies to any neighboring type.
-                    (_, Some(_)) => 0.,
+                    (_, Some(_)) => 0,
 
                     // unknown N. The sensitivity here is really zero-- artificially raised
-                    (Substitute, None) => 1.,
+                    (Substitute, None) => 1,
 
                     // unknown N
-                    (AddRemove, None) => 1.,
+                    (AddRemove, None) => 1,
                 };
                 Ok((arr1(&[sensitivity]).into_dyn()).into())
             },

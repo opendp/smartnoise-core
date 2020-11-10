@@ -228,7 +228,7 @@ impl Component for proto::Resize {
                     upper: Vector1DNull::Int(impute_upper),
                 }));
             }
-            _ => return Err("bounds for imputation must be numeric".into())
+            _ => return Err("data in continuous imputation must be numeric".into())
         }
 
         let sample_proportion: Option<Float> = public_arguments.get(&IndexKey::from("sample_proportion"))

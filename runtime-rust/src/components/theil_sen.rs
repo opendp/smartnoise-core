@@ -130,8 +130,8 @@ pub mod tests {
     use super::*;
 
     pub fn test_dataset(n: Integer) -> (Vec<Float>, Vec<Float>) {
-        let x = (0..n).map(|i| i as f64 + noise::sample_gaussian(0., 0.1, false).unwrap()).collect();
-        let y = (0..n).map(|i| (2 * i) as f64 + noise::sample_gaussian(0., 0.1, false).unwrap()).collect();
+        let x = (0..n).map(|i| i as f64 + noise::sample_gaussian(0., 0.01, false).unwrap()).collect();
+        let y = (0..n).map(|i| (2 * i) as f64 + noise::sample_gaussian(0., 0.01, false).unwrap()).collect();
         (x, y)
     }
 

@@ -243,6 +243,14 @@ impl Array {
             Array::Str(_) => Err("atomic type: expected float, got string".into()),
         }
     }
+    pub fn cast_float(self) -> Result<ArrayD<f64>> {
+        match self {
+            Array::Float(x) => Ok(x),
+            Array::Int(x) => Ok(x.mapv(|v| v as Float)),
+            Array::Bool(_) => Err("atomic type: expected float, got bool".into()),
+            Array::Str(_) => Err("atomic type: expected float, got string".into()),
+        }
+    }
     pub fn ref_float(&self) -> Result<&ArrayD<Float>> {
         match self {
             Array::Float(x) => Ok(x),
@@ -743,15 +751,15 @@ impl JaggedProperties {
 impl ArrayProperties {
     pub fn lower(&self) -> Result<Array> {
         Ok(match (self.lower_float(), self.lower_int()) {
+            (_, Ok(lower)) => Array::Int(ndarray::arr1(&lower).into_dyn()),
             (Ok(lower), Err(_)) => Array::Float(ndarray::arr1(&lower).into_dyn()),
-            (Err(_), Ok(lower)) => Array::Int(ndarray::arr1(&lower).into_dyn()),
             _ => return Err("Lower bound unknown. Use a clamp to set data bounds.".into())
         })
     }
     pub fn upper(&self) -> Result<Array> {
         Ok(match (self.upper_float(), self.upper_int()) {
+            (_, Ok(upper)) => Array::Int(ndarray::arr1(&upper).into_dyn()),
             (Ok(upper), Err(_)) => Array::Float(ndarray::arr1(&upper).into_dyn()),
-            (Err(_), Ok(upper)) => Array::Int(ndarray::arr1(&upper).into_dyn()),
             _ => return Err("Upper bound unknown. Use a clamp to set data bounds.".into())
         })
     }
