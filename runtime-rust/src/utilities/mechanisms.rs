@@ -17,6 +17,7 @@ use std::ops::{Div};
 /// for more information
 ///
 /// # Arguments
+/// * `value` - Statistic to be privatized.
 /// * `epsilon` - Multiplicative privacy loss parameter.
 /// * `sensitivity` - Upper bound on the L1 sensitivity of the function you want to privatize.
 /// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time
@@ -27,9 +28,12 @@ use std::ops::{Div};
 /// # Examples
 /// ```
 /// use smartnoise_runtime::utilities::mechanisms::laplace_mechanism;
-/// let n = laplace_mechanism(0.1, 2.0, false);
+/// let n = laplace_mechanism(22.3, 0.1, 2.0, false);
 /// ```
-pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: bool) -> Result<f64> {
+pub fn laplace_mechanism(
+    value: f64, epsilon: f64, sensitivity: f64, enforce_constant_time: bool
+) -> Result<f64> {
+
     if sensitivity < 0. {
         return Err(format!("sensitivity ({}) must be non-negative", sensitivity).into());
     }
@@ -37,7 +41,7 @@ pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: 
         return Err(format!("epsilon ({}) must be positive", epsilon).into())
     }
     let scale: f64 = sensitivity / epsilon;
-    noise::sample_laplace(0., scale, enforce_constant_time)
+    noise::sample_laplace(0., scale, enforce_constant_time).map(|n| value + n)
 }
 
 /// Computes privatized value according to the Snapping mechanism
@@ -132,7 +136,7 @@ pub fn snapping_mechanism(
 /// for more information on a similar attack of the Laplace mechanism.
 ///
 /// # Arguments
-///
+/// * `value` - Statistic to be privatized.
 /// * `epsilon` - Multiplicative privacy loss parameter.
 /// * `delta` - Additive privacy loss parameter.
 /// * `sensitivity` - Upper bound on the L2 sensitivity of the function you want to privatize.
@@ -144,9 +148,10 @@ pub fn snapping_mechanism(
 /// # Examples
 /// ```
 /// use smartnoise_runtime::utilities::mechanisms::gaussian_mechanism;
-/// let n = gaussian_mechanism(0.1, 0.0001, 2.0, false, false);
+/// let n = gaussian_mechanism(22.3, 0.1, 0.0001, 2.0, false, false);
 /// ```
 pub fn gaussian_mechanism(
+    value: f64,
     epsilon: f64, delta: f64, sensitivity: f64,
     analytic: bool,
     enforce_constant_time: bool
@@ -161,7 +166,7 @@ pub fn gaussian_mechanism(
         sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon
     };
     // this uses mpfr noise if available
-    noise::sample_gaussian(0., scale, enforce_constant_time)
+    Ok(value + noise::sample_gaussian(0., scale, enforce_constant_time)?)
 }
 
 /// Returns noise drawn according to the Geometric mechanism.
@@ -172,7 +177,7 @@ pub fn gaussian_mechanism(
 /// add other versions, such as those developed in [Balcer & Vadhan (2019)](https://arxiv.org/pdf/1709.05396.pdf)
 ///
 /// # Arguments
-///
+/// * `value` - Statistic to be privatized.
 /// * `epsilon` - Multiplicative privacy loss parameter
 /// * `sensitivity` - L1 sensitivity of function you want to privatize. The Geometric is typically used for counting queries, where sensitivity = 1.
 /// * `min` - The minimum return you think possible.
@@ -185,9 +190,10 @@ pub fn gaussian_mechanism(
 /// # Examples
 /// ```
 /// use smartnoise_runtime::utilities::mechanisms::simple_geometric_mechanism;
-/// let n = simple_geometric_mechanism(0.1, 1., 0, 10, true);
+/// let n = simple_geometric_mechanism(4, 0.1, 1., 0, 10, true);
 /// ```
 pub fn simple_geometric_mechanism(
+    value: i64,
     epsilon: f64, sensitivity: f64,
     min: i64, max: i64,
     enforce_constant_time: bool
@@ -196,7 +202,9 @@ pub fn simple_geometric_mechanism(
         return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
     }
     let scale: f64 = sensitivity / epsilon;
-    noise::sample_simple_geometric_mechanism(scale, min, max, enforce_constant_time)
+    let noised = value + noise::sample_simple_geometric_mechanism(scale, min, max, enforce_constant_time)?;
+
+    Ok(if noised < min {min} else if noised > max { max } else { noised })
 }
 
 /// Returns data element according to the Exponential mechanism.

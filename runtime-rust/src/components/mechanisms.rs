@@ -49,9 +49,9 @@ impl Evaluable for proto::LaplaceMechanism {
                 .try_for_each(|(v, sens)|
 
                     utilities::mechanisms::laplace_mechanism(
-                        epsilon, *sens as f64,
+                        *v as Float, epsilon, *sens as f64,
                         enforce_constant_time,
-                    ).map(|noise| *v += noise as Float)))?;
+                    ).map(|noise| *v = noise as Float)))?;
 
         Ok(ReleaseNode {
             value: data.into(),
@@ -101,9 +101,9 @@ impl Evaluable for proto::GaussianMechanism {
                 .try_for_each(|(v, sens)|
 
                     utilities::mechanisms::gaussian_mechanism(
-                        epsilon, delta, *sens as f64, self.analytic,
+                        *v as Float, epsilon, delta, *sens as f64, self.analytic,
                         enforce_constant_time,
-                    ).map(|noise| *v += noise as Float)))?;
+                    ).map(|noise| *v = noise as Float)))?;
 
         Ok(ReleaseNode {
             value: data.into(),
@@ -154,10 +154,10 @@ impl Evaluable for proto::SimpleGeometricMechanism {
                 .try_for_each(|((v, sens), (c_min, c_max))|
 
                     utilities::mechanisms::simple_geometric_mechanism(
-                        epsilon, *sens as f64,
+                        *v as Integer, epsilon, *sens as f64,
                         *c_min as i64, *c_max as i64,
                         enforce_constant_time,
-                    ).map(|noise| *v += noise as Integer)))?;
+                    ).map(|noise| *v = noise as Integer)))?;
 
         Ok(ReleaseNode {
             value: data.into(),
