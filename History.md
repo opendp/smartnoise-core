@@ -1,6 +1,7 @@
 ### v0.1.1
 * Fix noise scaling issues in the Gaussian and Analytic Gaussian mechanism
 * Fixes for Gaussian and Analytic Gaussian accuracy
+* Postprocess geometric mechanism noise with clamping
 * Compute sensitivities as integers whenever possible (counts, histograms, sums)
 * Added runtime sanity checks to detect violations of static properties in pre-aggregated data
 * O(n^2) -> O(n) runtime performance in exponential mechanism and categorical imputation
