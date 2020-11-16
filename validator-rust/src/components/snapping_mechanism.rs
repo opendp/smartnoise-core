@@ -129,7 +129,7 @@ impl Expandable for proto::SnappingMechanism {
             }
 
             if let Some(upper_id) = upper_id {
-                let (patch_node, release) = get_literal(Value::Array(data_property.lower()
+                let (patch_node, release) = get_literal(Value::Array(data_property.upper()
                     .map_err(|_| Error::from("upper bound on the statistic is unknown for the snapping mechanism. Either pass upper as an argument or sufficiently preprocess the data to make an upper bound inferrable."))?), component.submission)?;
                 expansion.computation_graph.insert(upper_id, patch_node);
                 expansion.properties.insert(upper_id, infer_property(&release.value, None, upper_id)?);
