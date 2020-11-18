@@ -4,6 +4,7 @@ major = 0
 minor = 1
 patch = 1
 
+
 [paths]
 # Locations of repositories to update
 #
@@ -14,6 +15,7 @@ patch = 1
 #
 python = "/Users/michael/whitenoise/python"
 #python = "/Users/ramanprasad/Documents/github-rp/smartnoise-core-python"
+
 #
 # ------------------------------------------------------
 # (2) Path to repository "smartnoise-core"
@@ -23,6 +25,7 @@ python = "/Users/michael/whitenoise/python"
 #
 core = "/Users/michael/whitenoise/python/smartnoise-core"
 #core = "/Users/ramanprasad/Documents/github-rp/smartnoise-core-python/smartnoise-core"
+
 #
 # ------------------------------------------------------
 # (3) Path to the repository "smartnoise-core-r"
