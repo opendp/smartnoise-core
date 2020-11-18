@@ -1,6 +1,6 @@
 [package]
 name = "smartnoise_ffi"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["OpenDP-SmartNoise <smartnoise@opendp.io>"]
 description = "A wrapper library for interfacing with the SmartNoise over ffi."
 readme = "README.md"
@@ -17,11 +17,11 @@ indexmap = "1.4.0"
 
 [dependencies.smartnoise_validator]
 path = "../validator-rust/"
-version = "0.1.0"
+version = "0.1.1"
 
 [dependencies.smartnoise_runtime]
 path = "../runtime-rust/"
-version = "0.1.0"
+version = "0.1.1"
 optional = true
 default-features = false
 
