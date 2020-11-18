@@ -24,7 +24,7 @@
       "type_rust": "String",
       "default_python": "\"Automatic\"",
       "default_rust": "String::from(\"Automatic\")",
-      "description": "Privatizing mechanism to use. One of [`Automatic`, `Laplace`, `Gaussian`, `AnalyticGaussian`, `SimpleGeometric`]. `Automatic` chooses based on the input data type."
+      "description": "Privatizing mechanism to use. One of [`Automatic`, `Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`, `SimpleGeometric`]. `Automatic` chooses based on the input data type."
     },
     "privacy_usage": {
       "type_proto": "repeated PrivacyUsage",

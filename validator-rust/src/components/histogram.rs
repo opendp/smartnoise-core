@@ -1,6 +1,6 @@
 use crate::errors::*;
 
-use crate::{proto, Warnable, base, Float};
+use crate::{proto, Warnable, base};
 
 use crate::components::{Component, Sensitivity, Expandable};
 use crate::base::{IndexKey, Value, NodeProperties, AggregatorProperties, SensitivitySpace, ValueProperties, DataType, NatureContinuous, Nature, Vector1DNull, Jagged};
@@ -189,42 +189,46 @@ impl Sensitivity for proto::Histogram {
 
                 let num_records = data_property.num_records;
 
+                let num_columns = data_property.num_columns()?;
+
+                macro_rules! wrap {
+                    ($sensitivity:expr) => {
+                        Ok(Array::from_shape_vec(
+                            vec![categories_length as usize, num_columns as usize],
+                            (0..categories_length)
+                                .map(|_| (0..num_columns)
+                                    .map(|_| $sensitivity)
+                                    .collect::<Vec<_>>())
+                                .flatten()
+                                .collect::<Vec<_>>())?.into())
+                    }
+                }
+
                 // SENSITIVITY DERIVATIONS
-                let sensitivity: Float = match (neighboring_type, categories_length, num_records) {
+                match (neighboring_type, categories_length, num_records) {
                     // one category, known N. Applies to any neighboring type.
-                    (_, 1, Some(_)) => 0.,
+                    (_, 1, Some(_)) => wrap!(0),
 
                     // one category, unknown N. The sensitivity here is really zero-- artificially raised
-                    (Substitute, 1, None) => 1.,
+                    (Substitute, 1, None) => wrap!(1),
                     // two categories, known N. Knowing N determines the second category
-                    (Substitute, 2, Some(_)) => 1.,
+                    (Substitute, 2, Some(_)) => wrap!(1),
 
                     // one category, unknown N
-                    (AddRemove, 1, None) => 1.,
+                    (AddRemove, 1, None) => wrap!(1),
                     // two categories, known N
-                    (AddRemove, 2, Some(_)) => 1.,
+                    (AddRemove, 2, Some(_)) => wrap!(1),
 
                     // over two categories, N either known or unknown. Record may switch from one bin to another.
                     (Substitute, _, _) => match k {
-                        1 => 2.,
-                        2 => 2.0_f64.sqrt(),
-                        _ =>  return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
+                        1 => wrap!(2),
+                        2 => wrap!(2.0_f64.sqrt()),
+                        _ => Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
                     } ,
                     // over two categories, N either known or unknown. Only one bin may be edited.
-                    (AddRemove, _, _) => 1.,
-                };
+                    (AddRemove, _, _) => wrap!(1),
+                }
 
-                let num_columns = data_property.num_columns()?;
-                let num_records = categories_length;
-
-                Ok(Array::from_shape_vec(
-                    vec![num_records as usize, num_columns as usize],
-                    (0..num_records)
-                        .map(|_| (0..num_columns)
-                            .map(|_| sensitivity)
-                            .collect::<Vec<Float>>())
-                        .flatten()
-                        .collect::<Vec<Float>>())?.into())
             },
             _ => Err("Histogram sensitivity is only implemented for KNorm".into())
         }

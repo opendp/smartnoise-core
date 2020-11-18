@@ -70,9 +70,14 @@ impl Component for proto::Union {
                 node_id: node_id as i64,
                 is_not_empty: array_props.iter().any(|v| v.is_not_empty),
                 dimensionality: Some(2),
-                group_id: get_group_id_path(array_props.iter()
-                    .map(|prop| prop.group_id.clone())
-                    .collect())?,
+                group_id: if releasable {
+                    // unnecessary to track group ids on public data
+                    vec![]
+                } else {
+                    get_group_id_path(array_props.iter()
+                        .map(|prop| prop.group_id.clone())
+                        .collect())?
+                },
                 naturally_ordered: false,
                 sample_proportion: None,
             })

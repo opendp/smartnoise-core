@@ -4,8 +4,8 @@ use smartnoise_runtime::utilities::mechanisms;
 pub extern "C" fn laplace_mechanism(
     value: f64, epsilon: f64, sensitivity: f64, enforce_constant_time: bool
 ) -> f64 {
-    value + mechanisms::laplace_mechanism(
-        epsilon, sensitivity, enforce_constant_time).unwrap()
+    mechanisms::laplace_mechanism(
+        value, epsilon, sensitivity, enforce_constant_time).unwrap()
 }
 
 #[no_mangle]
@@ -14,8 +14,8 @@ pub extern "C" fn gaussian_mechanism(
     analytic: bool,
     enforce_constant_time: bool,
 ) -> f64 {
-    value + mechanisms::gaussian_mechanism(
-        epsilon, delta, sensitivity, analytic, enforce_constant_time).unwrap()
+    mechanisms::gaussian_mechanism(
+        value, epsilon, delta, sensitivity, analytic, enforce_constant_time).unwrap()
 }
 
 #[no_mangle]
@@ -25,8 +25,8 @@ pub extern "C" fn simple_geometric_mechanism(
     min: i64, max: i64,
     enforce_constant_time: bool
 ) -> i64 {
-    value + mechanisms::simple_geometric_mechanism(
-        epsilon, sensitivity, min, max, enforce_constant_time).unwrap()
+    mechanisms::simple_geometric_mechanism(
+        value, epsilon, sensitivity, min, max, enforce_constant_time).unwrap()
 }
 
 

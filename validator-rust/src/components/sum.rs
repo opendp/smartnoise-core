@@ -73,33 +73,43 @@ impl Sensitivity for proto::Sum {
 
                 data_property.assert_is_not_aggregated()?;
                 data_property.assert_non_null()?;
-                let data_lower = data_property.lower_float()?;
-                let data_upper = data_property.upper_float()?;
 
                 use proto::privacy_definition::Neighboring;
                 let neighboring_type = Neighboring::from_i32(privacy_definition.neighboring)
                     .ok_or_else(|| Error::from("neighboring definition must be either \"AddRemove\" or \"Substitute\""))?;
 
-                let row_sensitivity = match k {
-                    1 | 2 => match neighboring_type {
-                        Neighboring::AddRemove => data_lower.iter()
-                            .zip(data_upper.iter())
-                            .map(|(min, max)| min.abs().max(max.abs()))
-                            .collect::<Vec<Float>>(),
-                        Neighboring::Substitute => data_lower.iter()
-                            .zip(data_upper.iter())
-                            .map(|(min, max)| (max - min))
-                            .collect::<Vec<Float>>()
+                macro_rules! compute_sensitivity {
+                    ($lower:expr, $upper:expr) => {
+                        {
+                            let row_sensitivity = match k {
+                                1 | 2 => match neighboring_type {
+                                    Neighboring::AddRemove => $lower.iter()
+                                        .zip($upper.iter())
+                                        .map(|(min, max)| min.abs().max(max.abs()))
+                                        .collect::<Vec<_>>(),
+                                    Neighboring::Substitute => $lower.iter()
+                                        .zip($upper.iter())
+                                        .map(|(min, max)| (max - min))
+                                        .collect::<Vec<_>>()
+                                }
+                                _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
+                            };
+
+                            let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
+                            array_sensitivity.insert_axis_inplace(Axis(0));
+
+                            Ok(array_sensitivity.into())
+                        }
                     }
-                    _ => return Err("KNorm sensitivity is only supported in L1 and L2 spaces".into())
-                };
+                }
 
-                let mut array_sensitivity = Array::from(row_sensitivity).into_dyn();
-                array_sensitivity.insert_axis_inplace(Axis(0));
-
-                Ok(array_sensitivity.into())
+                match data_property.data_type {
+                    DataType::Int => compute_sensitivity!(data_property.lower_int()?, data_property.upper_int()?),
+                    DataType::Float => compute_sensitivity!(data_property.lower_float()?, data_property.upper_float()?),
+                    _ => return Err(Error::from("sum data must be numeric"))
+                }
             }
-            _ => Err("Sum sensitivity is only implemented for KNorm of 1".into())
+            _ => Err("Sum sensitivity is only implemented for KNorm".into())
         }
     }
 }

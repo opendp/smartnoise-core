@@ -4,6 +4,7 @@ use crate::utilities;
 use smartnoise_validator::Float;
 use crate::utilities::{noise};
 use smartnoise_validator::components::gaussian_mechanism::get_analytic_gaussian_sigma;
+use std::ops::{Div};
 
 /// Returns noise drawn according to the Laplace mechanism
 ///
@@ -16,6 +17,7 @@ use smartnoise_validator::components::gaussian_mechanism::get_analytic_gaussian_
 /// for more information
 ///
 /// # Arguments
+/// * `value` - Statistic to be privatized.
 /// * `epsilon` - Multiplicative privacy loss parameter.
 /// * `sensitivity` - Upper bound on the L1 sensitivity of the function you want to privatize.
 /// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time
@@ -26,14 +28,20 @@ use smartnoise_validator::components::gaussian_mechanism::get_analytic_gaussian_
 /// # Examples
 /// ```
 /// use smartnoise_runtime::utilities::mechanisms::laplace_mechanism;
-/// let n = laplace_mechanism(0.1, 2.0, false);
+/// let n = laplace_mechanism(22.3, 0.1, 2.0, false);
 /// ```
-pub fn laplace_mechanism(epsilon: f64, sensitivity: f64, enforce_constant_time: bool) -> Result<f64> {
-    if epsilon < 0. || sensitivity < 0. {
-        return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
+pub fn laplace_mechanism(
+    value: f64, epsilon: f64, sensitivity: f64, enforce_constant_time: bool
+) -> Result<f64> {
+
+    if sensitivity < 0. {
+        return Err(format!("sensitivity ({}) must be non-negative", sensitivity).into());
+    }
+    if epsilon <= 0. {
+        return Err(format!("epsilon ({}) must be positive", epsilon).into())
     }
     let scale: f64 = sensitivity / epsilon;
-    noise::sample_laplace(0., scale, enforce_constant_time)
+    noise::sample_laplace(0., scale, enforce_constant_time).map(|n| value + n)
 }
 
 /// Computes privatized value according to the Snapping mechanism
@@ -114,18 +122,21 @@ pub fn snapping_mechanism(
 
 /// Returns noise drawn according to the Gaussian mechanism.
 ///
+/// If using the standard guassian,
 /// Let c = sqrt(2*ln(1.25/delta)). Noise is drawn from a Gaussian distribution with scale
 /// sensitivity*c/epsilon and centered about 0.
-///
 /// For more information, see the Gaussian mechanism in
 /// C. Dwork, A. Roth The Algorithmic Foundations of Differential Privacy, Chapter 3.5.3 Laplace versus Gauss p.53. August 2014.
+///
+/// If using the analytic gaussian,
+/// the noise scale is derived using [Balle (2018)](https://arxiv.org/pdf/1805.06530.pdf).
 ///
 /// NOTE: this implementation of Gaussian draws in likely non-private due to floating-point attacks
 /// See [Mironov (2012)](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.366.5957&rep=rep1&type=pdf)
 /// for more information on a similar attack of the Laplace mechanism.
 ///
 /// # Arguments
-///
+/// * `value` - Statistic to be privatized.
 /// * `epsilon` - Multiplicative privacy loss parameter.
 /// * `delta` - Additive privacy loss parameter.
 /// * `sensitivity` - Upper bound on the L2 sensitivity of the function you want to privatize.
@@ -137,9 +148,10 @@ pub fn snapping_mechanism(
 /// # Examples
 /// ```
 /// use smartnoise_runtime::utilities::mechanisms::gaussian_mechanism;
-/// let n = gaussian_mechanism(0.1, 0.0001, 2.0, false, false);
+/// let n = gaussian_mechanism(22.3, 0.1, 0.0001, 2.0, false, false);
 /// ```
 pub fn gaussian_mechanism(
+    value: f64,
     epsilon: f64, delta: f64, sensitivity: f64,
     analytic: bool,
     enforce_constant_time: bool
@@ -154,7 +166,7 @@ pub fn gaussian_mechanism(
         sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon
     };
     // this uses mpfr noise if available
-    noise::sample_gaussian(0., scale, enforce_constant_time)
+    Ok(value + noise::sample_gaussian(0., scale, enforce_constant_time)?)
 }
 
 /// Returns noise drawn according to the Geometric mechanism.
@@ -165,7 +177,7 @@ pub fn gaussian_mechanism(
 /// add other versions, such as those developed in [Balcer & Vadhan (2019)](https://arxiv.org/pdf/1709.05396.pdf)
 ///
 /// # Arguments
-///
+/// * `value` - Statistic to be privatized.
 /// * `epsilon` - Multiplicative privacy loss parameter
 /// * `sensitivity` - L1 sensitivity of function you want to privatize. The Geometric is typically used for counting queries, where sensitivity = 1.
 /// * `min` - The minimum return you think possible.
@@ -178,9 +190,10 @@ pub fn gaussian_mechanism(
 /// # Examples
 /// ```
 /// use smartnoise_runtime::utilities::mechanisms::simple_geometric_mechanism;
-/// let n = simple_geometric_mechanism(0.1, 1., 0, 10, true);
+/// let n = simple_geometric_mechanism(4, 0.1, 1., 0, 10, true);
 /// ```
 pub fn simple_geometric_mechanism(
+    value: i64,
     epsilon: f64, sensitivity: f64,
     min: i64, max: i64,
     enforce_constant_time: bool
@@ -189,7 +202,9 @@ pub fn simple_geometric_mechanism(
         return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
     }
     let scale: f64 = sensitivity / epsilon;
-    noise::sample_simple_geometric_mechanism(scale, min, max, enforce_constant_time)
+    let noised = value + noise::sample_simple_geometric_mechanism(scale, min, max, enforce_constant_time)?;
+
+    Ok(if noised < min {min} else if noised > max { max } else { noised })
 }
 
 /// Returns data element according to the Exponential mechanism.
@@ -231,13 +246,14 @@ pub fn exponential_mechanism<T>(
     utilities: Vec<f64>,
     enforce_constant_time: bool
 ) -> Result<T> where T: Clone, {
-
-    // get vector of e^(util), then use to find probabilities
     macro_rules! to_rug {($v:expr) => {rug::Float::with_val(53, $v)}}
+
+    // get vector of e^(scaled util), then use to find probabilities
+    let scaling = to_rug!(epsilon).div(to_rug!(2. * sensitivity));
 
     // establish selection probabilities for each element
     let e_util_vec: Vec<rug::Float> = utilities.into_iter()
-        .map(|util| to_rug!(to_rug!(epsilon) * to_rug!(util) / (2. * to_rug!(sensitivity))).exp())
+        .map(|util| (to_rug!(util) * &scaling).exp())
         .collect();
     let sum_e_util_vec = to_rug!(rug::Float::sum(e_util_vec.iter()));
     let probability_vec: Vec<Float> = e_util_vec.into_iter()

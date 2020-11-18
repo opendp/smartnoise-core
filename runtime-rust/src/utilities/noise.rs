@@ -410,7 +410,7 @@ mod test_uniform {
 
 /// Returns random sample from Uniform[min,max) using the MPFR library.
 ///
-/// If [min, max) == [0, 1),then this is done in a way that respects exact rounding.
+/// If [min, max) == [0, 1), then this is done in a way that respects exact rounding.
 /// Otherwise, the return will be the result of a composition of two operations that
 /// respect exact rounding (though the result will not necessarily).
 ///
@@ -432,18 +432,16 @@ pub fn sample_uniform_mpfr(min: f64, max: f64) -> Result<rug::Float> {
     // initialize 64-bit floats within mpfr/rug
     let mpfr_min = Float::with_val(53, min);
     let mpfr_max = Float::with_val(53, max);
-    let mpfr_diff = Float::with_val(53, &mpfr_max - &mpfr_min);
 
     // initialize randomness
     let mut rng = GeneratorOpenSSL {};
     let mut state = ThreadRandState::new_custom(&mut rng);
 
     // generate Unif[0,1] according to mpfr standard, then convert to correct scale
-    let mut unif = Float::with_val(53, Float::random_cont(&mut state));
-    unif = unif.mul_add(&mpfr_diff, &mpfr_min);
+    let unif = Float::with_val(53, Float::random_cont(&mut state));
 
     // return uniform
-    Ok(unif)
+    Ok(unif.mul_add(&(mpfr_max - &mpfr_min), &mpfr_min))
 }
 
 /// Sample from Laplace distribution centered at shift and scaled by scale.
@@ -513,7 +511,7 @@ pub fn sample_gaussian(shift: f64, scale: f64, _enforce_constant_time: bool) -> 
     // NOTE: We square the scale here because we ask for the standard deviation as the function input, but
     //       the mpfr library wants the variance. We ask for std. dev. to be consistent with the rest of the library.
     let mpfr_shift = Float::with_val(53, shift);
-    let mpfr_scale = Float::with_val(53, Float::with_val(53, scale).square());
+    let mpfr_scale = Float::with_val(53, scale);
 
     // initialize randomness
     let mut rng = GeneratorOpenSSL {};
@@ -664,7 +662,7 @@ pub fn sample_simple_geometric_mechanism(
 /// * `value` - Non-private value of the statistic to be privatized.
 /// * `epsilon` - Desired privacy guarantee.
 /// * `b` - Upper bound on function value being privatized.
-/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time;
+/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time
 ///
 /// # Returns
 /// Value of statistic with noise applied according to the Snapping mechanism.

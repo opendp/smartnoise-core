@@ -1,6 +1,6 @@
 [package]
 name = "smartnoise_validator"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["OpenDP-SmartNoise <smartnoise@opendp.io>"]
 description = "A library for validating whether or not an analysis is differentially private."
 readme = "README.md"
