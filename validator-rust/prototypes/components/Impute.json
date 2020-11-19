@@ -20,13 +20,13 @@
       "default_python": "None",
       "type_value": "Jagged",
       "default_rust": "None",
-      "description": "The set of categories you want to be represented for each column of the data, if the data is categorical."
+      "description": "The set of categories you want to be represented for each column of the data, if the data is categorical. Atomic type must match atomic type of data."
     },
     "null_values": {
       "default_python": "None",
       "type_value": "Jagged",
       "default_rust": "None",
-      "description": "The set of values that are considered null for each column of the data, if the data is categorical."
+      "description": "The set of values that are considered null for each column of the data, if the data is categorical. Atomic type must match atomic type of data."
     },
     "weights": {
       "default_python": "None",
