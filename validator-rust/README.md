@@ -3,7 +3,7 @@
 ## SmartNoise Core <br/> Differential Privacy Library Validator <br/>
 
 The validator is a sub-project of [SmartNoise-Core](https://github.com/opendifferentialprivacy/smartnoise-core).
-See also the accompanying [SmartNoise-System](https://github.com/opendifferentialprivacy/smartnoise-system) and [SmartNoise-Samples](https://github.com/opendifferentialprivacy/smartnoise-samples) repositories for this system.
+See also the accompanying [SmartNoise SDK repository](https://github.com/opendifferentialprivacy/smartnoise-sdk) and [SmartNoise-Samples](https://github.com/opendifferentialprivacy/smartnoise-samples) repositories for this system.
 
 ##
 
