@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/ndarray-0.13.1/src/impl_views/conversions.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>conversions.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -205,13 +205,13 @@
 <span id="202">202</span>
 <span id="203">203</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. This file may not be copied, modified, or distributed</span>
-<span class="comment">// except according to those terms.</span>
+<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">slice</span>;
 
@@ -222,13 +222,13 @@
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">iter</span>::{<span class="self">self</span>, <span class="ident">AxisIter</span>, <span class="ident">AxisIterMut</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">IndexLonger</span>;
 
-<span class="doccomment">/// Methods for read-only array views.</span>
+<span class="doccomment">/// Methods for read-only array views.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="doccomment">/// Convert the view into an `ArrayView&lt;&#39;b, A, D&gt;` where `&#39;b` is a lifetime</span>
-    <span class="doccomment">/// outlived by `&#39;a&#39;`.</span>
+    <span class="doccomment">/// Convert the view into an `ArrayView&lt;&#39;b, A, D&gt;` where `&#39;b` is a lifetime</span>
+    <span class="doccomment">/// outlived by `&#39;a&#39;`.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">reborrow</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;b</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="lifetime">&#39;a</span>: <span class="lifetime">&#39;b</span>,
@@ -236,8 +236,8 @@
         <span class="kw">unsafe</span> { <span class="ident">ArrayView</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">ptr</span>, <span class="self">self</span>.<span class="ident">dim</span>, <span class="self">self</span>.<span class="ident">strides</span>) }
     }
 
-    <span class="doccomment">/// Return the array’s data as a slice, if it is contiguous and in standard order.</span>
-    <span class="doccomment">/// Return `None` otherwise.</span>
+    <span class="doccomment">/// Return the array’s data as a slice, if it is contiguous and in standard order.</span>
+    <span class="doccomment">/// Return `None` otherwise.</span>
     <span class="attribute">#[<span class="ident">deprecated</span>(<span class="ident">note</span> <span class="op">=</span> <span class="string">&quot;`into_slice` has been renamed to `to_slice`&quot;</span>, <span class="ident">since</span> <span class="op">=</span> <span class="string">&quot;0.13.0&quot;</span>)]</span>
     <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">wrong_self_convention</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_slice</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">A</span>]<span class="op">&gt;</span> {
@@ -248,8 +248,8 @@
         }
     }
 
-    <span class="doccomment">/// Return the array’s data as a slice, if it is contiguous and in standard order.</span>
-    <span class="doccomment">/// Return `None` otherwise.</span>
+    <span class="doccomment">/// Return the array’s data as a slice, if it is contiguous and in standard order.</span>
+    <span class="doccomment">/// Return `None` otherwise.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_slice</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">A</span>]<span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_standard_layout</span>() {
             <span class="kw">unsafe</span> { <span class="prelude-val">Some</span>(<span class="ident">slice</span>::<span class="ident">from_raw_parts</span>(<span class="self">self</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>(), <span class="self">self</span>.<span class="ident">len</span>())) }
@@ -258,81 +258,81 @@
         }
     }
 
-    <span class="doccomment">/// Converts to a raw array view.</span>
+    <span class="doccomment">/// Converts to a raw array view.</span>
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">into_raw_view</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RawArrayView</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> { <span class="ident">RawArrayView</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">ptr</span>, <span class="self">self</span>.<span class="ident">dim</span>, <span class="self">self</span>.<span class="ident">strides</span>) }
     }
 }
 
-<span class="doccomment">/// Methods specific to `ArrayView0`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ***See also all methods for [`ArrayView`] and [`ArrayBase`]***</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`ArrayBase`]: struct.ArrayBase.html</span>
-<span class="doccomment">/// [`ArrayView`]: struct.ArrayView.html</span>
+<span class="doccomment">/// Methods specific to `ArrayView0`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ***See also all methods for [`ArrayView`] and [`ArrayBase`]***</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`ArrayBase`]: struct.ArrayBase.html</span>
+<span class="doccomment">/// [`ArrayView`]: struct.ArrayView.html</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span><span class="op">&gt;</span> <span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">Ix0</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Consume the view and return a reference to the single element in the array.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The lifetime of the returned reference matches the lifetime of the data</span>
-    <span class="doccomment">/// the array view was pointing to.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use ndarray::{arr0, Array0};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // `Foo` doesn&#39;t implement `Clone`.</span>
-    <span class="doccomment">/// #[derive(Debug, Eq, PartialEq)]</span>
-    <span class="doccomment">/// struct Foo;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let array: Array0&lt;Foo&gt; = arr0(Foo);</span>
-    <span class="doccomment">/// let view = array.view();</span>
-    <span class="doccomment">/// let scalar: &amp;Foo = view.into_scalar();</span>
-    <span class="doccomment">/// assert_eq!(scalar, &amp;Foo);</span>
-    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// Consume the view and return a reference to the single element in the array.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The lifetime of the returned reference matches the lifetime of the data</span>
+    <span class="doccomment">/// the array view was pointing to.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// use ndarray::{arr0, Array0};</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// // `Foo` doesn&#39;t implement `Clone`.</span>
+    <span class="doccomment">/// #[derive(Debug, Eq, PartialEq)]</span>
+    <span class="doccomment">/// struct Foo;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// let array: Array0&lt;Foo&gt; = arr0(Foo);</span>
+    <span class="doccomment">/// let view = array.view();</span>
+    <span class="doccomment">/// let scalar: &amp;Foo = view.into_scalar();</span>
+    <span class="doccomment">/// assert_eq!(scalar, &amp;Foo);</span>
+    <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_scalar</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">A</span> {
         <span class="self">self</span>.<span class="ident">index</span>(<span class="ident">Ix0</span>())
     }
 }
 
-<span class="doccomment">/// Methods specific to `ArrayViewMut0`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ***See also all methods for [`ArrayViewMut`] and [`ArrayBase`]***</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`ArrayBase`]: struct.ArrayBase.html</span>
-<span class="doccomment">/// [`ArrayViewMut`]: struct.ArrayViewMut.html</span>
+<span class="doccomment">/// Methods specific to `ArrayViewMut0`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ***See also all methods for [`ArrayViewMut`] and [`ArrayBase`]***</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`ArrayBase`]: struct.ArrayBase.html</span>
+<span class="doccomment">/// [`ArrayViewMut`]: struct.ArrayViewMut.html</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span><span class="op">&gt;</span> <span class="ident">ArrayViewMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">Ix0</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Consume the mutable view and return a mutable reference to the single element in the array.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The lifetime of the returned reference matches the lifetime of the data</span>
-    <span class="doccomment">/// the array view was pointing to.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// use ndarray::{arr0, Array0};</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let mut array: Array0&lt;f64&gt; = arr0(5.);</span>
-    <span class="doccomment">/// let view = array.view_mut();</span>
-    <span class="doccomment">/// let mut scalar = view.into_scalar();</span>
-    <span class="doccomment">/// *scalar = 7.;</span>
-    <span class="doccomment">/// assert_eq!(scalar, &amp;7.);</span>
-    <span class="doccomment">/// assert_eq!(array[()], 7.);</span>
-    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// Consume the mutable view and return a mutable reference to the single element in the array.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The lifetime of the returned reference matches the lifetime of the data</span>
+    <span class="doccomment">/// the array view was pointing to.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// use ndarray::{arr0, Array0};</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// let mut array: Array0&lt;f64&gt; = arr0(5.);</span>
+    <span class="doccomment">/// let view = array.view_mut();</span>
+    <span class="doccomment">/// let mut scalar = view.into_scalar();</span>
+    <span class="doccomment">/// *scalar = 7.;</span>
+    <span class="doccomment">/// assert_eq!(scalar, &amp;7.);</span>
+    <span class="doccomment">/// assert_eq!(array[()], 7.);</span>
+    <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_scalar</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">A</span> {
         <span class="self">self</span>.<span class="ident">index</span>(<span class="ident">Ix0</span>())
     }
 }
 
-<span class="doccomment">/// Methods for read-write array views.</span>
+<span class="doccomment">/// Methods for read-write array views.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">ArrayViewMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="doccomment">/// Return the array’s data as a slice, if it is contiguous and in standard order.</span>
-    <span class="doccomment">/// Return `None` otherwise.</span>
+    <span class="doccomment">/// Return the array’s data as a slice, if it is contiguous and in standard order.</span>
+    <span class="doccomment">/// Return `None` otherwise.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_slice</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> [<span class="ident">A</span>]<span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">into_slice_</span>().<span class="ident">ok</span>()
     }
 }
 
-<span class="doccomment">/// Private array view methods</span>
+<span class="doccomment">/// Private array view methods</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
@@ -351,8 +351,8 @@
         <span class="ident">Iter</span>::<span class="ident">new</span>(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Return an outer iterator for this view.</span>
-    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span> <span class="comment">// not official</span>
+    <span class="doccomment">/// Return an outer iterator for this view.</span>
+    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span> <span class="comment">// not official</span>
     <span class="attribute">#[<span class="ident">deprecated</span>(<span class="ident">note</span> <span class="op">=</span> <span class="string">&quot;This method will be replaced.&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_outer_iter</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">iter</span>::<span class="ident">AxisIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span>::<span class="ident">Smaller</span><span class="op">&gt;</span>
     <span class="kw">where</span>
@@ -366,12 +366,12 @@
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="comment">// Convert into a read-only view</span>
+    <span class="comment">// Convert into a read-only view</span>
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">into_view</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> { <span class="ident">ArrayView</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">ptr</span>, <span class="self">self</span>.<span class="ident">dim</span>, <span class="self">self</span>.<span class="ident">strides</span>) }
     }
 
-    <span class="doccomment">/// Converts to a mutable raw array view.</span>
+    <span class="doccomment">/// Converts to a mutable raw array view.</span>
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">into_raw_view_mut</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RawArrayViewMut</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> { <span class="ident">RawArrayViewMut</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">ptr</span>, <span class="self">self</span>.<span class="ident">dim</span>, <span class="self">self</span>.<span class="ident">strides</span>) }
     }
@@ -398,8 +398,8 @@
         <span class="ident">IterMut</span>::<span class="ident">new</span>(<span class="self">self</span>)
     }
 
-    <span class="doccomment">/// Return an outer iterator for this view.</span>
-    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span> <span class="comment">// not official</span>
+    <span class="doccomment">/// Return an outer iterator for this view.</span>
+    <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span> <span class="comment">// not official</span>
     <span class="attribute">#[<span class="ident">deprecated</span>(<span class="ident">note</span> <span class="op">=</span> <span class="string">&quot;This method will be replaced.&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_outer_iter</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">iter</span>::<span class="ident">AxisIterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span>::<span class="ident">Smaller</span><span class="op">&gt;</span>
     <span class="kw">where</span>

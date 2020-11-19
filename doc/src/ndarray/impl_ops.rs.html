@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/ndarray-0.13.1/src/impl_ops.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>impl_ops.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -449,37 +449,37 @@
 <span id="446">446</span>
 <span id="447">447</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. This file may not be copied, modified, or distributed</span>
-<span class="comment">// except according to those terms.</span>
+<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
 <span class="kw">use</span> <span class="ident">num_complex</span>::<span class="ident">Complex</span>;
 
-<span class="doccomment">/// Elements that can be used as direct operands in arithmetic with arrays.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// For example, `f64` is a `ScalarOperand` which means that for an array `a`,</span>
-<span class="doccomment">/// arithmetic like `a + 1.0`, and, `a * 2.`, and `a += 3.` are allowed.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// In the description below, let `A` be an array or array view,</span>
-<span class="doccomment">/// let `B` be an array with owned data,</span>
-<span class="doccomment">/// and let `C` be an array with mutable data.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `ScalarOperand` determines for which scalars `K` operations `&amp;A @ K`, and `B @ K`,</span>
-<span class="doccomment">/// and `C @= K` are defined, as ***right hand side operands***, for applicable</span>
-<span class="doccomment">/// arithmetic operators (denoted `@`).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ***Left hand side*** scalar operands are not related to this trait</span>
-<span class="doccomment">/// (they need one `impl` per concrete scalar type); but they are still</span>
-<span class="doccomment">/// implemented for the same types, allowing operations</span>
-<span class="doccomment">/// `K @ &amp;A`, and `K @ B` for primitive numeric types `K`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This trait ***does not*** limit which elements can be stored in an array in general.</span>
-<span class="doccomment">/// Non-`ScalarOperand` types can still participate in arithmetic as array elements in</span>
-<span class="doccomment">/// in array-array operations.</span>
+<span class="doccomment">/// Elements that can be used as direct operands in arithmetic with arrays.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// For example, `f64` is a `ScalarOperand` which means that for an array `a`,</span>
+<span class="doccomment">/// arithmetic like `a + 1.0`, and, `a * 2.`, and `a += 3.` are allowed.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// In the description below, let `A` be an array or array view,</span>
+<span class="doccomment">/// let `B` be an array with owned data,</span>
+<span class="doccomment">/// and let `C` be an array with mutable data.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `ScalarOperand` determines for which scalars `K` operations `&amp;A @ K`, and `B @ K`,</span>
+<span class="doccomment">/// and `C @= K` are defined, as ***right hand side operands***, for applicable</span>
+<span class="doccomment">/// arithmetic operators (denoted `@`).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ***Left hand side*** scalar operands are not related to this trait</span>
+<span class="doccomment">/// (they need one `impl` per concrete scalar type); but they are still</span>
+<span class="doccomment">/// implemented for the same types, allowing operations</span>
+<span class="doccomment">/// `K @ &amp;A`, and `K @ B` for primitive numeric types `K`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This trait ***does not*** limit which elements can be stored in an array in general.</span>
+<span class="doccomment">/// Non-`ScalarOperand` types can still participate in arithmetic as array elements in</span>
+<span class="doccomment">/// in array-array operations.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">ScalarOperand</span>: <span class="lifetime">&#39;static</span> <span class="op">+</span> <span class="ident">Clone</span> {}
 <span class="kw">impl</span> <span class="ident">ScalarOperand</span> <span class="kw">for</span> <span class="ident">bool</span> {}
 <span class="kw">impl</span> <span class="ident">ScalarOperand</span> <span class="kw">for</span> <span class="ident">i8</span> {}
@@ -501,16 +501,16 @@
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_binary_op</span>(
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">trt</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">operator</span>:<span class="ident">tt</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">mth</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">iop</span>:<span class="ident">tt</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">doc</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> (
-<span class="doccomment">/// Perform elementwise</span>
+<span class="doccomment">/// Perform elementwise</span>
 <span class="attribute">#[<span class="ident">doc</span><span class="op">=</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">doc</span>]</span>
-<span class="doccomment">/// between `self` and `rhs`,</span>
-<span class="doccomment">/// and return the result (based on `self`).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `self` must be an `Array` or `ArcArray`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If their shapes disagree, `rhs` is broadcast to the shape of `self`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// **Panics** if broadcasting isn’t possible.</span>
+<span class="doccomment">/// between `self` and `rhs`,</span>
+<span class="doccomment">/// and return the result (based on `self`).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `self` must be an `Array` or `ArcArray`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If their shapes disagree, `rhs` is broadcast to the shape of `self`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// **Panics** if broadcasting isn’t possible.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">S</span>, <span class="ident">S2</span>, <span class="ident">D</span>, <span class="ident">E</span><span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">trt</span><span class="op">&lt;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">A</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">trt</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">Output</span><span class="op">=</span><span class="ident">A</span><span class="op">&gt;</span>,
@@ -527,14 +527,14 @@
     }
 }
 
-<span class="doccomment">/// Perform elementwise</span>
+<span class="doccomment">/// Perform elementwise</span>
 <span class="attribute">#[<span class="ident">doc</span><span class="op">=</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">doc</span>]</span>
-<span class="doccomment">/// between `self` and reference `rhs`,</span>
-<span class="doccomment">/// and return the result (based on `self`).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If their shapes disagree, `rhs` is broadcast to the shape of `self`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// **Panics** if broadcasting isn’t possible.</span>
+<span class="doccomment">/// between `self` and reference `rhs`,</span>
+<span class="doccomment">/// and return the result (based on `self`).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If their shapes disagree, `rhs` is broadcast to the shape of `self`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// **Panics** if broadcasting isn’t possible.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">S</span>, <span class="ident">S2</span>, <span class="ident">D</span>, <span class="ident">E</span><span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">trt</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">A</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">trt</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">Output</span><span class="op">=</span><span class="ident">A</span><span class="op">&gt;</span>,
@@ -554,14 +554,14 @@
     }
 }
 
-<span class="doccomment">/// Perform elementwise</span>
+<span class="doccomment">/// Perform elementwise</span>
 <span class="attribute">#[<span class="ident">doc</span><span class="op">=</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">doc</span>]</span>
-<span class="doccomment">/// between references `self` and `rhs`,</span>
-<span class="doccomment">/// and return the result as a new `Array`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If their shapes disagree, `rhs` is broadcast to the shape of `self`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// **Panics** if broadcasting isn’t possible.</span>
+<span class="doccomment">/// between references `self` and `rhs`,</span>
+<span class="doccomment">/// and return the result as a new `Array`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If their shapes disagree, `rhs` is broadcast to the shape of `self`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// **Panics** if broadcasting isn’t possible.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">S</span>, <span class="ident">S2</span>, <span class="ident">D</span>, <span class="ident">E</span><span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">trt</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">A</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">trt</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">Output</span><span class="op">=</span><span class="ident">A</span><span class="op">&gt;</span>,
@@ -573,17 +573,17 @@
 {
     <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>;
     <span class="kw">fn</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">mth</span>(<span class="self">self</span>, <span class="ident">rhs</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">E</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
-        <span class="comment">// FIXME: Can we co-broadcast arrays here? And how?</span>
+        <span class="comment">// FIXME: Can we co-broadcast arrays here? And how?</span>
         <span class="self">self</span>.<span class="ident">to_owned</span>().<span class="macro-nonterminal">$</span><span class="macro-nonterminal">mth</span>(<span class="ident">rhs</span>)
     }
 }
 
-<span class="doccomment">/// Perform elementwise</span>
+<span class="doccomment">/// Perform elementwise</span>
 <span class="attribute">#[<span class="ident">doc</span><span class="op">=</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">doc</span>]</span>
-<span class="doccomment">/// between `self` and the scalar `x`,</span>
-<span class="doccomment">/// and return the result (based on `self`).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `self` must be an `Array` or `ArcArray`.</span>
+<span class="doccomment">/// between `self` and the scalar `x`,</span>
+<span class="doccomment">/// and return the result (based on `self`).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `self` must be an `Array` or `ArcArray`.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span>, <span class="ident">D</span>, <span class="ident">B</span><span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">trt</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>
     <span class="kw">where</span> <span class="ident">A</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">trt</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">Output</span><span class="op">=</span><span class="ident">A</span><span class="op">&gt;</span>,
           <span class="ident">S</span>: <span class="ident">DataOwned</span><span class="op">&lt;</span><span class="ident">Elem</span><span class="op">=</span><span class="ident">A</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">DataMut</span>,
@@ -599,10 +599,10 @@
     }
 }
 
-<span class="doccomment">/// Perform elementwise</span>
+<span class="doccomment">/// Perform elementwise</span>
 <span class="attribute">#[<span class="ident">doc</span><span class="op">=</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">doc</span>]</span>
-<span class="doccomment">/// between the reference `self` and the scalar `x`,</span>
-<span class="doccomment">/// and return the result as a new `Array`.</span>
+<span class="doccomment">/// between the reference `self` and the scalar `x`,</span>
+<span class="doccomment">/// and return the result as a new `Array`.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">S</span>, <span class="ident">D</span>, <span class="ident">B</span><span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">trt</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>
     <span class="kw">where</span> <span class="ident">A</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">trt</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">Output</span><span class="op">=</span><span class="ident">A</span><span class="op">&gt;</span>,
           <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span><span class="op">=</span><span class="ident">A</span><span class="op">&gt;</span>,
@@ -617,7 +617,7 @@
     );
 );
 
-<span class="comment">// Pick the expression $a for commutative and $b for ordered binop</span>
+<span class="comment">// Pick the expression $a for commutative and $b for ordered binop</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">if_commutative</span> {
     (<span class="ident">Commute</span> { <span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>:<span class="ident">expr</span> } <span class="ident">or</span> { <span class="macro-nonterminal">$</span><span class="macro-nonterminal">b</span>:<span class="ident">expr</span> }) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="macro-nonterminal">$</span><span class="macro-nonterminal">a</span>
@@ -628,13 +628,13 @@
 }
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_scalar_lhs_op</span> {
-    <span class="comment">// $commutative flag. Reuse the self + scalar impl if we can.</span>
-    <span class="comment">// We can do this safely since these are the primitive numeric types</span>
+    <span class="comment">// $commutative flag. Reuse the self + scalar impl if we can.</span>
+    <span class="comment">// We can do this safely since these are the primitive numeric types</span>
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">scalar</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">commutative</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">operator</span>:<span class="ident">tt</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">trt</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">mth</span>:<span class="ident">ident</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">doc</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> (
-<span class="comment">// these have no doc -- they are not visible in rustdoc</span>
-<span class="comment">// Perform elementwise</span>
-<span class="comment">// between the scalar `self` and array `rhs`,</span>
-<span class="comment">// and return the result (based on `self`).</span>
+<span class="comment">// these have no doc -- they are not visible in rustdoc</span>
+<span class="comment">// Perform elementwise</span>
+<span class="comment">// between the scalar `self` and array `rhs`,</span>
+<span class="comment">// and return the result (based on `self`).</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">trt</span><span class="op">&lt;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">scalar</span>
     <span class="kw">where</span> <span class="ident">S</span>: <span class="ident">DataOwned</span><span class="op">&lt;</span><span class="ident">Elem</span><span class="op">=</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">scalar</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">DataMut</span>,
           <span class="ident">D</span>: <span class="ident">Dimension</span>,
@@ -653,9 +653,9 @@
     }
 }
 
-<span class="comment">// Perform elementwise</span>
-<span class="comment">// between the scalar `self` and array `rhs`,</span>
-<span class="comment">// and return the result as a new `Array`.</span>
+<span class="comment">// Perform elementwise</span>
+<span class="comment">// between the scalar `self` and array `rhs`,</span>
+<span class="comment">// and return the result as a new `Array`.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">trt</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">scalar</span>
     <span class="kw">where</span> <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span><span class="op">=</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">scalar</span><span class="op">&gt;</span>,
           <span class="ident">D</span>: <span class="ident">Dimension</span>,
@@ -748,7 +748,7 @@
         <span class="ident">D</span>: <span class="ident">Dimension</span>,
     {
         <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="self">Self</span>;
-        <span class="doccomment">/// Perform an elementwise negation of `self` and return the result.</span>
+        <span class="doccomment">/// Perform an elementwise negation of `self` and return the result.</span>
         <span class="kw">fn</span> <span class="ident">neg</span>(<span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
             <span class="self">self</span>.<span class="ident">unordered_foreach_mut</span>(<span class="op">|</span><span class="ident">elt</span><span class="op">|</span> {
                 <span class="kw-2">*</span><span class="ident">elt</span> <span class="op">=</span> <span class="op">-</span><span class="ident">elt</span>.<span class="ident">clone</span>();
@@ -764,8 +764,8 @@
         <span class="ident">D</span>: <span class="ident">Dimension</span>,
     {
         <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>;
-        <span class="doccomment">/// Perform an elementwise negation of reference `self` and return the</span>
-        <span class="doccomment">/// result as a new `Array`.</span>
+        <span class="doccomment">/// Perform an elementwise negation of reference `self` and return the</span>
+        <span class="doccomment">/// result as a new `Array`.</span>
         <span class="kw">fn</span> <span class="ident">neg</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
             <span class="self">self</span>.<span class="ident">map</span>(<span class="ident">Neg</span>::<span class="ident">neg</span>)
         }
@@ -778,7 +778,7 @@
         <span class="ident">D</span>: <span class="ident">Dimension</span>,
     {
         <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="self">Self</span>;
-        <span class="doccomment">/// Perform an elementwise unary not of `self` and return the result.</span>
+        <span class="doccomment">/// Perform an elementwise unary not of `self` and return the result.</span>
         <span class="kw">fn</span> <span class="ident">not</span>(<span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
             <span class="self">self</span>.<span class="ident">unordered_foreach_mut</span>(<span class="op">|</span><span class="ident">elt</span><span class="op">|</span> {
                 <span class="kw-2">*</span><span class="ident">elt</span> <span class="op">=</span> <span class="op">!</span><span class="ident">elt</span>.<span class="ident">clone</span>();
@@ -794,8 +794,8 @@
         <span class="ident">D</span>: <span class="ident">Dimension</span>,
     {
         <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>;
-        <span class="doccomment">/// Perform an elementwise unary not of reference `self` and return the</span>
-        <span class="doccomment">/// result as a new `Array`.</span>
+        <span class="doccomment">/// Perform an elementwise unary not of reference `self` and return the</span>
+        <span class="doccomment">/// result as a new `Array`.</span>
         <span class="kw">fn</span> <span class="ident">not</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
             <span class="self">self</span>.<span class="ident">map</span>(<span class="ident">Not</span>::<span class="ident">not</span>)
         }
@@ -811,9 +811,9 @@
             <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">trt</span>;
 
             <span class="attribute">#[<span class="ident">doc</span><span class="op">=</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">doc</span>]</span>
-            <span class="doccomment">/// If their shapes disagree, `rhs` is broadcast to the shape of `self`.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// **Panics** if broadcasting isn’t possible.</span>
+            <span class="doccomment">/// If their shapes disagree, `rhs` is broadcast to the shape of `self`.</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// **Panics** if broadcasting isn’t possible.</span>
             <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">S</span>, <span class="ident">S2</span>, <span class="ident">D</span>, <span class="ident">E</span><span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">trt</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>
             <span class="kw">where</span>
                 <span class="ident">A</span>: <span class="ident">Clone</span> <span class="op">+</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">trt</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>,

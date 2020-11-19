@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/ndarray-0.13.1/src/impl_raw_views.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>impl_raw_views.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -303,10 +303,10 @@
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="doccomment">/// Create a new `RawArrayView`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Unsafe because caller is responsible for ensuring that the array will</span>
-    <span class="doccomment">/// meet all of the invariants of the `ArrayBase` type.</span>
+    <span class="doccomment">/// Create a new `RawArrayView`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Unsafe because caller is responsible for ensuring that the array will</span>
+    <span class="doccomment">/// meet all of the invariants of the `ArrayBase` type.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">ptr</span>: <span class="ident">NonNull</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>, <span class="ident">dim</span>: <span class="ident">D</span>, <span class="ident">strides</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">RawArrayView</span> {
@@ -321,41 +321,41 @@
         <span class="self">Self</span>::<span class="ident">new</span>(<span class="ident">nonnull_debug_checked_from_ptr</span>(<span class="ident">ptr</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">A</span>), <span class="ident">dim</span>, <span class="ident">strides</span>)
     }
 
-    <span class="doccomment">/// Create an `RawArrayView&lt;A, D&gt;` from shape information and a raw pointer</span>
-    <span class="doccomment">/// to the elements.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Safety</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The caller is responsible for ensuring all of the following:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `ptr` must be non-null, and it must be safe to [`.offset()`] `ptr` by</span>
-    <span class="doccomment">///   zero.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * It must be safe to [`.offset()`] the pointer repeatedly along all</span>
-    <span class="doccomment">///   axes and calculate the `count`s for the `.offset()` calls without</span>
-    <span class="doccomment">///   overflow, even if the array is empty or the elements are zero-sized.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///   In other words,</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///   * All possible pointers generated by moving along all axes must be in</span>
-    <span class="doccomment">///     bounds or one byte past the end of a single allocation with element</span>
-    <span class="doccomment">///     type `A`. The only exceptions are if the array is empty or the element</span>
-    <span class="doccomment">///     type is zero-sized. In these cases, `ptr` may be dangling, but it must</span>
-    <span class="doccomment">///     still be safe to [`.offset()`] the pointer along the axes.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///   * The offset in units of bytes between the least address and greatest</span>
-    <span class="doccomment">///     address by moving along all axes must not exceed `isize::MAX`. This</span>
-    <span class="doccomment">///     constraint prevents the computed offset, in bytes, from overflowing</span>
-    <span class="doccomment">///     `isize` regardless of the starting point due to past offsets.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///   * The offset in units of `A` between the least address and greatest</span>
-    <span class="doccomment">///     address by moving along all axes must not exceed `isize::MAX`. This</span>
-    <span class="doccomment">///     constraint prevents overflow when calculating the `count` parameter to</span>
-    <span class="doccomment">///     [`.offset()`] regardless of the starting point due to past offsets.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * The product of non-zero axis lengths must not exceed `isize::MAX`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`.offset()`]: https://doc.rust-lang.org/stable/std/primitive.pointer.html#method.offset</span>
+    <span class="doccomment">/// Create an `RawArrayView&lt;A, D&gt;` from shape information and a raw pointer</span>
+    <span class="doccomment">/// to the elements.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Safety</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The caller is responsible for ensuring all of the following:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `ptr` must be non-null, and it must be safe to [`.offset()`] `ptr` by</span>
+    <span class="doccomment">///   zero.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * It must be safe to [`.offset()`] the pointer repeatedly along all</span>
+    <span class="doccomment">///   axes and calculate the `count`s for the `.offset()` calls without</span>
+    <span class="doccomment">///   overflow, even if the array is empty or the elements are zero-sized.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///   In other words,</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///   * All possible pointers generated by moving along all axes must be in</span>
+    <span class="doccomment">///     bounds or one byte past the end of a single allocation with element</span>
+    <span class="doccomment">///     type `A`. The only exceptions are if the array is empty or the element</span>
+    <span class="doccomment">///     type is zero-sized. In these cases, `ptr` may be dangling, but it must</span>
+    <span class="doccomment">///     still be safe to [`.offset()`] the pointer along the axes.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///   * The offset in units of bytes between the least address and greatest</span>
+    <span class="doccomment">///     address by moving along all axes must not exceed `isize::MAX`. This</span>
+    <span class="doccomment">///     constraint prevents the computed offset, in bytes, from overflowing</span>
+    <span class="doccomment">///     `isize` regardless of the starting point due to past offsets.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///   * The offset in units of `A` between the least address and greatest</span>
+    <span class="doccomment">///     address by moving along all axes must not exceed `isize::MAX`. This</span>
+    <span class="doccomment">///     constraint prevents overflow when calculating the `count` parameter to</span>
+    <span class="doccomment">///     [`.offset()`] regardless of the starting point due to past offsets.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * The product of non-zero axis lengths must not exceed `isize::MAX`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`.offset()`]: https://doc.rust-lang.org/stable/std/primitive.pointer.html#method.offset</span>
     <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_shape_ptr</span><span class="op">&lt;</span><span class="ident">Sh</span><span class="op">&gt;</span>(<span class="ident">shape</span>: <span class="ident">Sh</span>, <span class="ident">ptr</span>: <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">Sh</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">StrideShape</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span>,
@@ -370,14 +370,14 @@
         <span class="ident">RawArrayView</span>::<span class="ident">new_</span>(<span class="ident">ptr</span>, <span class="ident">dim</span>, <span class="ident">strides</span>)
     }
 
-    <span class="doccomment">/// Converts to a read-only view of the array.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Safety</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// From a safety standpoint, this is equivalent to dereferencing a raw</span>
-    <span class="doccomment">/// pointer for every element in the array. You must ensure that all of the</span>
-    <span class="doccomment">/// data is valid, ensure that the pointer is aligned, and choose the</span>
-    <span class="doccomment">/// correct lifetime.</span>
+    <span class="doccomment">/// Converts to a read-only view of the array.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Safety</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// From a safety standpoint, this is equivalent to dereferencing a raw</span>
+    <span class="doccomment">/// pointer for every element in the array. You must ensure that all of the</span>
+    <span class="doccomment">/// data is valid, ensure that the pointer is aligned, and choose the</span>
+    <span class="doccomment">/// correct lifetime.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">deref_into_view</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
         <span class="macro">debug_assert</span><span class="macro">!</span>(
@@ -387,10 +387,10 @@
         <span class="ident">ArrayView</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">ptr</span>, <span class="self">self</span>.<span class="ident">dim</span>, <span class="self">self</span>.<span class="ident">strides</span>)
     }
 
-    <span class="doccomment">/// Split the array view along `axis` and return one array pointer strictly</span>
-    <span class="doccomment">/// before the split and one array pointer after the split.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if `axis` or `index` is out of bounds.</span>
+    <span class="doccomment">/// Split the array view along `axis` and return one array pointer strictly</span>
+    <span class="doccomment">/// before the split and one array pointer after the split.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if `axis` or `index` is out of bounds.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">split_at</span>(<span class="self">self</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>, <span class="ident">index</span>: <span class="ident">Ix</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="self">Self</span>, <span class="self">Self</span>) {
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">index</span> <span class="op">&lt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">len_of</span>(<span class="ident">axis</span>));
         <span class="kw">let</span> <span class="ident">left_ptr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>();
@@ -398,7 +398,7 @@
             <span class="self">self</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>()
         } <span class="kw">else</span> {
             <span class="kw">let</span> <span class="ident">offset</span> <span class="op">=</span> <span class="ident">stride_offset</span>(<span class="ident">index</span>, <span class="self">self</span>.<span class="ident">strides</span>.<span class="ident">axis</span>(<span class="ident">axis</span>));
-            <span class="comment">// The `.offset()` is safe due to the guarantees of `RawData`.</span>
+            <span class="comment">// The `.offset()` is safe due to the guarantees of `RawData`.</span>
             <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">ptr</span>.<span class="ident">as_ptr</span>().<span class="ident">offset</span>(<span class="ident">offset</span>) }
         };
 
@@ -414,16 +414,16 @@
         (<span class="ident">left</span>, <span class="ident">right</span>)
     }
 
-    <span class="doccomment">/// Cast the raw pointer of the raw array view to a different type</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if element size is not compatible.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Lack of panic does not imply it is a valid cast. The cast works the same</span>
-    <span class="doccomment">/// way as regular raw pointer casts.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// While this method is safe, for the same reason as regular raw pointer</span>
-    <span class="doccomment">/// casts are safe, access through the produced raw view is only possible</span>
-    <span class="doccomment">/// in an unsafe block or function.</span>
+    <span class="doccomment">/// Cast the raw pointer of the raw array view to a different type</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if element size is not compatible.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Lack of panic does not imply it is a valid cast. The cast works the same</span>
+    <span class="doccomment">/// way as regular raw pointer casts.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// While this method is safe, for the same reason as regular raw pointer</span>
+    <span class="doccomment">/// casts are safe, access through the produced raw view is only possible</span>
+    <span class="doccomment">/// in an unsafe block or function.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cast</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RawArrayView</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">D</span><span class="op">&gt;</span> {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
             <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>(),
@@ -439,10 +439,10 @@
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="doccomment">/// Create a new `RawArrayViewMut`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Unsafe because caller is responsible for ensuring that the array will</span>
-    <span class="doccomment">/// meet all of the invariants of the `ArrayBase` type.</span>
+    <span class="doccomment">/// Create a new `RawArrayViewMut`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Unsafe because caller is responsible for ensuring that the array will</span>
+    <span class="doccomment">/// meet all of the invariants of the `ArrayBase` type.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">ptr</span>: <span class="ident">NonNull</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>, <span class="ident">dim</span>: <span class="ident">D</span>, <span class="ident">strides</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">RawArrayViewMut</span> {
@@ -457,41 +457,41 @@
         <span class="self">Self</span>::<span class="ident">new</span>(<span class="ident">nonnull_debug_checked_from_ptr</span>(<span class="ident">ptr</span>), <span class="ident">dim</span>, <span class="ident">strides</span>)
     }
 
-    <span class="doccomment">/// Create an `RawArrayViewMut&lt;A, D&gt;` from shape information and a raw</span>
-    <span class="doccomment">/// pointer to the elements.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Safety</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The caller is responsible for ensuring all of the following:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * `ptr` must be non-null, and it must be safe to [`.offset()`] `ptr` by</span>
-    <span class="doccomment">///   zero.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * It must be safe to [`.offset()`] the pointer repeatedly along all</span>
-    <span class="doccomment">///   axes and calculate the `count`s for the `.offset()` calls without</span>
-    <span class="doccomment">///   overflow, even if the array is empty or the elements are zero-sized.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///   In other words,</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///   * All possible pointers generated by moving along all axes must be in</span>
-    <span class="doccomment">///     bounds or one byte past the end of a single allocation with element</span>
-    <span class="doccomment">///     type `A`. The only exceptions are if the array is empty or the element</span>
-    <span class="doccomment">///     type is zero-sized. In these cases, `ptr` may be dangling, but it must</span>
-    <span class="doccomment">///     still be safe to [`.offset()`] the pointer along the axes.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///   * The offset in units of bytes between the least address and greatest</span>
-    <span class="doccomment">///     address by moving along all axes must not exceed `isize::MAX`. This</span>
-    <span class="doccomment">///     constraint prevents the computed offset, in bytes, from overflowing</span>
-    <span class="doccomment">///     `isize` regardless of the starting point due to past offsets.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">///   * The offset in units of `A` between the least address and greatest</span>
-    <span class="doccomment">///     address by moving along all axes must not exceed `isize::MAX`. This</span>
-    <span class="doccomment">///     constraint prevents overflow when calculating the `count` parameter to</span>
-    <span class="doccomment">///     [`.offset()`] regardless of the starting point due to past offsets.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * The product of non-zero axis lengths must not exceed `isize::MAX`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`.offset()`]: https://doc.rust-lang.org/stable/std/primitive.pointer.html#method.offset</span>
+    <span class="doccomment">/// Create an `RawArrayViewMut&lt;A, D&gt;` from shape information and a raw</span>
+    <span class="doccomment">/// pointer to the elements.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Safety</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The caller is responsible for ensuring all of the following:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * `ptr` must be non-null, and it must be safe to [`.offset()`] `ptr` by</span>
+    <span class="doccomment">///   zero.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * It must be safe to [`.offset()`] the pointer repeatedly along all</span>
+    <span class="doccomment">///   axes and calculate the `count`s for the `.offset()` calls without</span>
+    <span class="doccomment">///   overflow, even if the array is empty or the elements are zero-sized.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///   In other words,</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///   * All possible pointers generated by moving along all axes must be in</span>
+    <span class="doccomment">///     bounds or one byte past the end of a single allocation with element</span>
+    <span class="doccomment">///     type `A`. The only exceptions are if the array is empty or the element</span>
+    <span class="doccomment">///     type is zero-sized. In these cases, `ptr` may be dangling, but it must</span>
+    <span class="doccomment">///     still be safe to [`.offset()`] the pointer along the axes.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///   * The offset in units of bytes between the least address and greatest</span>
+    <span class="doccomment">///     address by moving along all axes must not exceed `isize::MAX`. This</span>
+    <span class="doccomment">///     constraint prevents the computed offset, in bytes, from overflowing</span>
+    <span class="doccomment">///     `isize` regardless of the starting point due to past offsets.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">///   * The offset in units of `A` between the least address and greatest</span>
+    <span class="doccomment">///     address by moving along all axes must not exceed `isize::MAX`. This</span>
+    <span class="doccomment">///     constraint prevents overflow when calculating the `count` parameter to</span>
+    <span class="doccomment">///     [`.offset()`] regardless of the starting point due to past offsets.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * The product of non-zero axis lengths must not exceed `isize::MAX`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`.offset()`]: https://doc.rust-lang.org/stable/std/primitive.pointer.html#method.offset</span>
     <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">from_shape_ptr</span><span class="op">&lt;</span><span class="ident">Sh</span><span class="op">&gt;</span>(<span class="ident">shape</span>: <span class="ident">Sh</span>, <span class="ident">ptr</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">A</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">Sh</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">StrideShape</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span>,
@@ -506,20 +506,20 @@
         <span class="ident">RawArrayViewMut</span>::<span class="ident">new_</span>(<span class="ident">ptr</span>, <span class="ident">dim</span>, <span class="ident">strides</span>)
     }
 
-    <span class="doccomment">/// Converts to a non-mutable `RawArrayView`.</span>
+    <span class="doccomment">/// Converts to a non-mutable `RawArrayView`.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">into_raw_view</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RawArrayView</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> { <span class="ident">RawArrayView</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">ptr</span>, <span class="self">self</span>.<span class="ident">dim</span>, <span class="self">self</span>.<span class="ident">strides</span>) }
     }
 
-    <span class="doccomment">/// Converts to a read-only view of the array.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Safety</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// From a safety standpoint, this is equivalent to dereferencing a raw</span>
-    <span class="doccomment">/// pointer for every element in the array. You must ensure that all of the</span>
-    <span class="doccomment">/// data is valid, ensure that the pointer is aligned, and choose the</span>
-    <span class="doccomment">/// correct lifetime.</span>
+    <span class="doccomment">/// Converts to a read-only view of the array.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Safety</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// From a safety standpoint, this is equivalent to dereferencing a raw</span>
+    <span class="doccomment">/// pointer for every element in the array. You must ensure that all of the</span>
+    <span class="doccomment">/// data is valid, ensure that the pointer is aligned, and choose the</span>
+    <span class="doccomment">/// correct lifetime.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">deref_into_view</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
         <span class="macro">debug_assert</span><span class="macro">!</span>(
@@ -529,14 +529,14 @@
         <span class="ident">ArrayView</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">ptr</span>, <span class="self">self</span>.<span class="ident">dim</span>, <span class="self">self</span>.<span class="ident">strides</span>)
     }
 
-    <span class="doccomment">/// Converts to a mutable view of the array.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// # Safety</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// From a safety standpoint, this is equivalent to dereferencing a raw</span>
-    <span class="doccomment">/// pointer for every element in the array. You must ensure that all of the</span>
-    <span class="doccomment">/// data is valid, ensure that the pointer is aligned, and choose the</span>
-    <span class="doccomment">/// correct lifetime.</span>
+    <span class="doccomment">/// Converts to a mutable view of the array.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// # Safety</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// From a safety standpoint, this is equivalent to dereferencing a raw</span>
+    <span class="doccomment">/// pointer for every element in the array. You must ensure that all of the</span>
+    <span class="doccomment">/// data is valid, ensure that the pointer is aligned, and choose the</span>
+    <span class="doccomment">/// correct lifetime.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">deref_into_view_mut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArrayViewMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
         <span class="macro">debug_assert</span><span class="macro">!</span>(
@@ -546,10 +546,10 @@
         <span class="ident">ArrayViewMut</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">ptr</span>, <span class="self">self</span>.<span class="ident">dim</span>, <span class="self">self</span>.<span class="ident">strides</span>)
     }
 
-    <span class="doccomment">/// Split the array view along `axis` and return one array pointer strictly</span>
-    <span class="doccomment">/// before the split and one array pointer after the split.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if `axis` or `index` is out of bounds.</span>
+    <span class="doccomment">/// Split the array view along `axis` and return one array pointer strictly</span>
+    <span class="doccomment">/// before the split and one array pointer after the split.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if `axis` or `index` is out of bounds.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">split_at</span>(<span class="self">self</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>, <span class="ident">index</span>: <span class="ident">Ix</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="self">Self</span>, <span class="self">Self</span>) {
         <span class="kw">let</span> (<span class="ident">left</span>, <span class="ident">right</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">into_raw_view</span>().<span class="ident">split_at</span>(<span class="ident">axis</span>, <span class="ident">index</span>);
         <span class="kw">unsafe</span> {
@@ -560,16 +560,16 @@
         }
     }
 
-    <span class="doccomment">/// Cast the raw pointer of the raw array view to a different type</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if element size is not compatible.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Lack of panic does not imply it is a valid cast. The cast works the same</span>
-    <span class="doccomment">/// way as regular raw pointer casts.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// While this method is safe, for the same reason as regular raw pointer</span>
-    <span class="doccomment">/// casts are safe, access through the produced raw view is only possible</span>
-    <span class="doccomment">/// in an unsafe block or function.</span>
+    <span class="doccomment">/// Cast the raw pointer of the raw array view to a different type</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if element size is not compatible.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Lack of panic does not imply it is a valid cast. The cast works the same</span>
+    <span class="doccomment">/// way as regular raw pointer casts.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// While this method is safe, for the same reason as regular raw pointer</span>
+    <span class="doccomment">/// casts are safe, access through the produced raw view is only possible</span>
+    <span class="doccomment">/// in an unsafe block or function.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">cast</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">RawArrayViewMut</span><span class="op">&lt;</span><span class="ident">B</span>, <span class="ident">D</span><span class="op">&gt;</span> {
         <span class="macro">assert_eq</span><span class="macro">!</span>(
             <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>(),

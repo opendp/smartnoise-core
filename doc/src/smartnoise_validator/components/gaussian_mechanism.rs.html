@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `validator-rust/src/components/gaussian_mechanism.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>gaussian_mechanism.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../smartnoise_validator/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../smartnoise_validator/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -289,6 +289,79 @@
 <span id="286">286</span>
 <span id="287">287</span>
 <span id="288">288</span>
+<span id="289">289</span>
+<span id="290">290</span>
+<span id="291">291</span>
+<span id="292">292</span>
+<span id="293">293</span>
+<span id="294">294</span>
+<span id="295">295</span>
+<span id="296">296</span>
+<span id="297">297</span>
+<span id="298">298</span>
+<span id="299">299</span>
+<span id="300">300</span>
+<span id="301">301</span>
+<span id="302">302</span>
+<span id="303">303</span>
+<span id="304">304</span>
+<span id="305">305</span>
+<span id="306">306</span>
+<span id="307">307</span>
+<span id="308">308</span>
+<span id="309">309</span>
+<span id="310">310</span>
+<span id="311">311</span>
+<span id="312">312</span>
+<span id="313">313</span>
+<span id="314">314</span>
+<span id="315">315</span>
+<span id="316">316</span>
+<span id="317">317</span>
+<span id="318">318</span>
+<span id="319">319</span>
+<span id="320">320</span>
+<span id="321">321</span>
+<span id="322">322</span>
+<span id="323">323</span>
+<span id="324">324</span>
+<span id="325">325</span>
+<span id="326">326</span>
+<span id="327">327</span>
+<span id="328">328</span>
+<span id="329">329</span>
+<span id="330">330</span>
+<span id="331">331</span>
+<span id="332">332</span>
+<span id="333">333</span>
+<span id="334">334</span>
+<span id="335">335</span>
+<span id="336">336</span>
+<span id="337">337</span>
+<span id="338">338</span>
+<span id="339">339</span>
+<span id="340">340</span>
+<span id="341">341</span>
+<span id="342">342</span>
+<span id="343">343</span>
+<span id="344">344</span>
+<span id="345">345</span>
+<span id="346">346</span>
+<span id="347">347</span>
+<span id="348">348</span>
+<span id="349">349</span>
+<span id="350">350</span>
+<span id="351">351</span>
+<span id="352">352</span>
+<span id="353">353</span>
+<span id="354">354</span>
+<span id="355">355</span>
+<span id="356">356</span>
+<span id="357">357</span>
+<span id="358">358</span>
+<span id="359">359</span>
+<span id="360">360</span>
+<span id="361">361</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> ::<span class="ident">itertools</span>::<span class="ident">izip</span>;
 <span class="kw">use</span> <span class="ident">indexmap</span>::<span class="ident">map</span>::<span class="ident">IndexMap</span>;
@@ -336,10 +409,10 @@
         <span class="ident">aggregator</span>.<span class="ident">component</span>.<span class="ident">compute_sensitivity</span>(
             <span class="ident">privacy_definition</span>,
             <span class="kw-2">&amp;</span><span class="ident">aggregator</span>.<span class="ident">properties</span>,
-            <span class="kw-2">&amp;</span><span class="ident">SensitivitySpace</span>::<span class="ident">KNorm</span>(<span class="number">2</span>))<span class="question-mark">?</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">float</span>()<span class="question-mark">?</span>;
+            <span class="kw-2">&amp;</span><span class="ident">SensitivitySpace</span>::<span class="ident">KNorm</span>(<span class="number">2</span>))<span class="question-mark">?</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">cast_float</span>()<span class="question-mark">?</span>;
 
         <span class="comment">// make sure lipschitz constants are available as float arrays</span>
-        <span class="ident">aggregator</span>.<span class="ident">lipschitz_constants</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">float</span>()<span class="question-mark">?</span>;
+        <span class="ident">aggregator</span>.<span class="ident">lipschitz_constants</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">cast_float</span>()<span class="question-mark">?</span>;
 
         <span class="kw">let</span> <span class="ident">privacy_usage</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">privacy_usage</span>.<span class="ident">iter</span>().<span class="ident">cloned</span>().<span class="ident">map</span>(<span class="prelude-val">Ok</span>)
             .<span class="ident">fold1</span>(<span class="op">|</span><span class="ident">l</span>, <span class="ident">r</span><span class="op">|</span> <span class="ident">l</span><span class="question-mark">?</span> <span class="op">+</span> <span class="ident">r</span><span class="question-mark">?</span>).<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;privacy_usage: must be defined&quot;</span>)<span class="question-mark">?</span><span class="question-mark">?</span>;
@@ -426,17 +499,22 @@
             .<span class="ident">ok_or</span>(<span class="string">&quot;data: missing&quot;</span>)<span class="question-mark">?</span>.<span class="ident">array</span>()
             .<span class="ident">map_err</span>(<span class="ident">prepend</span>(<span class="string">&quot;data:&quot;</span>))<span class="question-mark">?</span>.<span class="ident">clone</span>();
 
-        <span class="kw">let</span> <span class="ident">aggregator</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">aggregator</span>
+        <span class="kw">let</span> <span class="ident">aggregator</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">aggregator</span>.<span class="ident">as_ref</span>()
             .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;aggregator: missing&quot;</span>))<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">sensitivity_value</span> <span class="op">=</span> <span class="ident">aggregator</span>.<span class="ident">component</span>.<span class="ident">compute_sensitivity</span>(
+        <span class="comment">// sensitivity must be computable</span>
+        <span class="kw">let</span> <span class="ident">sensitivity_values</span> <span class="op">=</span> <span class="ident">aggregator</span>.<span class="ident">component</span>.<span class="ident">compute_sensitivity</span>(
             <span class="kw-2">&amp;</span><span class="ident">privacy_definition</span>,
             <span class="kw-2">&amp;</span><span class="ident">aggregator</span>.<span class="ident">properties</span>,
             <span class="kw-2">&amp;</span><span class="ident">SensitivitySpace</span>::<span class="ident">KNorm</span>(<span class="number">2</span>))<span class="question-mark">?</span>;
 
-        <span class="comment">// sensitivity must be computable</span>
-        <span class="kw">let</span> <span class="ident">sensitivities</span> <span class="op">=</span> <span class="ident">sensitivity_value</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">float</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">usages</span> <span class="op">=</span> <span class="ident">spread_privacy_usage</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">privacy_usage</span>, <span class="ident">sensitivities</span>.<span class="ident">len</span>())<span class="question-mark">?</span>;
+        <span class="comment">// take max sensitivity of each column</span>
+        <span class="kw">let</span> <span class="ident">sensitivities</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">sensitivity_values</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">cast_float</span>()<span class="question-mark">?</span>
+            .<span class="ident">gencolumns</span>().<span class="ident">into_iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">sensitivity_col</span><span class="op">|</span> <span class="ident">sensitivity_col</span>.<span class="ident">into_iter</span>().<span class="ident">copied</span>().<span class="ident">fold1</span>(<span class="op">|</span><span class="ident">l</span>, <span class="ident">r</span><span class="op">|</span> <span class="ident">l</span>.<span class="ident">max</span>(<span class="ident">r</span>)).<span class="ident">unwrap</span>())
+            .<span class="ident">collect</span>();
+
+        <span class="kw">let</span> <span class="ident">usages</span> <span class="op">=</span> <span class="ident">spread_privacy_usage</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">privacy_usage</span>, <span class="ident">data_property</span>.<span class="ident">num_columns</span>()<span class="question-mark">?</span> <span class="kw">as</span> <span class="ident">usize</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">delta</span> <span class="op">=</span> <span class="ident">usages</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">get_delta</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">iter</span> <span class="op">=</span> <span class="macro">izip</span><span class="macro">!</span>(<span class="ident">sensitivities</span>.<span class="ident">into_iter</span>(), <span class="ident">accuracies</span>.<span class="ident">values</span>.<span class="ident">iter</span>(), <span class="ident">delta</span>.<span class="ident">into_iter</span>());
 
@@ -444,11 +522,11 @@
 
         <span class="prelude-val">Some</span>(<span class="ident">iter</span>.<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">sensitivity</span>, <span class="ident">accuracy</span>, <span class="ident">delta</span>)<span class="op">|</span> {
             <span class="kw">let</span> <span class="ident">sigma</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">analytic</span> {
-                <span class="kw">let</span> <span class="ident">c</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">2.0_f64</span> <span class="op">*</span> (<span class="number">1.25_f64</span> <span class="op">/</span> <span class="ident">delta</span>).<span class="ident">ln</span>();
-                <span class="ident">c</span>.<span class="ident">sqrt</span>() <span class="op">*</span> <span class="kw-2">*</span><span class="ident">sensitivity</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">/</span> <span class="ident">accuracy</span>.<span class="ident">value</span>
-            } <span class="kw">else</span> {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;converting to privacy usage is not implemented for the analytic gaussian&quot;</span>))
+            } <span class="kw">else</span> {
+                (<span class="number">2.0</span> <span class="op">*</span> (<span class="number">1.25</span> <span class="op">/</span> <span class="ident">delta</span>).<span class="ident">ln</span>()).<span class="ident">sqrt</span>() <span class="op">*</span> <span class="ident">sensitivity</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">/</span> <span class="ident">accuracy</span>.<span class="ident">value</span>
             };
+
             <span class="prelude-val">Ok</span>(<span class="ident">proto</span>::<span class="ident">PrivacyUsage</span> {
                 <span class="ident">distance</span>: <span class="prelude-val">Some</span>(<span class="ident">Distance</span>::<span class="ident">Approximate</span>(<span class="ident">DistanceApproximate</span> {
                     <span class="ident">epsilon</span>: <span class="ident">sigma</span> <span class="op">*</span> <span class="number">2.0_f64</span>.<span class="ident">sqrt</span>() <span class="op">*</span> <span class="ident">erf</span>::<span class="ident">erf_inv</span>(<span class="number">1.0_f64</span> <span class="op">-</span> <span class="ident">accuracy</span>.<span class="ident">alpha</span>),
@@ -472,70 +550,103 @@
         <span class="kw">let</span> <span class="ident">aggregator</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">aggregator</span>
             .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Error</span>::<span class="ident">from</span>(<span class="string">&quot;aggregator: missing&quot;</span>))<span class="question-mark">?</span>;
 
-        <span class="kw">let</span> <span class="ident">sensitivities_value</span> <span class="op">=</span> <span class="ident">aggregator</span>.<span class="ident">component</span>.<span class="ident">compute_sensitivity</span>(
+        <span class="comment">// sensitivity must be computable</span>
+        <span class="kw">let</span> <span class="ident">sensitivity_values</span> <span class="op">=</span> <span class="ident">aggregator</span>.<span class="ident">component</span>.<span class="ident">compute_sensitivity</span>(
             <span class="kw-2">&amp;</span><span class="ident">privacy_definition</span>,
             <span class="kw-2">&amp;</span><span class="ident">aggregator</span>.<span class="ident">properties</span>,
-            <span class="kw-2">&amp;</span><span class="ident">SensitivitySpace</span>::<span class="ident">KNorm</span>(<span class="number">1</span>))<span class="question-mark">?</span>;
+            <span class="kw-2">&amp;</span><span class="ident">SensitivitySpace</span>::<span class="ident">KNorm</span>(<span class="number">2</span>))<span class="question-mark">?</span>;
 
-        <span class="comment">// sensitivity must be computable</span>
-        <span class="kw">let</span> <span class="ident">sensitivities</span> <span class="op">=</span> <span class="ident">sensitivities_value</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">float</span>()<span class="question-mark">?</span>;
+        <span class="comment">// take max sensitivity of each column</span>
+        <span class="kw">let</span> <span class="ident">sensitivities</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">sensitivity_values</span>.<span class="ident">array</span>()<span class="question-mark">?</span>.<span class="ident">cast_float</span>()<span class="question-mark">?</span>
+            .<span class="ident">gencolumns</span>().<span class="ident">into_iter</span>()
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">sensitivity_col</span><span class="op">|</span> <span class="ident">sensitivity_col</span>.<span class="ident">into_iter</span>().<span class="ident">copied</span>().<span class="ident">fold1</span>(<span class="op">|</span><span class="ident">l</span>, <span class="ident">r</span><span class="op">|</span> <span class="ident">l</span>.<span class="ident">max</span>(<span class="ident">r</span>)).<span class="ident">unwrap</span>())
+            .<span class="ident">collect</span>();
 
         <span class="kw">let</span> <span class="ident">usages</span> <span class="op">=</span> <span class="ident">spread_privacy_usage</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">privacy_usage</span>, <span class="ident">sensitivities</span>.<span class="ident">len</span>())<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">epsilons</span> <span class="op">=</span> <span class="ident">usages</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">get_epsilon</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">deltas</span> <span class="op">=</span> <span class="ident">usages</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="ident">get_delta</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">iter</span> <span class="op">=</span> <span class="macro">izip</span><span class="macro">!</span>(<span class="ident">sensitivities</span>.<span class="ident">into_iter</span>(), <span class="ident">epsilons</span>.<span class="ident">into_iter</span>(), <span class="ident">deltas</span>.<span class="ident">into_iter</span>());
 
-        <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(
-            <span class="ident">iter</span>.<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">sensitivity</span>, <span class="ident">epsilon</span>, <span class="ident">delta</span>)<span class="op">|</span> {
+        <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">iter</span>.<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">sensitivity</span>, <span class="ident">epsilon</span>, <span class="ident">delta</span>)<span class="op">|</span> {
+            <span class="kw">let</span> <span class="ident">sigma</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">analytic</span> {
+                <span class="ident">get_analytic_gaussian_sigma</span>(<span class="ident">epsilon</span>, <span class="ident">delta</span>, <span class="ident">sensitivity</span> <span class="kw">as</span> <span class="ident">f64</span>)
+            } <span class="kw">else</span> {
+                <span class="ident">sensitivity</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">*</span> (<span class="number">2.0</span> <span class="op">*</span> (<span class="number">1.25</span> <span class="op">/</span> <span class="ident">delta</span>).<span class="ident">ln</span>()).<span class="ident">sqrt</span>() <span class="op">/</span> <span class="ident">epsilon</span>
+            };
 
-                <span class="kw">let</span> <span class="ident">sigma</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">analytic</span> {
-                    <span class="kw">let</span> <span class="ident">c</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">2.0_f64</span> <span class="op">*</span> (<span class="number">1.25_f64</span> <span class="op">/</span> <span class="ident">delta</span>).<span class="ident">ln</span>();
-                    <span class="ident">c</span>.<span class="ident">sqrt</span>() <span class="op">*</span> <span class="kw-2">*</span><span class="ident">sensitivity</span> <span class="kw">as</span> <span class="ident">f64</span> <span class="op">/</span> <span class="ident">epsilon</span>
-                } <span class="kw">else</span> {
-                    <span class="ident">get_analytic_gaussian_sigma</span>(<span class="ident">epsilon</span>, <span class="ident">delta</span>, <span class="kw-2">*</span><span class="ident">sensitivity</span>)
-                };
-
-                <span class="ident">proto</span>::<span class="ident">Accuracy</span> {
-                    <span class="ident">value</span>: <span class="ident">sigma</span> <span class="op">*</span> <span class="number">2.0_f64</span>.<span class="ident">sqrt</span>() <span class="op">*</span> <span class="ident">erf</span>::<span class="ident">erf_inv</span>(<span class="number">1.0_f64</span> <span class="op">-</span> <span class="ident">alpha</span>),
-                    <span class="ident">alpha</span>
-                }
-            }).<span class="ident">collect</span>()))
+            <span class="ident">proto</span>::<span class="ident">Accuracy</span> {
+                <span class="ident">value</span>: <span class="ident">sigma</span> <span class="op">*</span> <span class="number">2.0_f64</span>.<span class="ident">sqrt</span>() <span class="op">*</span> <span class="ident">erf</span>::<span class="ident">erf_inv</span>(<span class="number">1.0_f64</span> <span class="op">-</span> <span class="ident">alpha</span>),
+                <span class="ident">alpha</span>,
+            }
+        }).<span class="ident">collect</span>()))
     }
 }
 
+<span class="doccomment">/// Integrate gaussian from -inf to t</span>
+<span class="doccomment">/// P(N(0,1)≤t)</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Arguments</span>
+<span class="doccomment">/// * `t` - upper bound for integration</span>
 <span class="kw">fn</span> <span class="ident">phi</span>(<span class="ident">t</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="number">0.5</span> <span class="op">*</span> (<span class="number">1.</span> <span class="op">+</span> <span class="ident">erf</span>::<span class="ident">erf</span>(<span class="ident">t</span> <span class="op">/</span> <span class="number">2.0_f64</span>.<span class="ident">sqrt</span>()))
 }
 
+<span class="doccomment">/// B^-: Reduced form of inequality (6) for optimization when alpha &gt; 1.</span>
+<span class="doccomment">/// Refer to p.19 Proof of Theorem 9.</span>
+<span class="doccomment">/// 1. Substitute σ = α∆/sqrt(2ε) into inequality (6)</span>
+<span class="doccomment">/// 2. Substitute u = (α−1/α)2/2</span>
 <span class="kw">fn</span> <span class="ident">case_a</span>(<span class="ident">epsilon</span>: <span class="ident">f64</span>, <span class="ident">s</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="ident">phi</span>((<span class="ident">epsilon</span> <span class="op">*</span> <span class="ident">s</span>).<span class="ident">sqrt</span>()) <span class="op">-</span> <span class="ident">epsilon</span>.<span class="ident">exp</span>() <span class="op">*</span> <span class="ident">phi</span>(<span class="op">-</span>(<span class="ident">epsilon</span> <span class="op">*</span> (<span class="ident">s</span> <span class="op">+</span> <span class="number">2.</span>)).<span class="ident">sqrt</span>())
 }
 
+<span class="doccomment">/// B^+: Reduced form of inequality (6) for optimization when alpha &gt; 1.</span>
+<span class="doccomment">/// Refer to p.19 Proof of Theorem 9.</span>
 <span class="kw">fn</span> <span class="ident">case_b</span>(<span class="ident">epsilon</span>: <span class="ident">f64</span>, <span class="ident">s</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
     <span class="ident">phi</span>(<span class="op">-</span>(<span class="ident">epsilon</span> <span class="op">*</span> <span class="ident">s</span>).<span class="ident">sqrt</span>()) <span class="op">-</span> <span class="ident">epsilon</span>.<span class="ident">exp</span>() <span class="op">*</span> <span class="ident">phi</span>(<span class="op">-</span>(<span class="ident">epsilon</span> <span class="op">*</span> (<span class="ident">s</span> <span class="op">+</span> <span class="number">2.</span>)).<span class="ident">sqrt</span>())
 }
 
+<span class="doccomment">/// Obtain an interval from which to start a binary search</span>
+<span class="doccomment">/// Choice of B^+ or B^- is based on the sign determined by delta_thr</span>
+<span class="doccomment">/// The paper&#39;s example given for v* on B+ is to-- &quot;Find the smallest k in N such that B^+_eps(2^k) &gt; delta&quot;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Returns the interval (2^(k - 1), 2^k)</span>
 <span class="kw">fn</span> <span class="ident">doubling_trick</span>(
-    <span class="kw-2">mut</span> <span class="ident">s_inf</span>: <span class="ident">f64</span>, <span class="kw-2">mut</span> <span class="ident">s_sup</span>: <span class="ident">f64</span>, <span class="ident">epsilon</span>: <span class="ident">f64</span>, <span class="ident">delta</span>: <span class="ident">f64</span>, <span class="ident">delta_thr</span>: <span class="ident">f64</span>,
+    <span class="ident">epsilon</span>: <span class="ident">f64</span>, <span class="ident">delta</span>: <span class="ident">f64</span>, <span class="ident">delta_thr</span>: <span class="ident">f64</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> (<span class="ident">f64</span>, <span class="ident">f64</span>) {
+    <span class="comment">// base case</span>
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s_inf</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">0.</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s_sup</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">1.</span>;
+
+    <span class="comment">// return false when bounds should no longer be doubled</span>
     <span class="kw">let</span> <span class="ident">predicate</span> <span class="op">=</span> <span class="op">|</span><span class="ident">s</span>: <span class="ident">f64</span><span class="op">|</span> <span class="kw">if</span> <span class="ident">delta</span> <span class="op">&gt;</span> <span class="ident">delta_thr</span> {
         <span class="ident">case_a</span>(<span class="ident">epsilon</span>, <span class="ident">s</span>) <span class="op">&lt;</span> <span class="ident">delta</span>
     } <span class="kw">else</span> {
         <span class="ident">case_b</span>(<span class="ident">epsilon</span>, <span class="ident">s</span>) <span class="op">&gt;</span> <span class="ident">delta</span>
     };
 
+    <span class="comment">// continue doubling the bounds until Theorem 8&#39;s comparison with delta is not satisfied</span>
     <span class="kw">while</span> <span class="ident">predicate</span>(<span class="ident">s_sup</span>) {
         <span class="ident">s_inf</span> <span class="op">=</span> <span class="ident">s_sup</span>;
         <span class="ident">s_sup</span> <span class="op">=</span> <span class="number">2.0</span> <span class="op">*</span> <span class="ident">s_inf</span>;
     }
+    <span class="comment">// return an interval of (2^(k - 1), 2^k) to search over</span>
     (<span class="ident">s_inf</span>, <span class="ident">s_sup</span>)
 }
 
+<span class="doccomment">/// Find an s* (where s corresponds to either u or v based on delta_threshold),</span>
+<span class="doccomment">///     such that B(s) lies within a positive tolerance of delta.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Arguments</span>
+<span class="doccomment">/// * `s_inf` - lower bound for valid values of s</span>
+<span class="doccomment">/// * `s_sup` - upper bound for valid values of s</span>
+<span class="doccomment">/// * `epsilon` - Multiplicative privacy loss parameter.</span>
+<span class="doccomment">/// * `delta` - Additive privacy loss parameter.</span>
+<span class="doccomment">/// * `delta_thr` - threshold at which sign should be flipped</span>
+<span class="doccomment">/// * `tol` - tolerance for error in delta</span>
 <span class="kw">fn</span> <span class="ident">binary_search</span>(
     <span class="kw-2">mut</span> <span class="ident">s_inf</span>: <span class="ident">f64</span>, <span class="kw-2">mut</span> <span class="ident">s_sup</span>: <span class="ident">f64</span>, <span class="ident">epsilon</span>: <span class="ident">f64</span>, <span class="ident">delta</span>: <span class="ident">f64</span>, <span class="ident">delta_thr</span>: <span class="ident">f64</span>, <span class="ident">tol</span>: <span class="ident">f64</span>,
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s_mid</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">s_inf</span> <span class="op">+</span> (<span class="ident">s_sup</span> <span class="op">-</span> <span class="ident">s_inf</span>) <span class="op">/</span> <span class="number">2.</span>;
-
+    <span class="comment">// evaluate either B+ or B- on s</span>
     <span class="kw">let</span> <span class="ident">s_to_delta</span> <span class="op">=</span> <span class="op">|</span><span class="ident">s</span>: <span class="ident">f64</span><span class="op">|</span> <span class="kw">if</span> <span class="ident">delta</span> <span class="op">&gt;</span> <span class="ident">delta_thr</span> {
         <span class="ident">case_a</span>(<span class="ident">epsilon</span>, <span class="ident">s</span>)
     } <span class="kw">else</span> {
@@ -543,39 +654,74 @@
     };
 
     <span class="kw">loop</span> {
+        <span class="kw">let</span> <span class="ident">s_mid</span> <span class="op">=</span> <span class="ident">s_inf</span> <span class="op">+</span> (<span class="ident">s_sup</span> <span class="op">-</span> <span class="ident">s_inf</span>) <span class="op">/</span> <span class="number">2.</span>;
         <span class="kw">let</span> <span class="ident">delta_prime</span> <span class="op">=</span> <span class="ident">s_to_delta</span>(<span class="ident">s_mid</span>);
 
+        <span class="comment">// stop iterating if tolerance is satisfied</span>
         <span class="kw">let</span> <span class="ident">diff</span> <span class="op">=</span> <span class="ident">delta_prime</span> <span class="op">-</span> <span class="ident">delta</span>;
-        <span class="kw">if</span> (<span class="ident">diff</span>.<span class="ident">abs</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="ident">tol</span>) <span class="op">&amp;&amp;</span> (<span class="ident">diff</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.</span>) { <span class="kw">break</span> }
+        <span class="kw">if</span> (<span class="ident">diff</span>.<span class="ident">abs</span>() <span class="op">&lt;</span><span class="op">=</span> <span class="ident">tol</span>) <span class="op">&amp;&amp;</span> (<span class="ident">diff</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.</span>) { <span class="kw">return</span> <span class="ident">s_mid</span> }
 
+        <span class="comment">// detect the side that the ideal delta falls into</span>
         <span class="kw">let</span> <span class="ident">is_left</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">delta</span> <span class="op">&gt;</span> <span class="ident">delta_thr</span> {
             <span class="ident">delta_prime</span> <span class="op">&gt;</span> <span class="ident">delta</span>
         } <span class="kw">else</span> {
             <span class="ident">delta_prime</span> <span class="op">&lt;</span> <span class="ident">delta</span>
         };
 
+        <span class="comment">// tighten bounds about ideal delta</span>
         <span class="kw">if</span> <span class="ident">is_left</span> {
             <span class="ident">s_sup</span> <span class="op">=</span> <span class="ident">s_mid</span>;
         } <span class="kw">else</span> {
             <span class="ident">s_inf</span> <span class="op">=</span> <span class="ident">s_mid</span>;
         }
-        <span class="ident">s_mid</span> <span class="op">=</span> <span class="ident">s_inf</span> <span class="op">+</span> (<span class="ident">s_sup</span> <span class="op">-</span> <span class="ident">s_inf</span>) <span class="op">/</span> <span class="number">2.</span>;
     }
-    <span class="ident">s_mid</span>
 }
 
+<span class="doccomment">/// Algorithm to compute sigma for use in the analytic gaussian mechanism</span>
+<span class="doccomment">/// Using p.9, p.19 of [Balle (2018)](https://arxiv.org/pdf/1805.06530.pdf)</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Arguments</span>
+<span class="doccomment">/// * `epsilon` - Multiplicative privacy loss parameter.</span>
+<span class="doccomment">/// * `delta` - Additive privacy loss parameter.</span>
+<span class="doccomment">/// * `sensitivity` - Upper bound on the L2 sensitivity of the function you want to privatize.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_analytic_gaussian_sigma</span>(<span class="ident">epsilon</span>: <span class="ident">f64</span>, <span class="ident">delta</span>: <span class="ident">f64</span>, <span class="ident">sensitivity</span>: <span class="ident">f64</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">f64</span> {
+    <span class="comment">// threshold to choose whether alpha is larger or smaller than one</span>
     <span class="kw">let</span> <span class="ident">delta_thr</span> <span class="op">=</span> <span class="ident">case_a</span>(<span class="ident">epsilon</span>, <span class="number">0.</span>);
 
+    <span class="comment">// Algorithm 1</span>
     <span class="kw">let</span> <span class="ident">alpha</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">delta</span> <span class="op">=</span><span class="op">=</span> <span class="ident">delta_thr</span> {
         <span class="number">1.</span>
     } <span class="kw">else</span> {
-        <span class="kw">let</span> (<span class="ident">s_inf</span>, <span class="ident">s_sup</span>) <span class="op">=</span> <span class="ident">doubling_trick</span>(<span class="number">0.</span>, <span class="number">1.</span>, <span class="ident">epsilon</span>, <span class="ident">delta</span>, <span class="ident">delta_thr</span>);
+        <span class="comment">// depending on comparison with delta_thr alpha is either negative or positive</span>
+        <span class="comment">// searching for either:</span>
+        <span class="comment">//     v* = inf{u ∈ R≥0: B−ε(u)≤δ}  (where alpha positive)</span>
+        <span class="comment">//     u* = sup{v ∈ R≥0: B+ε(v)≤δ}  (where alpha negative)</span>
+        <span class="comment">// let s be a B agnostic substitution for either u or v</span>
+
+        <span class="comment">// use the doubling trick to bound the R≥0 region to the interval:</span>
+        <span class="kw">let</span> (<span class="ident">s_inf</span>, <span class="ident">s_sup</span>) <span class="op">=</span> <span class="ident">doubling_trick</span>(<span class="ident">epsilon</span>, <span class="ident">delta</span>, <span class="ident">delta_thr</span>);
+
+        <span class="comment">// run a binary search over either B+ or B- to find s*.</span>
         <span class="kw">let</span> <span class="ident">tol</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="number">1e-10f64</span>;
         <span class="kw">let</span> <span class="ident">s_final</span> <span class="op">=</span> <span class="ident">binary_search</span>(<span class="ident">s_inf</span>, <span class="ident">s_sup</span>, <span class="ident">epsilon</span>, <span class="ident">delta</span>, <span class="ident">delta_thr</span>, <span class="ident">tol</span>);
-        (<span class="number">1.</span> <span class="op">+</span> <span class="ident">s_final</span> <span class="op">/</span> <span class="number">2.</span>).<span class="ident">sqrt</span>() <span class="op">-</span> (<span class="ident">s_final</span> <span class="op">/</span> <span class="number">2.</span>).<span class="ident">sqrt</span>()
+
+        <span class="comment">// differentiate s between the u and v based on the sign</span>
+        <span class="kw">let</span> <span class="ident">sign</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">delta</span> <span class="op">&gt;</span> <span class="ident">delta_thr</span> { <span class="op">-</span><span class="number">1.</span> } <span class="kw">else</span> { <span class="number">1.</span> };
+        <span class="comment">// reverse second transform out of simplified optimization space (p.19)</span>
+        (<span class="number">1.</span> <span class="op">+</span> <span class="ident">s_final</span> <span class="op">/</span> <span class="number">2.</span>).<span class="ident">sqrt</span>() <span class="op">+</span> <span class="ident">sign</span> <span class="op">*</span> (<span class="ident">s_final</span> <span class="op">/</span> <span class="number">2.</span>).<span class="ident">sqrt</span>()
     };
 
+    <span class="comment">// reverse first transform out of simplified optimization space (p.19)</span>
     <span class="ident">alpha</span> <span class="op">*</span> <span class="ident">sensitivity</span> <span class="op">/</span> (<span class="number">2.</span> <span class="op">*</span> <span class="ident">epsilon</span>).<span class="ident">sqrt</span>()
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
+<span class="kw">mod</span> <span class="ident">test_analytic_gaussian</span> {
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::<span class="ident">gaussian_mechanism</span>::<span class="ident">get_analytic_gaussian_sigma</span>;
+
+    <span class="attribute">#[<span class="ident">test</span>]</span>
+    <span class="kw">fn</span> <span class="ident">test_analytic_gaussian_sigma</span>() {
+        <span class="macro">println</span><span class="macro">!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">get_analytic_gaussian_sigma</span>(<span class="number">0.5</span>, <span class="number">1E-10</span>, <span class="number">1.</span>))
+    }
 }</pre></div>
 </section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../";window.currentCrate = "smartnoise_validator";</script><script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script><script defer src="../../../search-index.js"></script></body></html>

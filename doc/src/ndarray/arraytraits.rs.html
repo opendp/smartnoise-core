@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/ndarray-0.13.1/src/arraytraits.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>arraytraits.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -394,13 +394,13 @@
 <span id="391">391</span>
 <span id="392">392</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. This file may not be copied, modified, or distributed</span>
-<span class="comment">// except according to those terms.</span>
+<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">hash</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">isize</span>;
@@ -432,9 +432,9 @@
     <span class="macro">debug_bounds_check</span><span class="macro">!</span>(<span class="ident">_a</span>, <span class="kw-2">*</span><span class="ident">_index</span>);
 }
 
-<span class="doccomment">/// Access the element at **index**.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// **Panics** if index is out of bounds.</span>
+<span class="doccomment">/// Access the element at **index**.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// **Panics** if index is out of bounds.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span>, <span class="ident">I</span><span class="op">&gt;</span> <span class="ident">Index</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
@@ -455,9 +455,9 @@
     }
 }
 
-<span class="doccomment">/// Access the element at **index** mutably.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// **Panics** if index is out of bounds.</span>
+<span class="doccomment">/// Access the element at **index** mutably.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// **Panics** if index is out of bounds.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span>, <span class="ident">I</span><span class="op">&gt;</span> <span class="ident">IndexMut</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
@@ -477,8 +477,8 @@
     }
 }
 
-<span class="doccomment">/// Return `true` if the array shapes and all elements of `self` and</span>
-<span class="doccomment">/// `rhs` are equal. Return `false` otherwise.</span>
+<span class="doccomment">/// Return `true` if the array shapes and all elements of `self` and</span>
+<span class="doccomment">/// `rhs` are equal. Return `false` otherwise.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">S</span>, <span class="ident">S2</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">PartialEq</span><span class="op">&lt;</span><span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S2</span>, <span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">A</span>: <span class="ident">PartialEq</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
@@ -520,15 +520,15 @@
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">DataOwned</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
 {
-    <span class="doccomment">/// Create a one-dimensional array from a vector (no copying needed).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if the length is greater than `isize::MAX`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use ndarray::Array;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// let array = Array::from(vec![1., 2., 3., 4.]);</span>
-    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// Create a one-dimensional array from a vector (no copying needed).</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if the length is greater than `isize::MAX`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```rust</span>
+    <span class="doccomment">/// use ndarray::Array;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// let array = Array::from(vec![1., 2., 3., 4.]);</span>
+    <span class="doccomment">/// ```</span>
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">v</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">if</span> <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
             <span class="macro">assert</span><span class="macro">!</span>(
@@ -544,18 +544,18 @@
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">DataOwned</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
 {
-    <span class="doccomment">/// Create a one-dimensional array from an iterable.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if the length is greater than `isize::MAX`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// use ndarray::{Array, arr1};</span>
-    <span class="doccomment">/// use std::iter::FromIterator;</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// // Either use `from_iter` directly or use `Iterator::collect`.</span>
-    <span class="doccomment">/// let array = Array::from_iter((0..5).map(|x| x * x));</span>
-    <span class="doccomment">/// assert!(array == arr1(&amp;[0, 1, 4, 9, 16]))</span>
-    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// Create a one-dimensional array from an iterable.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if the length is greater than `isize::MAX`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```rust</span>
+    <span class="doccomment">/// use ndarray::{Array, arr1};</span>
+    <span class="doccomment">/// use std::iter::FromIterator;</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// // Either use `from_iter` directly or use `Iterator::collect`.</span>
+    <span class="doccomment">/// let array = Array::from_iter((0..5).map(|x| x * x));</span>
+    <span class="doccomment">/// assert!(array == arr1(&amp;[0, 1, 4, 9, 16]))</span>
+    <span class="doccomment">/// ```</span>
     <span class="kw">fn</span> <span class="ident">from_iter</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span>(<span class="ident">iterable</span>: <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">I</span>: <span class="ident">IntoIterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
@@ -620,7 +620,7 @@
     <span class="ident">S</span>: <span class="ident">Data</span>,
     <span class="ident">S</span>::<span class="ident">Elem</span>: <span class="ident">hash</span>::<span class="ident">Hash</span>,
 {
-    <span class="comment">// Note: elements are hashed in the logical order</span>
+    <span class="comment">// Note: elements are hashed in the logical order</span>
     <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">hash</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">H</span>) {
         <span class="self">self</span>.<span class="ident">shape</span>().<span class="ident">hash</span>(<span class="ident">state</span>);
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">self_s</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">as_slice</span>() {
@@ -639,12 +639,12 @@
     }
 }
 
-<span class="comment">// NOTE: ArrayBase keeps an internal raw pointer that always</span>
-<span class="comment">// points into the storage. This is Sync &amp; Send as long as we</span>
-<span class="comment">// follow the usual inherited mutability rules, as we do with</span>
-<span class="comment">// Vec, &amp;[] and &amp;mut []</span>
+<span class="comment">// NOTE: ArrayBase keeps an internal raw pointer that always</span>
+<span class="comment">// points into the storage. This is Sync &amp; Send as long as we</span>
+<span class="comment">// follow the usual inherited mutability rules, as we do with</span>
+<span class="comment">// Vec, &amp;[] and &amp;mut []</span>
 
-<span class="doccomment">/// `ArrayBase` is `Sync` when the storage type is.</span>
+<span class="doccomment">/// `ArrayBase` is `Sync` when the storage type is.</span>
 <span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Sync</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Sync</span> <span class="op">+</span> <span class="ident">Data</span>,
@@ -652,7 +652,7 @@
 {
 }
 
-<span class="doccomment">/// `ArrayBase` is `Send` when the storage type is.</span>
+<span class="doccomment">/// `ArrayBase` is `Send` when the storage type is.</span>
 <span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Send</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Send</span> <span class="op">+</span> <span class="ident">Data</span>,
@@ -661,18 +661,18 @@
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serde&quot;</span>))]</span>
-<span class="comment">// Use version number so we can add a packed format later.</span>
+<span class="comment">// Use version number so we can add a packed format later.</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ARRAY_FORMAT_VERSION</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">1u8</span>;
 
-<span class="comment">// use &quot;raw&quot; form instead of type aliases here so that they show up in docs</span>
-<span class="doccomment">/// Implementation of `ArrayView::from(&amp;S)` where `S` is a slice or slicable.</span>
+<span class="comment">// use &quot;raw&quot; form instead of type aliases here so that they show up in docs</span>
+<span class="doccomment">/// Implementation of `ArrayView::from(&amp;S)` where `S` is a slice or slicable.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">Slice</span>: <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Slice</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">Slice</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">A</span>]<span class="op">&gt;</span>,
 {
-    <span class="doccomment">/// Create a one-dimensional read-only array view of the data in `slice`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if the slice length is greater than `isize::MAX`.</span>
+    <span class="doccomment">/// Create a one-dimensional read-only array view of the data in `slice`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if the slice length is greater than `isize::MAX`.</span>
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">slice</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Slice</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">xs</span> <span class="op">=</span> <span class="ident">slice</span>.<span class="ident">as_ref</span>();
         <span class="kw">if</span> <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
@@ -685,26 +685,26 @@
     }
 }
 
-<span class="doccomment">/// Implementation of `ArrayView::from(&amp;A)` where `A` is an array.</span>
+<span class="doccomment">/// Implementation of `ArrayView::from(&amp;A)` where `A` is an array.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="doccomment">/// Create a read-only array view of the array.</span>
+    <span class="doccomment">/// Create a read-only array view of the array.</span>
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">array</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">array</span>.<span class="ident">view</span>()
     }
 }
 
-<span class="doccomment">/// Implementation of `ArrayViewMut::from(&amp;mut S)` where `S` is a slice or slicable.</span>
+<span class="doccomment">/// Implementation of `ArrayViewMut::from(&amp;mut S)` where `S` is a slice or slicable.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">Slice</span>: <span class="question-mark">?</span><span class="ident">Sized</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">Slice</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ArrayViewMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">Ix1</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">Slice</span>: <span class="ident">AsMut</span><span class="op">&lt;</span>[<span class="ident">A</span>]<span class="op">&gt;</span>,
 {
-    <span class="doccomment">/// Create a one-dimensional read-write array view of the data in `slice`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if the slice length is greater than `isize::MAX`.</span>
+    <span class="doccomment">/// Create a one-dimensional read-write array view of the data in `slice`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if the slice length is greater than `isize::MAX`.</span>
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">slice</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">Slice</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="ident">xs</span> <span class="op">=</span> <span class="ident">slice</span>.<span class="ident">as_mut</span>();
         <span class="kw">if</span> <span class="ident">mem</span>::<span class="ident">size_of</span>::<span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>() <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
@@ -717,39 +717,39 @@
     }
 }
 
-<span class="doccomment">/// Implementation of `ArrayViewMut::from(&amp;mut A)` where `A` is an array.</span>
+<span class="doccomment">/// Implementation of `ArrayViewMut::from(&amp;mut A)` where `A` is an array.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">ArrayViewMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">DataMut</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="doccomment">/// Create a read-write array view of the array.</span>
+    <span class="doccomment">/// Create a read-write array view of the array.</span>
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">array</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">array</span>.<span class="ident">view_mut</span>()
     }
 }
 
-<span class="doccomment">/// Argument conversion into an array view</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The trait is parameterized over `A`, the element type, and `D`, the</span>
-<span class="doccomment">/// dimensionality of the array. `D` defaults to one-dimensional.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Use `.into()` to do the conversion.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use ndarray::AsArray;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// fn sum&lt;&#39;a, V: AsArray&lt;&#39;a, f64&gt;&gt;(data: V) -&gt; f64 {</span>
-<span class="doccomment">///     let array_view = data.into();</span>
-<span class="doccomment">///     array_view.sum()</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// assert_eq!(</span>
-<span class="doccomment">///     sum(&amp;[1., 2., 3.]),</span>
-<span class="doccomment">///     6.</span>
-<span class="doccomment">/// );</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
+<span class="doccomment">/// Argument conversion into an array view</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The trait is parameterized over `A`, the element type, and `D`, the</span>
+<span class="doccomment">/// dimensionality of the array. `D` defaults to one-dimensional.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Use `.into()` to do the conversion.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// use ndarray::AsArray;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// fn sum&lt;&#39;a, V: AsArray&lt;&#39;a, f64&gt;&gt;(data: V) -&gt; f64 {</span>
+<span class="doccomment">///     let array_view = data.into();</span>
+<span class="doccomment">///     array_view.sum()</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// assert_eq!(</span>
+<span class="doccomment">///     sum(&amp;[1., 2., 3.]),</span>
+<span class="doccomment">///     6.</span>
+<span class="doccomment">/// );</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">AsArray</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>: <span class="lifetime">&#39;a</span>, <span class="ident">D</span> <span class="op">=</span> <span class="ident">Ix1</span><span class="op">&gt;</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
@@ -762,26 +762,26 @@
 {
 }
 
-<span class="doccomment">/// Create an owned array with a default state.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The array is created with dimension `D::default()`, which results</span>
-<span class="doccomment">/// in for example dimensions `0` and `(0, 0)` with zero elements for the</span>
-<span class="doccomment">/// one-dimensional and two-dimensional cases respectively.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The default dimension for `IxDyn` is `IxDyn(&amp;[0])` (array has zero</span>
-<span class="doccomment">/// elements). And the default for the dimension `()` is `()` (array has</span>
-<span class="doccomment">/// one element).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Since arrays cannot grow, the intention is to use the default value as</span>
-<span class="doccomment">/// placeholder.</span>
+<span class="doccomment">/// Create an owned array with a default state.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The array is created with dimension `D::default()`, which results</span>
+<span class="doccomment">/// in for example dimensions `0` and `(0, 0)` with zero elements for the</span>
+<span class="doccomment">/// one-dimensional and two-dimensional cases respectively.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The default dimension for `IxDyn` is `IxDyn(&amp;[0])` (array has zero</span>
+<span class="doccomment">/// elements). And the default for the dimension `()` is `()` (array has</span>
+<span class="doccomment">/// one element).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Since arrays cannot grow, the intention is to use the default value as</span>
+<span class="doccomment">/// placeholder.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">S</span>: <span class="ident">DataOwned</span><span class="op">&lt;</span><span class="ident">Elem</span> <span class="op">=</span> <span class="ident">A</span><span class="op">&gt;</span>,
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
     <span class="ident">A</span>: <span class="ident">Default</span>,
 {
-    <span class="comment">// NOTE: We can implement Default for non-zero dimensional array views by</span>
-    <span class="comment">// using an empty slice, however we need a trait for nonzero Dimension.</span>
+    <span class="comment">// NOTE: We can implement Default for non-zero dimensional array views by</span>
+    <span class="comment">// using an empty slice, however we need a trait for nonzero Dimension.</span>
     <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="ident">ArrayBase</span>::<span class="ident">default</span>(<span class="ident">D</span>::<span class="ident">default</span>())
     }

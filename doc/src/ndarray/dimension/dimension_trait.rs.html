@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/ndarray-0.13.1/src/dimension/dimension_trait.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>dimension_trait.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -939,13 +939,13 @@
 <span id="936">936</span>
 <span id="937">937</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. This file may not be copied, modified, or distributed</span>
-<span class="comment">// except according to those terms.</span>
+<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Debug</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::{<span class="ident">Add</span>, <span class="ident">AddAssign</span>, <span class="ident">Mul</span>, <span class="ident">MulAssign</span>, <span class="ident">Sub</span>, <span class="ident">SubAssign</span>};
@@ -961,12 +961,12 @@
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">ArrayView1</span>, <span class="ident">ArrayViewMut1</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Dim</span>, <span class="ident">Ix</span>, <span class="ident">Ix0</span>, <span class="ident">Ix1</span>, <span class="ident">Ix2</span>, <span class="ident">Ix3</span>, <span class="ident">Ix4</span>, <span class="ident">Ix5</span>, <span class="ident">Ix6</span>, <span class="ident">IxDyn</span>, <span class="ident">IxDynImpl</span>, <span class="ident">Ixs</span>, <span class="ident">SliceOrIndex</span>};
 
-<span class="doccomment">/// Array shape and index trait.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This trait defines a number of methods and operations that can be used on</span>
-<span class="doccomment">/// dimensions and indices.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// **Note:** *This trait can not be implemented outside the crate*</span>
+<span class="doccomment">/// Array shape and index trait.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This trait defines a number of methods and operations that can be used on</span>
+<span class="doccomment">/// dimensions and indices.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// **Note:** *This trait can not be implemented outside the crate*</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Dimension</span>:
     <span class="ident">Clone</span>
     <span class="op">+</span> <span class="ident">Eq</span>
@@ -987,49 +987,49 @@
     <span class="op">+</span> <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;x</span><span class="op">&gt;</span> <span class="ident">MulAssign</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;x</span> <span class="self">Self</span><span class="op">&gt;</span>
     <span class="op">+</span> <span class="ident">MulAssign</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>
 {
-    <span class="doccomment">/// For fixed-size dimension representations (e.g. `Ix2`), this should be</span>
-    <span class="doccomment">/// `Some(ndim)`, and for variable-size dimension representations (e.g.</span>
-    <span class="doccomment">/// `IxDyn`), this should be `None`.</span>
+    <span class="doccomment">/// For fixed-size dimension representations (e.g. `Ix2`), this should be</span>
+    <span class="doccomment">/// `Some(ndim)`, and for variable-size dimension representations (e.g.</span>
+    <span class="doccomment">/// `IxDyn`), this should be `None`.</span>
     <span class="kw">const</span> <span class="ident">NDIM</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span>;
-    <span class="doccomment">/// `SliceArg` is the type which is used to specify slicing for this</span>
-    <span class="doccomment">/// dimension.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// For the fixed size dimensions it is a fixed size array of the correct</span>
-    <span class="doccomment">/// size, which you pass by reference. For the dynamic dimension it is</span>
-    <span class="doccomment">/// a slice.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// - For `Ix1`: `[SliceOrIndex; 1]`</span>
-    <span class="doccomment">/// - For `Ix2`: `[SliceOrIndex; 2]`</span>
-    <span class="doccomment">/// - and so on..</span>
-    <span class="doccomment">/// - For `IxDyn`: `[SliceOrIndex]`</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The easiest way to create a `&amp;SliceInfo&lt;SliceArg, Do&gt;` is using the</span>
-    <span class="doccomment">/// [`s![]`](macro.s!.html) macro.</span>
+    <span class="doccomment">/// `SliceArg` is the type which is used to specify slicing for this</span>
+    <span class="doccomment">/// dimension.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// For the fixed size dimensions it is a fixed size array of the correct</span>
+    <span class="doccomment">/// size, which you pass by reference. For the dynamic dimension it is</span>
+    <span class="doccomment">/// a slice.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// - For `Ix1`: `[SliceOrIndex; 1]`</span>
+    <span class="doccomment">/// - For `Ix2`: `[SliceOrIndex; 2]`</span>
+    <span class="doccomment">/// - and so on..</span>
+    <span class="doccomment">/// - For `IxDyn`: `[SliceOrIndex]`</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The easiest way to create a `&amp;SliceInfo&lt;SliceArg, Do&gt;` is using the</span>
+    <span class="doccomment">/// [`s![]`](macro.s!.html) macro.</span>
     <span class="kw">type</span> <span class="ident">SliceArg</span>: <span class="question-mark">?</span><span class="ident">Sized</span> <span class="op">+</span> <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">SliceOrIndex</span>]<span class="op">&gt;</span>;
-    <span class="doccomment">/// Pattern matching friendly form of the dimension value.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// - For `Ix1`: `usize`,</span>
-    <span class="doccomment">/// - For `Ix2`: `(usize, usize)`</span>
-    <span class="doccomment">/// - and so on..</span>
-    <span class="doccomment">/// - For `IxDyn`: `IxDyn`</span>
+    <span class="doccomment">/// Pattern matching friendly form of the dimension value.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// - For `Ix1`: `usize`,</span>
+    <span class="doccomment">/// - For `Ix2`: `(usize, usize)`</span>
+    <span class="doccomment">/// - and so on..</span>
+    <span class="doccomment">/// - For `IxDyn`: `IxDyn`</span>
     <span class="kw">type</span> <span class="ident">Pattern</span>: <span class="ident">IntoDimension</span><span class="op">&lt;</span><span class="ident">Dim</span> <span class="op">=</span> <span class="self">Self</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="ident">Debug</span> <span class="op">+</span> <span class="ident">PartialEq</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">Default</span>;
-    <span class="doccomment">/// Next smaller dimension (if applicable)</span>
+    <span class="doccomment">/// Next smaller dimension (if applicable)</span>
     <span class="kw">type</span> <span class="ident">Smaller</span>: <span class="ident">Dimension</span>;
-    <span class="doccomment">/// Next larger dimension</span>
+    <span class="doccomment">/// Next larger dimension</span>
     <span class="kw">type</span> <span class="ident">Larger</span>: <span class="ident">Dimension</span> <span class="op">+</span> <span class="ident">RemoveAxis</span>;
 
-    <span class="doccomment">/// Returns the number of dimensions (number of axes).</span>
+    <span class="doccomment">/// Returns the number of dimensions (number of axes).</span>
     <span class="kw">fn</span> <span class="ident">ndim</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span>;
 
-    <span class="doccomment">/// Convert the dimension into a pattern matching friendly value.</span>
+    <span class="doccomment">/// Convert the dimension into a pattern matching friendly value.</span>
     <span class="kw">fn</span> <span class="ident">into_pattern</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Pattern</span>;
 
-    <span class="doccomment">/// Compute the size of the dimension (number of elements)</span>
+    <span class="doccomment">/// Compute the size of the dimension (number of elements)</span>
     <span class="kw">fn</span> <span class="ident">size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">slice</span>().<span class="ident">iter</span>().<span class="ident">fold</span>(<span class="number">1</span>, <span class="op">|</span><span class="ident">s</span>, <span class="kw-2">&amp;</span><span class="ident">a</span><span class="op">|</span> <span class="ident">s</span> <span class="op">*</span> <span class="ident">a</span> <span class="kw">as</span> <span class="ident">usize</span>)
     }
 
-    <span class="doccomment">/// Compute the size while checking for overflow.</span>
+    <span class="doccomment">/// Compute the size while checking for overflow.</span>
     <span class="kw">fn</span> <span class="ident">size_checked</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">slice</span>()
             .<span class="ident">iter</span>()
@@ -1042,12 +1042,12 @@
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
     <span class="kw">fn</span> <span class="ident">slice_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> [<span class="ident">Ix</span>];
 
-    <span class="doccomment">/// Borrow as a read-only array view.</span>
+    <span class="doccomment">/// Borrow as a read-only array view.</span>
     <span class="kw">fn</span> <span class="ident">as_array_view</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArrayView1</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">Ix</span><span class="op">&gt;</span> {
         <span class="ident">ArrayView1</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">slice</span>())
     }
 
-    <span class="doccomment">/// Borrow as a read-write array view.</span>
+    <span class="doccomment">/// Borrow as a read-write array view.</span>
     <span class="kw">fn</span> <span class="ident">as_array_view_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">ArrayViewMut1</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">Ix</span><span class="op">&gt;</span> {
         <span class="ident">ArrayViewMut1</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">slice_mut</span>())
     }
@@ -1057,19 +1057,19 @@
         <span class="self">self</span>.<span class="ident">slice</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">rhs</span>.<span class="ident">slice</span>()
     }
 
-    <span class="doccomment">/// Returns the strides for a standard layout array with the given shape.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the array is non-empty, the strides result in contiguous layout; if</span>
-    <span class="doccomment">/// the array is empty, the strides are all zeros.</span>
+    <span class="doccomment">/// Returns the strides for a standard layout array with the given shape.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If the array is non-empty, the strides result in contiguous layout; if</span>
+    <span class="doccomment">/// the array is empty, the strides are all zeros.</span>
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
     <span class="kw">fn</span> <span class="ident">default_strides</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="comment">// Compute default array strides</span>
-        <span class="comment">// Shape (a, b, c) =&gt; Give strides (b * c, c, 1)</span>
+        <span class="comment">// Compute default array strides</span>
+        <span class="comment">// Shape (a, b, c) =&gt; Give strides (b * c, c, 1)</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">strides</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">zeros</span>(<span class="self">self</span>.<span class="ident">ndim</span>());
-        <span class="comment">// For empty arrays, use all zero strides.</span>
+        <span class="comment">// For empty arrays, use all zero strides.</span>
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">slice</span>().<span class="ident">iter</span>().<span class="ident">all</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">d</span><span class="op">|</span> <span class="ident">d</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>) {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> <span class="op">=</span> <span class="ident">strides</span>.<span class="ident">slice_mut</span>().<span class="ident">iter_mut</span>().<span class="ident">rev</span>();
-            <span class="comment">// Set first element to 1</span>
+            <span class="comment">// Set first element to 1</span>
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">rs</span>) <span class="op">=</span> <span class="ident">it</span>.<span class="ident">next</span>() {
                 <span class="kw-2">*</span><span class="ident">rs</span> <span class="op">=</span> <span class="number">1</span>;
             }
@@ -1082,19 +1082,19 @@
         <span class="ident">strides</span>
     }
 
-    <span class="doccomment">/// Returns the strides for a Fortran layout array with the given shape.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If the array is non-empty, the strides result in contiguous layout; if</span>
-    <span class="doccomment">/// the array is empty, the strides are all zeros.</span>
+    <span class="doccomment">/// Returns the strides for a Fortran layout array with the given shape.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If the array is non-empty, the strides result in contiguous layout; if</span>
+    <span class="doccomment">/// the array is empty, the strides are all zeros.</span>
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
     <span class="kw">fn</span> <span class="ident">fortran_strides</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="comment">// Compute fortran array strides</span>
-        <span class="comment">// Shape (a, b, c) =&gt; Give strides (1, a, a * b)</span>
+        <span class="comment">// Compute fortran array strides</span>
+        <span class="comment">// Shape (a, b, c) =&gt; Give strides (1, a, a * b)</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">strides</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">zeros</span>(<span class="self">self</span>.<span class="ident">ndim</span>());
-        <span class="comment">// For empty arrays, use all zero strides.</span>
+        <span class="comment">// For empty arrays, use all zero strides.</span>
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">slice</span>().<span class="ident">iter</span>().<span class="ident">all</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">d</span><span class="op">|</span> <span class="ident">d</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>) {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">it</span> <span class="op">=</span> <span class="ident">strides</span>.<span class="ident">slice_mut</span>().<span class="ident">iter_mut</span>();
-            <span class="comment">// Set first element to 1</span>
+            <span class="comment">// Set first element to 1</span>
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">rs</span>) <span class="op">=</span> <span class="ident">it</span>.<span class="ident">next</span>() {
                 <span class="kw-2">*</span><span class="ident">rs</span> <span class="op">=</span> <span class="number">1</span>;
             }
@@ -1107,12 +1107,12 @@
         <span class="ident">strides</span>
     }
 
-    <span class="doccomment">/// Creates a dimension of all zeros with the specified ndim.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This method is useful for generalizing over fixed-size and</span>
-    <span class="doccomment">/// variable-size dimension representations.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if `Self` has a fixed size that is not `ndim`.</span>
+    <span class="doccomment">/// Creates a dimension of all zeros with the specified ndim.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This method is useful for generalizing over fixed-size and</span>
+    <span class="doccomment">/// variable-size dimension representations.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if `Self` has a fixed size that is not `ndim`.</span>
     <span class="kw">fn</span> <span class="ident">zeros</span>(<span class="ident">ndim</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>;
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
@@ -1127,9 +1127,9 @@
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="doccomment">/// Iteration -- Use self as size, and return next index after `index`</span>
-    <span class="doccomment">/// or None if there are no more.</span>
-    <span class="comment">// FIXME: use &amp;Self for index or even &amp;mut?</span>
+    <span class="doccomment">/// Iteration -- Use self as size, and return next index after `index`</span>
+    <span class="doccomment">/// or None if there are no more.</span>
+    <span class="comment">// FIXME: use &amp;Self for index or even &amp;mut?</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">next_for</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">index</span> <span class="op">=</span> <span class="ident">index</span>;
@@ -1151,10 +1151,10 @@
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="doccomment">/// Iteration -- Use self as size, and create the next index after `index`</span>
-    <span class="doccomment">/// Return false if iteration is done</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Next in f-order</span>
+    <span class="doccomment">/// Iteration -- Use self as size, and create the next index after `index`</span>
+    <span class="doccomment">/// Return false if iteration is done</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Next in f-order</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">next_for_f</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">index</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">end_iteration</span> <span class="op">=</span> <span class="bool-val">true</span>;
@@ -1170,13 +1170,13 @@
         <span class="op">!</span><span class="ident">end_iteration</span>
     }
 
-    <span class="doccomment">/// Returns `true` iff `strides1` and `strides2` are equivalent for the</span>
-    <span class="doccomment">/// shape `self`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The strides are equivalent if, for each axis with length &gt; 1, the</span>
-    <span class="doccomment">/// strides are equal.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Note: Returns `false` if any of the ndims don&#39;t match.</span>
+    <span class="doccomment">/// Returns `true` iff `strides1` and `strides2` are equivalent for the</span>
+    <span class="doccomment">/// shape `self`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The strides are equivalent if, for each axis with length &gt; 1, the</span>
+    <span class="doccomment">/// strides are equal.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Note: Returns `false` if any of the ndims don&#39;t match.</span>
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
     <span class="kw">fn</span> <span class="ident">strides_equivalent</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">strides1</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>, <span class="ident">strides2</span>: <span class="kw-2">&amp;</span><span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>
     <span class="kw">where</span>
@@ -1190,7 +1190,7 @@
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="doccomment">/// Return stride offset for index.</span>
+    <span class="doccomment">/// Return stride offset for index.</span>
     <span class="kw">fn</span> <span class="ident">stride_offset</span>(<span class="ident">index</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>, <span class="ident">strides</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">isize</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">offset</span> <span class="op">=</span> <span class="number">0</span>;
         <span class="kw">for</span> (<span class="kw-2">&amp;</span><span class="ident">i</span>, <span class="kw-2">&amp;</span><span class="ident">s</span>) <span class="kw">in</span> <span class="macro">izip</span><span class="macro">!</span>(<span class="ident">index</span>.<span class="ident">slice</span>(), <span class="ident">strides</span>.<span class="ident">slice</span>()) {
@@ -1200,7 +1200,7 @@
     }
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="doccomment">/// Return stride offset for this dimension and index.</span>
+    <span class="doccomment">/// Return stride offset for this dimension and index.</span>
     <span class="kw">fn</span> <span class="ident">stride_offset_checked</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">strides</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>, <span class="ident">index</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span> {
         <span class="ident">stride_offset_checked</span>(<span class="self">self</span>.<span class="ident">slice</span>(), <span class="ident">strides</span>.<span class="ident">slice</span>(), <span class="ident">index</span>.<span class="ident">slice</span>())
     }
@@ -1232,11 +1232,11 @@
         <span class="kw">let</span> <span class="ident">order</span> <span class="op">=</span> <span class="ident">strides</span>.<span class="ident">_fastest_varying_stride_order</span>();
         <span class="kw">let</span> <span class="ident">strides</span> <span class="op">=</span> <span class="ident">strides</span>.<span class="ident">slice</span>();
 
-        <span class="comment">// FIXME: Negative strides</span>
+        <span class="comment">// FIXME: Negative strides</span>
         <span class="kw">let</span> <span class="ident">dim_slice</span> <span class="op">=</span> <span class="ident">dim</span>.<span class="ident">slice</span>();
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cstride</span> <span class="op">=</span> <span class="number">1</span>;
         <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="ident">i</span> <span class="kw">in</span> <span class="ident">order</span>.<span class="ident">slice</span>() {
-            <span class="comment">// a dimension of length 1 can have unequal strides</span>
+            <span class="comment">// a dimension of length 1 can have unequal strides</span>
             <span class="kw">if</span> <span class="ident">dim_slice</span>[<span class="ident">i</span>] <span class="op">!</span><span class="op">=</span> <span class="number">1</span> <span class="op">&amp;&amp;</span> <span class="ident">strides</span>[<span class="ident">i</span>] <span class="op">!</span><span class="op">=</span> <span class="ident">cstride</span> {
                 <span class="kw">return</span> <span class="bool-val">false</span>;
             }
@@ -1245,11 +1245,11 @@
         <span class="bool-val">true</span>
     }
 
-    <span class="doccomment">/// Return the axis ordering corresponding to the fastest variation</span>
-    <span class="doccomment">/// (in ascending order).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Assumes that no stride value appears twice. This cannot yield the correct</span>
-    <span class="doccomment">/// result the strides are not positive.</span>
+    <span class="doccomment">/// Return the axis ordering corresponding to the fastest variation</span>
+    <span class="doccomment">/// (in ascending order).</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Assumes that no stride value appears twice. This cannot yield the correct</span>
+    <span class="doccomment">/// result the strides are not positive.</span>
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
     <span class="kw">fn</span> <span class="ident">_fastest_varying_stride_order</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">indices</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">clone</span>();
@@ -1261,8 +1261,8 @@
         <span class="ident">indices</span>
     }
 
-    <span class="doccomment">/// Compute the minimum stride axis (absolute value), under the constraint</span>
-    <span class="doccomment">/// that the length of the axis is &gt; 1;</span>
+    <span class="doccomment">/// Compute the minimum stride axis (absolute value), under the constraint</span>
+    <span class="doccomment">/// that the length of the axis is &gt; 1;</span>
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
     <span class="kw">fn</span> <span class="ident">min_stride_axis</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">strides</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Axis</span> {
         <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">ndim</span>() {
@@ -1276,8 +1276,8 @@
             .<span class="ident">map_or</span>(<span class="ident">Axis</span>(<span class="ident">n</span> <span class="op">-</span> <span class="number">1</span>), <span class="op">|</span><span class="ident">ax</span><span class="op">|</span> <span class="ident">ax</span>.<span class="ident">axis</span>())
     }
 
-    <span class="doccomment">/// Compute the maximum stride axis (absolute value), under the constraint</span>
-    <span class="doccomment">/// that the length of the axis is &gt; 1;</span>
+    <span class="doccomment">/// Compute the maximum stride axis (absolute value), under the constraint</span>
+    <span class="doccomment">/// that the length of the axis is &gt; 1;</span>
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
     <span class="kw">fn</span> <span class="ident">max_stride_axis</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">strides</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Axis</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">ndim</span>() {
@@ -1291,7 +1291,7 @@
             .<span class="ident">map_or</span>(<span class="ident">Axis</span>(<span class="number">0</span>), <span class="op">|</span><span class="ident">ax</span><span class="op">|</span> <span class="ident">ax</span>.<span class="ident">axis</span>())
     }
 
-    <span class="doccomment">/// Convert the dimensional into a dynamic dimensional (IxDyn).</span>
+    <span class="doccomment">/// Convert the dimensional into a dynamic dimensional (IxDyn).</span>
     <span class="kw">fn</span> <span class="ident">into_dyn</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">IxDyn</span> {
         <span class="ident">IxDyn</span>(<span class="self">self</span>.<span class="ident">slice</span>())
     }
@@ -1318,7 +1318,7 @@
     <span class="macro">private_decl</span><span class="macro">!</span> {}
 }
 
-<span class="comment">// Dimension impls</span>
+<span class="comment">// Dimension impls</span>
 
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_insert_axis_array</span>(
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">n</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> (
@@ -1338,7 +1338,7 @@
     <span class="kw">type</span> <span class="ident">Pattern</span> <span class="op">=</span> ();
     <span class="kw">type</span> <span class="ident">Smaller</span> <span class="op">=</span> <span class="self">Self</span>;
     <span class="kw">type</span> <span class="ident">Larger</span> <span class="op">=</span> <span class="ident">Ix1</span>;
-    <span class="comment">// empty product is 1 -&gt; size is 1</span>
+    <span class="comment">// empty product is 1 -&gt; size is 1</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">ndim</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="number">0</span>
@@ -1460,13 +1460,13 @@
         }
     }
 
-    <span class="doccomment">/// Self is an index, return the stride offset</span>
+    <span class="doccomment">/// Self is an index, return the stride offset</span>
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
     <span class="kw">fn</span> <span class="ident">stride_offset</span>(<span class="ident">index</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>, <span class="ident">stride</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">isize</span> {
         <span class="ident">stride_offset</span>(<span class="macro">get</span><span class="macro">!</span>(<span class="ident">index</span>, <span class="number">0</span>), <span class="macro">get</span><span class="macro">!</span>(<span class="ident">stride</span>, <span class="number">0</span>))
     }
 
-    <span class="doccomment">/// Return stride offset for this dimension and index.</span>
+    <span class="doccomment">/// Return stride offset for this dimension and index.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">stride_offset_checked</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">stride</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>, <span class="ident">index</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="macro">get</span><span class="macro">!</span>(<span class="ident">index</span>, <span class="number">0</span>) <span class="op">&lt;</span> <span class="macro">get</span><span class="macro">!</span>(<span class="self">self</span>, <span class="number">0</span>) {
@@ -1607,7 +1607,7 @@
         }
     }
 
-    <span class="doccomment">/// Self is an index, return the stride offset</span>
+    <span class="doccomment">/// Self is an index, return the stride offset</span>
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
     <span class="kw">fn</span> <span class="ident">stride_offset</span>(<span class="ident">index</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>, <span class="ident">strides</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">isize</span> {
         <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="macro">get</span><span class="macro">!</span>(<span class="ident">index</span>, <span class="number">0</span>);
@@ -1617,7 +1617,7 @@
         <span class="ident">stride_offset</span>(<span class="ident">i</span>, <span class="ident">s</span>) <span class="op">+</span> <span class="ident">stride_offset</span>(<span class="ident">j</span>, <span class="ident">t</span>)
     }
 
-    <span class="doccomment">/// Return stride offset for this dimension and index.</span>
+    <span class="doccomment">/// Return stride offset for this dimension and index.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">stride_offset_checked</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">strides</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>, <span class="ident">index</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="macro">get</span><span class="macro">!</span>(<span class="self">self</span>, <span class="number">0</span>);
@@ -1701,7 +1701,7 @@
         <span class="prelude-val">Some</span>(<span class="ident">Ix3</span>(<span class="ident">i</span>, <span class="ident">j</span>, <span class="ident">k</span>))
     }
 
-    <span class="doccomment">/// Self is an index, return the stride offset</span>
+    <span class="doccomment">/// Self is an index, return the stride offset</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">stride_offset</span>(<span class="ident">index</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>, <span class="ident">strides</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">isize</span> {
         <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="macro">get</span><span class="macro">!</span>(<span class="ident">index</span>, <span class="number">0</span>);
@@ -1713,7 +1713,7 @@
         <span class="ident">stride_offset</span>(<span class="ident">i</span>, <span class="ident">s</span>) <span class="op">+</span> <span class="ident">stride_offset</span>(<span class="ident">j</span>, <span class="ident">t</span>) <span class="op">+</span> <span class="ident">stride_offset</span>(<span class="ident">k</span>, <span class="ident">u</span>)
     }
 
-    <span class="doccomment">/// Return stride offset for this dimension and index.</span>
+    <span class="doccomment">/// Return stride offset for this dimension and index.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">fn</span> <span class="ident">stride_offset_checked</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">strides</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>, <span class="ident">index</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="macro">get</span><span class="macro">!</span>(<span class="self">self</span>, <span class="number">0</span>);
@@ -1745,7 +1745,7 @@
             };
         }
         {
-            <span class="comment">// stable sorting network for 3 elements</span>
+            <span class="comment">// stable sorting network for 3 elements</span>
             <span class="kw">let</span> <span class="ident">strides</span> <span class="op">=</span> <span class="ident">stride</span>.<span class="ident">slice_mut</span>();
             <span class="macro">swap</span><span class="macro">!</span>[<span class="ident">strides</span>, <span class="ident">order</span>, <span class="number">1</span>, <span class="number">2</span>];
             <span class="macro">swap</span><span class="macro">!</span>[<span class="ident">strides</span>, <span class="ident">order</span>, <span class="number">0</span>, <span class="number">1</span>];
@@ -1813,8 +1813,8 @@
     }
 });
 
-<span class="doccomment">/// IxDyn is a &quot;dynamic&quot; index, pretty hard to use when indexing,</span>
-<span class="doccomment">/// and memory wasteful, but it allows an arbitrary and dynamic number of axes.</span>
+<span class="doccomment">/// IxDyn is a &quot;dynamic&quot; index, pretty hard to use when indexing,</span>
+<span class="doccomment">/// and memory wasteful, but it allows an arbitrary and dynamic number of axes.</span>
 <span class="kw">impl</span> <span class="ident">Dimension</span> <span class="kw">for</span> <span class="ident">IxDyn</span> {
     <span class="kw">const</span> <span class="ident">NDIM</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
     <span class="kw">type</span> <span class="ident">SliceArg</span> <span class="op">=</span> [<span class="ident">SliceOrIndex</span>];

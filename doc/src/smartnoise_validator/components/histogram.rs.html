@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `validator-rust/src/components/histogram.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>histogram.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../smartnoise_validator/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../smartnoise_validator/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -233,10 +233,14 @@
 <span id="230">230</span>
 <span id="231">231</span>
 <span id="232">232</span>
+<span id="233">233</span>
+<span id="234">234</span>
+<span id="235">235</span>
+<span id="236">236</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">proto</span>, <span class="ident">Warnable</span>, <span class="ident">base</span>, <span class="ident">Float</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">proto</span>, <span class="ident">Warnable</span>, <span class="ident">base</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">components</span>::{<span class="ident">Component</span>, <span class="ident">Sensitivity</span>, <span class="ident">Expandable</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">base</span>::{<span class="ident">IndexKey</span>, <span class="ident">Value</span>, <span class="ident">NodeProperties</span>, <span class="ident">AggregatorProperties</span>, <span class="ident">SensitivitySpace</span>, <span class="ident">ValueProperties</span>, <span class="ident">DataType</span>, <span class="ident">NatureContinuous</span>, <span class="ident">Nature</span>, <span class="ident">Vector1DNull</span>, <span class="ident">Jagged</span>};
@@ -425,42 +429,46 @@
 
                 <span class="kw">let</span> <span class="ident">num_records</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">num_records</span>;
 
+                <span class="kw">let</span> <span class="ident">num_columns</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">num_columns</span>()<span class="question-mark">?</span>;
+
+                <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">wrap</span> {
+                    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">sensitivity</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="prelude-val">Ok</span>(<span class="ident">Array</span>::<span class="ident">from_shape_vec</span>(
+                            <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">categories_length</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="ident">num_columns</span> <span class="kw">as</span> <span class="ident">usize</span>],
+                            (<span class="number">0</span>..<span class="ident">categories_length</span>)
+                                .<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> (<span class="number">0</span>..<span class="ident">num_columns</span>)
+                                    .<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">sensitivity</span>)
+                                    .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>())
+                                .<span class="ident">flatten</span>()
+                                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>())<span class="question-mark">?</span>.<span class="ident">into</span>())
+                    }
+                }
+
                 <span class="comment">// SENSITIVITY DERIVATIONS</span>
-                <span class="kw">let</span> <span class="ident">sensitivity</span>: <span class="ident">Float</span> <span class="op">=</span> <span class="kw">match</span> (<span class="ident">neighboring_type</span>, <span class="ident">categories_length</span>, <span class="ident">num_records</span>) {
+                <span class="kw">match</span> (<span class="ident">neighboring_type</span>, <span class="ident">categories_length</span>, <span class="ident">num_records</span>) {
                     <span class="comment">// one category, known N. Applies to any neighboring type.</span>
-                    (<span class="kw">_</span>, <span class="number">1</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="number">0.</span>,
+                    (<span class="kw">_</span>, <span class="number">1</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">wrap</span><span class="macro">!</span>(<span class="number">0</span>),
 
                     <span class="comment">// one category, unknown N. The sensitivity here is really zero-- artificially raised</span>
-                    (<span class="ident">Substitute</span>, <span class="number">1</span>, <span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">1.</span>,
+                    (<span class="ident">Substitute</span>, <span class="number">1</span>, <span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">wrap</span><span class="macro">!</span>(<span class="number">1</span>),
                     <span class="comment">// two categories, known N. Knowing N determines the second category</span>
-                    (<span class="ident">Substitute</span>, <span class="number">2</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="number">1.</span>,
+                    (<span class="ident">Substitute</span>, <span class="number">2</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">wrap</span><span class="macro">!</span>(<span class="number">1</span>),
 
                     <span class="comment">// one category, unknown N</span>
-                    (<span class="ident">AddRemove</span>, <span class="number">1</span>, <span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">1.</span>,
+                    (<span class="ident">AddRemove</span>, <span class="number">1</span>, <span class="prelude-val">None</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">wrap</span><span class="macro">!</span>(<span class="number">1</span>),
                     <span class="comment">// two categories, known N</span>
-                    (<span class="ident">AddRemove</span>, <span class="number">2</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="number">1.</span>,
+                    (<span class="ident">AddRemove</span>, <span class="number">2</span>, <span class="prelude-val">Some</span>(<span class="kw">_</span>)) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">wrap</span><span class="macro">!</span>(<span class="number">1</span>),
 
                     <span class="comment">// over two categories, N either known or unknown. Record may switch from one bin to another.</span>
                     (<span class="ident">Substitute</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw">match</span> <span class="ident">k</span> {
-                        <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">2.</span>,
-                        <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="number">2.0_f64</span>.<span class="ident">sqrt</span>(),
-                        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span>  <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="string">&quot;KNorm sensitivity is only supported in L1 and L2 spaces&quot;</span>.<span class="ident">into</span>())
+                        <span class="number">1</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">wrap</span><span class="macro">!</span>(<span class="number">2</span>),
+                        <span class="number">2</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">wrap</span><span class="macro">!</span>(<span class="number">2.0_f64</span>.<span class="ident">sqrt</span>()),
+                        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;KNorm sensitivity is only supported in L1 and L2 spaces&quot;</span>.<span class="ident">into</span>())
                     } ,
                     <span class="comment">// over two categories, N either known or unknown. Only one bin may be edited.</span>
-                    (<span class="ident">AddRemove</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="number">1.</span>,
-                };
+                    (<span class="ident">AddRemove</span>, <span class="kw">_</span>, <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">wrap</span><span class="macro">!</span>(<span class="number">1</span>),
+                }
 
-                <span class="kw">let</span> <span class="ident">num_columns</span> <span class="op">=</span> <span class="ident">data_property</span>.<span class="ident">num_columns</span>()<span class="question-mark">?</span>;
-                <span class="kw">let</span> <span class="ident">num_records</span> <span class="op">=</span> <span class="ident">categories_length</span>;
-
-                <span class="prelude-val">Ok</span>(<span class="ident">Array</span>::<span class="ident">from_shape_vec</span>(
-                    <span class="macro">vec</span><span class="macro">!</span>[<span class="ident">num_records</span> <span class="kw">as</span> <span class="ident">usize</span>, <span class="ident">num_columns</span> <span class="kw">as</span> <span class="ident">usize</span>],
-                    (<span class="number">0</span>..<span class="ident">num_records</span>)
-                        .<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> (<span class="number">0</span>..<span class="ident">num_columns</span>)
-                            .<span class="ident">map</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">sensitivity</span>)
-                            .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span><span class="op">&gt;</span>())
-                        .<span class="ident">flatten</span>()
-                        .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span><span class="op">&gt;</span>())<span class="question-mark">?</span>.<span class="ident">into</span>())
             },
             <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Err</span>(<span class="string">&quot;Histogram sensitivity is only implemented for KNorm&quot;</span>.<span class="ident">into</span>())
         }

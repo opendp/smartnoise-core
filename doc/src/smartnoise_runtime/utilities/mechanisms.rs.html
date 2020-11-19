@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `runtime-rust/src/utilities/mechanisms.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mechanisms.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../smartnoise_runtime/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../smartnoise_runtime/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -267,6 +267,22 @@
 <span id="264">264</span>
 <span id="265">265</span>
 <span id="266">266</span>
+<span id="267">267</span>
+<span id="268">268</span>
+<span id="269">269</span>
+<span id="270">270</span>
+<span id="271">271</span>
+<span id="272">272</span>
+<span id="273">273</span>
+<span id="274">274</span>
+<span id="275">275</span>
+<span id="276">276</span>
+<span id="277">277</span>
+<span id="278">278</span>
+<span id="279">279</span>
+<span id="280">280</span>
+<span id="281">281</span>
+<span id="282">282</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">smartnoise_validator</span>::<span class="ident">errors</span>::<span class="kw-2">*</span>;
 
@@ -274,6 +290,7 @@
 <span class="kw">use</span> <span class="ident">smartnoise_validator</span>::<span class="ident">Float</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">utilities</span>::{<span class="ident">noise</span>};
 <span class="kw">use</span> <span class="ident">smartnoise_validator</span>::<span class="ident">components</span>::<span class="ident">gaussian_mechanism</span>::<span class="ident">get_analytic_gaussian_sigma</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::{<span class="ident">Div</span>};
 
 <span class="doccomment">/// Returns noise drawn according to the Laplace mechanism</span>
 <span class="doccomment">///</span>
@@ -286,6 +303,7 @@
 <span class="doccomment">/// for more information</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Arguments</span>
+<span class="doccomment">/// * `value` - Statistic to be privatized.</span>
 <span class="doccomment">/// * `epsilon` - Multiplicative privacy loss parameter.</span>
 <span class="doccomment">/// * `sensitivity` - Upper bound on the L1 sensitivity of the function you want to privatize.</span>
 <span class="doccomment">/// * `enforce_constant_time` - Whether or not to enforce the algorithm to run in constant time</span>
@@ -296,14 +314,20 @@
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// use smartnoise_runtime::utilities::mechanisms::laplace_mechanism;</span>
-<span class="doccomment">/// let n = laplace_mechanism(0.1, 2.0, false);</span>
+<span class="doccomment">/// let n = laplace_mechanism(22.3, 0.1, 2.0, false);</span>
 <span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">laplace_mechanism</span>(<span class="ident">epsilon</span>: <span class="ident">f64</span>, <span class="ident">sensitivity</span>: <span class="ident">f64</span>, <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
-    <span class="kw">if</span> <span class="ident">epsilon</span> <span class="op">&lt;</span> <span class="number">0.</span> <span class="op">|</span><span class="op">|</span> <span class="ident">sensitivity</span> <span class="op">&lt;</span> <span class="number">0.</span> {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;epsilon ({}) and sensitivity ({}) must be positive&quot;</span>, <span class="ident">epsilon</span>, <span class="ident">sensitivity</span>).<span class="ident">into</span>());
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">laplace_mechanism</span>(
+    <span class="ident">value</span>: <span class="ident">f64</span>, <span class="ident">epsilon</span>: <span class="ident">f64</span>, <span class="ident">sensitivity</span>: <span class="ident">f64</span>, <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>
+) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span> {
+
+    <span class="kw">if</span> <span class="ident">sensitivity</span> <span class="op">&lt;</span> <span class="number">0.</span> {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;sensitivity ({}) must be non-negative&quot;</span>, <span class="ident">sensitivity</span>).<span class="ident">into</span>());
+    }
+    <span class="kw">if</span> <span class="ident">epsilon</span> <span class="op">&lt;</span><span class="op">=</span> <span class="number">0.</span> {
+        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;epsilon ({}) must be positive&quot;</span>, <span class="ident">epsilon</span>).<span class="ident">into</span>())
     }
     <span class="kw">let</span> <span class="ident">scale</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">sensitivity</span> <span class="op">/</span> <span class="ident">epsilon</span>;
-    <span class="ident">noise</span>::<span class="ident">sample_laplace</span>(<span class="number">0.</span>, <span class="ident">scale</span>, <span class="ident">enforce_constant_time</span>)
+    <span class="ident">noise</span>::<span class="ident">sample_laplace</span>(<span class="number">0.</span>, <span class="ident">scale</span>, <span class="ident">enforce_constant_time</span>).<span class="ident">map</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">value</span> <span class="op">+</span> <span class="ident">n</span>)
 }
 
 <span class="doccomment">/// Computes privatized value according to the Snapping mechanism</span>
@@ -384,18 +408,21 @@
 
 <span class="doccomment">/// Returns noise drawn according to the Gaussian mechanism.</span>
 <span class="doccomment">///</span>
+<span class="doccomment">/// If using the standard guassian,</span>
 <span class="doccomment">/// Let c = sqrt(2*ln(1.25/delta)). Noise is drawn from a Gaussian distribution with scale</span>
 <span class="doccomment">/// sensitivity*c/epsilon and centered about 0.</span>
-<span class="doccomment">///</span>
 <span class="doccomment">/// For more information, see the Gaussian mechanism in</span>
 <span class="doccomment">/// C. Dwork, A. Roth The Algorithmic Foundations of Differential Privacy, Chapter 3.5.3 Laplace versus Gauss p.53. August 2014.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If using the analytic gaussian,</span>
+<span class="doccomment">/// the noise scale is derived using [Balle (2018)](https://arxiv.org/pdf/1805.06530.pdf).</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// NOTE: this implementation of Gaussian draws in likely non-private due to floating-point attacks</span>
 <span class="doccomment">/// See [Mironov (2012)](http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.366.5957&amp;rep=rep1&amp;type=pdf)</span>
 <span class="doccomment">/// for more information on a similar attack of the Laplace mechanism.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">///</span>
+<span class="doccomment">/// * `value` - Statistic to be privatized.</span>
 <span class="doccomment">/// * `epsilon` - Multiplicative privacy loss parameter.</span>
 <span class="doccomment">/// * `delta` - Additive privacy loss parameter.</span>
 <span class="doccomment">/// * `sensitivity` - Upper bound on the L2 sensitivity of the function you want to privatize.</span>
@@ -407,9 +434,10 @@
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// use smartnoise_runtime::utilities::mechanisms::gaussian_mechanism;</span>
-<span class="doccomment">/// let n = gaussian_mechanism(0.1, 0.0001, 2.0, false, false);</span>
+<span class="doccomment">/// let n = gaussian_mechanism(22.3, 0.1, 0.0001, 2.0, false, false);</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">gaussian_mechanism</span>(
+    <span class="ident">value</span>: <span class="ident">f64</span>,
     <span class="ident">epsilon</span>: <span class="ident">f64</span>, <span class="ident">delta</span>: <span class="ident">f64</span>, <span class="ident">sensitivity</span>: <span class="ident">f64</span>,
     <span class="ident">analytic</span>: <span class="ident">bool</span>,
     <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>
@@ -424,7 +452,7 @@
         <span class="ident">sensitivity</span> <span class="op">*</span> (<span class="number">2.</span> <span class="op">*</span> (<span class="number">1.25</span> <span class="op">/</span> <span class="ident">delta</span>).<span class="ident">ln</span>()).<span class="ident">sqrt</span>() <span class="op">/</span> <span class="ident">epsilon</span>
     };
     <span class="comment">// this uses mpfr noise if available</span>
-    <span class="ident">noise</span>::<span class="ident">sample_gaussian</span>(<span class="number">0.</span>, <span class="ident">scale</span>, <span class="ident">enforce_constant_time</span>)
+    <span class="prelude-val">Ok</span>(<span class="ident">value</span> <span class="op">+</span> <span class="ident">noise</span>::<span class="ident">sample_gaussian</span>(<span class="number">0.</span>, <span class="ident">scale</span>, <span class="ident">enforce_constant_time</span>)<span class="question-mark">?</span>)
 }
 
 <span class="doccomment">/// Returns noise drawn according to the Geometric mechanism.</span>
@@ -435,7 +463,7 @@
 <span class="doccomment">/// add other versions, such as those developed in [Balcer &amp; Vadhan (2019)](https://arxiv.org/pdf/1709.05396.pdf)</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">///</span>
+<span class="doccomment">/// * `value` - Statistic to be privatized.</span>
 <span class="doccomment">/// * `epsilon` - Multiplicative privacy loss parameter</span>
 <span class="doccomment">/// * `sensitivity` - L1 sensitivity of function you want to privatize. The Geometric is typically used for counting queries, where sensitivity = 1.</span>
 <span class="doccomment">/// * `min` - The minimum return you think possible.</span>
@@ -448,9 +476,10 @@
 <span class="doccomment">/// # Examples</span>
 <span class="doccomment">/// ```</span>
 <span class="doccomment">/// use smartnoise_runtime::utilities::mechanisms::simple_geometric_mechanism;</span>
-<span class="doccomment">/// let n = simple_geometric_mechanism(0.1, 1., 0, 10, true);</span>
+<span class="doccomment">/// let n = simple_geometric_mechanism(4, 0.1, 1., 0, 10, true);</span>
 <span class="doccomment">/// ```</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">simple_geometric_mechanism</span>(
+    <span class="ident">value</span>: <span class="ident">i64</span>,
     <span class="ident">epsilon</span>: <span class="ident">f64</span>, <span class="ident">sensitivity</span>: <span class="ident">f64</span>,
     <span class="ident">min</span>: <span class="ident">i64</span>, <span class="ident">max</span>: <span class="ident">i64</span>,
     <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>
@@ -459,7 +488,9 @@
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="macro">format</span><span class="macro">!</span>(<span class="string">&quot;epsilon ({}) and sensitivity ({}) must be positive&quot;</span>, <span class="ident">epsilon</span>, <span class="ident">sensitivity</span>).<span class="ident">into</span>());
     }
     <span class="kw">let</span> <span class="ident">scale</span>: <span class="ident">f64</span> <span class="op">=</span> <span class="ident">sensitivity</span> <span class="op">/</span> <span class="ident">epsilon</span>;
-    <span class="ident">noise</span>::<span class="ident">sample_simple_geometric_mechanism</span>(<span class="ident">scale</span>, <span class="ident">min</span>, <span class="ident">max</span>, <span class="ident">enforce_constant_time</span>)
+    <span class="kw">let</span> <span class="ident">noised</span> <span class="op">=</span> <span class="ident">value</span> <span class="op">+</span> <span class="ident">noise</span>::<span class="ident">sample_simple_geometric_mechanism</span>(<span class="ident">scale</span>, <span class="ident">min</span>, <span class="ident">max</span>, <span class="ident">enforce_constant_time</span>)<span class="question-mark">?</span>;
+
+    <span class="prelude-val">Ok</span>(<span class="kw">if</span> <span class="ident">noised</span> <span class="op">&lt;</span> <span class="ident">min</span> {<span class="ident">min</span>} <span class="kw">else</span> <span class="kw">if</span> <span class="ident">noised</span> <span class="op">&gt;</span> <span class="ident">max</span> { <span class="ident">max</span> } <span class="kw">else</span> { <span class="ident">noised</span> })
 }
 
 <span class="doccomment">/// Returns data element according to the Exponential mechanism.</span>
@@ -501,13 +532,14 @@
     <span class="ident">utilities</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">f64</span><span class="op">&gt;</span>,
     <span class="ident">enforce_constant_time</span>: <span class="ident">bool</span>
 ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">T</span>: <span class="ident">Clone</span>, {
-
-    <span class="comment">// get vector of e^(util), then use to find probabilities</span>
     <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">to_rug</span> {(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">v</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {<span class="ident">rug</span>::<span class="ident">Float</span>::<span class="ident">with_val</span>(<span class="number">53</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">v</span>)}}
+
+    <span class="comment">// get vector of e^(scaled util), then use to find probabilities</span>
+    <span class="kw">let</span> <span class="ident">scaling</span> <span class="op">=</span> <span class="macro">to_rug</span><span class="macro">!</span>(<span class="ident">epsilon</span>).<span class="ident">div</span>(<span class="macro">to_rug</span><span class="macro">!</span>(<span class="number">2.</span> <span class="op">*</span> <span class="ident">sensitivity</span>));
 
     <span class="comment">// establish selection probabilities for each element</span>
     <span class="kw">let</span> <span class="ident">e_util_vec</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">rug</span>::<span class="ident">Float</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">utilities</span>.<span class="ident">into_iter</span>()
-        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">util</span><span class="op">|</span> <span class="macro">to_rug</span><span class="macro">!</span>(<span class="macro">to_rug</span><span class="macro">!</span>(<span class="ident">epsilon</span>) <span class="op">*</span> <span class="macro">to_rug</span><span class="macro">!</span>(<span class="ident">util</span>) <span class="op">/</span> (<span class="number">2.</span> <span class="op">*</span> <span class="macro">to_rug</span><span class="macro">!</span>(<span class="ident">sensitivity</span>))).<span class="ident">exp</span>())
+        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">util</span><span class="op">|</span> (<span class="macro">to_rug</span><span class="macro">!</span>(<span class="ident">util</span>) <span class="op">*</span> <span class="kw-2">&amp;</span><span class="ident">scaling</span>).<span class="ident">exp</span>())
         .<span class="ident">collect</span>();
     <span class="kw">let</span> <span class="ident">sum_e_util_vec</span> <span class="op">=</span> <span class="macro">to_rug</span><span class="macro">!</span>(<span class="ident">rug</span>::<span class="ident">Float</span>::<span class="ident">sum</span>(<span class="ident">e_util_vec</span>.<span class="ident">iter</span>()));
     <span class="kw">let</span> <span class="ident">probability_vec</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Float</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">e_util_vec</span>.<span class="ident">into_iter</span>()

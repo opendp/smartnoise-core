@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/ndarray-0.13.1/src/iterators/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
@@ -1493,13 +1493,13 @@
 <span id="1490">1490</span>
 <span id="1491">1491</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. This file may not be copied, modified, or distributed</span>
-<span class="comment">// except according to those terms.</span>
+<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">mod</span> <span class="ident">macros</span>;
@@ -1523,9 +1523,9 @@
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">slice</span>::{<span class="self">self</span>, <span class="ident">Iter</span> <span class="kw">as</span> <span class="ident">SliceIter</span>, <span class="ident">IterMut</span> <span class="kw">as</span> <span class="ident">SliceIterMut</span>};
 
-<span class="doccomment">/// Base for iterators over all axes.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Iterator element type is `*mut A`.</span>
+<span class="doccomment">/// Base for iterators over all axes.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Iterator element type is `*mut A`.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Baseiter</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
     <span class="ident">ptr</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">A</span>,
     <span class="ident">dim</span>: <span class="ident">D</span>,
@@ -1534,9 +1534,9 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span>: <span class="ident">Dimension</span><span class="op">&gt;</span> <span class="ident">Baseiter</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Creating a Baseiter is unsafe because shape and stride parameters need</span>
-    <span class="doccomment">/// to be correct to avoid performing an unsafe pointer offset while</span>
-    <span class="doccomment">/// iterating.</span>
+    <span class="doccomment">/// Creating a Baseiter is unsafe because shape and stride parameters need</span>
+    <span class="doccomment">/// to be correct to avoid performing an unsafe pointer offset while</span>
+    <span class="doccomment">/// iterating.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">ptr</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">A</span>, <span class="ident">len</span>: <span class="ident">D</span>, <span class="ident">stride</span>: <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Baseiter</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
         <span class="ident">Baseiter</span> {
@@ -1650,7 +1650,7 @@
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">index</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">index</span> {
             <span class="kw">let</span> <span class="ident">elem_index</span> <span class="op">=</span> <span class="ident">index</span>[<span class="number">0</span>];
             <span class="kw">unsafe</span> {
-                <span class="comment">// self.dim[0] is the current length</span>
+                <span class="comment">// self.dim[0] is the current length</span>
                 <span class="kw">while</span> <span class="self">self</span>.<span class="ident">dim</span>[<span class="number">0</span>] <span class="op">&gt;</span> <span class="ident">elem_index</span> {
                     <span class="self">self</span>.<span class="ident">dim</span>[<span class="number">0</span>] <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
                     <span class="ident">accum</span> <span class="op">=</span> <span class="ident">g</span>(
@@ -1800,33 +1800,33 @@
     <span class="ident">Counted</span>(<span class="ident">C</span>),
 }
 
-<span class="doccomment">/// An iterator over the elements of an array.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Iterator element type is `&amp;&#39;a A`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [`.iter()`](../struct.ArrayBase.html#method.iter) for more information.</span>
+<span class="doccomment">/// An iterator over the elements of an array.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Iterator element type is `&amp;&#39;a A`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See [`.iter()`](../struct.ArrayBase.html#method.iter) for more information.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
     <span class="ident">inner</span>: <span class="ident">ElementsRepr</span><span class="op">&lt;</span><span class="ident">SliceIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span><span class="op">&gt;</span>, <span class="ident">ElementsBase</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
-<span class="doccomment">/// Counted read only iterator</span>
+<span class="doccomment">/// Counted read only iterator</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ElementsBase</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
     <span class="ident">inner</span>: <span class="ident">Baseiter</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>,
     <span class="ident">life</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">A</span><span class="op">&gt;</span>,
 }
 
-<span class="doccomment">/// An iterator over the elements of an array (mutable).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Iterator element type is `&amp;&#39;a mut A`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [`.iter_mut()`](../struct.ArrayBase.html#method.iter_mut) for more information.</span>
+<span class="doccomment">/// An iterator over the elements of an array (mutable).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Iterator element type is `&amp;&#39;a mut A`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See [`.iter_mut()`](../struct.ArrayBase.html#method.iter_mut) for more information.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">IterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
     <span class="ident">inner</span>: <span class="ident">ElementsRepr</span><span class="op">&lt;</span><span class="ident">SliceIterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span><span class="op">&gt;</span>, <span class="ident">ElementsBaseMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
 
-<span class="doccomment">/// An iterator over the elements of an array.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Iterator element type is `&amp;&#39;a mut A`.</span>
+<span class="doccomment">/// An iterator over the elements of an array.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Iterator element type is `&amp;&#39;a mut A`.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ElementsBaseMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
     <span class="ident">inner</span>: <span class="ident">Baseiter</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>,
     <span class="ident">life</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">A</span><span class="op">&gt;</span>,
@@ -1841,14 +1841,14 @@
     }
 }
 
-<span class="doccomment">/// An iterator over the indexes and elements of an array.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [`.indexed_iter()`](../struct.ArrayBase.html#method.indexed_iter) for more information.</span>
+<span class="doccomment">/// An iterator over the indexes and elements of an array.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See [`.indexed_iter()`](../struct.ArrayBase.html#method.indexed_iter) for more information.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">IndexedIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">ElementsBase</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>);
-<span class="doccomment">/// An iterator over the indexes and elements of an array (mutable).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [`.indexed_iter_mut()`](../struct.ArrayBase.html#method.indexed_iter_mut) for more information.</span>
+<span class="doccomment">/// An iterator over the indexes and elements of an array (mutable).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See [`.indexed_iter_mut()`](../struct.ArrayBase.html#method.indexed_iter_mut) for more information.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">IndexedIterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">ElementsBaseMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>);
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">IndexedIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
@@ -2167,10 +2167,10 @@
     }
 }
 
-<span class="doccomment">/// An iterator that traverses over all axes but one, and yields a view for</span>
-<span class="doccomment">/// each lane along that axis.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [`.lanes()`](../struct.ArrayBase.html#method.lanes) for more information.</span>
+<span class="doccomment">/// An iterator that traverses over all axes but one, and yields a view for</span>
+<span class="doccomment">/// each lane along that axis.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See [`.lanes()`](../struct.ArrayBase.html#method.lanes) for more information.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LanesIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
     <span class="ident">inner_len</span>: <span class="ident">Ix</span>,
     <span class="ident">inner_stride</span>: <span class="ident">Ixs</span>,
@@ -2215,14 +2215,14 @@
     }
 }
 
-<span class="comment">// NOTE: LanesIterMut is a mutable iterator and must not expose aliasing</span>
-<span class="comment">// pointers. Due to this we use an empty slice for the raw data (it&#39;s unused</span>
-<span class="comment">// anyway).</span>
-<span class="doccomment">/// An iterator that traverses over all dimensions but the innermost,</span>
-<span class="doccomment">/// and yields each inner row (mutable).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [`.lanes_mut()`](../struct.ArrayBase.html#method.lanes_mut)</span>
-<span class="doccomment">/// for more information.</span>
+<span class="comment">// NOTE: LanesIterMut is a mutable iterator and must not expose aliasing</span>
+<span class="comment">// pointers. Due to this we use an empty slice for the raw data (it&#39;s unused</span>
+<span class="comment">// anyway).</span>
+<span class="doccomment">/// An iterator that traverses over all dimensions but the innermost,</span>
+<span class="doccomment">/// and yields each inner row (mutable).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See [`.lanes_mut()`](../struct.ArrayBase.html#method.lanes_mut)</span>
+<span class="doccomment">/// for more information.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">LanesIterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
     <span class="ident">inner_len</span>: <span class="ident">Ix</span>,
     <span class="ident">inner_stride</span>: <span class="ident">Ixs</span>,
@@ -2257,19 +2257,19 @@
 
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AxisIterCore</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Index along the axis of the value of `.next()`, relative to the start</span>
-    <span class="doccomment">/// of the axis.</span>
+    <span class="doccomment">/// Index along the axis of the value of `.next()`, relative to the start</span>
+    <span class="doccomment">/// of the axis.</span>
     <span class="ident">index</span>: <span class="ident">Ix</span>,
-    <span class="doccomment">/// (Exclusive) upper bound on `index`. Initially, this is equal to the</span>
-    <span class="doccomment">/// length of the axis.</span>
+    <span class="doccomment">/// (Exclusive) upper bound on `index`. Initially, this is equal to the</span>
+    <span class="doccomment">/// length of the axis.</span>
     <span class="ident">end</span>: <span class="ident">Ix</span>,
-    <span class="doccomment">/// Stride along the axis (offset between consecutive pointers).</span>
+    <span class="doccomment">/// Stride along the axis (offset between consecutive pointers).</span>
     <span class="ident">stride</span>: <span class="ident">Ixs</span>,
-    <span class="doccomment">/// Shape of the iterator&#39;s items.</span>
+    <span class="doccomment">/// Shape of the iterator&#39;s items.</span>
     <span class="ident">inner_dim</span>: <span class="ident">D</span>,
-    <span class="doccomment">/// Strides of the iterator&#39;s items.</span>
+    <span class="doccomment">/// Strides of the iterator&#39;s items.</span>
     <span class="ident">inner_strides</span>: <span class="ident">D</span>,
-    <span class="doccomment">/// Pointer corresponding to `index == 0`.</span>
+    <span class="doccomment">/// Pointer corresponding to `index == 0`.</span>
     <span class="ident">ptr</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">A</span>,
 }
 
@@ -2288,7 +2288,7 @@
 );
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span>: <span class="ident">Dimension</span><span class="op">&gt;</span> <span class="ident">AxisIterCore</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Constructs a new iterator over the specified axis.</span>
+    <span class="doccomment">/// Constructs a new iterator over the specified axis.</span>
     <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Di</span><span class="op">&gt;</span>(<span class="ident">v</span>: <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">Di</span><span class="op">&gt;</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">Di</span>: <span class="ident">RemoveAxis</span><span class="op">&lt;</span><span class="ident">Smaller</span> <span class="op">=</span> <span class="ident">D</span><span class="op">&gt;</span>,
@@ -2316,13 +2316,13 @@
         <span class="self">self</span>.<span class="ident">ptr</span>.<span class="ident">offset</span>(<span class="ident">index</span> <span class="kw">as</span> <span class="ident">isize</span> <span class="op">*</span> <span class="self">self</span>.<span class="ident">stride</span>)
     }
 
-    <span class="doccomment">/// Splits the iterator at `index`, yielding two disjoint iterators.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// `index` is relative to the current state of the iterator (which is not</span>
-    <span class="doccomment">/// necessarily the start of the axis).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if `index` is strictly greater than the iterator&#39;s remaining</span>
-    <span class="doccomment">/// length.</span>
+    <span class="doccomment">/// Splits the iterator at `index`, yielding two disjoint iterators.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// `index` is relative to the current state of the iterator (which is not</span>
+    <span class="doccomment">/// necessarily the start of the axis).</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if `index` is strictly greater than the iterator&#39;s remaining</span>
+    <span class="doccomment">/// length.</span>
     <span class="kw">fn</span> <span class="ident">split_at</span>(<span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="self">Self</span>, <span class="self">Self</span>) {
         <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">index</span> <span class="op">&lt;</span><span class="op">=</span> <span class="self">self</span>.<span class="ident">len</span>());
         <span class="kw">let</span> <span class="ident">mid</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">index</span> <span class="op">+</span> <span class="ident">index</span>;
@@ -2345,15 +2345,15 @@
         (<span class="ident">left</span>, <span class="ident">right</span>)
     }
 
-    <span class="doccomment">/// Does the same thing as `.next()` but also returns the index of the item</span>
-    <span class="doccomment">/// relative to the start of the axis.</span>
+    <span class="doccomment">/// Does the same thing as `.next()` but also returns the index of the item</span>
+    <span class="doccomment">/// relative to the start of the axis.</span>
     <span class="kw">fn</span> <span class="ident">next_with_index</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">A</span>)<span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">index</span>;
         <span class="self">self</span>.<span class="ident">next</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">ptr</span><span class="op">|</span> (<span class="ident">index</span>, <span class="ident">ptr</span>))
     }
 
-    <span class="doccomment">/// Does the same thing as `.next_back()` but also returns the index of the</span>
-    <span class="doccomment">/// item relative to the start of the axis.</span>
+    <span class="doccomment">/// Does the same thing as `.next_back()` but also returns the index of the</span>
+    <span class="doccomment">/// item relative to the start of the axis.</span>
     <span class="kw">fn</span> <span class="ident">next_back_with_index</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span>(<span class="ident">usize</span>, <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">A</span>)<span class="op">&gt;</span> {
         <span class="self">self</span>.<span class="ident">next_back</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">ptr</span><span class="op">|</span> (<span class="self">self</span>.<span class="ident">end</span>, <span class="ident">ptr</span>))
     }
@@ -2405,20 +2405,20 @@
     }
 }
 
-<span class="doccomment">/// An iterator that traverses over an axis and</span>
-<span class="doccomment">/// and yields each subview.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The outermost dimension is `Axis(0)`, created with `.outer_iter()`,</span>
-<span class="doccomment">/// but you can traverse arbitrary dimension with `.axis_iter()`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// For example, in a 3 × 5 × 5 array, with `axis` equal to `Axis(2)`,</span>
-<span class="doccomment">/// the iterator element is a 3 × 5 subview (and there are 5 in total).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Iterator element type is `ArrayView&lt;&#39;a, A, D&gt;`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [`.outer_iter()`](../struct.ArrayBase.html#method.outer_iter)</span>
-<span class="doccomment">/// or [`.axis_iter()`](../struct.ArrayBase.html#method.axis_iter)</span>
-<span class="doccomment">/// for more information.</span>
+<span class="doccomment">/// An iterator that traverses over an axis and</span>
+<span class="doccomment">/// and yields each subview.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The outermost dimension is `Axis(0)`, created with `.outer_iter()`,</span>
+<span class="doccomment">/// but you can traverse arbitrary dimension with `.axis_iter()`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// For example, in a 3 × 5 × 5 array, with `axis` equal to `Axis(2)`,</span>
+<span class="doccomment">/// the iterator element is a 3 × 5 subview (and there are 5 in total).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Iterator element type is `ArrayView&lt;&#39;a, A, D&gt;`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See [`.outer_iter()`](../struct.ArrayBase.html#method.outer_iter)</span>
+<span class="doccomment">/// or [`.axis_iter()`](../struct.ArrayBase.html#method.axis_iter)</span>
+<span class="doccomment">/// for more information.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AxisIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
     <span class="ident">iter</span>: <span class="ident">AxisIterCore</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>,
@@ -2436,7 +2436,7 @@
 );
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span>: <span class="ident">Dimension</span><span class="op">&gt;</span> <span class="ident">AxisIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Creates a new iterator over the specified axis.</span>
+    <span class="doccomment">/// Creates a new iterator over the specified axis.</span>
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">Di</span><span class="op">&gt;</span>(<span class="ident">v</span>: <span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">Di</span><span class="op">&gt;</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">Di</span>: <span class="ident">RemoveAxis</span><span class="op">&lt;</span><span class="ident">Smaller</span> <span class="op">=</span> <span class="ident">D</span><span class="op">&gt;</span>,
@@ -2447,13 +2447,13 @@
         }
     }
 
-    <span class="doccomment">/// Splits the iterator at `index`, yielding two disjoint iterators.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// `index` is relative to the current state of the iterator (which is not</span>
-    <span class="doccomment">/// necessarily the start of the axis).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if `index` is strictly greater than the iterator&#39;s remaining</span>
-    <span class="doccomment">/// length.</span>
+    <span class="doccomment">/// Splits the iterator at `index`, yielding two disjoint iterators.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// `index` is relative to the current state of the iterator (which is not</span>
+    <span class="doccomment">/// necessarily the start of the axis).</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if `index` is strictly greater than the iterator&#39;s remaining</span>
+    <span class="doccomment">/// length.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">split_at</span>(<span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="self">Self</span>, <span class="self">Self</span>) {
         <span class="kw">let</span> (<span class="ident">left</span>, <span class="ident">right</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">split_at</span>(<span class="ident">index</span>);
         (
@@ -2502,27 +2502,27 @@
     }
 }
 
-<span class="doccomment">/// An iterator that traverses over an axis and</span>
-<span class="doccomment">/// and yields each subview (mutable)</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The outermost dimension is `Axis(0)`, created with `.outer_iter()`,</span>
-<span class="doccomment">/// but you can traverse arbitrary dimension with `.axis_iter()`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// For example, in a 3 × 5 × 5 array, with `axis` equal to `Axis(2)`,</span>
-<span class="doccomment">/// the iterator element is a 3 × 5 subview (and there are 5 in total).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Iterator element type is `ArrayViewMut&lt;&#39;a, A, D&gt;`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [`.outer_iter_mut()`](../struct.ArrayBase.html#method.outer_iter_mut)</span>
-<span class="doccomment">/// or [`.axis_iter_mut()`](../struct.ArrayBase.html#method.axis_iter_mut)</span>
-<span class="doccomment">/// for more information.</span>
+<span class="doccomment">/// An iterator that traverses over an axis and</span>
+<span class="doccomment">/// and yields each subview (mutable)</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The outermost dimension is `Axis(0)`, created with `.outer_iter()`,</span>
+<span class="doccomment">/// but you can traverse arbitrary dimension with `.axis_iter()`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// For example, in a 3 × 5 × 5 array, with `axis` equal to `Axis(2)`,</span>
+<span class="doccomment">/// the iterator element is a 3 × 5 subview (and there are 5 in total).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Iterator element type is `ArrayViewMut&lt;&#39;a, A, D&gt;`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See [`.outer_iter_mut()`](../struct.ArrayBase.html#method.outer_iter_mut)</span>
+<span class="doccomment">/// or [`.axis_iter_mut()`](../struct.ArrayBase.html#method.axis_iter_mut)</span>
+<span class="doccomment">/// for more information.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AxisIterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
     <span class="ident">iter</span>: <span class="ident">AxisIterCore</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>,
     <span class="ident">life</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">A</span><span class="op">&gt;</span>,
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span>: <span class="ident">Dimension</span><span class="op">&gt;</span> <span class="ident">AxisIterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Creates a new iterator over the specified axis.</span>
+    <span class="doccomment">/// Creates a new iterator over the specified axis.</span>
     <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">new</span><span class="op">&lt;</span><span class="ident">Di</span><span class="op">&gt;</span>(<span class="ident">v</span>: <span class="ident">ArrayViewMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">Di</span><span class="op">&gt;</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">Di</span>: <span class="ident">RemoveAxis</span><span class="op">&lt;</span><span class="ident">Smaller</span> <span class="op">=</span> <span class="ident">D</span><span class="op">&gt;</span>,
@@ -2533,13 +2533,13 @@
         }
     }
 
-    <span class="doccomment">/// Splits the iterator at `index`, yielding two disjoint iterators.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// `index` is relative to the current state of the iterator (which is not</span>
-    <span class="doccomment">/// necessarily the start of the axis).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if `index` is strictly greater than the iterator&#39;s remaining</span>
-    <span class="doccomment">/// length.</span>
+    <span class="doccomment">/// Splits the iterator at `index`, yielding two disjoint iterators.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// `index` is relative to the current state of the iterator (which is not</span>
+    <span class="doccomment">/// necessarily the start of the axis).</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if `index` is strictly greater than the iterator&#39;s remaining</span>
+    <span class="doccomment">/// length.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">split_at</span>(<span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="self">Self</span>, <span class="self">Self</span>) {
         <span class="kw">let</span> (<span class="ident">left</span>, <span class="ident">right</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">split_at</span>(<span class="ident">index</span>);
         (
@@ -2605,13 +2605,13 @@
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
     <span class="kw">fn</span> <span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Ptr</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">0</span> {
-            <span class="comment">// `self.iter.index` is guaranteed to be in-bounds if any of the</span>
-            <span class="comment">// iterator remains (i.e. if `self.len() &gt; 0`).</span>
+            <span class="comment">// `self.iter.index` is guaranteed to be in-bounds if any of the</span>
+            <span class="comment">// iterator remains (i.e. if `self.len() &gt; 0`).</span>
             <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">offset</span>(<span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">index</span>) }
         } <span class="kw">else</span> {
-            <span class="comment">// In this case, `self.iter.index` may be past the end, so we must</span>
-            <span class="comment">// not call `.offset()`. It&#39;s okay to return a dangling pointer</span>
-            <span class="comment">// because it will never be used in the length 0 case.</span>
+            <span class="comment">// In this case, `self.iter.index` may be past the end, so we must</span>
+            <span class="comment">// not call `.offset()`. It&#39;s okay to return a dangling pointer</span>
+            <span class="comment">// because it will never be used in the length 0 case.</span>
             <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">NonNull</span>::<span class="ident">dangling</span>().<span class="ident">as_ptr</span>()
         }
     }
@@ -2662,13 +2662,13 @@
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
     <span class="kw">fn</span> <span class="ident">as_ptr</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Ptr</span> {
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">0</span> {
-            <span class="comment">// `self.iter.index` is guaranteed to be in-bounds if any of the</span>
-            <span class="comment">// iterator remains (i.e. if `self.len() &gt; 0`).</span>
+            <span class="comment">// `self.iter.index` is guaranteed to be in-bounds if any of the</span>
+            <span class="comment">// iterator remains (i.e. if `self.len() &gt; 0`).</span>
             <span class="kw">unsafe</span> { <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">offset</span>(<span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">index</span>) }
         } <span class="kw">else</span> {
-            <span class="comment">// In this case, `self.iter.index` may be past the end, so we must</span>
-            <span class="comment">// not call `.offset()`. It&#39;s okay to return a dangling pointer</span>
-            <span class="comment">// because it will never be used in the length 0 case.</span>
+            <span class="comment">// In this case, `self.iter.index` may be past the end, so we must</span>
+            <span class="comment">// not call `.offset()`. It&#39;s okay to return a dangling pointer</span>
+            <span class="comment">// because it will never be used in the length 0 case.</span>
             <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">NonNull</span>::<span class="ident">dangling</span>().<span class="ident">as_ptr</span>()
         }
     }
@@ -2702,24 +2702,24 @@
     <span class="macro">private_impl</span><span class="macro">!</span> {}
 }
 
-<span class="doccomment">/// An iterator that traverses over the specified axis</span>
-<span class="doccomment">/// and yields views of the specified size on this axis.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// For example, in a 2 × 8 × 3 array, if the axis of iteration</span>
-<span class="doccomment">/// is 1 and the chunk size is 2, the yielded elements</span>
-<span class="doccomment">/// are 2 × 2 × 3 views (and there are 4 in total).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Iterator element type is `ArrayView&lt;&#39;a, A, D&gt;`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [`.axis_chunks_iter()`](../struct.ArrayBase.html#method.axis_chunks_iter) for more information.</span>
+<span class="doccomment">/// An iterator that traverses over the specified axis</span>
+<span class="doccomment">/// and yields views of the specified size on this axis.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// For example, in a 2 × 8 × 3 array, if the axis of iteration</span>
+<span class="doccomment">/// is 1 and the chunk size is 2, the yielded elements</span>
+<span class="doccomment">/// are 2 × 2 × 3 views (and there are 4 in total).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Iterator element type is `ArrayView&lt;&#39;a, A, D&gt;`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See [`.axis_chunks_iter()`](../struct.ArrayBase.html#method.axis_chunks_iter) for more information.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AxisChunksIter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
     <span class="ident">iter</span>: <span class="ident">AxisIterCore</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Index of the partial chunk (the chunk smaller than the specified chunk</span>
-    <span class="doccomment">/// size due to the axis length not being evenly divisible). If the axis</span>
-    <span class="doccomment">/// length is evenly divisible by the chunk size, this index is larger than</span>
-    <span class="doccomment">/// the maximum valid index.</span>
+    <span class="doccomment">/// Index of the partial chunk (the chunk smaller than the specified chunk</span>
+    <span class="doccomment">/// size due to the axis length not being evenly divisible). If the axis</span>
+    <span class="doccomment">/// length is evenly divisible by the chunk size, this index is larger than</span>
+    <span class="doccomment">/// the maximum valid index.</span>
     <span class="ident">partial_chunk_index</span>: <span class="ident">usize</span>,
-    <span class="doccomment">/// Dimension of the partial chunk.</span>
+    <span class="doccomment">/// Dimension of the partial chunk.</span>
     <span class="ident">partial_chunk_dim</span>: <span class="ident">D</span>,
     <span class="ident">life</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">A</span><span class="op">&gt;</span>,
 }
@@ -2736,14 +2736,14 @@
     }
 );
 
-<span class="doccomment">/// Computes the information necessary to construct an iterator over chunks</span>
-<span class="doccomment">/// along an axis, given a `view` of the array, the `axis` to iterate over, and</span>
-<span class="doccomment">/// the chunk `size`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Returns an axis iterator with the correct stride to move between chunks,</span>
-<span class="doccomment">/// the number of chunks, and the shape of the last chunk.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// **Panics** if `size == 0`.</span>
+<span class="doccomment">/// Computes the information necessary to construct an iterator over chunks</span>
+<span class="doccomment">/// along an axis, given a `view` of the array, the `axis` to iterate over, and</span>
+<span class="doccomment">/// the chunk `size`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Returns an axis iterator with the correct stride to move between chunks,</span>
+<span class="doccomment">/// the number of chunks, and the shape of the last chunk.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// **Panics** if `size == 0`.</span>
 <span class="kw">fn</span> <span class="ident">chunk_iter_parts</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span>: <span class="ident">Dimension</span><span class="op">&gt;</span>(
     <span class="ident">v</span>: <span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>,
     <span class="ident">axis</span>: <span class="ident">Axis</span>,
@@ -2759,7 +2759,7 @@
         <span class="ident">n_whole_chunks</span> <span class="op">+</span> <span class="number">1</span>
     };
     <span class="kw">let</span> <span class="ident">stride</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">n_whole_chunks</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
-        <span class="comment">// This case avoids potential overflow when `size &gt; axis_len`.</span>
+        <span class="comment">// This case avoids potential overflow when `size &gt; axis_len`.</span>
         <span class="number">0</span>
     } <span class="kw">else</span> {
         <span class="ident">v</span>.<span class="ident">stride_of</span>(<span class="ident">axis</span>) <span class="op">*</span> <span class="ident">size</span> <span class="kw">as</span> <span class="ident">isize</span>
@@ -2823,13 +2823,13 @@
                 }
             }
 
-            <span class="doccomment">/// Splits the iterator at index, yielding two disjoint iterators.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// `index` is relative to the current state of the iterator (which is not</span>
-            <span class="doccomment">/// necessarily the start of the axis).</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// **Panics** if `index` is strictly greater than the iterator&#39;s remaining</span>
-            <span class="doccomment">/// length.</span>
+            <span class="doccomment">/// Splits the iterator at index, yielding two disjoint iterators.</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// `index` is relative to the current state of the iterator (which is not</span>
+            <span class="doccomment">/// necessarily the start of the axis).</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// **Panics** if `index` is strictly greater than the iterator&#39;s remaining</span>
+            <span class="doccomment">/// length.</span>
             <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">split_at</span>(<span class="self">self</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="self">Self</span>, <span class="self">Self</span>) {
                 <span class="kw">let</span> (<span class="ident">left</span>, <span class="ident">right</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">iter</span>.<span class="ident">split_at</span>(<span class="ident">index</span>);
                 (
@@ -2881,17 +2881,17 @@
     };
 }
 
-<span class="doccomment">/// An iterator that traverses over the specified axis</span>
-<span class="doccomment">/// and yields mutable views of the specified size on this axis.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// For example, in a 2 × 8 × 3 array, if the axis of iteration</span>
-<span class="doccomment">/// is 1 and the chunk size is 2, the yielded elements</span>
-<span class="doccomment">/// are 2 × 2 × 3 views (and there are 4 in total).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Iterator element type is `ArrayViewMut&lt;&#39;a, A, D&gt;`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [`.axis_chunks_iter_mut()`](../struct.ArrayBase.html#method.axis_chunks_iter_mut)</span>
-<span class="doccomment">/// for more information.</span>
+<span class="doccomment">/// An iterator that traverses over the specified axis</span>
+<span class="doccomment">/// and yields mutable views of the specified size on this axis.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// For example, in a 2 × 8 × 3 array, if the axis of iteration</span>
+<span class="doccomment">/// is 1 and the chunk size is 2, the yielded elements</span>
+<span class="doccomment">/// are 2 × 2 × 3 views (and there are 4 in total).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Iterator element type is `ArrayViewMut&lt;&#39;a, A, D&gt;`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See [`.axis_chunks_iter_mut()`](../struct.ArrayBase.html#method.axis_chunks_iter_mut)</span>
+<span class="doccomment">/// for more information.</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AxisChunksIterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> {
     <span class="ident">iter</span>: <span class="ident">AxisIterCore</span><span class="op">&lt;</span><span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>,
     <span class="ident">partial_chunk_index</span>: <span class="ident">usize</span>,
@@ -2929,11 +2929,11 @@
 <span class="macro">send_sync_read_write</span><span class="macro">!</span>(<span class="ident">AxisChunksIterMut</span>);
 <span class="macro">send_sync_read_write</span><span class="macro">!</span>(<span class="ident">ElementsBaseMut</span>);
 
-<span class="doccomment">/// (Trait used internally) An iterator that we trust</span>
-<span class="doccomment">/// to deliver exactly as many items as it said it would.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The iterator must produce exactly the number of elements it reported or</span>
-<span class="doccomment">/// diverge before reaching the end.</span>
+<span class="doccomment">/// (Trait used internally) An iterator that we trust</span>
+<span class="doccomment">/// to deliver exactly as many items as it said it would.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The iterator must produce exactly the number of elements it reported or</span>
+<span class="doccomment">/// diverge before reaching the end.</span>
 <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">trait</span> <span class="ident">TrustedIterator</span> {}
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">indexes</span>::<span class="ident">IndicesIterF</span>;
@@ -2950,11 +2950,11 @@
 <span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span><span class="op">&gt;</span> <span class="ident">TrustedIterator</span> <span class="kw">for</span> <span class="ident">slice</span>::<span class="ident">Iter</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span><span class="op">&gt;</span> {}
 <span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span><span class="op">&gt;</span> <span class="ident">TrustedIterator</span> <span class="kw">for</span> <span class="ident">slice</span>::<span class="ident">IterMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span><span class="op">&gt;</span> {}
 <span class="kw">unsafe</span> <span class="kw">impl</span> <span class="ident">TrustedIterator</span> <span class="kw">for</span> ::<span class="ident">std</span>::<span class="ident">ops</span>::<span class="ident">Range</span><span class="op">&lt;</span><span class="ident">usize</span><span class="op">&gt;</span> {}
-<span class="comment">// FIXME: These indices iter are dubious -- size needs to be checked up front.</span>
+<span class="comment">// FIXME: These indices iter are dubious -- size needs to be checked up front.</span>
 <span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span> <span class="ident">TrustedIterator</span> <span class="kw">for</span> <span class="ident">IndicesIter</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">D</span>: <span class="ident">Dimension</span> {}
 <span class="kw">unsafe</span> <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span> <span class="ident">TrustedIterator</span> <span class="kw">for</span> <span class="ident">IndicesIterF</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span> <span class="kw">where</span> <span class="ident">D</span>: <span class="ident">Dimension</span> {}
 
-<span class="doccomment">/// Like Iterator::collect, but only for trusted length iterators</span>
+<span class="doccomment">/// Like Iterator::collect, but only for trusted length iterators</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_vec</span><span class="op">&lt;</span><span class="ident">I</span><span class="op">&gt;</span>(<span class="ident">iter</span>: <span class="ident">I</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">I</span>::<span class="ident">Item</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">I</span>: <span class="ident">TrustedIterator</span> <span class="op">+</span> <span class="ident">ExactSizeIterator</span>,
@@ -2962,15 +2962,15 @@
     <span class="ident">to_vec_mapped</span>(<span class="ident">iter</span>, <span class="op">|</span><span class="ident">x</span><span class="op">|</span> <span class="ident">x</span>)
 }
 
-<span class="doccomment">/// Like Iterator::collect, but only for trusted length iterators</span>
+<span class="doccomment">/// Like Iterator::collect, but only for trusted length iterators</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_vec_mapped</span><span class="op">&lt;</span><span class="ident">I</span>, <span class="ident">F</span>, <span class="ident">B</span><span class="op">&gt;</span>(<span class="ident">iter</span>: <span class="ident">I</span>, <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">I</span>: <span class="ident">TrustedIterator</span> <span class="op">+</span> <span class="ident">ExactSizeIterator</span>,
     <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">I</span>::<span class="ident">Item</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">B</span>,
 {
-    <span class="comment">// Use an `unsafe` block to do this efficiently.</span>
-    <span class="comment">// We know that iter will produce exactly .size() elements,</span>
-    <span class="comment">// and the loop can vectorize if it&#39;s clean (without branch to grow the vector).</span>
+    <span class="comment">// Use an `unsafe` block to do this efficiently.</span>
+    <span class="comment">// We know that iter will produce exactly .size() elements,</span>
+    <span class="comment">// and the loop can vectorize if it&#39;s clean (without branch to grow the vector).</span>
     <span class="kw">let</span> (<span class="ident">size</span>, <span class="kw">_</span>) <span class="op">=</span> <span class="ident">iter</span>.<span class="ident">size_hint</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">result</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">size</span>);
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">out_ptr</span> <span class="op">=</span> <span class="ident">result</span>.<span class="ident">as_mut_ptr</span>();

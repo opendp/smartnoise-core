@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/ndarray-0.13.1/src/zip/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
@@ -1102,13 +1102,13 @@
 <span id="1099">1099</span>
 <span id="1100">1100</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">// Copyright 2017 bluss and ndarray developers.</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. This file may not be copied, modified, or distributed</span>
-<span class="comment">// except according to those terms.</span>
+<span class="comment">// Copyright 2017 bluss and ndarray developers.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
 <span class="attribute">#[<span class="ident">macro_use</span>]</span>
 <span class="kw">mod</span> <span class="ident">zipmacro</span>;
@@ -1124,7 +1124,7 @@
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">indexes</span>::{<span class="ident">indices</span>, <span class="ident">Indices</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">layout</span>::{<span class="ident">CORDER</span>, <span class="ident">FORDER</span>};
 
-<span class="doccomment">/// Return if the expression is a break value.</span>
+<span class="doccomment">/// Return if the expression is a break value.</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">fold_while</span> {
     (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">e</span> {
@@ -1134,19 +1134,19 @@
     };
 }
 
-<span class="doccomment">/// Broadcast an array so that it acts like a larger size and/or shape array.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [broadcasting][1] for more information.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [1]: struct.ArrayBase.html#broadcasting</span>
+<span class="doccomment">/// Broadcast an array so that it acts like a larger size and/or shape array.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See [broadcasting][1] for more information.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [1]: struct.ArrayBase.html#broadcasting</span>
 <span class="kw">trait</span> <span class="ident">Broadcast</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">E</span>: <span class="ident">IntoDimension</span>,
 {
     <span class="kw">type</span> <span class="ident">Output</span>: <span class="ident">NdProducer</span><span class="op">&lt;</span><span class="ident">Dim</span> <span class="op">=</span> <span class="ident">E</span>::<span class="ident">Dim</span><span class="op">&gt;</span>;
-    <span class="doccomment">/// Broadcast the array to the new dimensions `shape`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ***Panics*** if broadcasting isn’t possible.</span>
+    <span class="doccomment">/// Broadcast the array to the new dimensions `shape`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ***Panics*** if broadcasting isn’t possible.</span>
     <span class="kw">fn</span> <span class="ident">broadcast_unwrap</span>(<span class="self">self</span>, <span class="ident">shape</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
     <span class="macro">private_decl</span><span class="macro">!</span> {}
 }
@@ -1203,18 +1203,18 @@
     }
 }
 
-<span class="doccomment">/// Argument conversion into a producer.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Slices and vectors can be used (equivalent to 1-dimensional array views).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This trait is like `IntoIterator` for `NdProducers` instead of iterators.</span>
+<span class="doccomment">/// Argument conversion into a producer.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Slices and vectors can be used (equivalent to 1-dimensional array views).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// This trait is like `IntoIterator` for `NdProducers` instead of iterators.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">IntoNdProducer</span> {
-    <span class="doccomment">/// The element produced per iteration.</span>
+    <span class="doccomment">/// The element produced per iteration.</span>
     <span class="kw">type</span> <span class="ident">Item</span>;
-    <span class="doccomment">/// Dimension type of the producer</span>
+    <span class="doccomment">/// Dimension type of the producer</span>
     <span class="kw">type</span> <span class="ident">Dim</span>: <span class="ident">Dimension</span>;
     <span class="kw">type</span> <span class="ident">Output</span>: <span class="ident">NdProducer</span><span class="op">&lt;</span><span class="ident">Dim</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Dim</span>, <span class="ident">Item</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span>;
-    <span class="doccomment">/// Convert the value into an `NdProducer`.</span>
+    <span class="doccomment">/// Convert the value into an `NdProducer`.</span>
     <span class="kw">fn</span> <span class="ident">into_producer</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
 }
 
@@ -1230,42 +1230,42 @@
     }
 }
 
-<span class="doccomment">/// A producer of an n-dimensional set of elements;</span>
-<span class="doccomment">/// for example an array view, mutable array view or an iterator</span>
-<span class="doccomment">/// that yields chunks.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Producers are used as a arguments to [`Zip`](struct.Zip.html) and</span>
-<span class="doccomment">/// [`azip!()`](macro.azip.html).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Comparison to `IntoIterator`</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Most `NdProducers` are *iterable* (implement `IntoIterator`) but not directly</span>
-<span class="doccomment">/// iterators. This separation is needed because the producer represents</span>
-<span class="doccomment">/// a multidimensional set of items, it can be split along a particular axis for</span>
-<span class="doccomment">/// parallelization, and it has no fixed correspondance to a sequence.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The natural exception is one dimensional producers, like `AxisIter`, which</span>
-<span class="doccomment">/// implement `Iterator` directly</span>
-<span class="doccomment">/// (`AxisIter` traverses a one dimensional sequence, along an axis, while</span>
-<span class="doccomment">/// *producing* multidimensional items).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See also [`IntoNdProducer`](trait.IntoNdProducer.html)</span>
+<span class="doccomment">/// A producer of an n-dimensional set of elements;</span>
+<span class="doccomment">/// for example an array view, mutable array view or an iterator</span>
+<span class="doccomment">/// that yields chunks.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Producers are used as a arguments to [`Zip`](struct.Zip.html) and</span>
+<span class="doccomment">/// [`azip!()`](macro.azip.html).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Comparison to `IntoIterator`</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Most `NdProducers` are *iterable* (implement `IntoIterator`) but not directly</span>
+<span class="doccomment">/// iterators. This separation is needed because the producer represents</span>
+<span class="doccomment">/// a multidimensional set of items, it can be split along a particular axis for</span>
+<span class="doccomment">/// parallelization, and it has no fixed correspondance to a sequence.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The natural exception is one dimensional producers, like `AxisIter`, which</span>
+<span class="doccomment">/// implement `Iterator` directly</span>
+<span class="doccomment">/// (`AxisIter` traverses a one dimensional sequence, along an axis, while</span>
+<span class="doccomment">/// *producing* multidimensional items).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See also [`IntoNdProducer`](trait.IntoNdProducer.html)</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">NdProducer</span> {
-    <span class="doccomment">/// The element produced per iteration.</span>
+    <span class="doccomment">/// The element produced per iteration.</span>
     <span class="kw">type</span> <span class="ident">Item</span>;
-    <span class="comment">// Internal use / Pointee type</span>
-    <span class="doccomment">/// Dimension type</span>
+    <span class="comment">// Internal use / Pointee type</span>
+    <span class="doccomment">/// Dimension type</span>
     <span class="kw">type</span> <span class="ident">Dim</span>: <span class="ident">Dimension</span>;
 
-    <span class="comment">// The pointer Ptr is used by an array view to simply point to the</span>
-    <span class="comment">// current element. It doesn&#39;t have to be a pointer (see Indices).</span>
-    <span class="comment">// Its main function is that it can be incremented with a particular</span>
-    <span class="comment">// stride (= along a particular axis)</span>
+    <span class="comment">// The pointer Ptr is used by an array view to simply point to the</span>
+    <span class="comment">// current element. It doesn&#39;t have to be a pointer (see Indices).</span>
+    <span class="comment">// Its main function is that it can be incremented with a particular</span>
+    <span class="comment">// stride (= along a particular axis)</span>
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="doccomment">/// Pointer or stand-in for pointer</span>
+    <span class="doccomment">/// Pointer or stand-in for pointer</span>
     <span class="kw">type</span> <span class="ident">Ptr</span>: <span class="ident">Offset</span><span class="op">&lt;</span><span class="ident">Stride</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">Stride</span><span class="op">&gt;</span>;
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
-    <span class="doccomment">/// Pointer stride</span>
+    <span class="doccomment">/// Pointer stride</span>
     <span class="kw">type</span> <span class="ident">Stride</span>: <span class="ident">Copy</span>;
 
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
@@ -1328,8 +1328,8 @@
     <span class="kw">fn</span> <span class="ident">split_at</span>(<span class="self">self</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>, <span class="ident">index</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="self">Self</span>, <span class="self">Self</span>);
 }
 
-<span class="doccomment">/// An array reference is an n-dimensional producer of element references</span>
-<span class="doccomment">/// (like ArrayView).</span>
+<span class="doccomment">/// An array reference is an n-dimensional producer of element references</span>
+<span class="doccomment">/// (like ArrayView).</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>: <span class="lifetime">&#39;a</span>, <span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">IntoNdProducer</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
@@ -1343,8 +1343,8 @@
     }
 }
 
-<span class="doccomment">/// A mutable array reference is an n-dimensional producer of mutable element</span>
-<span class="doccomment">/// references (like ArrayViewMut).</span>
+<span class="doccomment">/// A mutable array reference is an n-dimensional producer of mutable element</span>
+<span class="doccomment">/// references (like ArrayViewMut).</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>: <span class="lifetime">&#39;a</span>, <span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">IntoNdProducer</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">ArrayBase</span><span class="op">&lt;</span><span class="ident">S</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
@@ -1358,7 +1358,7 @@
     }
 }
 
-<span class="doccomment">/// A slice is a one-dimensional producer</span>
+<span class="doccomment">/// A slice is a one-dimensional producer</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>: <span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">IntoNdProducer</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">A</span>] {
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Output</span> <span class="kw">as</span> <span class="ident">NdProducer</span><span class="op">&gt;</span>::<span class="ident">Item</span>;
     <span class="kw">type</span> <span class="ident">Dim</span> <span class="op">=</span> <span class="ident">Ix1</span>;
@@ -1368,7 +1368,7 @@
     }
 }
 
-<span class="doccomment">/// A mutable slice is a mutable one-dimensional producer</span>
+<span class="doccomment">/// A mutable slice is a mutable one-dimensional producer</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>: <span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">IntoNdProducer</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> [<span class="ident">A</span>] {
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Output</span> <span class="kw">as</span> <span class="ident">NdProducer</span><span class="op">&gt;</span>::<span class="ident">Item</span>;
     <span class="kw">type</span> <span class="ident">Dim</span> <span class="op">=</span> <span class="ident">Ix1</span>;
@@ -1378,7 +1378,7 @@
     }
 }
 
-<span class="doccomment">/// A Vec is a one-dimensional producer</span>
+<span class="doccomment">/// A Vec is a one-dimensional producer</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>: <span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">IntoNdProducer</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Output</span> <span class="kw">as</span> <span class="ident">NdProducer</span><span class="op">&gt;</span>::<span class="ident">Item</span>;
     <span class="kw">type</span> <span class="ident">Dim</span> <span class="op">=</span> <span class="ident">Ix1</span>;
@@ -1388,7 +1388,7 @@
     }
 }
 
-<span class="doccomment">/// A mutable Vec is a mutable one-dimensional producer</span>
+<span class="doccomment">/// A mutable Vec is a mutable one-dimensional producer</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>: <span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">IntoNdProducer</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Output</span> <span class="kw">as</span> <span class="ident">NdProducer</span><span class="op">&gt;</span>::<span class="ident">Item</span>;
     <span class="kw">type</span> <span class="ident">Dim</span> <span class="op">=</span> <span class="ident">Ix1</span>;
@@ -1610,82 +1610,82 @@
     }
 }
 
-<span class="doccomment">/// Lock step function application across several arrays or other producers.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Zip allows matching several producers to each other elementwise and applying</span>
-<span class="doccomment">/// a function over all tuples of elements (one item from each input at</span>
-<span class="doccomment">/// a time).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// In general, the zip uses a tuple of producers</span>
-<span class="doccomment">/// ([`NdProducer`](trait.NdProducer.html) trait) that all have to be of the</span>
-<span class="doccomment">/// same shape. The NdProducer implementation defines what its item type is</span>
-<span class="doccomment">/// (for example if it&#39;s a shared reference, mutable reference or an array</span>
-<span class="doccomment">/// view etc).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// If all the input arrays are of the same memory layout the zip performs much</span>
-<span class="doccomment">/// better and the compiler can usually vectorize the loop (if applicable).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The order elements are visited is not specified. The producers don’t have to</span>
-<span class="doccomment">/// have the same item type.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The `Zip` has two methods for function application: `apply` and</span>
-<span class="doccomment">/// `fold_while`. The zip object can be split, which allows parallelization.</span>
-<span class="doccomment">/// A read-only zip object (no mutable producers) can be cloned.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See also the [`azip!()` macro][az] which offers a convenient shorthand</span>
-<span class="doccomment">/// to common ways to use `Zip`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [az]: macro.azip.html</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use ndarray::Zip;</span>
-<span class="doccomment">/// use ndarray::Array2;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// type M = Array2&lt;f64&gt;;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// // Create four 2d arrays of the same size</span>
-<span class="doccomment">/// let mut a = M::zeros((64, 32));</span>
-<span class="doccomment">/// let b = M::from_elem(a.dim(), 1.);</span>
-<span class="doccomment">/// let c = M::from_elem(a.dim(), 2.);</span>
-<span class="doccomment">/// let d = M::from_elem(a.dim(), 3.);</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// // Example 1: Perform an elementwise arithmetic operation across</span>
-<span class="doccomment">/// // the four arrays a, b, c, d.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Zip::from(&amp;mut a)</span>
-<span class="doccomment">///     .and(&amp;b)</span>
-<span class="doccomment">///     .and(&amp;c)</span>
-<span class="doccomment">///     .and(&amp;d)</span>
-<span class="doccomment">///     .apply(|w, &amp;x, &amp;y, &amp;z| {</span>
-<span class="doccomment">///         *w += x + y * z;</span>
-<span class="doccomment">///     });</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// // Example 2: Create a new array `totals` with one entry per row of `a`.</span>
-<span class="doccomment">/// //  Use Zip to traverse the rows of `a` and assign to the corresponding</span>
-<span class="doccomment">/// //  entry in `totals` with the sum across each row.</span>
-<span class="doccomment">/// //  This is possible because the producer for `totals` and the row producer</span>
-<span class="doccomment">/// //  for `a` have the same shape and dimensionality.</span>
-<span class="doccomment">/// //  The rows producer yields one array view (`row`) per iteration.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// use ndarray::{Array1, Axis};</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let mut totals = Array1::zeros(a.nrows());</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Zip::from(&amp;mut totals)</span>
-<span class="doccomment">///     .and(a.genrows())</span>
-<span class="doccomment">///     .apply(|totals, row| *totals = row.sum());</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// // Check the result against the built in `.sum_axis()` along axis 1.</span>
-<span class="doccomment">/// assert_eq!(totals, a.sum_axis(Axis(1)));</span>
-<span class="doccomment">///</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// // Example 3: Recreate Example 2 using apply_collect to make a new array</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let mut totals2 = Zip::from(a.genrows()).apply_collect(|row| row.sum());</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// // Check the result against the previous example.</span>
-<span class="doccomment">/// assert_eq!(totals, totals2);</span>
-<span class="doccomment">/// ```</span>
+<span class="doccomment">/// Lock step function application across several arrays or other producers.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Zip allows matching several producers to each other elementwise and applying</span>
+<span class="doccomment">/// a function over all tuples of elements (one item from each input at</span>
+<span class="doccomment">/// a time).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// In general, the zip uses a tuple of producers</span>
+<span class="doccomment">/// ([`NdProducer`](trait.NdProducer.html) trait) that all have to be of the</span>
+<span class="doccomment">/// same shape. The NdProducer implementation defines what its item type is</span>
+<span class="doccomment">/// (for example if it&#39;s a shared reference, mutable reference or an array</span>
+<span class="doccomment">/// view etc).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// If all the input arrays are of the same memory layout the zip performs much</span>
+<span class="doccomment">/// better and the compiler can usually vectorize the loop (if applicable).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The order elements are visited is not specified. The producers don’t have to</span>
+<span class="doccomment">/// have the same item type.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The `Zip` has two methods for function application: `apply` and</span>
+<span class="doccomment">/// `fold_while`. The zip object can be split, which allows parallelization.</span>
+<span class="doccomment">/// A read-only zip object (no mutable producers) can be cloned.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See also the [`azip!()` macro][az] which offers a convenient shorthand</span>
+<span class="doccomment">/// to common ways to use `Zip`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [az]: macro.azip.html</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// use ndarray::Zip;</span>
+<span class="doccomment">/// use ndarray::Array2;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// type M = Array2&lt;f64&gt;;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// // Create four 2d arrays of the same size</span>
+<span class="doccomment">/// let mut a = M::zeros((64, 32));</span>
+<span class="doccomment">/// let b = M::from_elem(a.dim(), 1.);</span>
+<span class="doccomment">/// let c = M::from_elem(a.dim(), 2.);</span>
+<span class="doccomment">/// let d = M::from_elem(a.dim(), 3.);</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// // Example 1: Perform an elementwise arithmetic operation across</span>
+<span class="doccomment">/// // the four arrays a, b, c, d.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Zip::from(&amp;mut a)</span>
+<span class="doccomment">///     .and(&amp;b)</span>
+<span class="doccomment">///     .and(&amp;c)</span>
+<span class="doccomment">///     .and(&amp;d)</span>
+<span class="doccomment">///     .apply(|w, &amp;x, &amp;y, &amp;z| {</span>
+<span class="doccomment">///         *w += x + y * z;</span>
+<span class="doccomment">///     });</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// // Example 2: Create a new array `totals` with one entry per row of `a`.</span>
+<span class="doccomment">/// //  Use Zip to traverse the rows of `a` and assign to the corresponding</span>
+<span class="doccomment">/// //  entry in `totals` with the sum across each row.</span>
+<span class="doccomment">/// //  This is possible because the producer for `totals` and the row producer</span>
+<span class="doccomment">/// //  for `a` have the same shape and dimensionality.</span>
+<span class="doccomment">/// //  The rows producer yields one array view (`row`) per iteration.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// use ndarray::{Array1, Axis};</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// let mut totals = Array1::zeros(a.nrows());</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Zip::from(&amp;mut totals)</span>
+<span class="doccomment">///     .and(a.genrows())</span>
+<span class="doccomment">///     .apply(|totals, row| *totals = row.sum());</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// // Check the result against the built in `.sum_axis()` along axis 1.</span>
+<span class="doccomment">/// assert_eq!(totals, a.sum_axis(Axis(1)));</span>
+<span class="doccomment">///</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// // Example 3: Recreate Example 2 using apply_collect to make a new array</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// let mut totals2 = Zip::from(a.genrows()).apply_collect(|row| row.sum());</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// // Check the result against the previous example.</span>
+<span class="doccomment">/// assert_eq!(totals, totals2);</span>
+<span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Zip</span><span class="op">&lt;</span><span class="ident">Parts</span>, <span class="ident">D</span><span class="op">&gt;</span> {
     <span class="ident">parts</span>: <span class="ident">Parts</span>,
@@ -1699,10 +1699,10 @@
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
     <span class="ident">P</span>: <span class="ident">NdProducer</span><span class="op">&lt;</span><span class="ident">Dim</span> <span class="op">=</span> <span class="ident">D</span><span class="op">&gt;</span>,
 {
-    <span class="doccomment">/// Create a new `Zip` from the input array or other producer `p`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The Zip will take the exact dimension of `p` and all inputs</span>
-    <span class="doccomment">/// must have the same dimensions (or be broadcast to them).</span>
+    <span class="doccomment">/// Create a new `Zip` from the input array or other producer `p`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The Zip will take the exact dimension of `p` and all inputs</span>
+    <span class="doccomment">/// must have the same dimensions (or be broadcast to them).</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from</span><span class="op">&lt;</span><span class="ident">IP</span><span class="op">&gt;</span>(<span class="ident">p</span>: <span class="ident">IP</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">IP</span>: <span class="ident">IntoNdProducer</span><span class="op">&lt;</span><span class="ident">Dim</span> <span class="op">=</span> <span class="ident">D</span>, <span class="ident">Output</span> <span class="op">=</span> <span class="ident">P</span>, <span class="ident">Item</span> <span class="op">=</span> <span class="ident">P</span>::<span class="ident">Item</span><span class="op">&gt;</span>,
@@ -1721,12 +1721,12 @@
     <span class="ident">D</span>: <span class="ident">Dimension</span> <span class="op">+</span> <span class="ident">Copy</span>,
     <span class="ident">P</span>: <span class="ident">NdProducer</span><span class="op">&lt;</span><span class="ident">Dim</span> <span class="op">=</span> <span class="ident">D</span><span class="op">&gt;</span>,
 {
-    <span class="doccomment">/// Create a new `Zip` with an index producer and the producer `p`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// The Zip will take the exact dimension of `p` and all inputs</span>
-    <span class="doccomment">/// must have the same dimensions (or be broadcast to them).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// *Note:* Indexed zip has overhead.</span>
+    <span class="doccomment">/// Create a new `Zip` with an index producer and the producer `p`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// The Zip will take the exact dimension of `p` and all inputs</span>
+    <span class="doccomment">/// must have the same dimensions (or be broadcast to them).</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// *Note:* Indexed zip has overhead.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">indexed</span><span class="op">&lt;</span><span class="ident">IP</span><span class="op">&gt;</span>(<span class="ident">p</span>: <span class="ident">IP</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">IP</span>: <span class="ident">IntoNdProducer</span><span class="op">&lt;</span><span class="ident">Dim</span> <span class="op">=</span> <span class="ident">D</span>, <span class="ident">Output</span> <span class="op">=</span> <span class="ident">P</span>, <span class="ident">Item</span> <span class="op">=</span> <span class="ident">P</span>::<span class="ident">Item</span><span class="op">&gt;</span>,
@@ -1753,21 +1753,21 @@
         );
     }
 
-    <span class="doccomment">/// Return a the number of element tuples in the Zip</span>
+    <span class="doccomment">/// Return a the number of element tuples in the Zip</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">size</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">dimension</span>.<span class="ident">size</span>()
     }
 
-    <span class="doccomment">/// Return the length of `axis`</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ***Panics*** if `axis` is out of bounds.</span>
+    <span class="doccomment">/// Return the length of `axis`</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ***Panics*** if `axis` is out of bounds.</span>
     <span class="kw">fn</span> <span class="ident">len_of</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="self">self</span>.<span class="ident">dimension</span>[<span class="ident">axis</span>.<span class="ident">index</span>()]
     }
 
-    <span class="doccomment">/// Return an *approximation* to the max stride axis; if</span>
-    <span class="doccomment">/// component arrays disagree, there may be no choice better than the</span>
-    <span class="doccomment">/// others.</span>
+    <span class="doccomment">/// Return an *approximation* to the max stride axis; if</span>
+    <span class="doccomment">/// component arrays disagree, there may be no choice better than the</span>
+    <span class="doccomment">/// others.</span>
     <span class="kw">fn</span> <span class="ident">max_stride_axis</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Axis</span> {
         <span class="kw">let</span> <span class="ident">i</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">layout</span>.<span class="ident">flag</span>() {
             <span class="ident">FORDER</span> <span class="op">=</span><span class="op">&gt;</span> <span class="self">self</span>
@@ -1836,7 +1836,7 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">index_</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">dimension</span>.<span class="ident">first_index</span>();
         <span class="kw">let</span> <span class="ident">inner_strides</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parts</span>.<span class="ident">stride_of</span>(<span class="ident">unroll_axis</span>);
         <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">index</span>) <span class="op">=</span> <span class="ident">index_</span> {
-            <span class="comment">// Let&#39;s “unroll” the loop over the innermost axis</span>
+            <span class="comment">// Let&#39;s “unroll” the loop over the innermost axis</span>
             <span class="kw">unsafe</span> {
                 <span class="kw">let</span> <span class="ident">ptr</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">parts</span>.<span class="ident">uget_ptr</span>(<span class="kw-2">&amp;</span><span class="ident">index</span>);
                 <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">inner_len</span> {
@@ -1977,8 +1977,8 @@ impl&lt;T&gt; Offset for *mut T {
             <span class="kw">where</span> <span class="ident">D</span>: <span class="ident">Dimension</span>,
                   $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">p</span>: <span class="ident">NdProducer</span><span class="op">&lt;</span><span class="ident">Dim</span><span class="op">=</span><span class="ident">D</span><span class="op">&gt;</span> ,)<span class="op">*</span>
         {
-            <span class="doccomment">/// Apply a function to all elements of the input arrays,</span>
-            <span class="doccomment">/// visiting elements in lock step.</span>
+            <span class="doccomment">/// Apply a function to all elements of the input arrays,</span>
+            <span class="doccomment">/// visiting elements in lock step.</span>
             <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">apply</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">function</span>: <span class="ident">F</span>)
                 <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">FnMut</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">p</span>::<span class="ident">Item</span>),<span class="kw-2">*</span>)
             {
@@ -1988,34 +1988,34 @@ impl&lt;T&gt; Offset for *mut T {
                 });
             }
 
-            <span class="doccomment">/// Apply a fold function to all elements of the input arrays,</span>
-            <span class="doccomment">/// visiting elements in lock step.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// # Example</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// The expression `tr(AᵀB)` can be more efficiently computed as</span>
-            <span class="doccomment">/// the equivalent expression `∑ᵢⱼ(A∘B)ᵢⱼ` (i.e. the sum of the</span>
-            <span class="doccomment">/// elements of the entry-wise product). It would be possible to</span>
-            <span class="doccomment">/// evaluate this expression by first computing the entry-wise</span>
-            <span class="doccomment">/// product, `A∘B`, and then computing the elementwise sum of that</span>
-            <span class="doccomment">/// product, but it&#39;s possible to do this in a single loop (and</span>
-            <span class="doccomment">/// avoid an extra heap allocation if `A` and `B` can&#39;t be</span>
-            <span class="doccomment">/// consumed) by using `Zip`:</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// ```</span>
-            <span class="doccomment">/// use ndarray::{array, Zip};</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// let a = array![[1, 5], [3, 7]];</span>
-            <span class="doccomment">/// let b = array![[2, 4], [8, 6]];</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// // Without using `Zip`. This involves two loops and an extra</span>
-            <span class="doccomment">/// // heap allocation for the result of `&amp;a * &amp;b`.</span>
-            <span class="doccomment">/// let sum_prod_nonzip = (&amp;a * &amp;b).sum();</span>
-            <span class="doccomment">/// // Using `Zip`. This is a single loop without any heap allocations.</span>
-            <span class="doccomment">/// let sum_prod_zip = Zip::from(&amp;a).and(&amp;b).fold(0, |acc, a, b| acc + a * b);</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// assert_eq!(sum_prod_nonzip, sum_prod_zip);</span>
-            <span class="doccomment">/// ```</span>
+            <span class="doccomment">/// Apply a fold function to all elements of the input arrays,</span>
+            <span class="doccomment">/// visiting elements in lock step.</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// # Example</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// The expression `tr(AᵀB)` can be more efficiently computed as</span>
+            <span class="doccomment">/// the equivalent expression `∑ᵢⱼ(A∘B)ᵢⱼ` (i.e. the sum of the</span>
+            <span class="doccomment">/// elements of the entry-wise product). It would be possible to</span>
+            <span class="doccomment">/// evaluate this expression by first computing the entry-wise</span>
+            <span class="doccomment">/// product, `A∘B`, and then computing the elementwise sum of that</span>
+            <span class="doccomment">/// product, but it&#39;s possible to do this in a single loop (and</span>
+            <span class="doccomment">/// avoid an extra heap allocation if `A` and `B` can&#39;t be</span>
+            <span class="doccomment">/// consumed) by using `Zip`:</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// ```</span>
+            <span class="doccomment">/// use ndarray::{array, Zip};</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// let a = array![[1, 5], [3, 7]];</span>
+            <span class="doccomment">/// let b = array![[2, 4], [8, 6]];</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// // Without using `Zip`. This involves two loops and an extra</span>
+            <span class="doccomment">/// // heap allocation for the result of `&amp;a * &amp;b`.</span>
+            <span class="doccomment">/// let sum_prod_nonzip = (&amp;a * &amp;b).sum();</span>
+            <span class="doccomment">/// // Using `Zip`. This is a single loop without any heap allocations.</span>
+            <span class="doccomment">/// let sum_prod_zip = Zip::from(&amp;a).and(&amp;b).fold(0, |acc, a, b| acc + a * b);</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// assert_eq!(sum_prod_nonzip, sum_prod_zip);</span>
+            <span class="doccomment">/// ```</span>
             <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fold</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">Acc</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">acc</span>: <span class="ident">Acc</span>, <span class="kw-2">mut</span> <span class="ident">function</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Acc</span>
             <span class="kw">where</span>
                 <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">Acc</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">p</span>::<span class="ident">Item</span>),<span class="kw-2">*</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Acc</span>,
@@ -2026,9 +2026,9 @@ impl&lt;T&gt; Offset for *mut T {
                 }).<span class="ident">into_inner</span>()
             }
 
-            <span class="doccomment">/// Apply a fold function to the input arrays while the return</span>
-            <span class="doccomment">/// value is `FoldWhile::Continue`, visiting elements in lock step.</span>
-            <span class="doccomment">///</span>
+            <span class="doccomment">/// Apply a fold function to the input arrays while the return</span>
+            <span class="doccomment">/// value is `FoldWhile::Continue`, visiting elements in lock step.</span>
+            <span class="doccomment">///</span>
             <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fold_while</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">Acc</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">acc</span>: <span class="ident">Acc</span>, <span class="kw-2">mut</span> <span class="ident">function</span>: <span class="ident">F</span>)
                 <span class="op">-</span><span class="op">&gt;</span> <span class="ident">FoldWhile</span><span class="op">&lt;</span><span class="ident">Acc</span><span class="op">&gt;</span>
                 <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="ident">Acc</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">p</span>::<span class="ident">Item</span>),<span class="kw-2">*</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">FoldWhile</span><span class="op">&lt;</span><span class="ident">Acc</span><span class="op">&gt;</span>
@@ -2039,19 +2039,19 @@ impl&lt;T&gt; Offset for *mut T {
                 })
             }
 
-            <span class="doccomment">/// Tests if every element of the iterator matches a predicate.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// Returns `true` if `predicate` evaluates to `true` for all elements.</span>
-            <span class="doccomment">/// Returns `true` if the input arrays are empty.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// Example:</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// ```</span>
-            <span class="doccomment">/// use ndarray::{array, Zip};</span>
-            <span class="doccomment">/// let a = array![1, 2, 3];</span>
-            <span class="doccomment">/// let b = array![1, 4, 9];</span>
-            <span class="doccomment">/// assert!(Zip::from(&amp;a).and(&amp;b).all(|&amp;a, &amp;b| a * a == b));</span>
-            <span class="doccomment">/// ```</span>
+            <span class="doccomment">/// Tests if every element of the iterator matches a predicate.</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// Returns `true` if `predicate` evaluates to `true` for all elements.</span>
+            <span class="doccomment">/// Returns `true` if the input arrays are empty.</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// Example:</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// ```</span>
+            <span class="doccomment">/// use ndarray::{array, Zip};</span>
+            <span class="doccomment">/// let a = array![1, 2, 3];</span>
+            <span class="doccomment">/// let b = array![1, 4, 9];</span>
+            <span class="doccomment">/// assert!(Zip::from(&amp;a).and(&amp;b).all(|&amp;a, &amp;b| a * a == b));</span>
+            <span class="doccomment">/// ```</span>
             <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">all</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">predicate</span>: <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>
                 <span class="kw">where</span> <span class="ident">F</span>: <span class="ident">FnMut</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">p</span>::<span class="ident">Item</span>),<span class="kw-2">*</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>
             {
@@ -2067,9 +2067,9 @@ impl&lt;T&gt; Offset for *mut T {
 
             <span class="macro">expand_if</span><span class="macro">!</span>(@<span class="ident">bool</span> [<span class="macro-nonterminal">$</span><span class="macro-nonterminal">notlast</span>]
 
-            <span class="doccomment">/// Include the producer `p` in the Zip.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// ***Panics*** if `p`’s shape doesn’t match the Zip’s exactly.</span>
+            <span class="doccomment">/// Include the producer `p` in the Zip.</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// ***Panics*** if `p`’s shape doesn’t match the Zip’s exactly.</span>
             <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">and</span><span class="op">&lt;</span><span class="ident">P</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">p</span>: <span class="ident">P</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Zip</span><span class="op">&lt;</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">p</span>,)<span class="op">*</span> <span class="ident">P</span>::<span class="ident">Output</span>, ), <span class="ident">D</span><span class="op">&gt;</span>
                 <span class="kw">where</span> <span class="ident">P</span>: <span class="ident">IntoNdProducer</span><span class="op">&lt;</span><span class="ident">Dim</span><span class="op">=</span><span class="ident">D</span><span class="op">&gt;</span>,
             {
@@ -2084,11 +2084,11 @@ impl&lt;T&gt; Offset for *mut T {
                 }
             }
 
-            <span class="doccomment">/// Include the producer `p` in the Zip, broadcasting if needed.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// If their shapes disagree, `rhs` is broadcast to the shape of `self`.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// ***Panics*** if broadcasting isn’t possible.</span>
+            <span class="doccomment">/// Include the producer `p` in the Zip, broadcasting if needed.</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// If their shapes disagree, `rhs` is broadcast to the shape of `self`.</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// ***Panics*** if broadcasting isn’t possible.</span>
             <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">and_broadcast</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">P</span>, <span class="ident">D2</span>, <span class="ident">Elem</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">p</span>: <span class="ident">P</span>)
                 <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Zip</span><span class="op">&lt;</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">p</span>,)<span class="op">*</span> <span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Elem</span>, <span class="ident">D</span><span class="op">&gt;</span>, ), <span class="ident">D</span><span class="op">&gt;</span>
                 <span class="kw">where</span> <span class="ident">P</span>: <span class="ident">IntoNdProducer</span><span class="op">&lt;</span><span class="ident">Dim</span><span class="op">=</span><span class="ident">D2</span>, <span class="ident">Output</span><span class="op">=</span><span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">Elem</span>, <span class="ident">D2</span><span class="op">&gt;</span>, <span class="ident">Item</span><span class="op">=</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">Elem</span><span class="op">&gt;</span>,
@@ -2104,18 +2104,18 @@ impl&lt;T&gt; Offset for *mut T {
                 }
             }
 
-            <span class="doccomment">/// Apply and collect the results into a new array, which has the same size as the</span>
-            <span class="doccomment">/// inputs.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// If all inputs are c- or f-order respectively, that is preserved in the output.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// Restricted to functions that produce copyable results for technical reasons; other</span>
-            <span class="doccomment">/// cases are not yet implemented.</span>
+            <span class="doccomment">/// Apply and collect the results into a new array, which has the same size as the</span>
+            <span class="doccomment">/// inputs.</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// If all inputs are c- or f-order respectively, that is preserved in the output.</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// Restricted to functions that produce copyable results for technical reasons; other</span>
+            <span class="doccomment">/// cases are not yet implemented.</span>
             <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">apply_collect</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnMut</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">p</span>::<span class="ident">Item</span>,)<span class="op">*</span> ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Array</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">D</span><span class="op">&gt;</span>
                 <span class="kw">where</span> <span class="ident">R</span>: <span class="ident">Copy</span>,
             {
-                <span class="comment">// To support non-Copy elements, implementation of dropping partial array (on</span>
-                <span class="comment">// panic) is needed</span>
+                <span class="comment">// To support non-Copy elements, implementation of dropping partial array (on</span>
+                <span class="comment">// panic) is needed</span>
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">output</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">uninitalized_for_current_layout</span>::<span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>();
                 <span class="self">self</span>.<span class="ident">apply_assign_into</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">output</span>, <span class="ident">f</span>);
                 <span class="kw">unsafe</span> {
@@ -2123,11 +2123,11 @@ impl&lt;T&gt; Offset for *mut T {
                 }
             }
 
-            <span class="doccomment">/// Apply and assign the results into the producer `into`, which should have the same</span>
-            <span class="doccomment">/// size as the other inputs.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// The producer should have assignable items as dictated by the `AssignElem` trait,</span>
-            <span class="doccomment">/// for example `&amp;mut R`.</span>
+            <span class="doccomment">/// Apply and assign the results into the producer `into`, which should have the same</span>
+            <span class="doccomment">/// size as the other inputs.</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// The producer should have assignable items as dictated by the `AssignElem` trait,</span>
+            <span class="doccomment">/// for example `&amp;mut R`.</span>
             <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">apply_assign_into</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">Q</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">into</span>: <span class="ident">Q</span>, <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnMut</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">p</span>::<span class="ident">Item</span>,)<span class="op">*</span> ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">R</span>)
                 <span class="kw">where</span> <span class="ident">Q</span>: <span class="ident">IntoNdProducer</span><span class="op">&lt;</span><span class="ident">Dim</span><span class="op">=</span><span class="ident">D</span><span class="op">&gt;</span>,
                       <span class="ident">Q</span>::<span class="ident">Item</span>: <span class="ident">AssignElem</span><span class="op">&lt;</span><span class="ident">R</span><span class="op">&gt;</span>
@@ -2141,13 +2141,13 @@ impl&lt;T&gt; Offset for *mut T {
 
             );
 
-            <span class="doccomment">/// Split the `Zip` evenly in two.</span>
-            <span class="doccomment">///</span>
-            <span class="doccomment">/// It will be split in the way that best preserves element locality.</span>
+            <span class="doccomment">/// Split the `Zip` evenly in two.</span>
+            <span class="doccomment">///</span>
+            <span class="doccomment">/// It will be split in the way that best preserves element locality.</span>
             <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">split</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="self">Self</span>, <span class="self">Self</span>) {
                 <span class="macro">debug_assert_ne</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">size</span>(), <span class="number">0</span>, <span class="string">&quot;Attempt to split empty zip&quot;</span>);
                 <span class="macro">debug_assert_ne</span><span class="macro">!</span>(<span class="self">self</span>.<span class="ident">size</span>(), <span class="number">1</span>, <span class="string">&quot;Attempt to split zip with 1 elem&quot;</span>);
-                <span class="comment">// Always split in a way that preserves layout (if any)</span>
+                <span class="comment">// Always split in a way that preserves layout (if any)</span>
                 <span class="kw">let</span> <span class="ident">axis</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">max_stride_axis</span>();
                 <span class="kw">let</span> <span class="ident">index</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">len_of</span>(<span class="ident">axis</span>) <span class="op">/</span> <span class="number">2</span>;
                 <span class="kw">let</span> (<span class="ident">p1</span>, <span class="ident">p2</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">parts</span>.<span class="ident">split_at</span>(<span class="ident">axis</span>, <span class="ident">index</span>);
@@ -2177,24 +2177,24 @@ impl&lt;T&gt; Offset for *mut T {
     [<span class="bool-val">false</span> <span class="ident">P1</span> <span class="ident">P2</span> <span class="ident">P3</span> <span class="ident">P4</span> <span class="ident">P5</span> <span class="ident">P6</span>],
 }
 
-<span class="doccomment">/// Value controlling the execution of `.fold_while` on `Zip`.</span>
+<span class="doccomment">/// Value controlling the execution of `.fold_while` on `Zip`.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Copy</span>, <span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">FoldWhile</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Continue folding with this value</span>
+    <span class="doccomment">/// Continue folding with this value</span>
     <span class="ident">Continue</span>(<span class="ident">T</span>),
-    <span class="doccomment">/// Fold is complete and will return this value</span>
+    <span class="doccomment">/// Fold is complete and will return this value</span>
     <span class="ident">Done</span>(<span class="ident">T</span>),
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">FoldWhile</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Return the inner value</span>
+    <span class="doccomment">/// Return the inner value</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">into_inner</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">T</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">FoldWhile</span>::<span class="ident">Continue</span>(<span class="ident">x</span>) <span class="op">|</span> <span class="ident">FoldWhile</span>::<span class="ident">Done</span>(<span class="ident">x</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">x</span>,
         }
     }
 
-    <span class="doccomment">/// Return true if it is `Done`, false if `Continue`</span>
+    <span class="doccomment">/// Return true if it is `Done`, false if `Continue`</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_done</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
             <span class="ident">FoldWhile</span>::<span class="ident">Continue</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,

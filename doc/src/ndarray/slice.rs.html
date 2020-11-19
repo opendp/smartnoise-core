@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/ndarray-0.13.1/src/slice.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>slice.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -734,13 +734,13 @@
 <span id="731">731</span>
 <span id="732">732</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. This file may not be copied, modified, or distributed</span>
-<span class="comment">// except according to those terms.</span>
+<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">dimension</span>::<span class="ident">slices_intersect</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">error</span>::{<span class="ident">ErrorKind</span>, <span class="ident">ShapeError</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">ArrayViewMut</span>, <span class="ident">Dimension</span>};
@@ -748,26 +748,26 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">marker</span>::<span class="ident">PhantomData</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::{<span class="ident">Deref</span>, <span class="ident">Range</span>, <span class="ident">RangeFrom</span>, <span class="ident">RangeFull</span>, <span class="ident">RangeInclusive</span>, <span class="ident">RangeTo</span>, <span class="ident">RangeToInclusive</span>};
 
-<span class="doccomment">/// A slice (range with step size).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `end` is an exclusive index. Negative `begin` or `end` indexes are counted</span>
-<span class="doccomment">/// from the back of the axis. If `end` is `None`, the slice extends to the end</span>
-<span class="doccomment">/// of the axis.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See also the [`s![]`](macro.s.html) macro.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ## Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `Slice::new(0, None, 1)` is the full range of an axis. It can also be</span>
-<span class="doccomment">/// created with `Slice::from(..)`. The Python equivalent is `[:]`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `Slice::new(a, b, 2)` is every second element from `a` until `b`. It can</span>
-<span class="doccomment">/// also be created with `Slice::from(a..b).step_by(2)`. The Python equivalent</span>
-<span class="doccomment">/// is `[a:b:2]`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `Slice::new(a, None, -1)` is every element, from `a` until the end, in</span>
-<span class="doccomment">/// reverse order. It can also be created with `Slice::from(a..).step_by(-1)`.</span>
-<span class="doccomment">/// The Python equivalent is `[a::-1]`.</span>
+<span class="doccomment">/// A slice (range with step size).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `end` is an exclusive index. Negative `begin` or `end` indexes are counted</span>
+<span class="doccomment">/// from the back of the axis. If `end` is `None`, the slice extends to the end</span>
+<span class="doccomment">/// of the axis.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See also the [`s![]`](macro.s.html) macro.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ## Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `Slice::new(0, None, 1)` is the full range of an axis. It can also be</span>
+<span class="doccomment">/// created with `Slice::from(..)`. The Python equivalent is `[:]`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `Slice::new(a, b, 2)` is every second element from `a` until `b`. It can</span>
+<span class="doccomment">/// also be created with `Slice::from(a..b).step_by(2)`. The Python equivalent</span>
+<span class="doccomment">/// is `[a:b:2]`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `Slice::new(a, None, -1)` is every element, from `a` until the end, in</span>
+<span class="doccomment">/// reverse order. It can also be created with `Slice::from(a..).step_by(-1)`.</span>
+<span class="doccomment">/// The Python equivalent is `[a::-1]`.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Copy</span>, <span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Slice</span> {
     <span class="kw">pub</span> <span class="ident">start</span>: <span class="ident">isize</span>,
@@ -776,23 +776,23 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Slice</span> {
-    <span class="doccomment">/// Create a new `Slice` with the given extents.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// See also the `From` impls, converting from ranges; for example</span>
-    <span class="doccomment">/// `Slice::from(i..)` or `Slice::from(j..k)`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// `step` must be nonzero.</span>
-    <span class="doccomment">/// (This method checks with a debug assertion that `step` is not zero.)</span>
+    <span class="doccomment">/// Create a new `Slice` with the given extents.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// See also the `From` impls, converting from ranges; for example</span>
+    <span class="doccomment">/// `Slice::from(i..)` or `Slice::from(j..k)`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// `step` must be nonzero.</span>
+    <span class="doccomment">/// (This method checks with a debug assertion that `step` is not zero.)</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">start</span>: <span class="ident">isize</span>, <span class="ident">end</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span>, <span class="ident">step</span>: <span class="ident">isize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Slice</span> {
         <span class="macro">debug_assert_ne</span><span class="macro">!</span>(<span class="ident">step</span>, <span class="number">0</span>, <span class="string">&quot;Slice::new: step must be nonzero&quot;</span>);
         <span class="ident">Slice</span> { <span class="ident">start</span>, <span class="ident">end</span>, <span class="ident">step</span> }
     }
 
-    <span class="doccomment">/// Create a new `Slice` with the given step size (multiplied with the</span>
-    <span class="doccomment">/// previous step size).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// `step` must be nonzero.</span>
-    <span class="doccomment">/// (This method checks with a debug assertion that `step` is not zero.)</span>
+    <span class="doccomment">/// Create a new `Slice` with the given step size (multiplied with the</span>
+    <span class="doccomment">/// previous step size).</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// `step` must be nonzero.</span>
+    <span class="doccomment">/// (This method checks with a debug assertion that `step` is not zero.)</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">step_by</span>(<span class="self">self</span>, <span class="ident">step</span>: <span class="ident">isize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="macro">debug_assert_ne</span><span class="macro">!</span>(<span class="ident">step</span>, <span class="number">0</span>, <span class="string">&quot;Slice::step_by: step must be nonzero&quot;</span>);
@@ -803,48 +803,48 @@
     }
 }
 
-<span class="doccomment">/// A slice (range with step) or an index.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See also the [`s![]`](macro.s!.html) macro for a convenient way to create a</span>
-<span class="doccomment">/// `&amp;SliceInfo&lt;[SliceOrIndex; n], D&gt;`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ## Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `SliceOrIndex::Index(a)` is the index `a`. It can also be created with</span>
-<span class="doccomment">/// `SliceOrIndex::from(a)`. The Python equivalent is `[a]`. The macro</span>
-<span class="doccomment">/// equivalent is `s![a]`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `SliceOrIndex::Slice { start: 0, end: None, step: 1 }` is the full range of</span>
-<span class="doccomment">/// an axis. It can also be created with `SliceOrIndex::from(..)`. The Python</span>
-<span class="doccomment">/// equivalent is `[:]`. The macro equivalent is `s![..]`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `SliceOrIndex::Slice { start: a, end: Some(b), step: 2 }` is every second</span>
-<span class="doccomment">/// element from `a` until `b`. It can also be created with</span>
-<span class="doccomment">/// `SliceOrIndex::from(a..b).step_by(2)`. The Python equivalent is `[a:b:2]`.</span>
-<span class="doccomment">/// The macro equivalent is `s![a..b;2]`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `SliceOrIndex::Slice { start: a, end: None, step: -1 }` is every element,</span>
-<span class="doccomment">/// from `a` until the end, in reverse order. It can also be created with</span>
-<span class="doccomment">/// `SliceOrIndex::from(a..).step_by(-1)`. The Python equivalent is `[a::-1]`.</span>
-<span class="doccomment">/// The macro equivalent is `s![a..;-1]`.</span>
+<span class="doccomment">/// A slice (range with step) or an index.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See also the [`s![]`](macro.s!.html) macro for a convenient way to create a</span>
+<span class="doccomment">/// `&amp;SliceInfo&lt;[SliceOrIndex; n], D&gt;`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ## Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `SliceOrIndex::Index(a)` is the index `a`. It can also be created with</span>
+<span class="doccomment">/// `SliceOrIndex::from(a)`. The Python equivalent is `[a]`. The macro</span>
+<span class="doccomment">/// equivalent is `s![a]`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `SliceOrIndex::Slice { start: 0, end: None, step: 1 }` is the full range of</span>
+<span class="doccomment">/// an axis. It can also be created with `SliceOrIndex::from(..)`. The Python</span>
+<span class="doccomment">/// equivalent is `[:]`. The macro equivalent is `s![..]`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `SliceOrIndex::Slice { start: a, end: Some(b), step: 2 }` is every second</span>
+<span class="doccomment">/// element from `a` until `b`. It can also be created with</span>
+<span class="doccomment">/// `SliceOrIndex::from(a..b).step_by(2)`. The Python equivalent is `[a:b:2]`.</span>
+<span class="doccomment">/// The macro equivalent is `s![a..b;2]`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `SliceOrIndex::Slice { start: a, end: None, step: -1 }` is every element,</span>
+<span class="doccomment">/// from `a` until the end, in reverse order. It can also be created with</span>
+<span class="doccomment">/// `SliceOrIndex::from(a..).step_by(-1)`. The Python equivalent is `[a::-1]`.</span>
+<span class="doccomment">/// The macro equivalent is `s![a..;-1]`.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Eq</span>, <span class="ident">Hash</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">SliceOrIndex</span> {
-    <span class="doccomment">/// A range with step size. `end` is an exclusive index. Negative `begin`</span>
-    <span class="doccomment">/// or `end` indexes are counted from the back of the axis. If `end` is</span>
-    <span class="doccomment">/// `None`, the slice extends to the end of the axis.</span>
+    <span class="doccomment">/// A range with step size. `end` is an exclusive index. Negative `begin`</span>
+    <span class="doccomment">/// or `end` indexes are counted from the back of the axis. If `end` is</span>
+    <span class="doccomment">/// `None`, the slice extends to the end of the axis.</span>
     <span class="ident">Slice</span> {
         <span class="ident">start</span>: <span class="ident">isize</span>,
         <span class="ident">end</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">isize</span><span class="op">&gt;</span>,
         <span class="ident">step</span>: <span class="ident">isize</span>,
     },
-    <span class="doccomment">/// A single index.</span>
+    <span class="doccomment">/// A single index.</span>
     <span class="ident">Index</span>(<span class="ident">isize</span>),
 }
 
 <span class="macro">copy_and_clone</span><span class="macro">!</span> {<span class="ident">SliceOrIndex</span>}
 
 <span class="kw">impl</span> <span class="ident">SliceOrIndex</span> {
-    <span class="doccomment">/// Returns `true` if `self` is a `Slice` value.</span>
+    <span class="doccomment">/// Returns `true` if `self` is a `Slice` value.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_slice</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">SliceOrIndex</span>::<span class="ident">Slice</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
@@ -852,7 +852,7 @@
         }
     }
 
-    <span class="doccomment">/// Returns `true` if `self` is an `Index` value.</span>
+    <span class="doccomment">/// Returns `true` if `self` is an `Index` value.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_index</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">SliceOrIndex</span>::<span class="ident">Index</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
@@ -860,11 +860,11 @@
         }
     }
 
-    <span class="doccomment">/// Returns a new `SliceOrIndex` with the given step size (multiplied with</span>
-    <span class="doccomment">/// the previous step size).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// `step` must be nonzero.</span>
-    <span class="doccomment">/// (This method checks with a debug assertion that `step` is not zero.)</span>
+    <span class="doccomment">/// Returns a new `SliceOrIndex` with the given step size (multiplied with</span>
+    <span class="doccomment">/// the previous step size).</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// `step` must be nonzero.</span>
+    <span class="doccomment">/// (This method checks with a debug assertion that `step` is not zero.)</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">step_by</span>(<span class="self">self</span>, <span class="ident">step</span>: <span class="ident">isize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
         <span class="macro">debug_assert_ne</span><span class="macro">!</span>(<span class="ident">step</span>, <span class="number">0</span>, <span class="string">&quot;SliceOrIndex::step_by: step must be nonzero&quot;</span>);
@@ -1018,13 +1018,13 @@
 <span class="macro">impl_sliceorindex_from_index</span><span class="macro">!</span>(<span class="ident">usize</span>);
 <span class="macro">impl_sliceorindex_from_index</span><span class="macro">!</span>(<span class="ident">i32</span>);
 
-<span class="doccomment">/// Represents all of the necessary information to perform a slice.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The type `T` is typically `[SliceOrIndex; n]`, `[SliceOrIndex]`, or</span>
-<span class="doccomment">/// `Vec&lt;SliceOrIndex&gt;`. The type `D` is the output dimension after calling</span>
-<span class="doccomment">/// [`.slice()`].</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`.slice()`]: struct.ArrayBase.html#method.slice</span>
+<span class="doccomment">/// Represents all of the necessary information to perform a slice.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The type `T` is typically `[SliceOrIndex; n]`, `[SliceOrIndex]`, or</span>
+<span class="doccomment">/// `Vec&lt;SliceOrIndex&gt;`. The type `D` is the output dimension after calling</span>
+<span class="doccomment">/// [`.slice()`].</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`.slice()`]: struct.ArrayBase.html#method.slice</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SliceInfo</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="question-mark">?</span><span class="ident">Sized</span>, <span class="ident">D</span>: <span class="ident">Dimension</span><span class="op">&gt;</span> {
@@ -1046,10 +1046,10 @@
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="doccomment">/// Returns a new `SliceInfo` instance.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If you call this method, you are guaranteeing that `out_dim` is</span>
-    <span class="doccomment">/// consistent with `indices`.</span>
+    <span class="doccomment">/// Returns a new `SliceInfo` instance.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If you call this method, you are guaranteeing that `out_dim` is</span>
+    <span class="doccomment">/// consistent with `indices`.</span>
     <span class="attribute">#[<span class="ident">doc</span>(<span class="ident">hidden</span>)]</span>
     <span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">fn</span> <span class="ident">new_unchecked</span>(<span class="ident">indices</span>: <span class="ident">T</span>, <span class="ident">out_dim</span>: <span class="ident">PhantomData</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">SliceInfo</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span> {
         <span class="ident">SliceInfo</span> { <span class="ident">out_dim</span>, <span class="ident">indices</span> }
@@ -1061,9 +1061,9 @@
     <span class="ident">T</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">SliceOrIndex</span>]<span class="op">&gt;</span>,
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="doccomment">/// Returns a new `SliceInfo` instance.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Errors if `D` is not consistent with `indices`.</span>
+    <span class="doccomment">/// Returns a new `SliceInfo` instance.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Errors if `D` is not consistent with `indices`.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">new</span>(<span class="ident">indices</span>: <span class="ident">T</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">SliceInfo</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">D</span><span class="op">&gt;</span>, <span class="ident">ShapeError</span><span class="op">&gt;</span> {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ndim</span>) <span class="op">=</span> <span class="ident">D</span>::<span class="ident">NDIM</span> {
             <span class="kw">if</span> <span class="ident">ndim</span> <span class="op">!</span><span class="op">=</span> <span class="ident">indices</span>.<span class="ident">as_ref</span>().<span class="ident">iter</span>().<span class="ident">filter</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">is_slice</span>()).<span class="ident">count</span>() {
@@ -1082,13 +1082,13 @@
     <span class="ident">T</span>: <span class="ident">AsRef</span><span class="op">&lt;</span>[<span class="ident">SliceOrIndex</span>]<span class="op">&gt;</span>,
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="doccomment">/// Returns the number of dimensions after calling</span>
-    <span class="doccomment">/// [`.slice()`](struct.ArrayBase.html#method.slice) (including taking</span>
-    <span class="doccomment">/// subviews).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// If `D` is a fixed-size dimension type, then this is equivalent to</span>
-    <span class="doccomment">/// `D::NDIM.unwrap()`. Otherwise, the value is calculated by iterating</span>
-    <span class="doccomment">/// over the ranges/indices.</span>
+    <span class="doccomment">/// Returns the number of dimensions after calling</span>
+    <span class="doccomment">/// [`.slice()`](struct.ArrayBase.html#method.slice) (including taking</span>
+    <span class="doccomment">/// subviews).</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// If `D` is a fixed-size dimension type, then this is equivalent to</span>
+    <span class="doccomment">/// `D::NDIM.unwrap()`. Otherwise, the value is calculated by iterating</span>
+    <span class="doccomment">/// over the ranges/indices.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">out_ndim</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">usize</span> {
         <span class="ident">D</span>::<span class="ident">NDIM</span>.<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> {
             <span class="self">self</span>.<span class="ident">indices</span>
@@ -1117,10 +1117,10 @@
 {
     <span class="kw">fn</span> <span class="ident">as_ref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="ident">SliceInfo</span><span class="op">&lt;</span>[<span class="ident">SliceOrIndex</span>], <span class="ident">D</span><span class="op">&gt;</span> {
         <span class="kw">unsafe</span> {
-            <span class="comment">// This is okay because the only non-zero-sized member of</span>
-            <span class="comment">// `SliceInfo` is `indices`, so `&amp;SliceInfo&lt;[SliceOrIndex], D&gt;`</span>
-            <span class="comment">// should have the same bitwise representation as</span>
-            <span class="comment">// `&amp;[SliceOrIndex]`.</span>
+            <span class="comment">// This is okay because the only non-zero-sized member of</span>
+            <span class="comment">// `SliceInfo` is `indices`, so `&amp;SliceInfo&lt;[SliceOrIndex], D&gt;`</span>
+            <span class="comment">// should have the same bitwise representation as</span>
+            <span class="comment">// `&amp;[SliceOrIndex]`.</span>
             <span class="kw-2">&amp;</span><span class="kw-2">*</span>(<span class="self">self</span>.<span class="ident">indices</span>.<span class="ident">as_ref</span>() <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> [<span class="ident">SliceOrIndex</span>]
                 <span class="kw">as</span> <span class="kw-2">*</span><span class="kw">const</span> <span class="ident">SliceInfo</span><span class="op">&lt;</span>[<span class="ident">SliceOrIndex</span>], <span class="ident">D</span><span class="op">&gt;</span>)
         }
@@ -1182,104 +1182,104 @@
 <span class="macro">impl_slicenextdim_larger</span><span class="macro">!</span>((), <span class="ident">RangeFull</span>);
 <span class="macro">impl_slicenextdim_larger</span><span class="macro">!</span>((), <span class="ident">Slice</span>);
 
-<span class="doccomment">/// Slice argument constructor.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// `s![]` takes a list of ranges/slices/indices, separated by comma, with</span>
-<span class="doccomment">/// optional step sizes that are separated from the range by a semicolon. It is</span>
-<span class="doccomment">/// converted into a [`&amp;SliceInfo`] instance.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`&amp;SliceInfo`]: struct.SliceInfo.html</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Each range/slice/index uses signed indices, where a negative value is</span>
-<span class="doccomment">/// counted from the end of the axis. Step sizes are also signed and may be</span>
-<span class="doccomment">/// negative, but must not be zero.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The syntax is `s![` *[ axis-slice-or-index [, axis-slice-or-index [ , ... ]</span>
-<span class="doccomment">/// ] ]* `]`, where *axis-slice-or-index* is any of the following:</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// * *index*: an index to use for taking a subview with respect to that axis.</span>
-<span class="doccomment">///   (The index is selected. The axis is removed except with</span>
-<span class="doccomment">///   [`.slice_collapse()`].)</span>
-<span class="doccomment">/// * *range*: a range with step size 1 to use for slicing that axis.</span>
-<span class="doccomment">/// * *range* `;` *step*: a range with step size *step* to use for slicing that axis.</span>
-<span class="doccomment">/// * *slice*: a [`Slice`] instance to use for slicing that axis.</span>
-<span class="doccomment">/// * *slice* `;` *step*: a range constructed from the start and end of a [`Slice`]</span>
-<span class="doccomment">///   instance, with new step size *step*, to use for slicing that axis.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`Slice`]: struct.Slice.html</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The number of *axis-slice-or-index* must match the number of axes in the</span>
-<span class="doccomment">/// array. *index*, *range*, *slice*, and *step* can be expressions. *index*</span>
-<span class="doccomment">/// must be of type `isize`, `usize`, or `i32`. *range* must be of type</span>
-<span class="doccomment">/// `Range&lt;I&gt;`, `RangeTo&lt;I&gt;`, `RangeFrom&lt;I&gt;`, or `RangeFull` where `I` is</span>
-<span class="doccomment">/// `isize`, `usize`, or `i32`. *step* must be a type that can be converted to</span>
-<span class="doccomment">/// `isize` with the `as` keyword.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// For example `s![0..4;2, 6, 1..5]` is a slice of the first axis for 0..4</span>
-<span class="doccomment">/// with step size 2, a subview of the second axis at index 6, and a slice of</span>
-<span class="doccomment">/// the third axis for 1..5 with default step size 1. The input array must have</span>
-<span class="doccomment">/// 3 dimensions. The resulting slice would have shape `[2, 4]` for</span>
-<span class="doccomment">/// [`.slice()`], [`.slice_mut()`], and [`.slice_move()`], and shape</span>
-<span class="doccomment">/// `[2, 1, 4]` for [`.slice_collapse()`].</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// [`.slice()`]: struct.ArrayBase.html#method.slice</span>
-<span class="doccomment">/// [`.slice_mut()`]: struct.ArrayBase.html#method.slice_mut</span>
-<span class="doccomment">/// [`.slice_move()`]: struct.ArrayBase.html#method.slice_move</span>
-<span class="doccomment">/// [`.slice_collapse()`]: struct.ArrayBase.html#method.slice_collapse</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See also [*Slicing*](struct.ArrayBase.html#slicing).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Example</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// extern crate ndarray;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// use ndarray::{s, Array2, ArrayView2};</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// fn laplacian(v: &amp;ArrayView2&lt;f32&gt;) -&gt; Array2&lt;f32&gt; {</span>
-<span class="doccomment">///     -4. * &amp;v.slice(s![1..-1, 1..-1])</span>
-<span class="doccomment">///     + v.slice(s![ ..-2, 1..-1])</span>
-<span class="doccomment">///     + v.slice(s![1..-1,  ..-2])</span>
-<span class="doccomment">///     + v.slice(s![1..-1, 2..  ])</span>
-<span class="doccomment">///     + v.slice(s![2..  , 1..-1])</span>
-<span class="doccomment">/// }</span>
-<span class="doccomment">/// # fn main() { }</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Negative *step*</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// The behavior of negative *step* arguments is most easily understood with</span>
-<span class="doccomment">/// slicing as a two-step process:</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// 1. First, perform a slice with *range*.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// 2. If *step* is positive, start with the front of the slice; if *step* is</span>
-<span class="doccomment">///    negative, start with the back of the slice. Then, add *step* until</span>
-<span class="doccomment">///    reaching the other end of the slice (inclusive).</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// An equivalent way to think about step 2 is, &quot;If *step* is negative, reverse</span>
-<span class="doccomment">/// the slice. Start at the front of the (possibly reversed) slice, and add</span>
-<span class="doccomment">/// *step.abs()* until reaching the back of the slice (inclusive).&quot;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// For example,</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// # extern crate ndarray;</span>
-<span class="doccomment">/// #</span>
-<span class="doccomment">/// # use ndarray::prelude::*;</span>
-<span class="doccomment">/// #</span>
-<span class="doccomment">/// # fn main() {</span>
-<span class="doccomment">/// let arr = array![0, 1, 2, 3];</span>
-<span class="doccomment">/// assert_eq!(arr.slice(s![1..3;-1]), array![2, 1]);</span>
-<span class="doccomment">/// assert_eq!(arr.slice(s![1..;-2]), array![3, 1]);</span>
-<span class="doccomment">/// assert_eq!(arr.slice(s![0..4;-2]), array![3, 1]);</span>
-<span class="doccomment">/// assert_eq!(arr.slice(s![0..;-2]), array![3, 1]);</span>
-<span class="doccomment">/// assert_eq!(arr.slice(s![..;-2]), array![3, 1]);</span>
-<span class="doccomment">/// # }</span>
-<span class="doccomment">/// ```</span>
+<span class="doccomment">/// Slice argument constructor.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// `s![]` takes a list of ranges/slices/indices, separated by comma, with</span>
+<span class="doccomment">/// optional step sizes that are separated from the range by a semicolon. It is</span>
+<span class="doccomment">/// converted into a [`&amp;SliceInfo`] instance.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`&amp;SliceInfo`]: struct.SliceInfo.html</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Each range/slice/index uses signed indices, where a negative value is</span>
+<span class="doccomment">/// counted from the end of the axis. Step sizes are also signed and may be</span>
+<span class="doccomment">/// negative, but must not be zero.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The syntax is `s![` *[ axis-slice-or-index [, axis-slice-or-index [ , ... ]</span>
+<span class="doccomment">/// ] ]* `]`, where *axis-slice-or-index* is any of the following:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// * *index*: an index to use for taking a subview with respect to that axis.</span>
+<span class="doccomment">///   (The index is selected. The axis is removed except with</span>
+<span class="doccomment">///   [`.slice_collapse()`].)</span>
+<span class="doccomment">/// * *range*: a range with step size 1 to use for slicing that axis.</span>
+<span class="doccomment">/// * *range* `;` *step*: a range with step size *step* to use for slicing that axis.</span>
+<span class="doccomment">/// * *slice*: a [`Slice`] instance to use for slicing that axis.</span>
+<span class="doccomment">/// * *slice* `;` *step*: a range constructed from the start and end of a [`Slice`]</span>
+<span class="doccomment">///   instance, with new step size *step*, to use for slicing that axis.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`Slice`]: struct.Slice.html</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The number of *axis-slice-or-index* must match the number of axes in the</span>
+<span class="doccomment">/// array. *index*, *range*, *slice*, and *step* can be expressions. *index*</span>
+<span class="doccomment">/// must be of type `isize`, `usize`, or `i32`. *range* must be of type</span>
+<span class="doccomment">/// `Range&lt;I&gt;`, `RangeTo&lt;I&gt;`, `RangeFrom&lt;I&gt;`, or `RangeFull` where `I` is</span>
+<span class="doccomment">/// `isize`, `usize`, or `i32`. *step* must be a type that can be converted to</span>
+<span class="doccomment">/// `isize` with the `as` keyword.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// For example `s![0..4;2, 6, 1..5]` is a slice of the first axis for 0..4</span>
+<span class="doccomment">/// with step size 2, a subview of the second axis at index 6, and a slice of</span>
+<span class="doccomment">/// the third axis for 1..5 with default step size 1. The input array must have</span>
+<span class="doccomment">/// 3 dimensions. The resulting slice would have shape `[2, 4]` for</span>
+<span class="doccomment">/// [`.slice()`], [`.slice_mut()`], and [`.slice_move()`], and shape</span>
+<span class="doccomment">/// `[2, 1, 4]` for [`.slice_collapse()`].</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// [`.slice()`]: struct.ArrayBase.html#method.slice</span>
+<span class="doccomment">/// [`.slice_mut()`]: struct.ArrayBase.html#method.slice_mut</span>
+<span class="doccomment">/// [`.slice_move()`]: struct.ArrayBase.html#method.slice_move</span>
+<span class="doccomment">/// [`.slice_collapse()`]: struct.ArrayBase.html#method.slice_collapse</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See also [*Slicing*](struct.ArrayBase.html#slicing).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Example</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// extern crate ndarray;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// use ndarray::{s, Array2, ArrayView2};</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// fn laplacian(v: &amp;ArrayView2&lt;f32&gt;) -&gt; Array2&lt;f32&gt; {</span>
+<span class="doccomment">///     -4. * &amp;v.slice(s![1..-1, 1..-1])</span>
+<span class="doccomment">///     + v.slice(s![ ..-2, 1..-1])</span>
+<span class="doccomment">///     + v.slice(s![1..-1,  ..-2])</span>
+<span class="doccomment">///     + v.slice(s![1..-1, 2..  ])</span>
+<span class="doccomment">///     + v.slice(s![2..  , 1..-1])</span>
+<span class="doccomment">/// }</span>
+<span class="doccomment">/// # fn main() { }</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Negative *step*</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// The behavior of negative *step* arguments is most easily understood with</span>
+<span class="doccomment">/// slicing as a two-step process:</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// 1. First, perform a slice with *range*.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// 2. If *step* is positive, start with the front of the slice; if *step* is</span>
+<span class="doccomment">///    negative, start with the back of the slice. Then, add *step* until</span>
+<span class="doccomment">///    reaching the other end of the slice (inclusive).</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// An equivalent way to think about step 2 is, &quot;If *step* is negative, reverse</span>
+<span class="doccomment">/// the slice. Start at the front of the (possibly reversed) slice, and add</span>
+<span class="doccomment">/// *step.abs()* until reaching the back of the slice (inclusive).&quot;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// For example,</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// # extern crate ndarray;</span>
+<span class="doccomment">/// #</span>
+<span class="doccomment">/// # use ndarray::prelude::*;</span>
+<span class="doccomment">/// #</span>
+<span class="doccomment">/// # fn main() {</span>
+<span class="doccomment">/// let arr = array![0, 1, 2, 3];</span>
+<span class="doccomment">/// assert_eq!(arr.slice(s![1..3;-1]), array![2, 1]);</span>
+<span class="doccomment">/// assert_eq!(arr.slice(s![1..;-2]), array![3, 1]);</span>
+<span class="doccomment">/// assert_eq!(arr.slice(s![0..4;-2]), array![3, 1]);</span>
+<span class="doccomment">/// assert_eq!(arr.slice(s![0..;-2]), array![3, 1]);</span>
+<span class="doccomment">/// assert_eq!(arr.slice(s![..;-2]), array![3, 1]);</span>
+<span class="doccomment">/// # }</span>
+<span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">macro_export</span>]</span>
 <span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">s</span>(
-    <span class="comment">// convert a..b;c into @convert(a..b, c), final item</span>
+    <span class="comment">// convert a..b;c into @convert(a..b, c), final item</span>
     (@<span class="ident">parse</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">dim</span>:<span class="ident">expr</span>, [$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">stack</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>] <span class="macro-nonterminal">$</span><span class="macro-nonterminal">r</span>:<span class="ident">expr</span>;<span class="macro-nonterminal">$</span><span class="macro-nonterminal">s</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">r</span> {
             <span class="ident">r</span> <span class="op">=</span><span class="op">&gt;</span> {
@@ -1294,7 +1294,7 @@
             }
         }
     };
-    <span class="comment">// convert a..b into @convert(a..b), final item</span>
+    <span class="comment">// convert a..b into @convert(a..b), final item</span>
     (@<span class="ident">parse</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">dim</span>:<span class="ident">expr</span>, [$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">stack</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>] <span class="macro-nonterminal">$</span><span class="macro-nonterminal">r</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">r</span> {
             <span class="ident">r</span> <span class="op">=</span><span class="op">&gt;</span> {
@@ -1309,15 +1309,15 @@
             }
         }
     };
-    <span class="comment">// convert a..b;c into @convert(a..b, c), final item, trailing comma</span>
+    <span class="comment">// convert a..b;c into @convert(a..b, c), final item, trailing comma</span>
     (@<span class="ident">parse</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">dim</span>:<span class="ident">expr</span>, [$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">stack</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>] <span class="macro-nonterminal">$</span><span class="macro-nonterminal">r</span>:<span class="ident">expr</span>;<span class="macro-nonterminal">$</span><span class="macro-nonterminal">s</span>:<span class="ident">expr</span> ,) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro">s</span><span class="macro">!</span>[@<span class="macro-nonterminal">parse</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">dim</span>, [$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">stack</span>)<span class="kw-2">*</span>] <span class="macro-nonterminal">$</span><span class="macro-nonterminal">r</span>;<span class="macro-nonterminal">$</span><span class="macro-nonterminal">s</span>]
     };
-    <span class="comment">// convert a..b into @convert(a..b), final item, trailing comma</span>
+    <span class="comment">// convert a..b into @convert(a..b), final item, trailing comma</span>
     (@<span class="ident">parse</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">dim</span>:<span class="ident">expr</span>, [$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">stack</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>] <span class="macro-nonterminal">$</span><span class="macro-nonterminal">r</span>:<span class="ident">expr</span> ,) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro">s</span><span class="macro">!</span>[@<span class="macro-nonterminal">parse</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">dim</span>, [$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">stack</span>)<span class="kw-2">*</span>] <span class="macro-nonterminal">$</span><span class="macro-nonterminal">r</span>]
     };
-    <span class="comment">// convert a..b;c into @convert(a..b, c)</span>
+    <span class="comment">// convert a..b;c into @convert(a..b, c)</span>
     (@<span class="ident">parse</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">dim</span>:<span class="ident">expr</span>, [$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">stack</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>] <span class="macro-nonterminal">$</span><span class="macro-nonterminal">r</span>:<span class="ident">expr</span>;<span class="macro-nonterminal">$</span><span class="macro-nonterminal">s</span>:<span class="ident">expr</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">r</span> {
             <span class="ident">r</span> <span class="op">=</span><span class="op">&gt;</span> {
@@ -1329,7 +1329,7 @@
             }
         }
     };
-    <span class="comment">// convert a..b into @convert(a..b)</span>
+    <span class="comment">// convert a..b into @convert(a..b)</span>
     (@<span class="ident">parse</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">dim</span>:<span class="ident">expr</span>, [$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">stack</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>] <span class="macro-nonterminal">$</span><span class="macro-nonterminal">r</span>:<span class="ident">expr</span>, $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">r</span> {
             <span class="ident">r</span> <span class="op">=</span><span class="op">&gt;</span> {
@@ -1341,7 +1341,7 @@
             }
         }
     };
-    <span class="comment">// empty call, i.e. `s![]`</span>
+    <span class="comment">// empty call, i.e. `s![]`</span>
     (@<span class="ident">parse</span> ::<span class="ident">std</span>::<span class="ident">marker</span>::<span class="ident">PhantomData</span>::<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">Ix0</span><span class="op">&gt;</span>, []) <span class="op">=</span><span class="op">&gt;</span> {
         {
             <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unsafe_code</span>)]</span>
@@ -1350,39 +1350,39 @@
             }
         }
     };
-    <span class="comment">// Catch-all clause for syntax errors</span>
+    <span class="comment">// Catch-all clause for syntax errors</span>
     (@<span class="ident">parse</span> $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> { <span class="macro">compile_error</span><span class="macro">!</span>(<span class="string">&quot;Invalid syntax in s![] call.&quot;</span>) };
-    <span class="comment">// convert range/index into SliceOrIndex</span>
+    <span class="comment">// convert range/index into SliceOrIndex</span>
     (@<span class="ident">convert</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">r</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">SliceOrIndex</span> <span class="kw">as</span> ::<span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">From</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">from</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">r</span>)
     };
-    <span class="comment">// convert range/index and step into SliceOrIndex</span>
+    <span class="comment">// convert range/index and step into SliceOrIndex</span>
     (@<span class="ident">convert</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">r</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">s</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
         <span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">SliceOrIndex</span> <span class="kw">as</span> ::<span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">From</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>::<span class="ident">from</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">r</span>).<span class="ident">step_by</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">s</span> <span class="kw">as</span> <span class="ident">isize</span>)
     };
     ($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>:<span class="ident">tt</span>)<span class="kw-2">*</span>) <span class="op">=</span><span class="op">&gt;</span> {
-        <span class="comment">// The extra `*&amp;` is a workaround for this compiler bug:</span>
-        <span class="comment">// https://github.com/rust-lang/rust/issues/23014</span>
+        <span class="comment">// The extra `*&amp;` is a workaround for this compiler bug:</span>
+        <span class="comment">// https://github.com/rust-lang/rust/issues/23014</span>
         <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">&amp;</span><span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro">s</span><span class="macro">!</span>[@<span class="macro-nonterminal">parse</span> ::<span class="ident">std</span>::<span class="ident">marker</span>::<span class="ident">PhantomData</span>::<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="kw">crate</span>::<span class="macro-nonterminal">Ix0</span><span class="op">&gt;</span>, [] $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">t</span>)<span class="kw-2">*</span>]
     };
 );
 
-<span class="doccomment">/// Slicing information describing multiple mutable, disjoint slices.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// It&#39;s unfortunate that we need `&#39;a` and `A` to be parameters of the trait,</span>
-<span class="doccomment">/// but they&#39;re necessary until Rust supports generic associated types.</span>
+<span class="doccomment">/// Slicing information describing multiple mutable, disjoint slices.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// It&#39;s unfortunate that we need `&#39;a` and `A` to be parameters of the trait,</span>
+<span class="doccomment">/// but they&#39;re necessary until Rust supports generic associated types.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">MultiSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">A</span>: <span class="lifetime">&#39;a</span>,
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="doccomment">/// The type of the slices created by `.multi_slice_move()`.</span>
+    <span class="doccomment">/// The type of the slices created by `.multi_slice_move()`.</span>
     <span class="kw">type</span> <span class="ident">Output</span>;
 
-    <span class="doccomment">/// Split the view into multiple disjoint slices.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if performing any individual slice panics or if the slices</span>
-    <span class="doccomment">/// are not disjoint (i.e. if they intersect).</span>
+    <span class="doccomment">/// Split the view into multiple disjoint slices.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if performing any individual slice panics or if the slices</span>
+    <span class="doccomment">/// are not disjoint (i.e. if they intersect).</span>
     <span class="kw">fn</span> <span class="ident">multi_slice_move</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">view</span>: <span class="ident">ArrayViewMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>::<span class="ident">Output</span>;
 }
 

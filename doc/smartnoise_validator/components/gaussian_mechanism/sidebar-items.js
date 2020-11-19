@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["get_analytic_gaussian_sigma",""]]});
+initSidebarItems({"fn":[["get_analytic_gaussian_sigma","Algorithm to compute sigma for use in the analytic gaussian mechanism Using p.9, p.19 of Balle (2018)"]]});

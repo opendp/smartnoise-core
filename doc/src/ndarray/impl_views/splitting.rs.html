@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/ndarray-0.13.1/src/impl_views/splitting.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>splitting.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -140,95 +140,95 @@
 <span id="137">137</span>
 <span id="138">138</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
-<span class="comment">//</span>
-<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
-<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
-<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
-<span class="comment">// option. This file may not be copied, modified, or distributed</span>
-<span class="comment">// except according to those terms.</span>
+<span class="comment">// Copyright 2014-2016 bluss and ndarray developers.</span>
+<span class="comment">//</span>
+<span class="comment">// Licensed under the Apache License, Version 2.0 &lt;LICENSE-APACHE or</span>
+<span class="comment">// http://www.apache.org/licenses/LICENSE-2.0&gt; or the MIT license</span>
+<span class="comment">// &lt;LICENSE-MIT or http://opensource.org/licenses/MIT&gt;, at your</span>
+<span class="comment">// option. This file may not be copied, modified, or distributed</span>
+<span class="comment">// except according to those terms.</span>
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">imp_prelude</span>::<span class="kw-2">*</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">slice</span>::<span class="ident">MultiSlice</span>;
 
-<span class="doccomment">/// Methods for read-only array views.</span>
+<span class="doccomment">/// Methods for read-only array views.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">ArrayView</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="doccomment">/// Split the array view along `axis` and return one view strictly before the</span>
-    <span class="doccomment">/// split and one view after the split.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if `axis` or `index` is out of bounds.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Examples:**</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// # use ndarray::prelude::*;</span>
-    <span class="doccomment">/// let a = aview2(&amp;[[0, 1, 2, 3],</span>
-    <span class="doccomment">///                  [4, 5, 6, 7],</span>
-    <span class="doccomment">///                  [8, 9, 0, 1]]);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// The array view `a` has two axes and shape 3 × 4:</span>
-    <span class="doccomment">/// ```text</span>
-    <span class="doccomment">///          ──▶ Axis(1)</span>
-    <span class="doccomment">///         ┌─────┬─────┬─────┬─────┐ 0</span>
-    <span class="doccomment">///       │ │ a₀₀ │ a₀₁ │ a₀₂ │ a₀₃ │</span>
-    <span class="doccomment">///       ▼ ├─────┼─────┼─────┼─────┤ 1</span>
-    <span class="doccomment">///  Axis(0)│ a₁₀ │ a₁₁ │ a₁₂ │ a₁₃ │</span>
-    <span class="doccomment">///         ├─────┼─────┼─────┼─────┤ 2</span>
-    <span class="doccomment">///         │ a₂₀ │ a₂₁ │ a₂₂ │ a₂₃ │</span>
-    <span class="doccomment">///         └─────┴─────┴─────┴─────┘ 3 ↑</span>
-    <span class="doccomment">///         0     1     2     3     4 ← possible split_at indices.</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Row indices increase along `Axis(0)`, and column indices increase along</span>
-    <span class="doccomment">/// `Axis(1)`. Note that we split “before” an element index, and that</span>
-    <span class="doccomment">/// both 0 and the endpoint are valid split indices.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Example 1**: Split `a` along the first axis, in this case the rows, at</span>
-    <span class="doccomment">/// index 2.&lt;br&gt;</span>
-    <span class="doccomment">/// This produces views v1 and v2 of shapes 2 × 4 and 1 × 4:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// # use ndarray::prelude::*;</span>
-    <span class="doccomment">/// # let a = aview2(&amp;[[0; 4]; 3]);</span>
-    <span class="doccomment">/// let (v1, v2) = a.split_at(Axis(0), 1);</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// ```text</span>
-    <span class="doccomment">///         ┌─────┬─────┬─────┬─────┐       0  ↓ indices</span>
-    <span class="doccomment">///         │ a₀₀ │ a₀₁ │ a₀₂ │ a₀₃ │            along Axis(0)</span>
-    <span class="doccomment">///         ├─────┼─────┼─────┼─────┤ v1    1</span>
-    <span class="doccomment">///         │ a₁₀ │ a₁₁ │ a₁₂ │ a₁₃ │</span>
-    <span class="doccomment">///         └─────┴─────┴─────┴─────┘</span>
-    <span class="doccomment">///         ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄       2</span>
-    <span class="doccomment">///         ┌─────┬─────┬─────┬─────┐</span>
-    <span class="doccomment">///         │ a₂₀ │ a₂₁ │ a₂₂ │ a₂₃ │ v2</span>
-    <span class="doccomment">///         └─────┴─────┴─────┴─────┘       3</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Example 2**: Split `a` along the second axis, in this case the</span>
-    <span class="doccomment">/// columns, at index 2.&lt;br&gt;</span>
-    <span class="doccomment">/// This produces views u1 and u2 of shapes 3 × 2 and 3 × 2:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```rust</span>
-    <span class="doccomment">/// # use ndarray::prelude::*;</span>
-    <span class="doccomment">/// # let a = aview2(&amp;[[0; 4]; 3]);</span>
-    <span class="doccomment">/// let (u1, u2) = a.split_at(Axis(1), 2);</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// ```</span>
-    <span class="doccomment">/// ```text</span>
-    <span class="doccomment">///              u1             u2</span>
-    <span class="doccomment">///         ┌─────┬─────┐┊┌─────┬─────┐</span>
-    <span class="doccomment">///         │ a₀₀ │ a₀₁ │┊│ a₀₂ │ a₀₃ │</span>
-    <span class="doccomment">///         ├─────┼─────┤┊├─────┼─────┤</span>
-    <span class="doccomment">///         │ a₁₀ │ a₁₁ │┊│ a₁₂ │ a₁₃ │</span>
-    <span class="doccomment">///         ├─────┼─────┤┊├─────┼─────┤</span>
-    <span class="doccomment">///         │ a₂₀ │ a₂₁ │┊│ a₂₂ │ a₂₃ │</span>
-    <span class="doccomment">///         └─────┴─────┘┊└─────┴─────┘</span>
-    <span class="doccomment">///         0     1      2      3     4  indices →</span>
-    <span class="doccomment">///                                      along Axis(1)</span>
-    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// Split the array view along `axis` and return one view strictly before the</span>
+    <span class="doccomment">/// split and one view after the split.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if `axis` or `index` is out of bounds.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Examples:**</span>
+    <span class="doccomment">/// ```rust</span>
+    <span class="doccomment">/// # use ndarray::prelude::*;</span>
+    <span class="doccomment">/// let a = aview2(&amp;[[0, 1, 2, 3],</span>
+    <span class="doccomment">///                  [4, 5, 6, 7],</span>
+    <span class="doccomment">///                  [8, 9, 0, 1]]);</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// The array view `a` has two axes and shape 3 × 4:</span>
+    <span class="doccomment">/// ```text</span>
+    <span class="doccomment">///          ──▶ Axis(1)</span>
+    <span class="doccomment">///         ┌─────┬─────┬─────┬─────┐ 0</span>
+    <span class="doccomment">///       │ │ a₀₀ │ a₀₁ │ a₀₂ │ a₀₃ │</span>
+    <span class="doccomment">///       ▼ ├─────┼─────┼─────┼─────┤ 1</span>
+    <span class="doccomment">///  Axis(0)│ a₁₀ │ a₁₁ │ a₁₂ │ a₁₃ │</span>
+    <span class="doccomment">///         ├─────┼─────┼─────┼─────┤ 2</span>
+    <span class="doccomment">///         │ a₂₀ │ a₂₁ │ a₂₂ │ a₂₃ │</span>
+    <span class="doccomment">///         └─────┴─────┴─────┴─────┘ 3 ↑</span>
+    <span class="doccomment">///         0     1     2     3     4 ← possible split_at indices.</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// Row indices increase along `Axis(0)`, and column indices increase along</span>
+    <span class="doccomment">/// `Axis(1)`. Note that we split “before” an element index, and that</span>
+    <span class="doccomment">/// both 0 and the endpoint are valid split indices.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Example 1**: Split `a` along the first axis, in this case the rows, at</span>
+    <span class="doccomment">/// index 2.&lt;br&gt;</span>
+    <span class="doccomment">/// This produces views v1 and v2 of shapes 2 × 4 and 1 × 4:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```rust</span>
+    <span class="doccomment">/// # use ndarray::prelude::*;</span>
+    <span class="doccomment">/// # let a = aview2(&amp;[[0; 4]; 3]);</span>
+    <span class="doccomment">/// let (v1, v2) = a.split_at(Axis(0), 1);</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// ```text</span>
+    <span class="doccomment">///         ┌─────┬─────┬─────┬─────┐       0  ↓ indices</span>
+    <span class="doccomment">///         │ a₀₀ │ a₀₁ │ a₀₂ │ a₀₃ │            along Axis(0)</span>
+    <span class="doccomment">///         ├─────┼─────┼─────┼─────┤ v1    1</span>
+    <span class="doccomment">///         │ a₁₀ │ a₁₁ │ a₁₂ │ a₁₃ │</span>
+    <span class="doccomment">///         └─────┴─────┴─────┴─────┘</span>
+    <span class="doccomment">///         ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄       2</span>
+    <span class="doccomment">///         ┌─────┬─────┬─────┬─────┐</span>
+    <span class="doccomment">///         │ a₂₀ │ a₂₁ │ a₂₂ │ a₂₃ │ v2</span>
+    <span class="doccomment">///         └─────┴─────┴─────┴─────┘       3</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Example 2**: Split `a` along the second axis, in this case the</span>
+    <span class="doccomment">/// columns, at index 2.&lt;br&gt;</span>
+    <span class="doccomment">/// This produces views u1 and u2 of shapes 3 × 2 and 3 × 2:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```rust</span>
+    <span class="doccomment">/// # use ndarray::prelude::*;</span>
+    <span class="doccomment">/// # let a = aview2(&amp;[[0; 4]; 3]);</span>
+    <span class="doccomment">/// let (u1, u2) = a.split_at(Axis(1), 2);</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// ```text</span>
+    <span class="doccomment">///              u1             u2</span>
+    <span class="doccomment">///         ┌─────┬─────┐┊┌─────┬─────┐</span>
+    <span class="doccomment">///         │ a₀₀ │ a₀₁ │┊│ a₀₂ │ a₀₃ │</span>
+    <span class="doccomment">///         ├─────┼─────┤┊├─────┼─────┤</span>
+    <span class="doccomment">///         │ a₁₀ │ a₁₁ │┊│ a₁₂ │ a₁₃ │</span>
+    <span class="doccomment">///         ├─────┼─────┤┊├─────┼─────┤</span>
+    <span class="doccomment">///         │ a₂₀ │ a₂₁ │┊│ a₂₂ │ a₂₃ │</span>
+    <span class="doccomment">///         └─────┴─────┘┊└─────┴─────┘</span>
+    <span class="doccomment">///         0     1      2      3     4  indices →</span>
+    <span class="doccomment">///                                      along Axis(1)</span>
+    <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">split_at</span>(<span class="self">self</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>, <span class="ident">index</span>: <span class="ident">Ix</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="self">Self</span>, <span class="self">Self</span>) {
         <span class="kw">unsafe</span> {
             <span class="kw">let</span> (<span class="ident">left</span>, <span class="ident">right</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">into_raw_view</span>().<span class="ident">split_at</span>(<span class="ident">axis</span>, <span class="ident">index</span>);
@@ -237,15 +237,15 @@
     }
 }
 
-<span class="doccomment">/// Methods for read-write array views.</span>
+<span class="doccomment">/// Methods for read-write array views.</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span> <span class="ident">ArrayViewMut</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="doccomment">/// Split the array view along `axis` and return one mutable view strictly</span>
-    <span class="doccomment">/// before the split and one mutable view after the split.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if `axis` or `index` is out of bounds.</span>
+    <span class="doccomment">/// Split the array view along `axis` and return one mutable view strictly</span>
+    <span class="doccomment">/// before the split and one mutable view after the split.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if `axis` or `index` is out of bounds.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">split_at</span>(<span class="self">self</span>, <span class="ident">axis</span>: <span class="ident">Axis</span>, <span class="ident">index</span>: <span class="ident">Ix</span>) <span class="op">-</span><span class="op">&gt;</span> (<span class="self">Self</span>, <span class="self">Self</span>) {
         <span class="kw">unsafe</span> {
             <span class="kw">let</span> (<span class="ident">left</span>, <span class="ident">right</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">into_raw_view_mut</span>().<span class="ident">split_at</span>(<span class="ident">axis</span>, <span class="ident">index</span>);
@@ -253,24 +253,24 @@
         }
     }
 
-    <span class="doccomment">/// Split the view into multiple disjoint slices.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This is similar to [`.multi_slice_mut()`], but `.multi_slice_move()`</span>
-    <span class="doccomment">/// consumes `self` and produces views with lifetimes matching that of</span>
-    <span class="doccomment">/// `self`.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// See [*Slicing*](#slicing) for full documentation.</span>
-    <span class="doccomment">/// See also [`SliceInfo`] and [`D::SliceArg`].</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// [`.multi_slice_mut()`]: struct.ArrayBase.html#method.multi_slice_mut</span>
-    <span class="doccomment">/// [`SliceInfo`]: struct.SliceInfo.html</span>
-    <span class="doccomment">/// [`D::SliceArg`]: trait.Dimension.html#associatedtype.SliceArg</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **Panics** if any of the following occur:</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// * if any of the views would intersect (i.e. if any element would appear in multiple slices)</span>
-    <span class="doccomment">/// * if an index is out of bounds or step size is zero</span>
-    <span class="doccomment">/// * if `D` is `IxDyn` and `info` does not match the number of array axes</span>
+    <span class="doccomment">/// Split the view into multiple disjoint slices.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// This is similar to [`.multi_slice_mut()`], but `.multi_slice_move()`</span>
+    <span class="doccomment">/// consumes `self` and produces views with lifetimes matching that of</span>
+    <span class="doccomment">/// `self`.</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// See [*Slicing*](#slicing) for full documentation.</span>
+    <span class="doccomment">/// See also [`SliceInfo`] and [`D::SliceArg`].</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// [`.multi_slice_mut()`]: struct.ArrayBase.html#method.multi_slice_mut</span>
+    <span class="doccomment">/// [`SliceInfo`]: struct.SliceInfo.html</span>
+    <span class="doccomment">/// [`D::SliceArg`]: trait.Dimension.html#associatedtype.SliceArg</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **Panics** if any of the following occur:</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// * if any of the views would intersect (i.e. if any element would appear in multiple slices)</span>
+    <span class="doccomment">/// * if an index is out of bounds or step size is zero</span>
+    <span class="doccomment">/// * if `D` is `IxDyn` and `info` does not match the number of array axes</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">multi_slice_move</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">info</span>: <span class="ident">M</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">M</span>::<span class="ident">Output</span>
     <span class="kw">where</span>
         <span class="ident">M</span>: <span class="ident">MultiSlice</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">A</span>, <span class="ident">D</span><span class="op">&gt;</span>,

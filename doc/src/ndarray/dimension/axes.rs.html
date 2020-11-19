@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/ndarray-0.13.1/src/dimension/axes.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>axes.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
+<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../ndarray/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
@@ -153,7 +153,7 @@
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">Axis</span>, <span class="ident">Dimension</span>, <span class="ident">Ix</span>, <span class="ident">Ixs</span>};
 
-<span class="doccomment">/// Create a new Axes iterator</span>
+<span class="doccomment">/// Create a new Axes iterator</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">axes_of</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">d</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">D</span>, <span class="ident">strides</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">D</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Axes</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
@@ -166,25 +166,25 @@
     }
 }
 
-<span class="doccomment">/// An iterator over the length and stride of each axis of an array.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// See [`.axes()`](../struct.ArrayBase.html#method.axes) for more information.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Iterator element type is `AxisDescription`.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// # Examples</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// use ndarray::Array3;</span>
-<span class="doccomment">/// use ndarray::Axis;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let a = Array3::&lt;f32&gt;::zeros((3, 5, 4));</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// let largest_axis = a.axes()</span>
-<span class="doccomment">///                     .max_by_key(|ax| ax.len())</span>
-<span class="doccomment">///                     .unwrap().axis();</span>
-<span class="doccomment">/// assert_eq!(largest_axis, Axis(1));</span>
-<span class="doccomment">/// ```</span>
+<span class="doccomment">/// An iterator over the length and stride of each axis of an array.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// See [`.axes()`](../struct.ArrayBase.html#method.axes) for more information.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// Iterator element type is `AxisDescription`.</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// # Examples</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// ```</span>
+<span class="doccomment">/// use ndarray::Array3;</span>
+<span class="doccomment">/// use ndarray::Axis;</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// let a = Array3::&lt;f32&gt;::zeros((3, 5, 4));</span>
+<span class="doccomment">///</span>
+<span class="doccomment">/// let largest_axis = a.axes()</span>
+<span class="doccomment">///                     .max_by_key(|ax| ax.len())</span>
+<span class="doccomment">///                     .unwrap().axis();</span>
+<span class="doccomment">/// assert_eq!(largest_axis, Axis(1));</span>
+<span class="doccomment">/// ```</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Axes</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">D</span><span class="op">&gt;</span> {
     <span class="ident">dim</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">D</span>,
@@ -193,27 +193,27 @@
     <span class="ident">end</span>: <span class="ident">usize</span>,
 }
 
-<span class="doccomment">/// Description of the axis, its length and its stride.</span>
+<span class="doccomment">/// Description of the axis, its length and its stride.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">AxisDescription</span>(<span class="kw">pub</span> <span class="ident">Axis</span>, <span class="kw">pub</span> <span class="ident">Ix</span>, <span class="kw">pub</span> <span class="ident">Ixs</span>);
 
 <span class="macro">copy_and_clone</span><span class="macro">!</span>(<span class="ident">AxisDescription</span>);
 
-<span class="comment">// AxisDescription can&#39;t really be empty</span>
-<span class="comment">// https://github.com/rust-ndarray/ndarray/pull/642#discussion_r296051702</span>
+<span class="comment">// AxisDescription can&#39;t really be empty</span>
+<span class="comment">// https://github.com/rust-ndarray/ndarray/pull/642#discussion_r296051702</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">len_without_is_empty</span>)]</span>
 <span class="kw">impl</span> <span class="ident">AxisDescription</span> {
-    <span class="doccomment">/// Return axis</span>
+    <span class="doccomment">/// Return axis</span>
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">axis</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Axis</span> {
         <span class="self">self</span>.<span class="number">0</span>
     }
-    <span class="doccomment">/// Return length</span>
+    <span class="doccomment">/// Return length</span>
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">len</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ix</span> {
         <span class="self">self</span>.<span class="number">1</span>
     }
-    <span class="doccomment">/// Return stride</span>
+    <span class="doccomment">/// Return stride</span>
     <span class="attribute">#[<span class="ident">inline</span>(<span class="ident">always</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">stride</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Ixs</span> {
         <span class="self">self</span>.<span class="number">2</span>
@@ -226,7 +226,7 @@
 <span class="kw">where</span>
     <span class="ident">D</span>: <span class="ident">Dimension</span>,
 {
-    <span class="doccomment">/// Description of the axis, its length and its stride.</span>
+    <span class="doccomment">/// Description of the axis, its length and its stride.</span>
     <span class="kw">type</span> <span class="ident">Item</span> <span class="op">=</span> <span class="ident">AxisDescription</span>;
 
     <span class="kw">fn</span> <span class="ident">next</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">Item</span><span class="op">&gt;</span> {
