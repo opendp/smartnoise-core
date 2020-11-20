@@ -24,13 +24,13 @@
       "type_rust": "String",
       "default_python": "\"Automatic\"",
       "default_rust": "String::from(\"Automatic\")",
-      "description": "Privatizing mechanism to use. One of [`Automatic`, `Laplace`, `Gaussian`, `AnalyticGaussian`, `SimpleGeometric`]. `Automatic` chooses based on the input data type."
+      "description": "Privatizing mechanism to use. Data type must be string. Value must be one of [`Automatic`, `Laplace`, `Gaussian`, `AnalyticGaussian`, `SimpleGeometric`]. `Automatic` chooses based on the input data type."
     },
     "privacy_usage": {
       "type_proto": "repeated PrivacyUsage",
       "type_rust": "Vec<proto::PrivacyUsage>",
       "default_python": "None",
-      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release. Atomic data type value must be float. Example value: {'epsilon': 0.5}"
     }
   },
   "return": {
