@@ -1,13 +1,14 @@
 {
   "arguments": {
     "data": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Atomic type must be numeric."
     },
     "candidates": {
       "type_value": "Array",
       "default_python": "None",
       "default_rust": "None",
-      "description": "Set from which the Exponential mechanism will return an element."
+      "description": "Set from which the Exponential mechanism will return an element. Type must match with atomic type of data. This value must be column-conformable with data. Only useful for Exponential mechanism."
     },
     "lower": {
       "type_value": "Array",
@@ -35,13 +36,13 @@
       "type_rust": "String",
       "default_python": "\"Automatic\"",
       "default_rust": "String::from(\"Automatic\")",
-      "description": "Privatizing mechanism to use. One of [`Exponential`, `Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]"
+      "description": "Privatizing mechanism to use. Data type must be string. Value must be one of [`Automatic`, `Exponential`, `Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]. `Automatic` chooses `Exponential` if candidates provided, chooses `Snapping` if protect floating point enabled, and otherwise chooses `Laplace`."
     },
     "privacy_usage": {
       "type_proto": "repeated PrivacyUsage",
       "type_rust": "Vec<proto::PrivacyUsage>",
       "default_python": "None",
-      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release. Atomic data type value must be float. Example value: {'epsilon': 0.5}"
     },
     "interpolation": {
       "type_proto": "string",
@@ -53,8 +54,8 @@
   },
   "return": {
     "type_value": "Array",
-    "description": "Differentially private estimates of the median of each column of the data."
+    "description": "Differentially private estimate of the quantile."
   },
-  "description": "Returns differentially private estimates of the median of each column of the data.",
+  "description": "Returns differentially private estimates of specified quantiles for each column of the data.",
   "proto_id": 16
 }
