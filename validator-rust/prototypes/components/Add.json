@@ -1,10 +1,12 @@
 {
   "arguments": {
     "left": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Left value to add. Must be of type float or integer."
     },
     "right": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Right value to add. Must be of type float or integer."
     }
   },
   "id": "Add",
@@ -13,5 +15,6 @@
   "return": {
     "type_value": "Array"
   },
-  "proto_id": 1
+  "proto_id": 1,
+  "description": "Mathematical addition. Value types of arguments must match."
 }
