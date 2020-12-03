@@ -2,7 +2,7 @@ use indexmap::map::IndexMap;
 use ndarray::arr0;
 
 use crate::{base, Integer, proto};
-use crate::base::{DataType, IndexKey, NodeProperties, Value};
+use crate::base::{IndexKey, NodeProperties, Value};
 use crate::components::{Expandable, Report};
 use crate::errors::*;
 use crate::utilities::{array::get_ith_column, get_literal, prepend, privacy::spread_privacy_usage};
@@ -105,7 +105,7 @@ impl Expandable for proto::DpHistogram {
 
             // noising
             let mut arguments = indexmap!["data".into() => id_histogram];
-            let variant = Some(match self.mechanism.to_lowercase() {
+            let variant = Some(match self.mechanism.to_lowercase().as_str() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                     privacy_usage: self.privacy_usage.clone()
                 }),
