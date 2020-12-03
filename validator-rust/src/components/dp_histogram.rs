@@ -33,13 +33,6 @@ impl Expandable for proto::DpHistogram {
         let privacy_definition = privacy_definition.as_ref()
             .ok_or_else(|| Error::from("privacy_definition must be known"))?;
 
-        let mechanism = if self.mechanism.to_lowercase().as_str() == "automatic" {
-            if data_property.data_type == DataType::Int { "simplegeometric" } else {
-                if privacy_definition.protect_floating_point
-                { "snapping" } else { "laplace" }
-            }.to_string()
-        } else { self.mechanism.to_lowercase() };
-
         // histogram
         maximum_id += 1;
         let id_histogram = maximum_id;
@@ -59,7 +52,7 @@ impl Expandable for proto::DpHistogram {
         });
         expansion.traversal.push(id_histogram);
 
-        if mechanism.as_str() == "simplegeometric" {
+        if self.mechanism.to_lowercase() == "simplegeometric" {
             let count_min_id = match argument_ids.get::<IndexKey>(&"lower".into()) {
                 Some(id) => *id,
                 None => {
@@ -112,7 +105,7 @@ impl Expandable for proto::DpHistogram {
 
             // noising
             let mut arguments = indexmap!["data".into() => id_histogram];
-            let variant = Some(match mechanism.as_str() {
+            let variant = Some(match self.mechanism.to_lowercase() {
                 "laplace" => proto::component::Variant::LaplaceMechanism(proto::LaplaceMechanism {
                     privacy_usage: self.privacy_usage.clone()
                 }),
