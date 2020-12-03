@@ -2,17 +2,17 @@
   "arguments": {
     "data": {
       "type_value": "Array",
-      "description": "Result to be released privately via the Geometric mechanism."
+      "description": "Result to be released privately via the Geometric mechanism. Member data type must be integer."
     },
     "lower": {
       "type_value": "Array",
       "default_python": "None",
-      "description": "Lower bound of the statistic to be privatized."
+      "description": "Lower bound of the statistic to be privatized. Member data type must be integer."
     },
     "upper": {
       "type_value": "Array",
       "default_python": "None",
-      "description": "Upper bound of the statistic to be privatized."
+      "description": "Upper bound of the statistic to be privatized. Member data type must be integer."
     }
   },
   "id": "SimpleGeometricMechanism",
@@ -22,7 +22,7 @@
       "type_proto": "repeated PrivacyUsage",
       "type_rust": "Vec<proto::PrivacyUsage>",
       "default_python": "None",
-      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release. Values of zero or less, and values of greater than one, will result in warnings."
     }
   },
   "return": {

@@ -6,7 +6,7 @@
     },
     "edges": {
       "type_value": "Jagged",
-      "description": "Values representing the edges of bins."
+      "description": "Values representing the edges of bins. Edges must be sorted, and may not contain duplicates."
     },
     "null_value": {
       "type_value": "Array",

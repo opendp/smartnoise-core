@@ -2,11 +2,11 @@
   "arguments": {
     "utilities": {
       "type_value": "Array",
-      "description": "Respective scores for each candidate."
+      "description": "Respective scores for each candidate. Total number of records must match candidates."
     },
     "candidates": {
       "type_value": "Array",
-      "description": "Set from which the Exponential mechanism will return an element."
+      "description": "Set from which the Exponential mechanism will return an element. Total number of records must match utilities."
     }
   },
   "id": "ExponentialMechanism",
@@ -16,7 +16,7 @@
       "type_proto": "repeated PrivacyUsage",
       "type_rust": "Vec<proto::PrivacyUsage>",
       "default_python": "None",
-      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release. Length of privacy_usage must be exactly one."
     }
   },
   "return": {

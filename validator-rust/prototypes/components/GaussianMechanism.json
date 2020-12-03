@@ -2,7 +2,7 @@
   "arguments": {
     "data": {
       "type_value": "Array",
-      "description": "Result to be released privately via the Gaussian mechanism."
+      "description": "Result to be released privately via the Gaussian mechanism. Atomic type must be numeric."
     }
   },
   "id": "GaussianMechanism",

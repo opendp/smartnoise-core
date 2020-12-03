@@ -1,17 +1,20 @@
 {
   "arguments": {
     "left": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Left argument for the logical AND."
     },
     "right": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Right argument for the logical AND."
     }
   },
   "id": "And",
   "name": "logical_and",
   "options": {},
   "return": {
-    "type_value": "Array"
+    "type_value": "Array",
+    "description": "Logical AND of left and right."
   },
   "proto_id": 2
 }

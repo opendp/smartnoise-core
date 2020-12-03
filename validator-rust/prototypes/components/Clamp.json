@@ -20,7 +20,7 @@
       "type_value": "Jagged",
       "default_python": "None",
       "default_rust": "None",
-      "description": "The set of categories you want to be represented for each column of the data."
+      "description": "The set of categories you want to be represented for each column of the data, or `None`."
     },
     "null_value": {
       "type_value": "Array",

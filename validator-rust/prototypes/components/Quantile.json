@@ -1,13 +1,14 @@
 {
   "arguments": {
     "data": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Atomic type must be numeric."
     },
     "candidates": {
       "type_value": "Array",
       "default_python": "None",
       "default_rust": "None",
-      "description": "Set from which the Exponential mechanism will return an element."
+      "description": "Set from which the Exponential mechanism will return an element. Type must match with atomic type of data. This value must be column-conformable with data."
     }
   },
   "id": "Quantile",
@@ -16,7 +17,7 @@
     "alpha": {
       "type_proto": "double",
       "type_rust": "f64",
-      "description": "Desired quantiles, defined on `[0,1]`."
+      "description": "Desired quantiles, defined on `[0,1]`. Examples: 0: min, 0.5: median, 1: max"
     },
     "interpolation": {
       "type_proto": "string",
