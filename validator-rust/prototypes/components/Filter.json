@@ -5,7 +5,7 @@
     },
     "mask": {
       "type_value": "Array",
-      "description": "Boolean mask giving whether or not each row should be kept."
+      "description": "Boolean mask giving whether or not each row should be kept. Example value: data['age'] == '4'"
     }
   },
   "id": "Filter",

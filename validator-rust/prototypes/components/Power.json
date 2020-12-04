@@ -1,10 +1,12 @@
 {
   "arguments": {
     "data": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Atomic types must be numeric and homogenous."
     },
     "radical": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Atomic values may not be negative."
     }
   },
   "id": "Power",

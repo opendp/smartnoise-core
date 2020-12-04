@@ -1,10 +1,12 @@
 {
   "arguments": {
     "left": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Atomic type must match right"
     },
     "right": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Atomic type must match left"
     }
   },
   "id": "Equal",

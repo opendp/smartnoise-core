@@ -2,37 +2,37 @@
   "arguments": {
     "data": {
       "type_value": "Array",
-      "description": "The data to be resized."
+      "description": "The data to be resized. Atomic type of data must match atomic type of categories. If categories not populated, data are treated as numeric and any necessary imputation is done according to a continuous distribution."
     },
     "number_rows": {
       "type_value": "Array",
       "default_python": "None",
       "default_rust": "None",
-      "description": "An estimate of the number of rows in the data. This could be the guess of the user, or the result of a DP release."
+      "description": "An estimate of the number of rows in the data. This could be the guess of the user, or the result of a DP release. Cannot be set with minimum_rows."
     },
     "number_columns": {
       "type_value": "Array",
       "default_python": "None",
       "default_rust": "None",
-      "description": "An estimate of the number of columns in the data. This must be the guess of the user, if not previously known (optional)."
+      "description": "An estimate of the number of columns in the data. This must be the guess of the user, if not previously known (optional). A non-empty value must be positive. A non-empty value is incompatiable with an attempt to resize number of columns and results in an error."
     },
     "lower": {
       "type_value": "Array",
       "default_python": "None",
       "default_rust": "None",
-      "description": "A lower bound on data elements for each column."
+      "description": "A lower bound on data elements for each column. This value must be less than upper."
     },
     "upper": {
       "type_value": "Array",
       "default_python": "None",
       "default_rust": "None",
-      "description": "An upper bound on data elements for each column."
+      "description": "An upper bound on data elements for each column. This value must be greater than lower."
     },
     "categories": {
       "type_value": "Jagged",
       "default_python": "None",
       "default_rust": "None",
-      "description": "The set of categories you want to be represented for each column of the data, if the data is categorical."
+      "description": "The set of categories you want to be represented for each column of the data, if the data is categorical. Atomic type of data must match atomic type of categories."
     },
     "weights": {
       "type_value": "Jagged",
@@ -78,6 +78,6 @@
     "type_value": "Array",
     "description": "A resized version of data consistent with the provided `n`"
   },
-  "description": "Resizes the data in question to be consistent with a provided sample size, `n`.\n\nThe library does not, in general, assume that the sample size of the data being analyzed is known. This introduces a number of problems around how to calculate statistics that are a function of the sample size.\n\nTo address this problem, the library asks the user to provide `n`, an estimate of the true sample size based on their own beliefs about the data or a previous differentially private count of the number of rows in the data. This component then either subsamples or appends to the data in order to make it consistent with the provided `n`.",
+  "description": "Resizes the data in question to be consistent with a provided sample size, `n`.\n\nThe library does not, in general, assume that the sample size of the data being analyzed is known. This introduces a number of problems around how to calculate statistics that are a function of the sample size.\n\nTo address this problem, the library asks the user to provide `n`, an estimate of the true sample size based on their own beliefs about the data or a previous differentially private count of the number of rows in the data. This component then either subsamples or appends to the data in order to make it consistent with the provided `n`.\n\nNote that lower/upper/categorical arguments must be provided, or lower/upper/categorical properties must be known on data.\n\nNote that if using categories constraint, data are treated as categorical regardless of atomic type.",
   "proto_id": 50
 }

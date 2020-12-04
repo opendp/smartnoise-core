@@ -2,19 +2,19 @@
   "arguments": {
     "data": {
       "type_value": "Array",
-      "description": "Result to be released privately via the Snapping mechanism."
+      "description": "Result to be released privately via the Snapping mechanism. Array members must be of type float or of type integer."
     },
     "lower": {
       "type_value": "Array",
       "default_python": "None",
       "default_rust": "None",
-      "description": "Estimated minimum possible value of the data. Only useful for the snapping mechanism."
+      "description": "Estimated minimum possible value of the data. Only useful for the snapping mechanism. This argument is required."
     },
     "upper": {
       "type_value": "Array",
       "default_python": "None",
       "default_rust": "None",
-      "description": "Estimated maximum possible value of the statistic. Only useful for the snapping mechanism."
+      "description": "Estimated maximum possible value of the statistic. Only useful for the snapping mechanism. This argument is required."
     },
     "binding_probability": {
       "type_value": "Array",
@@ -37,6 +37,6 @@
     "type_value": "Array",
     "description": "Original data perturbed via the Snapping mechanism."
   },
-  "description": "Privatizes a result by returning it perturbed via the Snapping mechanism.",
+  "description": "Privatizes a result by returning it perturbed via the Snapping mechanism. This mechanism is generally intended for non-integer numerical data. Note that snapping may not operate on integers when floating-point protections are enabled. For this situation, use the geometric mechanism instead.",
   "proto_id": 64
 }

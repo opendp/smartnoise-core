@@ -36,7 +36,7 @@
       "type_proto": "repeated PrivacyUsage",
       "type_rust": "Vec<proto::PrivacyUsage>",
       "default_python": "None",
-      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release. Atomic data type value must be float. Example value: {'epsilon': 0.5}"
     }
   },
   "return": {
