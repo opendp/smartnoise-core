@@ -23,7 +23,7 @@
     "file_path": {
       "type_proto": "string",
       "type_rust": "String",
-      "description": "Path to the file on the system. File format must be CSV."
+      "description": "Path to the file on the system."
     }
   },
   "return": {
