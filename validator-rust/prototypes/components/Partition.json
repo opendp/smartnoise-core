@@ -2,7 +2,7 @@
   "arguments": {
     "data": {
       "type_value": "Array",
-      "Must be a dataframe or an array"
+      "description": "Must be a dataframe or an array"
     },
     "num_partitions": {
       "default_python": "None",
