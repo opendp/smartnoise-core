@@ -10,7 +10,7 @@ statistical distributions</p>
 <p>All methods provided by the <code>Discrete</code> trait are unchecked, meaning
 they can panic if in an invalid state or encountering invalid input
 depending on the implementing distribution.</p>
-</div><h2 id="required-methods" class="small-section-header">Required methods<a href="#required-methods" class="anchor"></a></h2><div class="methods"><h3 id="tymethod.pmf" class="method"><code>pub fn <a href="#tymethod.pmf" class="fnname">pmf</a>(&amp;self, x: T) -&gt; K</code></h3><div class="docblock"><p>Returns the probability mass function calculated at <code>x</code> for a given
+</div><h2 id="required-methods" class="small-section-header">Required methods<a href="#required-methods" class="anchor"></a></h2><div class="methods"><h3 id="tymethod.pmf" class="method"><code>pub fn <a href="#tymethod.pmf" class="fnname">pmf</a>(&amp;self, x: T) -&gt; K</code><a class="srclink" href="../../src/statrs/distribution/mod.rs.html#217" title="goto source code">[src]</a></h3><div class="docblock"><p>Returns the probability mass function calculated at <code>x</code> for a given
 distribution.
 May panic depending on the implementor.</p>
 <h1 id="examples" class="section-header"><a href="#examples">Examples</a></h1>
@@ -20,7 +20,7 @@ May panic depending on the implementor.</p>
 
 <span class="kw">let</span> <span class="ident">n</span> <span class="op">=</span> <span class="ident">Binomial</span>::<span class="ident">new</span>(<span class="number">0.5</span>, <span class="number">10</span>).<span class="ident">unwrap</span>();
 <span class="macro">assert</span><span class="macro">!</span>(<span class="ident">prec</span>::<span class="ident">almost_eq</span>(<span class="ident">n</span>.<span class="ident">pmf</span>(<span class="number">5</span>), <span class="number">0.24609375</span>, <span class="number">1e-15</span>));</pre></div>
-</div><h3 id="tymethod.ln_pmf" class="method"><code>pub fn <a href="#tymethod.ln_pmf" class="fnname">ln_pmf</a>(&amp;self, x: T) -&gt; K</code></h3><div class="docblock"><p>Returns the log of the probability mass function calculated at <code>x</code> for
+</div><h3 id="tymethod.ln_pmf" class="method"><code>pub fn <a href="#tymethod.ln_pmf" class="fnname">ln_pmf</a>(&amp;self, x: T) -&gt; K</code><a class="srclink" href="../../src/statrs/distribution/mod.rs.html#232" title="goto source code">[src]</a></h3><div class="docblock"><p>Returns the log of the probability mass function calculated at <code>x</code> for
 a given distribution.
 May panic depending on the implementor.</p>
 <h1 id="examples-1" class="section-header"><a href="#examples-1">Examples</a></h1>

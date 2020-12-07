@@ -8,7 +8,7 @@
 <div class="item-spacer"></div>    pub fn <a href="#method.cbrt" class="fnname">cbrt</a>(&amp;self) -&gt; Self { ... }
 }</pre></div><div class="docblock"><p>Provides methods to compute an integer's square root, cube root,
 and arbitrary <code>n</code>th root.</p>
-</div><h2 id="required-methods" class="small-section-header">Required methods<a href="#required-methods" class="anchor"></a></h2><div class="methods"><h3 id="tymethod.nth_root" class="method"><code>pub fn <a href="#tymethod.nth_root" class="fnname">nth_root</a>(&amp;self, n: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a>) -&gt; Self</code></h3><div class="docblock"><p>Returns the truncated principal <code>n</code>th root of an integer
+</div><h2 id="required-methods" class="small-section-header">Required methods<a href="#required-methods" class="anchor"></a></h2><div class="methods"><h3 id="tymethod.nth_root" class="method"><code>pub fn <a href="#tymethod.nth_root" class="fnname">nth_root</a>(&amp;self, n: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a>) -&gt; Self</code><a class="srclink" href="../../src/num_integer/roots.rs.html#55" title="goto source code">[src]</a></h3><div class="docblock"><p>Returns the truncated principal <code>n</code>th root of an integer
 -- <code>if x &gt;= 0 { ⌊ⁿ√x⌋ } else { ⌈ⁿ√x⌉ }</code></p>
 <p>This is solving for <code>r</code> in <code>rⁿ = x</code>, rounding toward zero.
 If <code>x</code> is positive, the result will satisfy <code>rⁿ ≤ x &lt; (r+1)ⁿ</code>.
@@ -42,7 +42,7 @@ If <code>x</code> is negative and <code>n</code> is odd, then <code>(r-1)ⁿ &lt
 
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">std</span>::<span class="ident">u32</span>::<span class="ident">MAX</span>.<span class="ident">nth_root</span>(<span class="number">31</span>), <span class="number">2</span>);
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">std</span>::<span class="ident">u32</span>::<span class="ident">MAX</span>.<span class="ident">nth_root</span>(<span class="number">32</span>), <span class="number">1</span>);</pre></div>
-</div></div><span class="loading-content">Loading content...</span><h2 id="provided-methods" class="small-section-header">Provided methods<a href="#provided-methods" class="anchor"></a></h2><div class="methods"><h3 id="method.sqrt" class="method"><code>pub fn <a href="#method.sqrt" class="fnname">sqrt</a>(&amp;self) -&gt; Self</code></h3><div class="docblock"><p>Returns the truncated principal square root of an integer -- <code>⌊√x⌋</code></p>
+</div></div><span class="loading-content">Loading content...</span><h2 id="provided-methods" class="small-section-header">Provided methods<a href="#provided-methods" class="anchor"></a></h2><div class="methods"><h3 id="method.sqrt" class="method"><code>pub fn <a href="#method.sqrt" class="fnname">sqrt</a>(&amp;self) -&gt; Self</code><a class="srclink" href="../../src/num_integer/roots.rs.html#82-84" title="goto source code">[src]</a></h3><div class="docblock"><p>Returns the truncated principal square root of an integer -- <code>⌊√x⌋</code></p>
 <p>This is solving for <code>r</code> in <code>r² = x</code>, rounding toward zero.
 The result will satisfy <code>r² ≤ x &lt; (r+1)²</code>.</p>
 <h1 id="panics-1" class="section-header"><a href="#panics-1">Panics</a></h1>
@@ -58,7 +58,7 @@ The result will satisfy <code>r² ≤ x &lt; (r+1)²</code>.</p>
 <span class="macro">assert_eq</span><span class="macro">!</span>((<span class="ident">x</span> <span class="op">*</span> <span class="ident">x</span>).<span class="ident">sqrt</span>(), <span class="ident">x</span>);
 <span class="macro">assert_eq</span><span class="macro">!</span>((<span class="ident">x</span> <span class="op">*</span> <span class="ident">x</span> <span class="op">+</span> <span class="number">1</span>).<span class="ident">sqrt</span>(), <span class="ident">x</span>);
 <span class="macro">assert_eq</span><span class="macro">!</span>((<span class="ident">x</span> <span class="op">*</span> <span class="ident">x</span> <span class="op">-</span> <span class="number">1</span>).<span class="ident">sqrt</span>(), <span class="ident">x</span> <span class="op">-</span> <span class="number">1</span>);</pre></div>
-</div><h3 id="method.cbrt" class="method"><code>pub fn <a href="#method.cbrt" class="fnname">cbrt</a>(&amp;self) -&gt; Self</code></h3><div class="docblock"><p>Returns the truncated principal cube root of an integer --
+</div><h3 id="method.cbrt" class="method"><code>pub fn <a href="#method.cbrt" class="fnname">cbrt</a>(&amp;self) -&gt; Self</code><a class="srclink" href="../../src/num_integer/roots.rs.html#108-110" title="goto source code">[src]</a></h3><div class="docblock"><p>Returns the truncated principal cube root of an integer --
 <code>if x &gt;= 0 { ⌊∛x⌋ } else { ⌈∛x⌉ }</code></p>
 <p>This is solving for <code>r</code> in <code>r³ = x</code>, rounding toward zero.
 If <code>x</code> is positive, the result will satisfy <code>r³ ≤ x &lt; (r+1)³</code>.

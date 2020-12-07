@@ -38,23 +38,23 @@ then the regular indexing / <code>get_mut</code> should suffice, too.)</p>
 
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">long_life_ref</span>, <span class="kw-2">&amp;</span><span class="number">0.</span>);
 </pre></div>
-</div><h2 id="associated-types" class="small-section-header">Associated Types<a href="#associated-types" class="anchor"></a></h2><div class="methods"><h3 id="associatedtype.Output" class="method"><code>type <a href="#associatedtype.Output" class="type">Output</a></code></h3><div class="docblock"><p>The type of the reference to the element that is produced, including
+</div><h2 id="associated-types" class="small-section-header">Associated Types<a href="#associated-types" class="anchor"></a></h2><div class="methods"><h3 id="associatedtype.Output" class="method"><code>type <a href="#associatedtype.Output" class="type">Output</a></code><a class="srclink" href="../src/ndarray/impl_views/indexing.rs.html#52" title="goto source code">[src]</a></h3><div class="docblock"><p>The type of the reference to the element that is produced, including
 its lifetime.</p>
-</div></div><span class="loading-content">Loading content...</span><h2 id="required-methods" class="small-section-header">Required methods<a href="#required-methods" class="anchor"></a></h2><div class="methods"><h3 id="tymethod.index" class="method"><code>pub fn <a href="#tymethod.index" class="fnname">index</a>(self, index: I) -&gt; Self::<a class="type" href="../ndarray/trait.IndexLonger.html#associatedtype.Output" title="type ndarray::IndexLonger::Output">Output</a></code></h3><div class="docblock"><p>Get a reference of a element through the view.</p>
+</div></div><span class="loading-content">Loading content...</span><h2 id="required-methods" class="small-section-header">Required methods<a href="#required-methods" class="anchor"></a></h2><div class="methods"><h3 id="tymethod.index" class="method"><code>pub fn <a href="#tymethod.index" class="fnname">index</a>(self, index: I) -&gt; Self::<a class="type" href="../ndarray/trait.IndexLonger.html#associatedtype.Output" title="type ndarray::IndexLonger::Output">Output</a></code><a class="srclink" href="../src/ndarray/impl_views/indexing.rs.html#65" title="goto source code">[src]</a></h3><div class="docblock"><p>Get a reference of a element through the view.</p>
 <p>This method is like <code>Index::index</code> but with a longer lifetime (matching
 the array view); which we can only do for the array view and not in the
 <code>Index</code> trait.</p>
 <p>See also <a href="struct.ArrayBase.html#method.get">the <code>get</code> method</a> which works for all arrays and array
 views.</p>
 <p><strong>Panics</strong> if index is out of bounds.</p>
-</div><h3 id="tymethod.get" class="method"><code>pub fn <a href="#tymethod.get" class="fnname">get</a>(self, index: I) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;Self::<a class="type" href="../ndarray/trait.IndexLonger.html#associatedtype.Output" title="type ndarray::IndexLonger::Output">Output</a>&gt;</code></h3><div class="docblock"><p>Get a reference of a element through the view.</p>
+</div><h3 id="tymethod.get" class="method"><code>pub fn <a href="#tymethod.get" class="fnname">get</a>(self, index: I) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;Self::<a class="type" href="../ndarray/trait.IndexLonger.html#associatedtype.Output" title="type ndarray::IndexLonger::Output">Output</a>&gt;</code><a class="srclink" href="../src/ndarray/impl_views/indexing.rs.html#80" title="goto source code">[src]</a></h3><div class="docblock"><p>Get a reference of a element through the view.</p>
 <p>This method is like <code>ArrayBase::get</code> but with a longer lifetime (matching
 the array view); which we can only do for the array view and not in the
 <code>Index</code> trait.</p>
 <p>See also <a href="struct.ArrayBase.html#method.get">the <code>get</code> method</a> (and <a href="struct.ArrayBase.html#method.get_mut"><code>get_mut</code></a>) which works for all arrays and array
 views.</p>
 <p><strong>Panics</strong> if index is out of bounds.</p>
-</div><h3 id="tymethod.uget" class="method"><code>pub unsafe fn <a href="#tymethod.uget" class="fnname">uget</a>(self, index: I) -&gt; Self::<a class="type" href="../ndarray/trait.IndexLonger.html#associatedtype.Output" title="type ndarray::IndexLonger::Output">Output</a></code></h3><div class="docblock"><p>Get a reference of a element through the view without boundary check</p>
+</div><h3 id="tymethod.uget" class="method"><code>pub unsafe fn <a href="#tymethod.uget" class="fnname">uget</a>(self, index: I) -&gt; Self::<a class="type" href="../ndarray/trait.IndexLonger.html#associatedtype.Output" title="type ndarray::IndexLonger::Output">Output</a></code><a class="srclink" href="../src/ndarray/impl_views/indexing.rs.html#97" title="goto source code">[src]</a></h3><div class="docblock"><p>Get a reference of a element through the view without boundary check</p>
 <p>This method is like <code>elem</code> with a longer lifetime (matching the array
 view); which we can't do for general arrays.</p>
 <p>See also <a href="struct.ArrayBase.html#method.uget">the <code>uget</code> method</a> which works for all arrays and array

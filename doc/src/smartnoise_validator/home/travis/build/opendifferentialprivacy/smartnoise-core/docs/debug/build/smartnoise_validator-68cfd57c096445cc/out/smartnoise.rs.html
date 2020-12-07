@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/build/opendifferentialprivacy/smartnoise-core/docs/debug/build/smartnoise_validator-bc167132c6726935/out/smartnoise.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>smartnoise.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../../../../../../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../../../../../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../../../../../../../../../favicon.svg">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/build/opendifferentialprivacy/smartnoise-core/docs/debug/build/smartnoise_validator-68cfd57c096445cc/out/smartnoise.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>smartnoise.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../../../../../../../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../../../../../../../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../../../../../../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../../../../../../../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../../../../../../../../../../favicon-16x16.png">
 <link rel="alternate icon" type="image/png" href="../../../../../../../../../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../../../../../../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../../../../../../../../../smartnoise_validator/index.html'><div class='logo-container rust-logo'><img src='../../../../../../../../../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../../../../../../../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../../../../../../../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
                 <a id="settings-menu" href="../../../../../../../../../../../../settings.html"><img src="../../../../../../../../../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
@@ -2094,6 +2094,18 @@
 <span id="2091">2091</span>
 <span id="2092">2092</span>
 <span id="2093">2093</span>
+<span id="2094">2094</span>
+<span id="2095">2095</span>
+<span id="2096">2096</span>
+<span id="2097">2097</span>
+<span id="2098">2098</span>
+<span id="2099">2099</span>
+<span id="2100">2100</span>
+<span id="2101">2101</span>
+<span id="2102">2102</span>
+<span id="2103">2103</span>
+<span id="2104">2104</span>
+<span id="2105">2105</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">BoolNull</span> {
@@ -2450,10 +2462,12 @@
 }
 <span class="doccomment">/// Abs Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Absolute value of data.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the abs on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `data` - Array - Atomic types must be of type float or integer.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -2462,11 +2476,13 @@
 }
 <span class="doccomment">/// Add Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Mathematical addition. Value types of arguments must match.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the add on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `left` - Array</span>
-<span class="doccomment">/// * `right` - Array</span>
+<span class="doccomment">/// * `left` - Array - Left value to add. Must be of type float or integer.</span>
+<span class="doccomment">/// * `right` - Array - Right value to add. Must be of type float or integer.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -2507,7 +2523,7 @@
 <span class="doccomment">/// * `data` - Array - Data to be clamped.</span>
 <span class="doccomment">/// * `lower` - Array - Desired lower bound for each column of the data. Used only if `categories` is `None`.</span>
 <span class="doccomment">/// * `upper` - Array - Desired upper bound for each column of the data. Used only if `categories` is `None`.</span>
-<span class="doccomment">/// * `categories` - Jagged - The set of categories you want to be represented for each column of the data.</span>
+<span class="doccomment">/// * `categories` - Jagged - The set of categories you want to be represented for each column of the data, or `None`.</span>
 <span class="doccomment">/// * `null_value` - Array - The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
@@ -2536,7 +2552,7 @@
 <span class="doccomment">/// * `data` - Array</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Row count.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Count</span> {
     <span class="doccomment">/// Set to true for the number of unique members in the data.</span>
@@ -2574,7 +2590,7 @@
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array - Data to be binned.</span>
-<span class="doccomment">/// * `edges` - Jagged - Values representing the edges of bins.</span>
+<span class="doccomment">/// * `edges` - Jagged - Values representing the edges of bins. Edges must be sorted, and may not contain duplicates.</span>
 <span class="doccomment">/// * `null_value` - Array - Value to which to map if there is no valid bin (e.g. if the element falls outside the bin range). The null value is the final category.</span>
 <span class="doccomment">/// * `inclusive_left` - Array - Whether or not the left edge of the bin is inclusive, i.e. the bins are of the form [lower, upper).</span>
 <span class="doccomment">/// </span>
@@ -2588,8 +2604,8 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the divide on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `left` - Array</span>
-<span class="doccomment">/// * `right` - Array</span>
+<span class="doccomment">/// * `left` - Array - Atomic type must match right</span>
+<span class="doccomment">/// * `right` - Array - Atomic type must match left</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -2617,7 +2633,7 @@
     <span class="doccomment">/// Privatizing mechanism to use. One of [`SimpleGeometric`, `Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]. Only `SimpleGeometric` is accepted if floating-point protections are enabled.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
-    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release. Atomic data type value must be float. Example value: {&#39;epsilon&#39;: 0.5}</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
@@ -2643,7 +2659,7 @@
     <span class="doccomment">/// Privatizing mechanism to use. One of [`Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
-    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release. Atomic data type value must be float. Example value: {&#39;epsilon&#39;: 0.5}</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
     <span class="doccomment">/// Whether or not to use the finite sample correction (Bessel&#39;s correction).</span>
@@ -2658,8 +2674,8 @@
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `r_lower` -  - Min candidate</span>
-<span class="doccomment">/// * `r_upper` -  - Max candidate</span>
+<span class="doccomment">/// * `lower` -  - Min candidate</span>
+<span class="doccomment">/// * `upper` -  - Max candidate</span>
 <span class="doccomment">/// * `enforce_constant_time` -  - Enforce constant time for median</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
@@ -2677,7 +2693,7 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_histogram on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `data` - Array - Atomic type must be numeric.</span>
 <span class="doccomment">/// * `edges` - Jagged - Set of edges to bin continuous-valued data. Used only if data are of `continuous` nature.</span>
 <span class="doccomment">/// * `categories` - Jagged - Set of categories in data. Used only if data are of `categorical` nature.</span>
 <span class="doccomment">/// * `null_value` - Array - The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`. The null value is the final category- counts for the null category are at the end of the vector of counts.</span>
@@ -2730,7 +2746,7 @@
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `candidates` - Array - Set from which the Exponential mechanism will return an element.</span>
+<span class="doccomment">/// * `candidates` - Array - Set from which the Exponential mechanism will return an element. Type must match with atomic type of data. This value must be column-conformable with data. Only useful for Exponential mechanism.</span>
 <span class="doccomment">/// * `lower` - Array - Estimated minimum possible value of the statistic. Only useful for the snapping mechanism.</span>
 <span class="doccomment">/// * `upper` - Array - Estimated maximum possible value of the statistic. Only useful for the snapping mechanism.</span>
 <span class="doccomment">/// </span>
@@ -2738,10 +2754,10 @@
 <span class="doccomment">/// * `Value` - Array - Differentially private estimates of the maximum elements of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpMaximum</span> {
-    <span class="doccomment">/// Privatizing mechanism to use. One of [`Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]</span>
+    <span class="doccomment">/// Privatizing mechanism to use. Value must be one of [`Automatic`, `Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
-    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release. Atomic data type value must be float. Example value: {&#39;epsilon&#39;: 0.5}</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
@@ -2752,7 +2768,7 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_mean on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `data` - Array - Atomic type must be numeric.</span>
 <span class="doccomment">/// * `lower` - Array - Estimated minimum possible value of the statistic. Only useful for the snapping mechanism.</span>
 <span class="doccomment">/// * `upper` - Array - Estimated maximum possible value of the statistic. Only useful for the snapping mechanism.</span>
 <span class="doccomment">/// </span>
@@ -2763,10 +2779,10 @@
     <span class="doccomment">/// Privatizing algorithm to use. One of [`resize`, `plug-in`]</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">implementation</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
-    <span class="doccomment">/// Privatizing mechanism to use. One of [`Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]</span>
+    <span class="doccomment">/// Privatizing mechanism to use. One of [`Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`].</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
-    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release. Atomic data type value must be float. Example value: {&#39;epsilon&#39;: 0.5}</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
@@ -2777,8 +2793,8 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_median on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `candidates` - Array - Set from which the Exponential mechanism will return an element.</span>
+<span class="doccomment">/// * `data` - Array - Atomic type must be numeric. For Gumbel mechanism, must be limited to a single column of data.</span>
+<span class="doccomment">/// * `candidates` - Array - Set from which the Exponential mechanism will return an element. Type must match with atomic type of data. This value must be column-conformable with data. Only useful for Exponential mechanism.</span>
 <span class="doccomment">/// * `lower` - Array - Estimated minimum possible value of the statistic. Only useful for the snapping mechanism.</span>
 <span class="doccomment">/// * `upper` - Array - Estimated maximum possible value of the statistic. Only useful for the snapping mechanism.</span>
 <span class="doccomment">/// </span>
@@ -2786,10 +2802,10 @@
 <span class="doccomment">/// * `Value` - Array - Differentially private estimates of the median of each column of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpMedian</span> {
-    <span class="doccomment">/// Privatizing mechanism to use. One of [`Exponential`, `Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]</span>
+    <span class="doccomment">/// Privatizing mechanism to use. Value must be one of [`Exponential`, `Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`, `Gumbel`]. `Automatic` chooses `Exponential` if candidates provided, otherwise chooses `Laplace`.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
-    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.  For Gumbel mechanism, must be limited to a single column of data. Atomic data type value must be float. Example value: {&#39;epsilon&#39;: 0.5}</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
     <span class="doccomment">/// Interpolation strategy. One of [`lower`, `upper`, `midpoint`, `nearest`, `linear`]</span>
@@ -2804,7 +2820,7 @@
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `candidates` - Array - Set from which the Exponential mechanism will return an element.</span>
+<span class="doccomment">/// * `candidates` - Array - Set from which the Exponential mechanism will return an element. Type must match with atomic type of data. This value must be column-conformable with data. Only useful for Exponential mechanism.</span>
 <span class="doccomment">/// * `lower` - Array - Estimated minimum possible value of the statistic. Only useful for the snapping mechanism.</span>
 <span class="doccomment">/// * `upper` - Array - Estimated maximum possible value of the statistic. Only useful for the snapping mechanism.</span>
 <span class="doccomment">/// </span>
@@ -2812,36 +2828,36 @@
 <span class="doccomment">/// * `Value` - Array - Differentially private estimates of the minimum elements of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpMinimum</span> {
-    <span class="doccomment">/// Privatizing mechanism to use. One of [`Exponential`, `Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]</span>
+    <span class="doccomment">/// Privatizing mechanism to use. Value must be one of [`Automatic`, `Exponential`, `Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]. `Automatic` chooses `Exponential` if candidates provided.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
-    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release. Atomic data type value must be float. Example value: {&#39;epsilon&#39;: 0.5}</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
 <span class="doccomment">/// DPQuantile Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// Returns differentially private estimates of the median of each column of the data.</span>
+<span class="doccomment">/// Returns differentially private estimates of specified quantiles for each column of the data.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_quantile on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `candidates` - Array - Set from which the Exponential mechanism will return an element.</span>
+<span class="doccomment">/// * `data` - Array - Atomic type must be numeric.</span>
+<span class="doccomment">/// * `candidates` - Array - Set from which the Exponential mechanism will return an element. Type must match with atomic type of data. This value must be column-conformable with data. Only useful for Exponential mechanism.</span>
 <span class="doccomment">/// * `lower` - Array - Estimated minimum possible value of the statistic. Only useful for the snapping mechanism.</span>
 <span class="doccomment">/// * `upper` - Array - Estimated maximum possible value of the statistic. Only useful for the snapping mechanism.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array - Differentially private estimates of the median of each column of the data.</span>
+<span class="doccomment">/// * `Value` - Array - Differentially private estimate of the quantile.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpQuantile</span> {
     <span class="doccomment">/// Desired quantiles, defined on `[0,1]`.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">double</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">alpha</span>: <span class="ident">f64</span>,
-    <span class="doccomment">/// Privatizing mechanism to use. One of [`Exponential`, `Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]</span>
+    <span class="doccomment">/// Privatizing mechanism to use. Value must be one of [`Automatic`, `Exponential`, `Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]. `Automatic` chooses `Exponential` if candidates provided.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
-    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release. Atomic data type value must be float. Example value: {&#39;epsilon&#39;: 0.5}</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
     <span class="doccomment">/// Interpolation strategy. One of [`lower`, `upper`, `midpoint`, `nearest`, `linear`]</span>
@@ -2850,26 +2866,26 @@
 }
 <span class="doccomment">/// DPRawMoment Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// Returns sample estimate of a raw moment for each column of the data.</span>
+<span class="doccomment">/// Returns differentially private sample estimate of a raw moment for each column of the data.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the dp_raw_moment on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `data` - Array - Data for which you would like the kth raw moments. Atomic data type must be float.</span>
 <span class="doccomment">/// * `lower` - Array - Estimated minimum possible value of the statistic. Only useful for the snapping mechanism.</span>
 <span class="doccomment">/// * `upper` - Array - Estimated maximum possible value of the statistic. Only useful for the snapping mechanism.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array - Sample estimate of raw moment for each column of the data.</span>
+<span class="doccomment">/// * `Value` - Array - Differentially private sample estimate of kth raw moment for each column of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpRawMoment</span> {
     <span class="doccomment">/// Integer statistical moment indicator.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">uint32</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">order</span>: <span class="ident">u32</span>,
-    <span class="doccomment">/// Privatizing mechanism to use. One of [`Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]</span>
+    <span class="doccomment">/// Privatizing mechanism to use. Value must be one of [`Automatic`, `Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`].</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
-    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release. Atomic data type value must be float. Example value: {&#39;epsilon&#39;: 0.5}</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
@@ -2888,10 +2904,10 @@
 <span class="doccomment">/// * `Value` - Array - Differentially private sum over elements for each column of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpSum</span> {
-    <span class="doccomment">/// Privatizing mechanism to use. One of [`Automatic`, `Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`, `SimpleGeometric`]. `Automatic` chooses based on the input data type.</span>
+    <span class="doccomment">/// Privatizing mechanism to use. Value must be one of [`Automatic`, `Laplace`, `Gaussian`, `AnalyticGaussian`, `SimpleGeometric`]. `Automatic` chooses based on the input data type.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
-    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release. Atomic data type value must be float. Example value: {&#39;epsilon&#39;: 0.5}</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
@@ -2903,17 +2919,17 @@
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `lower` - Array - Estimated minimum possible value of the statistic. Only useful for the snapping mechanism.</span>
-<span class="doccomment">/// * `upper` - Array - Estimated maximum possible value of the statistic. Only useful for the snapping mechanism.</span>
+<span class="doccomment">/// * `lower` - Array - Estimated minimum possible value of the statistic. Only useful for the snapping mechanism. Atomic data type must be float.</span>
+<span class="doccomment">/// * `upper` - Array - Estimated maximum possible value of the statistic. Only useful for the snapping mechanism. Atomic data type must be float.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - Differentially private sample variance for each column of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DpVariance</span> {
-    <span class="doccomment">/// Privatizing mechanism to use. One of [`Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]</span>
+    <span class="doccomment">/// Privatizing mechanism to use. Value must be one of [`Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`].</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">mechanism</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
-    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release. Atomic data type value must be float. Example value: {&#39;epsilon&#39;: 0.5}</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
     <span class="doccomment">/// Whether or not to use the finite sample correction (Bessel&#39;s correction).</span>
@@ -2925,8 +2941,8 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the equal on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `left` - Array</span>
-<span class="doccomment">/// * `right` - Array</span>
+<span class="doccomment">/// * `left` - Array - Atomic type must match right</span>
+<span class="doccomment">/// * `right` - Array - Atomic type must match left</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -2940,14 +2956,14 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the exponential_mechanism on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `utilities` - Array - Respective scores for each candidate.</span>
-<span class="doccomment">/// * `candidates` - Array - Set from which the Exponential mechanism will return an element.</span>
+<span class="doccomment">/// * `utilities` - Array - Respective scores for each candidate. Total number of records must match candidates.</span>
+<span class="doccomment">/// * `candidates` - Array - Set from which the Exponential mechanism will return an element. Total number of records must match utilities.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - Element from the candidate set selected via the Exponential mechanism.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ExponentialMechanism</span> {
-    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release. Length of privacy_usage must be exactly one.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
@@ -2959,7 +2975,7 @@
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `mask` - Array - Boolean mask giving whether or not each row should be kept.</span>
+<span class="doccomment">/// * `mask` - Array - Boolean mask giving whether or not each row should be kept. Example value: data[&#39;age&#39;] == &#39;4&#39;</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - Data with only the desired rows.</span>
@@ -2973,7 +2989,7 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the gaussian_mechanism on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array - Result to be released privately via the Gaussian mechanism.</span>
+<span class="doccomment">/// * `data` - Array - Result to be released privately via the Gaussian mechanism. Atomic type must be numeric.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - Original data perturbed with Gaussian noise.</span>
@@ -2991,8 +3007,8 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the greater_than on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `left` - Array</span>
-<span class="doccomment">/// * `right` - Array</span>
+<span class="doccomment">/// * `left` - Array - Atomic values must be numeric and of the same type. Type must match right.</span>
+<span class="doccomment">/// * `right` - Array - Atomic values must be numeric and of the same type. Type must match left.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -3005,8 +3021,8 @@
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
 <span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `edges` - Jagged - Set of edges to bin continuous-valued data. Used only if data are of `continuous` nature.</span>
-<span class="doccomment">/// * `categories` - Jagged - Set of categories in data. Used only if data are of `categorical` nature.</span>
+<span class="doccomment">/// * `edges` - Jagged - Set of edges to bin continuous-valued data. Used only if data are of `continuous` nature. Must have a value if categories not specified.</span>
+<span class="doccomment">/// * `categories` - Jagged - Set of categories in data. Used only if data are of `categorical` nature. Must have a value if edges not specified.</span>
 <span class="doccomment">/// * `null_value` - Array - The value to which elements not included in `categories` will be mapped for each column of the data. Used only if `categories` is not `None`.</span>
 <span class="doccomment">/// * `inclusive_left` -  - Whether or not the left edge of the bin is inclusive. If `true` bins are of the form [lower, upper). Otherwise, bins are of the form (lower, upper]. Used only if data are of `continuous` nature.</span>
 <span class="doccomment">/// </span>
@@ -3029,8 +3045,8 @@
 <span class="doccomment">/// * `data` - Array - The data for which null values will be imputed.</span>
 <span class="doccomment">/// * `lower` - Array - A lower bound on data elements for each column. Used only if `categories` is `None`.</span>
 <span class="doccomment">/// * `upper` - Array - An upper bound on data elements for each column. Used only if `categories` is `None`.</span>
-<span class="doccomment">/// * `categories` - Jagged - The set of categories you want to be represented for each column of the data, if the data is categorical.</span>
-<span class="doccomment">/// * `null_values` - Jagged - The set of values that are considered null for each column of the data, if the data is categorical.</span>
+<span class="doccomment">/// * `categories` - Jagged - The set of categories you want to be represented for each column of the data, if the data is categorical. Atomic type must match atomic type of data.</span>
+<span class="doccomment">/// * `null_values` - Jagged - The set of values that are considered null for each column of the data, if the data is categorical. Atomic type must match atomic type of data.</span>
 <span class="doccomment">/// * `weights` - Jagged - Optional. The weight of each category when imputing. Uniform weights are used if not specified.</span>
 <span class="doccomment">/// * `distribution` - String - The distribution to be used when imputing records. Used only if `categories` is `None`.</span>
 <span class="doccomment">/// * `shift` - Array - The expectation of the Gaussian distribution to be used for imputation. Used only if `distribution` is `Gaussian`.</span>
@@ -3080,8 +3096,8 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the less_than on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `left` - Array</span>
-<span class="doccomment">/// * `right` - Array</span>
+<span class="doccomment">/// * `left` - Array - Atomic type must be numeric, and match with atomic type of right.</span>
+<span class="doccomment">/// * `right` - Array - Atomic type must be numeric, and match with atomic type of left.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -3102,7 +3118,7 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the log on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `data` - Array - Atomic type must be float.</span>
 <span class="doccomment">/// * `base` - Array</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
@@ -3115,15 +3131,17 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the logical_and on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `left` - Array</span>
-<span class="doccomment">/// * `right` - Array</span>
+<span class="doccomment">/// * `left` - Array - Left argument for the logical AND.</span>
+<span class="doccomment">/// * `right` - Array - Right argument for the logical AND.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Logical AND of left and right.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">And</span> {
 }
 <span class="doccomment">/// Or Component</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// left and right arguments must share the same data types</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the logical_or on the arguments.</span>
 <span class="doccomment">/// </span>
@@ -3235,8 +3253,8 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the modulo on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `left` - Array</span>
-<span class="doccomment">/// * `right` - Array</span>
+<span class="doccomment">/// * `left` - Array - Atomic type must be numeric. Atomic type must match right.</span>
+<span class="doccomment">/// * `right` - Array - Atomic type must be numeric. Atomic type must match left.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -3248,8 +3266,8 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the multiply on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `left` - Array</span>
-<span class="doccomment">/// * `right` - Array</span>
+<span class="doccomment">/// * `left` - Array - Atomic type must be numeric. Atomic type must match right.</span>
+<span class="doccomment">/// * `right` - Array - Atomic type must be numeric. Atomic type must match left.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -3261,7 +3279,7 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the negate on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `data` - Array - Atomic type must be boolean.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -3273,7 +3291,7 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the negative on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `data` - Array - Atomic type must be numeric.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -3287,7 +3305,7 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the partition on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
+<span class="doccomment">/// * `data` - Array - Must be a dataframe or an array</span>
 <span class="doccomment">/// * `num_partitions` - Array</span>
 <span class="doccomment">/// * `by` - Array</span>
 <span class="doccomment">/// </span>
@@ -3301,8 +3319,8 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the power on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `radical` - Array</span>
+<span class="doccomment">/// * `data` - Array - Atomic types must be numeric and homogenous.</span>
+<span class="doccomment">/// * `radical` - Array - Atomic values may not be negative.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -3316,14 +3334,14 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the quantile on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `candidates` - Array - Set from which the Exponential mechanism will return an element.</span>
+<span class="doccomment">/// * `data` - Array - Atomic type must be numeric.</span>
+<span class="doccomment">/// * `candidates` - Array - Set from which the Exponential mechanism will return an element. Type must match with atomic type of data. This value must be column-conformable with data.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - Quantile values for each column.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Quantile</span> {
-    <span class="doccomment">/// Desired quantiles, defined on `[0,1]`.</span>
+    <span class="doccomment">/// Desired quantiles, defined on `[0,1]`. Examples: 0: min, 0.5: median, 1: max</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">double</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">alpha</span>: <span class="ident">f64</span>,
     <span class="doccomment">/// Interpolation strategy. One of [`lower`, `upper`, `midpoint`, `nearest`, `linear`]</span>
@@ -3337,7 +3355,7 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the raw_moment on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array - Data for which you would like the kth raw moments.</span>
+<span class="doccomment">/// * `data` - Array - Data for which you would like the kth raw moments. Atomic data type must be float.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - kth raw sample moment for each column.</span>
@@ -3363,10 +3381,10 @@
     <span class="doccomment">/// Set if data are elements from the upper triangle of a symmetric matrix.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">bool</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">symmetric</span>: <span class="ident">bool</span>,
-    <span class="doccomment">/// Consecutive elements of either the `row` or `column` reside next to each other.</span>
+    <span class="doccomment">/// Consecutive elements of either the `row` or `column` reside next to each other. Note that multi-row inputs are reshaped to partitional outputs, having one matrix per partition.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">string</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;2&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">layout</span>: <span class="ident">std</span>::<span class="ident">string</span>::<span class="ident">String</span>,
-    <span class="doccomment">/// The shape of the output matrix.</span>
+    <span class="doccomment">/// The shape of the output matrix. Dimensionality may not be greater than 2.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">uint32</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">shape</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u32</span><span class="op">&gt;</span>,
 }
@@ -3378,15 +3396,19 @@
 <span class="doccomment">/// </span>
 <span class="doccomment">/// To address this problem, the library asks the user to provide `n`, an estimate of the true sample size based on their own beliefs about the data or a previous differentially private count of the number of rows in the data. This component then either subsamples or appends to the data in order to make it consistent with the provided `n`.</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Note that lower/upper/categorical arguments must be provided, or lower/upper/categorical properties must be known on data.</span>
+<span class="doccomment">/// </span>
+<span class="doccomment">/// Note that if using categories constraint, data are treated as categorical regardless of atomic type.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the resize on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array - The data to be resized.</span>
-<span class="doccomment">/// * `number_rows` - Array - An estimate of the number of rows in the data. This could be the guess of the user, or the result of a DP release.</span>
-<span class="doccomment">/// * `number_columns` - Array - An estimate of the number of columns in the data. This must be the guess of the user, if not previously known (optional).</span>
-<span class="doccomment">/// * `lower` - Array - A lower bound on data elements for each column.</span>
-<span class="doccomment">/// * `upper` - Array - An upper bound on data elements for each column.</span>
-<span class="doccomment">/// * `categories` - Jagged - The set of categories you want to be represented for each column of the data, if the data is categorical.</span>
+<span class="doccomment">/// * `data` - Array - The data to be resized. Atomic type of data must match atomic type of categories. If categories not populated, data are treated as numeric and any necessary imputation is done according to a continuous distribution.</span>
+<span class="doccomment">/// * `number_rows` - Array - An estimate of the number of rows in the data. This could be the guess of the user, or the result of a DP release. Cannot be set with minimum_rows.</span>
+<span class="doccomment">/// * `number_columns` - Array - An estimate of the number of columns in the data. This must be the guess of the user, if not previously known (optional). A non-empty value must be positive. A non-empty value is incompatiable with an attempt to resize number of columns and results in an error.</span>
+<span class="doccomment">/// * `lower` - Array - A lower bound on data elements for each column. This value must be less than upper.</span>
+<span class="doccomment">/// * `upper` - Array - An upper bound on data elements for each column. This value must be greater than lower.</span>
+<span class="doccomment">/// * `categories` - Jagged - The set of categories you want to be represented for each column of the data, if the data is categorical. Atomic type of data must match atomic type of categories.</span>
 <span class="doccomment">/// * `weights` - Jagged - Optional. The weight of each category when imputing. Uniform weights are used if not specified.</span>
 <span class="doccomment">/// * `distribution` - String - The distribution to be used when imputing records.</span>
 <span class="doccomment">/// * `shift` - Array - The expectation of the Gaussian distribution used for imputation (used only if `distribution = Gaussian`).</span>
@@ -3401,13 +3423,13 @@
 }
 <span class="doccomment">/// RowMax Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// Returns the maximum of the left and right arguments, per row.</span>
+<span class="doccomment">/// Returns the maximum of the left and right arguments, per row. Note that left and right arguments must share the same data types.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the row_max on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `left` - Array</span>
-<span class="doccomment">/// * `right` - Array</span>
+<span class="doccomment">/// * `left` - Array - Member data type must match that of right.</span>
+<span class="doccomment">/// * `right` - Array - Member data type must match that of left.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -3416,13 +3438,13 @@
 }
 <span class="doccomment">/// RowMin Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// Returns the minimum of the left and right arguments, per row.</span>
+<span class="doccomment">/// Returns the minimum of the left and right arguments, per row. Note that left and right arguments must share the same data types.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the row_min on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `left` - Array</span>
-<span class="doccomment">/// * `right` - Array</span>
+<span class="doccomment">/// * `left` - Array - Member data type must match that of right.</span>
+<span class="doccomment">/// * `right` - Array - Member data type must match that of left.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -3436,28 +3458,28 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the simple_geometric_mechanism on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array - Result to be released privately via the Geometric mechanism.</span>
-<span class="doccomment">/// * `lower` - Array - Lower bound of the statistic to be privatized.</span>
-<span class="doccomment">/// * `upper` - Array - Upper bound of the statistic to be privatized.</span>
+<span class="doccomment">/// * `data` - Array - Result to be released privately via the Geometric mechanism. Member data type must be integer.</span>
+<span class="doccomment">/// * `lower` - Array - Lower bound of the statistic to be privatized. Member data type must be integer.</span>
+<span class="doccomment">/// * `upper` - Array - Upper bound of the statistic to be privatized. Member data type must be integer.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - Original data perturbed with Geometric noise.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SimpleGeometricMechanism</span> {
-    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release.</span>
+    <span class="doccomment">/// Object describing the type and amount of privacy to be used for the mechanism release. Values of zero or less, and values of greater than one, will result in warnings.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">message</span>, <span class="ident">repeated</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">privacy_usage</span>: ::<span class="ident">std</span>::<span class="ident">vec</span>::<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">PrivacyUsage</span><span class="op">&gt;</span>,
 }
 <span class="doccomment">/// SnappingMechanism Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// Privatizes a result by returning it perturbed via the Snapping mechanism.</span>
+<span class="doccomment">/// Privatizes a result by returning it perturbed via the Snapping mechanism. This mechanism is generally intended for non-integer numerical data. Note that snapping may not operate on integers when floating-point protections are enabled. For this situation, use the geometric mechanism instead.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the snapping_mechanism on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array - Result to be released privately via the Snapping mechanism.</span>
-<span class="doccomment">/// * `lower` - Array - Estimated minimum possible value of the data. Only useful for the snapping mechanism.</span>
-<span class="doccomment">/// * `upper` - Array - Estimated maximum possible value of the statistic. Only useful for the snapping mechanism.</span>
+<span class="doccomment">/// * `data` - Array - Result to be released privately via the Snapping mechanism. Array members must be of type float or of type integer.</span>
+<span class="doccomment">/// * `lower` - Array - Estimated minimum possible value of the data. Only useful for the snapping mechanism. This argument is required.</span>
+<span class="doccomment">/// * `upper` - Array - Estimated maximum possible value of the statistic. Only useful for the snapping mechanism. This argument is required.</span>
 <span class="doccomment">/// * `binding_probability` - Array - Upper bound on probability that final clamp binds. Must be within [0, 1).</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
@@ -3470,11 +3492,13 @@
 }
 <span class="doccomment">/// Subtract Component</span>
 <span class="doccomment">/// </span>
+<span class="doccomment">/// Mathematical subtraction. Value types of arguments must match.</span>
+<span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the subtract on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `left` - Array</span>
-<span class="doccomment">/// * `right` - Array</span>
+<span class="doccomment">/// * `left` - Array - Value from which to subtract. Must be of type float or integer.</span>
+<span class="doccomment">/// * `right` - Array - Value which to subtract. Must be of type float or integer.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array</span>
@@ -3483,7 +3507,7 @@
 }
 <span class="doccomment">/// Sum Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// Calculates the sum of each column of the data.</span>
+<span class="doccomment">/// Calculates the sum of each column of the data. Data must be of type float or integer.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the sum on the arguments.</span>
 <span class="doccomment">/// </span>
@@ -3502,8 +3526,8 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the theil_sen on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data_x` - Array</span>
-<span class="doccomment">/// * `data_y` - Array</span>
+<span class="doccomment">/// * `data_x` - Array - value(s) from the first coordinate axis</span>
+<span class="doccomment">/// * `data_y` - Array - value(s) from the second coordinate axis</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
 <span class="doccomment">/// * `Value` - Array - All slope and intercept estimates for point pairs</span>
@@ -3523,7 +3547,7 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the to_bool on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array - Data to be cast to another type.</span>
+<span class="doccomment">/// * `data` - Array - Data to be cast to Boolean type.</span>
 <span class="doccomment">/// * `true_label` - Array - Positive class (class to be mapped to `true`) for each column.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
@@ -3533,16 +3557,16 @@
 }
 <span class="doccomment">/// ToDataframe Component</span>
 <span class="doccomment">/// </span>
-<span class="doccomment">/// Name columns of an array to produce a Dataframe with the specified names</span>
+<span class="doccomment">/// Name columns of an array to produce a Dataframe with the specified names. Typically used when partitioning a dataframe with preprocessed columns.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the to_dataframe on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array</span>
-<span class="doccomment">/// * `names` - Array</span>
+<span class="doccomment">/// * `data` - Array - ndarray (structured or homogeneous), Iterable, dict, or DataFrame</span>
+<span class="doccomment">/// * `names` - Array - Column labels to use for resulting frame. Will default to RangeIndex (0, 1, 2, …, n) if no column labels are provided.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Dataframe</span>
+<span class="doccomment">/// * `Value` - Dataframe - Dataframe in target language, for example &lt;a href=&quot;https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html&quot;&gt;pandas.DataFrame&lt;/a&gt;.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ToDataframe</span> {
 }
@@ -3553,10 +3577,10 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the to_float on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array - Data to be cast to another type.</span>
+<span class="doccomment">/// * `data` - Array - Data to be cast to float.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Array containing the converted float value(s).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ToFloat</span> {
 }
@@ -3567,12 +3591,12 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the to_int on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array - Data to be cast to another type.</span>
+<span class="doccomment">/// * `data` - Array - Data to be cast to integer type.</span>
 <span class="doccomment">/// * `lower` - Array - Minimum allowable imputation value. Integers cannot represent null, so values that cannot be parsed are imputed.</span>
 <span class="doccomment">/// * `upper` - Array - Maximum allowable imputation value.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Array containing the converted integer value(s).</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ToInt</span> {
 }
@@ -3583,10 +3607,10 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the to_string on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Arguments</span>
-<span class="doccomment">/// * `data` - Array - Data to be cast to another type.</span>
+<span class="doccomment">/// * `data` - Array - Data to be cast to string type.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - The return is the result of the to_string on the arguments.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ToString</span> {
 }
@@ -3597,7 +3621,7 @@
 <span class="doccomment">/// This struct represents an abstract computation. Arguments are provided via the graph. Additional options are set via the fields on this struct. The return is the result of the union on the arguments.</span>
 <span class="doccomment">/// </span>
 <span class="doccomment">/// # Returns</span>
-<span class="doccomment">/// * `Value` - Array</span>
+<span class="doccomment">/// * `Value` - Array - Array (or indexmap of arrays) containing item(s) representing the concatenation of all partitions</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Union</span> {
     <span class="doccomment">/// When set, the output is an array. When unset, the output is an indexmap of arrays.</span>
@@ -3617,7 +3641,7 @@
 <span class="doccomment">/// * `Value` - Array - Sample variance for each column of the data.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">PartialEq</span>, ::<span class="ident">prost</span>::<span class="ident">Message</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Variance</span> {
-    <span class="doccomment">/// Whether or not to use the finite sample correction (Bessel&#39;s correction).</span>
+    <span class="doccomment">/// Whether or not to use the finite sample correction (Bessel&#39;s correction) to correct the bias in the estimation of the population variance.</span>
     <span class="attribute">#[<span class="ident">prost</span>(<span class="ident">bool</span>, <span class="ident">tag</span><span class="op">=</span><span class="string">&quot;1&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">finite_sample_correction</span>: <span class="ident">bool</span>,
 }

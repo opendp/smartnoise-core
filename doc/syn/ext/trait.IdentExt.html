@@ -10,11 +10,11 @@
 <p>This trait is sealed and cannot be implemented for types outside of Syn. It
 is implemented only for <code>proc_macro2::Ident</code>.</p>
 <p><em>This trait is available only if Syn is built with the <code>&quot;parsing&quot;</code> feature.</em></p>
-</div><h2 id="associated-const" class="small-section-header">Associated Constants<a href="#associated-const" class="anchor"></a></h2><div class="methods"><h3 id="associatedconstant.peek_any" class="method"><code>pub const <a href="#associatedconstant.peek_any" class="constant"><b>peek_any</b></a>: PeekFn</code></h3><div class="docblock"><p>Peeks any identifier including keywords. Usage:
+</div><h2 id="associated-const" class="small-section-header">Associated Constants<a href="#associated-const" class="anchor"></a></h2><div class="methods"><h3 id="associatedconstant.peek_any" class="method"><code>pub const <a href="#associatedconstant.peek_any" class="constant"><b>peek_any</b></a>: PeekFn</code><a class="srclink" href="../../src/syn/ext.rs.html#57" title="goto source code">[src]</a></h3><div class="docblock"><p>Peeks any identifier including keywords. Usage:
 <code>input.peek(Ident::peek_any)</code></p>
 <p>This is different from <code>input.peek(Ident)</code> which only returns true in
 the case of an ident which is not a Rust keyword.</p>
-</div></div><span class="loading-content">Loading content...</span><h2 id="required-methods" class="small-section-header">Required methods<a href="#required-methods" class="anchor"></a></h2><div class="methods"><h3 id="tymethod.parse_any" class="method"><code>pub fn <a href="#tymethod.parse_any" class="fnname">parse_any</a>(input: <a class="type" href="../../syn/parse/type.ParseStream.html" title="type syn::parse::ParseStream">ParseStream</a>&lt;'_&gt;) -&gt; <a class="type" href="../../syn/parse/type.Result.html" title="type syn::parse::Result">Result</a>&lt;Self&gt;</code></h3><div class="docblock"><p>Parses any identifier including keywords.</p>
+</div></div><span class="loading-content">Loading content...</span><h2 id="required-methods" class="small-section-header">Required methods<a href="#required-methods" class="anchor"></a></h2><div class="methods"><h3 id="tymethod.parse_any" class="method"><code>pub fn <a href="#tymethod.parse_any" class="fnname">parse_any</a>(input: <a class="type" href="../../syn/parse/type.ParseStream.html" title="type syn::parse::ParseStream">ParseStream</a>&lt;'_&gt;) -&gt; <a class="type" href="../../syn/parse/type.Result.html" title="type syn::parse::Result">Result</a>&lt;Self&gt;</code><a class="srclink" href="../../src/syn/ext.rs.html#49" title="goto source code">[src]</a></h3><div class="docblock"><p>Parses any identifier including keywords.</p>
 <p>This is useful when parsing macro input which allows Rust keywords as
 identifiers.</p>
 <h1 id="example" class="section-header"><a href="#example">Example</a></h1>
@@ -40,7 +40,7 @@ identifiers.</p>
     <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">input</span>.<span class="ident">call</span>(<span class="ident">Ident</span>::<span class="ident">parse_any</span>)<span class="question-mark">?</span>;
     <span class="prelude-val">Ok</span>(<span class="ident">name</span>)
 }</pre></div>
-</div><h3 id="tymethod.unraw" class="method"><code>pub fn <a href="#tymethod.unraw" class="fnname">unraw</a>(&amp;self) -&gt; <a class="struct" href="../../syn/struct.Ident.html" title="struct syn::Ident">Ident</a></code></h3><div class="docblock"><p>Strips the raw marker <code>r#</code>, if any, from the beginning of an ident.</p>
+</div><h3 id="tymethod.unraw" class="method"><code>pub fn <a href="#tymethod.unraw" class="fnname">unraw</a>(&amp;self) -&gt; <a class="struct" href="../../syn/struct.Ident.html" title="struct syn::Ident">Ident</a></code><a class="srclink" href="../../src/syn/ext.rs.html#86" title="goto source code">[src]</a></h3><div class="docblock"><p>Strips the raw marker <code>r#</code>, if any, from the beginning of an ident.</p>
 <ul>
 <li>unraw(<code>x</code>) = <code>x</code></li>
 <li>unraw(<code>move</code>) = <code>move</code></li>

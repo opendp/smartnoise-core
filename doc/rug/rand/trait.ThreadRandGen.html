@@ -39,10 +39,10 @@ panic, they can cause the program to abort.</p>
         <span class="self">self</span>.<span class="number">0</span>.<span class="ident">next_u32</span>()
     }
 }</pre></div>
-</div><h2 id="required-methods" class="small-section-header">Required methods<a href="#required-methods" class="anchor"></a></h2><div class="methods"><h3 id="tymethod.gen" class="method"><code>pub fn <a href="#tymethod.gen" class="fnname">gen</a>(&amp;mut self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a></code></h3><div class="docblock"><p>Gets a random 32-bit unsigned integer.</p>
+</div><h2 id="required-methods" class="small-section-header">Required methods<a href="#required-methods" class="anchor"></a></h2><div class="methods"><h3 id="tymethod.gen" class="method"><code>pub fn <a href="#tymethod.gen" class="fnname">gen</a>(&amp;mut self) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a></code><a class="srclink" href="../../src/rug/rand.rs.html#1395" title="goto source code">[src]</a></h3><div class="docblock"><p>Gets a random 32-bit unsigned integer.</p>
 <p>This is similar to
 <code><a href="trait.RandGen.html">RandGen</a>::<a href="trait.RandGen.html#tymethod.gen">gen</a></code>.</p>
-</div></div><span class="loading-content">Loading content...</span><h2 id="provided-methods" class="small-section-header">Provided methods<a href="#provided-methods" class="anchor"></a></h2><div class="methods"><h3 id="method.gen_bits" class="method"><code>pub fn <a href="#method.gen_bits" class="fnname">gen_bits</a>(&amp;mut self, bits: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a></code></h3><div class="docblock"><p>Gets up to 32 random bits.</p>
+</div></div><span class="loading-content">Loading content...</span><h2 id="provided-methods" class="small-section-header">Provided methods<a href="#provided-methods" class="anchor"></a></h2><div class="methods"><h3 id="method.gen_bits" class="method"><code>pub fn <a href="#method.gen_bits" class="fnname">gen_bits</a>(&amp;mut self, bits: <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a>) -&gt; <a class="primitive" href="https://doc.rust-lang.org/nightly/std/primitive.u32.html">u32</a></code><a class="srclink" href="../../src/rug/rand.rs.html#1412-1419" title="goto source code">[src]</a></h3><div class="docblock"><p>Gets up to 32 random bits.</p>
 <p>The default implementation simply calls the <a href="#tymethod.gen"><code>gen</code></a> method
 once and returns the most significant required bits.</p>
 <p>This method can be overridden to store any unused bits for
@@ -50,7 +50,7 @@ later use. This can be useful for example if the random number
 generation process is computationally expensive.</p>
 <p>This method is similar to
 <code><a href="trait.RandGen.html">RandGen</a>::<a href="trait.RandGen.html#method.gen_bits">gen_bits</a></code>.</p>
-</div><h3 id="method.seed" class="method"><code>pub fn <a href="#method.seed" class="fnname">seed</a>(&amp;mut self, seed: &amp;<a class="struct" href="../../rug/struct.Integer.html" title="struct rug::Integer">Integer</a>)</code></h3><div class="docblock"><p>Seeds the random number generator.</p>
+</div><h3 id="method.seed" class="method"><code>pub fn <a href="#method.seed" class="fnname">seed</a>(&amp;mut self, seed: &amp;<a class="struct" href="../../rug/struct.Integer.html" title="struct rug::Integer">Integer</a>)</code><a class="srclink" href="../../src/rug/rand.rs.html#1438-1440" title="goto source code">[src]</a></h3><div class="docblock"><p>Seeds the random number generator.</p>
 <p>The default implementation of this function does nothing.</p>
 <p>Note that the
 <code><a href="struct.ThreadRandState.html">ThreadRandState</a>::<a href="struct.ThreadRandState.html#method.seed">seed</a></code>
@@ -58,7 +58,7 @@ method will pass its seed parameter exactly to this function
 without using it otherwise.</p>
 <p>This method is similar to
 <code><a href="trait.RandGen.html">RandGen</a>::<a href="trait.RandGen.html#method.seed">seed</a></code>.</p>
-</div><h3 id="method.boxed_clone" class="method"><code>pub fn <a href="#method.boxed_clone" class="fnname">boxed_clone</a>(&amp;self) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box">Box</a>&lt;dyn <a class="trait" href="../../rug/rand/trait.ThreadRandGen.html" title="trait rug::rand::ThreadRandGen">ThreadRandGen</a>&gt;&gt;</code></h3><div class="docblock"><p>Optionally clones the random number generator.</p>
+</div><h3 id="method.boxed_clone" class="method"><code>pub fn <a href="#method.boxed_clone" class="fnname">boxed_clone</a>(&amp;self) -&gt; <a class="enum" href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html" title="enum core::option::Option">Option</a>&lt;<a class="struct" href="https://doc.rust-lang.org/nightly/alloc/boxed/struct.Box.html" title="struct alloc::boxed::Box">Box</a>&lt;dyn <a class="trait" href="../../rug/rand/trait.ThreadRandGen.html" title="trait rug::rand::ThreadRandGen">ThreadRandGen</a>&gt;&gt;</code><a class="srclink" href="../../src/rug/rand.rs.html#1453-1455" title="goto source code">[src]</a></h3><div class="docblock"><p>Optionally clones the random number generator.</p>
 <p>The default implementation returns <a href="https://doc.rust-lang.org/nightly/core/option/enum.Option.html#variant.None"><code>None</code></a>.</p>
 <p>This method is similar to
 <code><a href="trait.RandGen.html">RandGen</a>::<a href="trait.RandGen.html#method.boxed_clone">boxed_clone</a></code>.</p>

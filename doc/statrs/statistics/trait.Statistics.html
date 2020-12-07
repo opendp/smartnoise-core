@@ -19,7 +19,7 @@
 }</pre></div><div class="docblock"><p>The <code>Statistics</code> trait provides a host of statistical utilities for
 analzying
 data sets</p>
-</div><h2 id="required-methods" class="small-section-header">Required methods<a href="#required-methods" class="anchor"></a></h2><div class="methods"><h3 id="tymethod.min" class="method"><code>pub fn <a href="#tymethod.min" class="fnname">min</a>(self) -&gt; T</code></h3><div class="docblock"><p>Returns the minimum value in the data</p>
+</div><h2 id="required-methods" class="small-section-header">Required methods<a href="#required-methods" class="anchor"></a></h2><div class="methods"><h3 id="tymethod.min" class="method"><code>pub fn <a href="#tymethod.min" class="fnname">min</a>(self) -&gt; T</code><a class="srclink" href="../../src/statrs/statistics/statistics.rs.html#40" title="goto source code">[src]</a></h3><div class="docblock"><p>Returns the minimum value in the data</p>
 <h1 id="remarks" class="section-header"><a href="#remarks">Remarks</a></h1>
 <p>Returns <code>f64::NAN</code> if data is empty or an entry is <code>f64::NAN</code></p>
 <h1 id="examples" class="section-header"><a href="#examples">Examples</a></h1>
@@ -35,7 +35,7 @@ data sets</p>
 
 <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> [<span class="number">0.0</span>, <span class="number">3.0</span>, <span class="op">-</span><span class="number">2.0</span>];
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">z</span>.<span class="ident">min</span>(), <span class="op">-</span><span class="number">2.0</span>);</pre></div>
-</div><h3 id="tymethod.max" class="method"><code>pub fn <a href="#tymethod.max" class="fnname">max</a>(self) -&gt; T</code></h3><div class="docblock"><p>Returns the maximum value in the data</p>
+</div><h3 id="tymethod.max" class="method"><code>pub fn <a href="#tymethod.max" class="fnname">max</a>(self) -&gt; T</code><a class="srclink" href="../../src/statrs/statistics/statistics.rs.html#63" title="goto source code">[src]</a></h3><div class="docblock"><p>Returns the maximum value in the data</p>
 <h1 id="remarks-1" class="section-header"><a href="#remarks-1">Remarks</a></h1>
 <p>Returns <code>f64::NAN</code> if data is empty or an entry is <code>f64::NAN</code></p>
 <h1 id="examples-1" class="section-header"><a href="#examples-1">Examples</a></h1>
@@ -51,7 +51,7 @@ data sets</p>
 
 <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> [<span class="number">0.0</span>, <span class="number">3.0</span>, <span class="op">-</span><span class="number">2.0</span>];
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">z</span>.<span class="ident">max</span>(), <span class="number">3.0</span>);</pre></div>
-</div><h3 id="tymethod.abs_min" class="method"><code>pub fn <a href="#tymethod.abs_min" class="fnname">abs_min</a>(self) -&gt; T</code></h3><div class="docblock"><p>Returns the minimum absolute value in the data</p>
+</div><h3 id="tymethod.abs_min" class="method"><code>pub fn <a href="#tymethod.abs_min" class="fnname">abs_min</a>(self) -&gt; T</code><a class="srclink" href="../../src/statrs/statistics/statistics.rs.html#86" title="goto source code">[src]</a></h3><div class="docblock"><p>Returns the minimum absolute value in the data</p>
 <h1 id="remarks-2" class="section-header"><a href="#remarks-2">Remarks</a></h1>
 <p>Returns <code>f64::NAN</code> if data is empty or an entry is <code>f64::NAN</code></p>
 <h1 id="examples-2" class="section-header"><a href="#examples-2">Examples</a></h1>
@@ -67,7 +67,7 @@ data sets</p>
 
 <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> [<span class="number">0.0</span>, <span class="number">3.0</span>, <span class="op">-</span><span class="number">2.0</span>];
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">z</span>.<span class="ident">abs_min</span>(), <span class="number">0.0</span>);</pre></div>
-</div><h3 id="tymethod.abs_max" class="method"><code>pub fn <a href="#tymethod.abs_max" class="fnname">abs_max</a>(self) -&gt; T</code></h3><div class="docblock"><p>Returns the maximum absolute value in the data</p>
+</div><h3 id="tymethod.abs_max" class="method"><code>pub fn <a href="#tymethod.abs_max" class="fnname">abs_max</a>(self) -&gt; T</code><a class="srclink" href="../../src/statrs/statistics/statistics.rs.html#109" title="goto source code">[src]</a></h3><div class="docblock"><p>Returns the maximum absolute value in the data</p>
 <h1 id="remarks-3" class="section-header"><a href="#remarks-3">Remarks</a></h1>
 <p>Returns <code>f64::NAN</code> if data is empty or an entry is <code>f64::NAN</code></p>
 <h1 id="examples-3" class="section-header"><a href="#examples-3">Examples</a></h1>
@@ -83,7 +83,7 @@ data sets</p>
 
 <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> [<span class="number">0.0</span>, <span class="number">3.0</span>, <span class="op">-</span><span class="number">2.0</span>, <span class="op">-</span><span class="number">8.0</span>];
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">z</span>.<span class="ident">abs_max</span>(), <span class="number">8.0</span>);</pre></div>
-</div><h3 id="tymethod.mean" class="method"><code>pub fn <a href="#tymethod.mean" class="fnname">mean</a>(self) -&gt; T</code></h3><div class="docblock"><p>Evaluates the sample mean, an estimate of the population
+</div><h3 id="tymethod.mean" class="method"><code>pub fn <a href="#tymethod.mean" class="fnname">mean</a>(self) -&gt; T</code><a class="srclink" href="../../src/statrs/statistics/statistics.rs.html#138" title="goto source code">[src]</a></h3><div class="docblock"><p>Evaluates the sample mean, an estimate of the population
 mean.</p>
 <h1 id="remarks-4" class="section-header"><a href="#remarks-4">Remarks</a></h1>
 <p>Returns <code>f64::NAN</code> if data is empty or an entry is <code>f64::NAN</code></p>
@@ -103,7 +103,7 @@ mean.</p>
 
 <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> [<span class="number">0.0</span>, <span class="number">3.0</span>, <span class="op">-</span><span class="number">2.0</span>];
 <span class="macro">assert_almost_eq</span><span class="macro">!</span>(<span class="ident">z</span>.<span class="ident">mean</span>(), <span class="number">1.0</span> <span class="op">/</span> <span class="number">3.0</span>, <span class="number">1e-15</span>);</pre></div>
-</div><h3 id="tymethod.geometric_mean" class="method"><code>pub fn <a href="#tymethod.geometric_mean" class="fnname">geometric_mean</a>(self) -&gt; T</code></h3><div class="docblock"><p>Evaluates the geometric mean of the data</p>
+</div><h3 id="tymethod.geometric_mean" class="method"><code>pub fn <a href="#tymethod.geometric_mean" class="fnname">geometric_mean</a>(self) -&gt; T</code><a class="srclink" href="../../src/statrs/statistics/statistics.rs.html#175" title="goto source code">[src]</a></h3><div class="docblock"><p>Evaluates the geometric mean of the data</p>
 <h1 id="remarks-5" class="section-header"><a href="#remarks-5">Remarks</a></h1>
 <p>Returns <code>f64::NAN</code> if data is empty or an entry is <code>f64::NAN</code>.
 Returns <code>f64::NAN</code> if an entry is less than <code>0</code>. Returns <code>0</code>
@@ -131,7 +131,7 @@ if no entry is less than <code>0</code> but there are entries equal to <code>0</
 <span class="ident">z</span> <span class="op">=</span> [<span class="number">1.0</span>, <span class="number">2.0</span>, <span class="number">3.0</span>];
 <span class="comment">// test value from online calculator, could be more accurate</span>
 <span class="macro">assert_almost_eq</span><span class="macro">!</span>(<span class="ident">z</span>.<span class="ident">geometric_mean</span>(), <span class="number">1.81712</span>, <span class="number">1e-5</span>);</pre></div>
-</div><h3 id="tymethod.harmonic_mean" class="method"><code>pub fn <a href="#tymethod.harmonic_mean" class="fnname">harmonic_mean</a>(self) -&gt; T</code></h3><div class="docblock"><p>Evaluates the harmonic mean of the data</p>
+</div><h3 id="tymethod.harmonic_mean" class="method"><code>pub fn <a href="#tymethod.harmonic_mean" class="fnname">harmonic_mean</a>(self) -&gt; T</code><a class="srclink" href="../../src/statrs/statistics/statistics.rs.html#214" title="goto source code">[src]</a></h3><div class="docblock"><p>Evaluates the harmonic mean of the data</p>
 <h1 id="remarks-6" class="section-header"><a href="#remarks-6">Remarks</a></h1>
 <p>Returns <code>f64::NAN</code> if data is empty or an entry is <code>f64::NAN</code>, or if
 any value
@@ -161,7 +161,7 @@ there exists values equal to <code>0</code>.</p>
 <span class="ident">z</span> <span class="op">=</span> [<span class="number">1.0</span>, <span class="number">2.0</span>, <span class="number">3.0</span>];
 <span class="comment">// test value from online calculator, could be more accurate</span>
 <span class="macro">assert_almost_eq</span><span class="macro">!</span>(<span class="ident">z</span>.<span class="ident">harmonic_mean</span>(), <span class="number">1.63636</span>, <span class="number">1e-5</span>);</pre></div>
-</div><h3 id="tymethod.variance" class="method"><code>pub fn <a href="#tymethod.variance" class="fnname">variance</a>(self) -&gt; T</code></h3><div class="docblock"><p>Estimates the unbiased population variance from the provided samples</p>
+</div><h3 id="tymethod.variance" class="method"><code>pub fn <a href="#tymethod.variance" class="fnname">variance</a>(self) -&gt; T</code><a class="srclink" href="../../src/statrs/statistics/statistics.rs.html#241" title="goto source code">[src]</a></h3><div class="docblock"><p>Estimates the unbiased population variance from the provided samples</p>
 <h1 id="remarks-7" class="section-header"><a href="#remarks-7">Remarks</a></h1>
 <p>On a dataset of size <code>N</code>, <code>N-1</code> is used as a normalizer (Bessel's
 correction).</p>
@@ -180,7 +180,7 @@ correction).</p>
 
 <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> [<span class="number">0.0</span>, <span class="number">3.0</span>, <span class="op">-</span><span class="number">2.0</span>];
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">z</span>.<span class="ident">variance</span>(), <span class="number">19.0</span> <span class="op">/</span> <span class="number">3.0</span>);</pre></div>
-</div><h3 id="tymethod.std_dev" class="method"><code>pub fn <a href="#tymethod.std_dev" class="fnname">std_dev</a>(self) -&gt; T</code></h3><div class="docblock"><p>Estimates the unbiased population standard deviation from the provided
+</div><h3 id="tymethod.std_dev" class="method"><code>pub fn <a href="#tymethod.std_dev" class="fnname">std_dev</a>(self) -&gt; T</code><a class="srclink" href="../../src/statrs/statistics/statistics.rs.html#269" title="goto source code">[src]</a></h3><div class="docblock"><p>Estimates the unbiased population standard deviation from the provided
 samples</p>
 <h1 id="remarks-8" class="section-header"><a href="#remarks-8">Remarks</a></h1>
 <p>On a dataset of size <code>N</code>, <code>N-1</code> is used as a normalizer (Bessel's
@@ -200,7 +200,7 @@ correction).</p>
 
 <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> [<span class="number">0.0</span>, <span class="number">3.0</span>, <span class="op">-</span><span class="number">2.0</span>];
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">z</span>.<span class="ident">std_dev</span>(), (<span class="number">19f64</span> <span class="op">/</span> <span class="number">3.0</span>).<span class="ident">sqrt</span>());</pre></div>
-</div><h3 id="tymethod.population_variance" class="method"><code>pub fn <a href="#tymethod.population_variance" class="fnname">population_variance</a>(self) -&gt; T</code></h3><div class="docblock"><p>Evaluates the population variance from a full population.</p>
+</div><h3 id="tymethod.population_variance" class="method"><code>pub fn <a href="#tymethod.population_variance" class="fnname">population_variance</a>(self) -&gt; T</code><a class="srclink" href="../../src/statrs/statistics/statistics.rs.html#295" title="goto source code">[src]</a></h3><div class="docblock"><p>Evaluates the population variance from a full population.</p>
 <h1 id="remarks-9" class="section-header"><a href="#remarks-9">Remarks</a></h1>
 <p>On a dataset of size <code>N</code>, <code>N</code> is used as a normalizer and would thus
 be biased if applied to a subset</p>
@@ -218,7 +218,7 @@ be biased if applied to a subset</p>
 
 <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> [<span class="number">0.0</span>, <span class="number">3.0</span>, <span class="op">-</span><span class="number">2.0</span>];
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">z</span>.<span class="ident">population_variance</span>(), <span class="number">38.0</span> <span class="op">/</span> <span class="number">9.0</span>);</pre></div>
-</div><h3 id="tymethod.population_std_dev" class="method"><code>pub fn <a href="#tymethod.population_std_dev" class="fnname">population_std_dev</a>(self) -&gt; T</code></h3><div class="docblock"><p>Evaluates the population standard deviation from a full population.</p>
+</div><h3 id="tymethod.population_std_dev" class="method"><code>pub fn <a href="#tymethod.population_std_dev" class="fnname">population_std_dev</a>(self) -&gt; T</code><a class="srclink" href="../../src/statrs/statistics/statistics.rs.html#321" title="goto source code">[src]</a></h3><div class="docblock"><p>Evaluates the population standard deviation from a full population.</p>
 <h1 id="remarks-10" class="section-header"><a href="#remarks-10">Remarks</a></h1>
 <p>On a dataset of size <code>N</code>, <code>N</code> is used as a normalizer and would thus
 be biased if applied to a subset</p>
@@ -236,7 +236,7 @@ be biased if applied to a subset</p>
 
 <span class="kw">let</span> <span class="ident">z</span> <span class="op">=</span> [<span class="number">0.0</span>, <span class="number">3.0</span>, <span class="op">-</span><span class="number">2.0</span>];
 <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">z</span>.<span class="ident">population_std_dev</span>(), (<span class="number">38f64</span> <span class="op">/</span> <span class="number">9.0</span>).<span class="ident">sqrt</span>());</pre></div>
-</div><h3 id="tymethod.covariance" class="method"><code>pub fn <a href="#tymethod.covariance" class="fnname">covariance</a>(self, other: Self) -&gt; T</code></h3><div class="docblock"><p>Estimates the unbiased population covariance between the two provided
+</div><h3 id="tymethod.covariance" class="method"><code>pub fn <a href="#tymethod.covariance" class="fnname">covariance</a>(self, other: Self) -&gt; T</code><a class="srclink" href="../../src/statrs/statistics/statistics.rs.html#360" title="goto source code">[src]</a></h3><div class="docblock"><p>Estimates the unbiased population covariance between the two provided
 samples</p>
 <h1 id="remarks-11" class="section-header"><a href="#remarks-11">Remarks</a></h1>
 <p>On a dataset of size <code>N</code>, <code>N-1</code> is used as a normalizer (Bessel's
@@ -263,7 +263,7 @@ correction).</p>
 <span class="kw">let</span> <span class="ident">z1</span> <span class="op">=</span> [<span class="number">0.0</span>, <span class="number">3.0</span>, <span class="op">-</span><span class="number">2.0</span>];
 <span class="kw">let</span> <span class="ident">z2</span> <span class="op">=</span> [<span class="op">-</span><span class="number">5.0</span>, <span class="number">4.0</span>, <span class="number">10.0</span>];
 <span class="macro">assert_almost_eq</span><span class="macro">!</span>(<span class="ident">z1</span>.<span class="ident">covariance</span>(<span class="kw-2">&amp;</span><span class="ident">z2</span>), <span class="op">-</span><span class="number">5.5</span>, <span class="number">1e-14</span>);</pre></div>
-</div><h3 id="tymethod.population_covariance" class="method"><code>pub fn <a href="#tymethod.population_covariance" class="fnname">population_covariance</a>(self, other: Self) -&gt; T</code></h3><div class="docblock"><p>Evaluates the population covariance between the two provider populations</p>
+</div><h3 id="tymethod.population_covariance" class="method"><code>pub fn <a href="#tymethod.population_covariance" class="fnname">population_covariance</a>(self, other: Self) -&gt; T</code><a class="srclink" href="../../src/statrs/statistics/statistics.rs.html#397" title="goto source code">[src]</a></h3><div class="docblock"><p>Evaluates the population covariance between the two provider populations</p>
 <h1 id="remarks-12" class="section-header"><a href="#remarks-12">Remarks</a></h1>
 <p>On a dataset of size <code>N</code>, <code>N</code> is used as a normalizer and would thus be
 biased if applied to a subset</p>
@@ -288,7 +288,7 @@ biased if applied to a subset</p>
 <span class="kw">let</span> <span class="ident">z1</span> <span class="op">=</span> [<span class="number">0.0</span>, <span class="number">3.0</span>, <span class="op">-</span><span class="number">2.0</span>];
 <span class="kw">let</span> <span class="ident">z2</span> <span class="op">=</span> [<span class="op">-</span><span class="number">5.0</span>, <span class="number">4.0</span>, <span class="number">10.0</span>];
 <span class="macro">assert_almost_eq</span><span class="macro">!</span>(<span class="ident">z1</span>.<span class="ident">population_covariance</span>(<span class="kw-2">&amp;</span><span class="ident">z2</span>), <span class="op">-</span><span class="number">11.0</span> <span class="op">/</span> <span class="number">3.0</span>, <span class="number">1e-14</span>);</pre></div>
-</div><h3 id="tymethod.quadratic_mean" class="method"><code>pub fn <a href="#tymethod.quadratic_mean" class="fnname">quadratic_mean</a>(self) -&gt; T</code></h3><div class="docblock"><p>Estimates the quadratic mean (Root Mean Square) of the data</p>
+</div><h3 id="tymethod.quadratic_mean" class="method"><code>pub fn <a href="#tymethod.quadratic_mean" class="fnname">quadratic_mean</a>(self) -&gt; T</code><a class="srclink" href="../../src/statrs/statistics/statistics.rs.html#426" title="goto source code">[src]</a></h3><div class="docblock"><p>Estimates the quadratic mean (Root Mean Square) of the data</p>
 <h1 id="remarks-13" class="section-header"><a href="#remarks-13">Remarks</a></h1>
 <p>Returns <code>f64::NAN</code> if data is empty or any entry is <code>f64::NAN</code></p>
 <h1 id="examples-13" class="section-header"><a href="#examples-13">Examples</a></h1>
