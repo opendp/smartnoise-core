@@ -227,22 +227,16 @@ pub fn accuracy_to_privacy_usage(
         component.arguments().values().max().cloned().unwrap_or(0) + 1 => component
     ];
 
-    let (properties, _) = utilities::propagate_properties(
+    utilities::propagate_properties(
         &Some(privacy_definition.clone()),
-            &mut computation_graph,
+        &mut computation_graph,
         &mut release,
         Some(proto_properties),
         true,
     )?;
 
     let privacy_usages = computation_graph.iter().map(|(idx, component)| {
-        let component_properties = component.arguments().iter()
-            .filter_map(|(name, idx)| Some((name.clone(), properties.get(idx)?.clone())))
-            .collect::<IndexMap<base::IndexKey, base::ValueProperties>>();
-
         Ok(component.accuracy_to_privacy_usage(
-            &privacy_definition,
-            &component_properties,
             &accuracies,
             get_public_arguments(&component, &release)?)?
             .and_then(|usages| Some((*idx, usages))))
@@ -282,7 +276,7 @@ pub fn privacy_usage_to_accuracy(
         component.arguments().values().max().cloned().unwrap_or(0) + 1 => component
     ];
 
-    let (properties, _) = utilities::propagate_properties(
+    utilities::propagate_properties(
         &Some(privacy_definition.clone()),
         &mut computation_graph,
         &mut release,
@@ -291,13 +285,7 @@ pub fn privacy_usage_to_accuracy(
     )?;
 
     let accuracies = computation_graph.iter().map(|(idx, component)| {
-        let component_properties = component.arguments().iter()
-            .filter_map(|(name, idx)| Some((name.clone(), properties.get(idx)?.clone())))
-            .collect::<IndexMap<IndexKey, base::ValueProperties>>();
-
         Ok(component.privacy_usage_to_accuracy(
-            &privacy_definition,
-            &component_properties,
             get_public_arguments(&component, &release)?,
             alpha,
         )?
