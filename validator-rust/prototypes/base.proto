@@ -39,6 +39,8 @@ message PrivacyDefinition {
     bool protect_memory_utilization = 6;
     // enable to block mechanisms known to be vulnerable to floating point attacks
     bool protect_floating_point = 7;
+    // enable to prevent manual insertion of sensitivity to mechanisms
+    bool protect_sensitivity = 8;
 }
 
 message ComputationGraph {

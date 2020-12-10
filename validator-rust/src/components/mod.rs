@@ -182,16 +182,12 @@ pub trait Sensitivity {
 pub trait Accuracy {
     fn accuracy_to_privacy_usage(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &NodeProperties,
         accuracies: &proto::Accuracies,
         public_arguments: IndexMap<base::IndexKey, &Value>
     ) -> Result<Option<Vec<proto::PrivacyUsage>>>;
 
     fn privacy_usage_to_accuracy(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &NodeProperties,
         public_arguments: IndexMap<base::IndexKey, &Value>,
         alpha: f64,
     ) -> Result<Option<Vec<proto::Accuracy>>>;
@@ -426,8 +422,6 @@ impl Accuracy for proto::Component {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn accuracy_to_privacy_usage(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &NodeProperties,
         accuracy: &proto::Accuracies,
         public_arguments: IndexMap<base::IndexKey, &Value>
     ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
@@ -439,8 +433,7 @@ impl Accuracy for proto::Component {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = variant {
-                            return x.accuracy_to_privacy_usage(
-                                privacy_definition, properties, accuracy, public_arguments)
+                            return x.accuracy_to_privacy_usage(accuracy, public_arguments)
                                 .chain_err(|| format!("node specification {:?}:", variant))
                        }
                     )*
@@ -463,8 +456,6 @@ impl Accuracy for proto::Component {
     /// This utility delegates evaluation to the concrete implementation of each component variant.
     fn privacy_usage_to_accuracy(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &NodeProperties,
         public_arguments: IndexMap<base::IndexKey, &Value>,
         alpha: f64,
     ) -> Result<Option<Vec<proto::Accuracy>>> {
@@ -476,8 +467,7 @@ impl Accuracy for proto::Component {
                 {
                     $(
                        if let proto::component::Variant::$variant(x) = variant {
-                            return x.privacy_usage_to_accuracy(
-                                privacy_definition, properties, public_arguments, alpha)
+                            return x.privacy_usage_to_accuracy(public_arguments, alpha)
                                 .chain_err(|| format!("node specification {:?}:", variant))
                        }
                     )*

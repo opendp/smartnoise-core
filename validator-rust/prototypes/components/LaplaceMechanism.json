@@ -1,9 +1,15 @@
 {
   "arguments": {
-    "data": {
-      "type_value": "Array",
-      "description": "True value to be released privately via the Laplace mechanism."
-    }
+      "data": {
+          "type_value": "Array",
+          "description": "True value to be released privately via the Laplace mechanism."
+      },
+      "sensitivity": {
+          "type_value": "Array",
+          "default_python": "None",
+          "default_rust": "None",
+          "description": "Override the sensitivity computed by the library. Rejected unless `protect_sensitivity` is disabled."
+      }
   },
   "id": "LaplaceMechanism",
   "name": "laplace_mechanism",
