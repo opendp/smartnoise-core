@@ -186,4 +186,4 @@ If you plan to contribute new features, utility functions or extensions to the c
 
 ## Contributing Team
 
-Joshua Allen, Christian Covington, Eduardo de Leon, Ira Globus-Harris, James Honaker, Jason Huang, Saniya Movahed, Michael Phelan, Raman Prasad, Michael Shoemate, You?
+Joshua Allen, Ethan Cowan, Christian Covington, Eduardo de Leon, Ira Globus-Harris, James Honaker, Jason Huang, Saniya Movahed, Michael Phelan, Raman Prasad, Michael Shoemate, You?
