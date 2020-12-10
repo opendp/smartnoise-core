@@ -523,7 +523,6 @@ pub fn expand_mechanism(
     let privacy_definition = privacy_definition.as_ref()
         .ok_or_else(|| "privacy definition must be defined")?;
 
-    // always overwrite sensitivity. This is not something a user may configure
     let data_property: ArrayProperties = properties.get::<IndexKey>(&"data".into())
         .ok_or("data: missing")?.array()
         .map_err(prepend("data:"))?.clone();
@@ -556,8 +555,12 @@ pub fn expand_mechanism(
     }
     assign_usage!(LaplaceMechanism, GaussianMechanism, SimpleGeometricMechanism, SnappingMechanism);
 
-
-    if privacy_definition.protect_sensitivity || !properties.contains_key(&IndexKey::from("sensitivity")) {
+    if let Some(sensitivity_property) = properties.get(&IndexKey::from("sensitivity")) {
+        if privacy_definition.protect_sensitivity {
+            return Err(Error::from("custom sensitivities may only be passed if protect_sensitivity is disabled"))
+        }
+        check_sensitivity_properties(sensitivity_property.array()?, &data_property)?;
+    } else {
         let aggregator = data_property.aggregator.as_ref()
             .ok_or_else(|| Error::from("aggregator: missing"))?;
 
@@ -597,6 +600,22 @@ pub fn expand_mechanism(
     expansion.computation_graph.insert(component_id, noise_component);
 
     Ok(expansion)
+}
+
+pub fn check_sensitivity_properties(
+    sensitivity_property: &ArrayProperties, data_property: &ArrayProperties
+) -> Result<()> {
+    if sensitivity_property.num_columns()? != data_property.num_columns()? {
+        return Err(Error::from(format!("sensitivity has {:?} columns, while the expected shape has {:?} columns.", sensitivity_property.num_columns()?, data_property.num_columns()?)));
+    }
+    if sensitivity_property.num_records()? != data_property.num_records()? {
+        return Err(Error::from(format!("sensitivity has {:?} records, while the expected shape has {:?} records.", sensitivity_property.num_records()?, data_property.num_records()?)));
+    }
+    if sensitivity_property.dimensionality.map(|dim| dim > 2).unwrap_or(false) {
+        return Err(Error::from("sensitivity may not have dimensionality greater than 2"))
+    }
+
+    Ok(())
 }
 
 /// given a vector of items, return the shared item, or None, if no item is shared
