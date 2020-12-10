@@ -2,14 +2,15 @@
   "arguments": {
     "data": {
       "type_value": "Array",
-      "description": "Data to be cast to another type."
+      "description": "Data to be cast to string type."
     }
   },
   "id": "ToString",
   "name": "to_string",
   "options": {},
   "return": {
-    "type_value": "Array"
+    "type_value": "Array",
+    "description": "The return is the result of the to_string on the arguments."
   },
   "description": "Cast data to a string atomic type.",
   "proto_id": 60

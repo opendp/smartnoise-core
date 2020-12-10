@@ -12,7 +12,7 @@
       "type_rust": "bool",
       "default_python": "True",
       "default_rust": "true",
-      "description": "Whether or not to use the finite sample correction (Bessel's correction)."
+      "description": "Whether or not to use the finite sample correction (Bessel's correction) to correct the bias in the estimation of the population variance."
     }
   },
   "return": {

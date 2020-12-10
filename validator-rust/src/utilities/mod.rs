@@ -528,44 +528,10 @@ pub fn expand_mechanism(
         .ok_or("data: missing")?.array()
         .map_err(prepend("data:"))?.clone();
 
-    let aggregator = data_property.aggregator.as_ref()
-        .ok_or_else(|| Error::from("aggregator: missing"))?;
-
-    // sensitivity scaling
-    let mut sensitivity_value = aggregator.component.compute_sensitivity(
-        privacy_definition,
-        &aggregator.properties,
-        &sensitivity_type)?;
-
-    match aggregator.lipschitz_constants.clone().array()? {
-        Array::Float(lipschitz) => {
-            if lipschitz.iter().any(|v| v != &1.) {
-                let mut sensitivity = sensitivity_value.array()?.float()?;
-                sensitivity.mul_assign(&lipschitz);
-                sensitivity_value = sensitivity.into();
-            }
-        },
-        Array::Int(lipschitz) => {
-            if lipschitz.iter().any(|v| v != &1) {
-                let mut sensitivity = sensitivity_value.array()?.int()?;
-                sensitivity.mul_assign(&lipschitz);
-                sensitivity_value = sensitivity.into();
-            }
-        },
-        _ => return Err(Error::from("lipschitz constants must be numeric"))
-    };
-
-    maximum_id += 1;
-    let id_sensitivity = maximum_id;
-    let (patch_node, release) = get_literal(sensitivity_value.clone(), component.submission)?;
-    expansion.computation_graph.insert(id_sensitivity, patch_node);
-    expansion.properties.insert(id_sensitivity, infer_property(&release.value, None, id_sensitivity)?);
-    expansion.releases.insert(id_sensitivity, release);
-
     // spread privacy usage over each column
     let spread_usages = spread_privacy_usage(
         // spread usage over each column
-        privacy_usage, sensitivity_value.array()?.num_columns()? as usize)?;
+        privacy_usage, data_property.num_columns()? as usize)?;
 
     // convert to effective usage
     let effective_usages = spread_usages.into_iter()
@@ -578,7 +544,6 @@ pub fn expand_mechanism(
 
     // insert sensitivity and usage
     let mut noise_component = component.clone();
-    noise_component.insert_argument(&"sensitivity".into(), id_sensitivity);
 
     macro_rules! assign_usage {
         ($($variant:ident),*) => {
@@ -590,6 +555,44 @@ pub fn expand_mechanism(
         }
     }
     assign_usage!(LaplaceMechanism, GaussianMechanism, SimpleGeometricMechanism, SnappingMechanism);
+
+
+    if privacy_definition.protect_sensitivity || !properties.contains_key(&IndexKey::from("sensitivity")) {
+        let aggregator = data_property.aggregator.as_ref()
+            .ok_or_else(|| Error::from("aggregator: missing"))?;
+
+        // sensitivity scaling
+        let mut sensitivity_value = aggregator.component.compute_sensitivity(
+            privacy_definition,
+            &aggregator.properties,
+            &sensitivity_type)?;
+
+        match aggregator.lipschitz_constants.clone().array()? {
+            Array::Float(lipschitz) => {
+                if lipschitz.iter().any(|v| v != &1.) {
+                    let mut sensitivity = sensitivity_value.array()?.float()?;
+                    sensitivity.mul_assign(&lipschitz);
+                    sensitivity_value = sensitivity.into();
+                }
+            },
+            Array::Int(lipschitz) => {
+                if lipschitz.iter().any(|v| v != &1) {
+                    let mut sensitivity = sensitivity_value.array()?.int()?;
+                    sensitivity.mul_assign(&lipschitz);
+                    sensitivity_value = sensitivity.into();
+                }
+            },
+            _ => return Err(Error::from("lipschitz constants must be numeric"))
+        };
+
+        maximum_id += 1;
+        let id_sensitivity = maximum_id;
+        let (patch_node, release) = get_literal(sensitivity_value.clone(), component.submission)?;
+        expansion.computation_graph.insert(id_sensitivity, patch_node);
+        expansion.properties.insert(id_sensitivity, infer_property(&release.value, None, id_sensitivity)?);
+        expansion.releases.insert(id_sensitivity, release);
+        noise_component.insert_argument(&"sensitivity".into(), id_sensitivity);
+    }
 
     expansion.computation_graph.insert(component_id, noise_component);
 

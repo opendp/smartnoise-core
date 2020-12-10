@@ -1,9 +1,15 @@
 {
   "arguments": {
-    "data": {
-      "type_value": "Array",
-      "description": "Result to be released privately via the Gaussian mechanism."
-    }
+      "data": {
+          "type_value": "Array",
+          "description": "Result to be released privately via the Gaussian mechanism. Atomic type must be numeric."
+      },
+      "sensitivity": {
+          "type_value": "Array",
+          "default_python": "None",
+          "default_rust": "None",
+          "description": "Override the sensitivity computed by the library. Rejected unless `protect_sensitivity` is disabled."
+      }
   },
   "id": "GaussianMechanism",
   "name": "gaussian_mechanism",

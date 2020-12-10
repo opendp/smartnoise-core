@@ -2,7 +2,7 @@
   "arguments": {
     "data": {
       "type_value": "Array",
-      "description": "Data for which you would like the kth raw moments."
+      "description": "Data for which you would like the kth raw moments. Atomic data type must be float."
     }
   },
   "id": "RawMoment",

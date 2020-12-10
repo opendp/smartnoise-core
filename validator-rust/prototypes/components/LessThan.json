@@ -1,10 +1,12 @@
 {
   "arguments": {
     "left": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Atomic type must be numeric, and match with atomic type of right."
     },
     "right": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Atomic type must be numeric, and match with atomic type of left."
     }
   },
   "id": "LessThan",

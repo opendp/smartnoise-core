@@ -12,6 +12,6 @@
     "type_value": "Array",
     "description": "Sum of each column of the data."
   },
-  "description": "Calculates the sum of each column of the data.",
+  "description": "Calculates the sum of each column of the data. Data must be of type float or integer.",
   "proto_id": 56
 }

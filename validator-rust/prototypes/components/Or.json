@@ -13,5 +13,6 @@
   "return": {
     "type_value": "Array"
   },
+  "description": "left and right arguments must share the same data types",
   "proto_id": 44
 }

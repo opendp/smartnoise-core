@@ -3,12 +3,12 @@
     "data": {
       "type_value": "Array"
     },
-    "r_lower": {
+    "lower": {
       "type_proto": "double",
       "type_rust": "f64",
       "description": "Min candidate"
     },
-    "r_upper": {
+    "upper": {
       "type_proto": "double",
       "type_rust": "f64",
       "description": "Max candidate"

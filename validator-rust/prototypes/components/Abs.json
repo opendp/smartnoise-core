@@ -1,7 +1,8 @@
 {
   "arguments": {
     "data": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Atomic types must be of type float or integer."
     }
   },
   "id": "Abs",
@@ -10,5 +11,6 @@
   "return": {
     "type_value": "Array"
   },
-  "proto_id": 0
+  "proto_id": 0,
+  "description": "Absolute value of data."
 }

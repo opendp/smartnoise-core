@@ -1,18 +1,21 @@
 {
   "arguments": {
     "data": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "ndarray (structured or homogeneous), Iterable, dict, or DataFrame"
     },
     "names": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Column labels to use for resulting frame. Will default to RangeIndex (0, 1, 2, …, n) if no column labels are provided."
     }
   },
   "id": "ToDataframe",
   "name": "to_dataframe",
   "options": {},
   "return": {
-    "type_value": "Dataframe"
+    "type_value": "Dataframe",
+    "description": "Dataframe in target language, for example <a href=\"https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.html\">pandas.DataFrame</a>."
   },
-  "description": "Name columns of an array to produce a Dataframe with the specified names",
+  "description": "Name columns of an array to produce a Dataframe with the specified names. Typically used when partitioning a dataframe with preprocessed columns.",
   "proto_id": 48
 }

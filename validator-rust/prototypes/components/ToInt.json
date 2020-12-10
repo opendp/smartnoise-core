@@ -2,7 +2,7 @@
   "arguments": {
     "data": {
       "type_value": "Array",
-      "description": "Data to be cast to another type."
+      "description": "Data to be cast to integer type."
     },
     "lower": {
       "type_value": "Array",
@@ -17,7 +17,8 @@
   "name": "to_int",
   "options": {},
   "return": {
-    "type_value": "Array"
+    "type_value": "Array",
+    "description": "Array containing the converted integer value(s)."
   },
   "description": "Cast data to a int atomic type.",
   "proto_id": 59

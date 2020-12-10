@@ -6,12 +6,12 @@
     "edges": {
       "type_value": "Jagged",
       "default_python": "None",
-      "description": "Set of edges to bin continuous-valued data. Used only if data are of `continuous` nature."
+      "description": "Set of edges to bin continuous-valued data. Used only if data are of `continuous` nature. Must have a value if categories not specified."
     },
     "categories": {
       "type_value": "Jagged",
       "default_python": "None",
-      "description": "Set of categories in data. Used only if data are of `categorical` nature."
+      "description": "Set of categories in data. Used only if data are of `categorical` nature. Must have a value if edges not specified."
     },
     "null_value": {
       "type_value": "Array",

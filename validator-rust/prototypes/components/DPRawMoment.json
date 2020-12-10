@@ -1,7 +1,8 @@
 {
   "arguments": {
     "data": {
-      "type_value": "Array"
+      "type_value": "Array",
+      "description": "Data for which you would like the kth raw moments. Atomic data type must be float."
     },
     "lower": {
       "type_value": "Array",
@@ -29,19 +30,19 @@
       "type_rust": "String",
       "default_python": "\"Automatic\"",
       "default_rust": "String::from(\"Automatic\")",
-      "description": "Privatizing mechanism to use. One of [`Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]"
+      "description": "Privatizing mechanism to use. Value must be one of [`Automatic`, `Laplace`, `Snapping`, `Gaussian`, `AnalyticGaussian`]."
     },
     "privacy_usage": {
       "type_proto": "repeated PrivacyUsage",
       "type_rust": "Vec<proto::PrivacyUsage>",
       "default_python": "None",
-      "description": "Object describing the type and amount of privacy to be used for the mechanism release."
+      "description": "Object describing the type and amount of privacy to be used for the mechanism release. Atomic data type value must be float. Example value: {'epsilon': 0.5}"
     }
   },
   "return": {
     "type_value": "Array",
-    "description": "Sample estimate of raw moment for each column of the data."
+    "description": "Differentially private sample estimate of kth raw moment for each column of the data."
   },
-  "description": "Returns sample estimate of a raw moment for each column of the data.",
+  "description": "Returns differentially private sample estimate of a raw moment for each column of the data.",
   "proto_id": 15
 }
