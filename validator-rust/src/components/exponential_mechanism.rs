@@ -5,7 +5,7 @@ use crate::{base, proto, Warnable};
 use crate::base::{ArrayProperties, DataType, IndexKey, NodeProperties, SensitivitySpace, Value, ValueProperties};
 use crate::components::{Component, Expandable, Mechanism, Sensitivity};
 use crate::errors::*;
-use crate::utilities::{get_literal, prepend};
+use crate::utilities::{get_literal, prepend, check_sensitivity_properties};
 use crate::utilities::inference::infer_property;
 use crate::utilities::privacy::privacy_usage_check;
 
@@ -108,16 +108,11 @@ impl Expandable for proto::ExponentialMechanism {
         let mut expansion = base::ComponentExpansion::default();
 
         let utilities_property: ArrayProperties = properties.get::<IndexKey>(&"utilities".into())
-            .ok_or("data: missing")?.array()
-            .map_err(prepend("data:"))?.clone();
+            .ok_or("utilities: missing")?.array()
+            .map_err(prepend("utilities:"))?.clone();
 
         let privacy_definition = privacy_definition.as_ref()
             .ok_or_else(|| "privacy definition must be defined")?;
-
-        // always overwrite sensitivity. This is not something a user may configure
-        let utilities_properties = properties.get::<IndexKey>(&"utilities".into())
-            .ok_or("utilities: missing")?.array()
-            .map_err(prepend("utilities:"))?.clone();
 
         // noising
         let mut noise_component = component.clone();
@@ -135,8 +130,13 @@ impl Expandable for proto::ExponentialMechanism {
             // this case should never happen
         } else { return Err(Error::from("Variant must be defined")) }
 
-        if privacy_definition.protect_sensitivity || !properties.contains_key(&IndexKey::from("sensitivity")) {
-            let aggregator = utilities_properties.aggregator
+        if let Some(sensitivity_property) = properties.get(&IndexKey::from("sensitivity")) {
+            if privacy_definition.protect_sensitivity {
+                return Err(Error::from("custom sensitivities may only be passed if protect_sensitivity is disabled"))
+            }
+            check_sensitivity_properties(sensitivity_property.array()?, &utilities_property)?;
+        } else {
+            let aggregator = utilities_property.aggregator
                 .ok_or_else(|| Error::from("aggregator: missing"))?;
 
             let sensitivity = aggregator.component.compute_sensitivity(
