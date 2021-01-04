@@ -1,3 +1,12 @@
+### v0.2.1
+* Custom sensitivities may be passed directly to mechanisms
+    - protect_sensitivity must be disabled in the privacy definition
+* Expand documentation for each component as well as Python Analysis class
+* Python Bindings: Analysis initializer only accepts keyword arguments.
+
+### v0.2.0
+* Bump minor version to reflect change in default behavior in v0.1.1
+
 ### v0.1.2
 * Minor readme changes
 
