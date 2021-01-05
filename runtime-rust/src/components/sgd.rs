@@ -12,6 +12,8 @@ use crate::components::Evaluable;
 use crate::NodeArguments;
 use crate::utilities::noise::sample_gaussian;
 
+
+// Add public_data, private_data_1, private_data_2
 impl Evaluable for proto::Dpsgd {
     fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
         let enforce_constant_time = privacy_definition.as_ref()
@@ -23,12 +25,56 @@ impl Evaluable for proto::Dpsgd {
         } = self.clone();
 
         // unpack
+        // add public_data
+        let public_data = take_argument(&mut arguments, "public_data")?.array()?.float()?.into_dimensionality()?;
+        // add (federated) private data
         let data = take_argument(&mut arguments, "data")?.array()?.float()?.into_dimensionality()?;
+        let data_2 = take_argument(&mut arguments, "data_2")?.array()?.float()?.into_dimensionality()?;
+        // add starting value
         let theta = take_argument(&mut arguments, "theta")?.array()?.float()?.into_dimensionality()?;
 
+        if public_data.is_none() {
+            let history_length = max_iters
+        } else {
+            let history_length = 2*max_iters
+        }
+        let mut theta_history: Array2<Float> = Array2::zeros((theta.shape()[0], history_length as usize));
+        let mut counter = 0;
+
         // optimize
-        let theta_history = sgd(
-            data, theta, learning_rate, noise_scale, gradient_norm_bound, max_iters.into(), sample_size as usize, enforce_constant_time)?.into_dyn();
+        // note sgd takes a theta history, uses the last value, appends any new steps and returns lengthened history
+        // if public data exists, converge theta using public_data
+        if !public_data.is_none {
+             let temp_theta= sgd(
+                public_data, theta, learning_rate, noise_scale, gradient_norm_bound, max_iters.into(), sample_size as usize, enforce_constant_time)?.into_dyn();
+            theta_history.slice_mut(s![counter+1..counter + max_iters]).assign(&temp_theta);
+            counter += max_iters;
+        }
+
+        // if second data source exists, federate by iterating across datasets
+        if !data_2.is_none {
+            let mut temp_theta2 = theta_history.slice.last();
+            let mut temp_theta1 = theta_history.slice.last();
+            for i in 0..max_iters as usize {
+                temp_hist_theta1=theta_history = theta_history +append+ sgd(
+                    data, temp_theta2, learning_rate, noise_scale, gradient_norm_bound, 1, sample_size as usize, enforce_constant_time)?.into_dyn();
+                temp_theta1 = temp_hist_theta1.slice.last();
+                counter += 1;
+                theta_history.slice_mut( &s[counter]).assign(temp_theta1);
+                temp_hist_theta2=theta_history = theta_history +append+ sgd(
+                    data_2, temp_theta1, learning_rate, noise_scale, gradient_norm_bound, 1, sample_size as usize, enforce_constant_time)?.into_dyn();
+                temp_theta1 = temp_hist_theta1.slice.last();
+                counter += 1;
+                theta_history.slice_mut( &s[counter]).assign( temp_theta2);
+            }
+        // else run long sgd chain on one dataset
+        } else {
+            let temp_theta = theta_history +append+ sgd(
+                data, theta_history.slice.last(), learning_rate, noise_scale, gradient_norm_bound, max_iters.into(), sample_size as usize, enforce_constant_time)?.into_dyn();
+            theta_history.slice_mut(&s[counter+1..counter + max_iters]).assign(&temp_theta);
+            counter += max_iters;
+        }
+
 
         Ok(ReleaseNode {
             value: theta_history.into(),
@@ -100,7 +146,7 @@ fn evaluate_nll(theta: &Array1<Float>, data: &Array2<Float>, y: &Array1<Float>) 
 /// # Return
 /// Approximation to gradient
 fn sgd(
-    mut data: Array2<Float>, mut theta: Array1<Float>,
+    mut data: Array2<Float>, mut theta_history: Array1<Float>,
     learning_rate: Float, noise_scale: Float,
     gradient_norm_bound: Float, max_iters: Integer,
     sample_size: usize,
@@ -124,6 +170,7 @@ fn sgd(
     data.slice_mut(s![.., 0]).fill(1.);
 
     // each column is an iteration
+    // do not put theta into first element of theta_history
     let mut theta_history: Array2<Float> = Array2::zeros((theta.shape()[0], max_iters as usize));
 
     for i in 0..max_iters as usize {
@@ -134,19 +181,23 @@ fn sgd(
         // one column for each sampled index
         let mut gradients: Array2<Float> = calculate_gradient(theta.clone(), &data_sample, &y_sample, delta)?;
 
+     //jh   if private_data {
         // clip - scale down by l2 norm and don't scale small elements
-        gradients.div_assign(&Array1::from(gradients.gencolumns().into_iter()
-            .map(|grad_i| (grad_i.dot(&grad_i).sqrt() / gradient_norm_bound).max(1.))
-            .collect::<Vec<Float>>()).insert_axis(Axis(0)));
+            gradients.div_assign(&Array1::from(gradients.gencolumns().into_iter()
+                .map(|grad_i| (grad_i.dot(&grad_i).sqrt() / gradient_norm_bound).max(1.))
+                .collect::<Vec<Float>>()).insert_axis(Axis(0)));
 
         // noise
-        let sigma = (noise_scale * gradient_norm_bound).powi(2);
-        let noise = Array1::from((0..num_cols)
-            .map(|_| sample_gaussian(0.0, sigma, enforce_constant_time))
-            .collect::<Result<Vec<_>>>()?);
+            let sigma = (noise_scale * gradient_norm_bound).powi(2);
+            let noise = Array1::from((0..num_cols)
+                .map(|_| sample_gaussian(0.0, sigma, enforce_constant_time))
+                .collect::<Result<Vec<_>>>()?);
 
         // update
-        theta.sub_assign(&((gradients.sum_axis(Axis(1)) + noise) * (learning_rate / sample_size as Float)));
+            theta.sub_assign(&((gradients.sum_axis(Axis(1)) + noise) * (learning_rate / sample_size as Float)));
+      //jh  } else {
+      //jh      theta.sub_assign(&((gradients.sum_axis(Axis(1))) * (learning_rate as Float)));
+      //jh  }
 
         theta_history.slice_mut(s![.., i]).assign(&theta);
     }
