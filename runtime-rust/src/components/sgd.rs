@@ -30,6 +30,7 @@ impl Evaluable for proto::Dpsgd {
         let public_data: Option<_> = if let Ok(data) = take_argument(&mut arguments, "public_data") {
             Some(data.array()?.float()?.into_dimensionality()?)
         } else { None };
+        // println!("public data {:?}", public_data);
 
         // add (federated) private data
         let data = take_argument(&mut arguments, "data")?.array()?.float()?.into_dimensionality()?;
@@ -46,49 +47,51 @@ impl Evaluable for proto::Dpsgd {
         let mut theta_history: Array2<Float> = Array2::zeros((theta.shape()[0], history_length as usize));
         let mut counter = 0;
 
-        theta_history.slice_mut(s![counter..counter+1, ..]).assign(&theta);
+        theta_history.slice_mut(s![.., counter]).assign(&theta);
         counter += 1;
 
         // optimize
         // note sgd takes a theta history, uses the last value, appends any new steps and returns lengthened history
         // if public data exists, converge theta using public_data
 
+        let private_options = PrivateSGDOptions {
+            noise_scale,
+            gradient_norm_bound,
+            enforce_constant_time
+        };
+
         if let Some(public_data) = public_data {
             let temp_theta = sgd(
                 public_data, theta, learning_rate,
                 max_iters as Integer, sample_size as usize,
-                SGDOptions::Public)?.into_dyn();
-
-            theta_history.slice_mut(s![1..1 + max_iters, ..]).assign(&temp_theta);
+                SGDOptions::Public, private_options.clone())?.into_dyn();
+            theta_history.slice_mut(s![.., 1..1 + max_iters]).assign(&temp_theta);
             counter += max_iters;
-            theta = theta_history.index_axis(Axis(0), counter).to_owned();
+            theta = theta_history.index_axis(Axis(1), counter - 1).to_owned();
+            println!("final public theta! {:?}", theta);
         }
 
-        let private_options = SGDOptions::Private(PrivateSGDOptions {
-            noise_scale,
-            gradient_norm_bound,
-            enforce_constant_time
-        });
         // if second data source exists, federate by iterating across datasets
         if let Some(data_2) = data_2 {
-            for _i in 0..max_iters {
+            while counter < history_length - 1 {
                 let temp_hist_theta1 = sgd(
-                    data.clone(), theta.clone(), learning_rate, 1, sample_size as usize, private_options.clone())?;
-                theta = temp_hist_theta1.index_axis(Axis(0), 0).to_owned();
+                    data.clone(), theta.clone(), learning_rate, 1, sample_size as usize, SGDOptions::Private, private_options.clone())?;
+                theta = temp_hist_theta1.index_axis(Axis(1), 0).to_owned();
+                theta_history.slice_mut(s![.., counter]).assign(&theta);
                 counter += 1;
-                theta_history.slice_mut(s![counter..counter+1, ..]).assign(&theta);
 
                 let temp_hist_theta2 = sgd(
-                    data_2.clone(), theta.clone(), learning_rate, 1, sample_size as usize, private_options.clone())?;
-                theta = temp_hist_theta2.index_axis(Axis(0), 0).to_owned();
+                    data_2.clone(), theta.clone(), learning_rate, 1, sample_size as usize, SGDOptions::Private,private_options.clone())?;
+                theta = temp_hist_theta2.index_axis(Axis(1), 0).to_owned();
+                theta_history.slice_mut(s![.., counter]).assign(&theta);
                 counter += 1;
-                theta_history.slice_mut(s![counter..counter+1, ..]).assign(&theta);
             }
         } else {
+
             // else run long sgd chain on one dataset
             let temp_history_theta = sgd(
-                data, theta, learning_rate, max_iters as Integer, sample_size as usize, private_options)?.into_dyn();
-            theta_history.slice_mut(s![counter..counter + max_iters + 1, ..]).assign(&temp_history_theta);
+                data, theta, learning_rate, max_iters as Integer, sample_size as usize, SGDOptions::Private, private_options)?.into_dyn();
+            theta_history.slice_mut(s![.., counter..]).assign(&temp_history_theta);
             // counter += max_iters;
         }
 
@@ -104,7 +107,7 @@ impl Evaluable for proto::Dpsgd {
 #[derive(Clone)]
 enum SGDOptions {
     Public,
-    Private(PrivateSGDOptions)
+    Private
 }
 
 #[derive(Clone)]
@@ -128,6 +131,7 @@ fn calculate_gradient(
     mut theta: Array1<Float>, data: &Array2<Float>, y: &Array1<Float>, delta: Float,
 ) -> Result<Array2<Float>> {
     let initial_nll = evaluate_nll(&theta, data, y);
+    println!("initial_nll: {}", initial_nll);
     // each element contains the partials for each user, for one parameter
     let perturbed_nlls = (0..theta.len_of(Axis(0)))
         .into_iter()
@@ -138,6 +142,8 @@ fn calculate_gradient(
             perturbation_value
         })
         .collect::<Vec<_>>();
+    println!("perturbed_nll: {:?}", perturbed_nlls);
+
     // stack the perturbations into one array
     let mut output = ndarray::stack(Axis(0), &perturbed_nlls.iter()
         .map(|v| v.view()).collect::<Vec<_>>())?;
@@ -156,7 +162,9 @@ fn calculate_gradient(
 /// Negative log-likelihood
 fn evaluate_nll(theta: &Array1<Float>, data: &Array2<Float>, y: &Array1<Float>) -> Array1<Float> {
     let mut x = data.dot(theta);
+    println!("x before mapv_inplace: {}", x);
     x.mapv_inplace(|v| 1.0 / (1.0 + (-v).exp()));
+    // println!("x after mapv_inplace: {}", x);
     -(x.mapv(Float::ln) * y + (1.0 - y) * (1.0 - x).mapv(Float::ln))
 }
 
@@ -179,7 +187,8 @@ fn sgd(
     learning_rate: Float,
     max_iters: Integer,
     sample_size: usize,
-    options: SGDOptions
+    options: SGDOptions,
+    private_options: PrivateSGDOptions
 ) -> Result<Array2<Float>> {
     let delta = 0.0001;
 
@@ -209,15 +218,21 @@ fn sgd(
 
         // one column for each sampled index
         let mut gradients: Array2<Float> = calculate_gradient(theta.clone(), &data_sample, &y_sample, delta)?;
+        // clip - scale down by l2 norm and don't scale small elements
+        let PrivateSGDOptions { noise_scale, gradient_norm_bound, enforce_constant_time } = private_options.clone();
+        gradients.div_assign(&Array1::from(gradients.gencolumns().into_iter()
+            .map(|grad_i| (grad_i.dot(&grad_i).sqrt() / gradient_norm_bound).max(1.))
+            .collect::<Vec<Float>>()).insert_axis(Axis(0)));
 
+        println!("gradients {}", gradients);
         theta.sub_assign(&match &options {
-            SGDOptions::Public => gradients.sum_axis(Axis(1)) * (learning_rate as Float),
-            SGDOptions::Private(v) => {
-                let PrivateSGDOptions { noise_scale, gradient_norm_bound, enforce_constant_time } = v.clone();
-                // clip - scale down by l2 norm and don't scale small elements
-                gradients.div_assign(&Array1::from(gradients.gencolumns().into_iter()
-                    .map(|grad_i| (grad_i.dot(&grad_i).sqrt() / gradient_norm_bound).max(1.))
-                    .collect::<Vec<Float>>()).insert_axis(Axis(0)));
+            SGDOptions::Public => gradients.sum_axis(Axis(1)) * (learning_rate / sample_size as Float),
+            SGDOptions::Private => {
+                // let PrivateSGDOptions { noise_scale, gradient_norm_bound, enforce_constant_time } = v.clone();
+                // // clip - scale down by l2 norm and don't scale small elements
+                // gradients.div_assign(&Array1::from(gradients.gencolumns().into_iter()
+                //     .map(|grad_i| (grad_i.dot(&grad_i).sqrt() / gradient_norm_bound).max(1.))
+                //     .collect::<Vec<Float>>()).insert_axis(Axis(0)));
 
                 // noise
                 let sigma = (noise_scale * gradient_norm_bound).powi(2);
@@ -229,6 +244,11 @@ fn sgd(
                 (gradients.sum_axis(Axis(1)) + noise) * (learning_rate / sample_size as Float)
             }
         });
+
+        if theta.iter().cloned().any(f64::is_nan) {
+            return Err("Undefined theta parameter value".into());
+        }
+
         theta_history.slice_mut(s![.., i]).assign(&theta);
     }
 
