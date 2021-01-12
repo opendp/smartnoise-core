@@ -1,4 +1,5 @@
-use ndarray::ArrayD;
+use std::ops::{DivAssign, SubAssign};
+
 use ndarray::prelude::*;
 use rand::seq::SliceRandom;
 
@@ -11,30 +12,96 @@ use crate::components::Evaluable;
 use crate::NodeArguments;
 use crate::utilities::noise::sample_gaussian;
 
+// Add public_data, private_data_1, private_data_2
 impl Evaluable for proto::Dpsgd {
     fn evaluate(&self, privacy_definition: &Option<proto::PrivacyDefinition>, mut arguments: NodeArguments) -> Result<ReleaseNode> {
         let enforce_constant_time = privacy_definition.as_ref()
             .map(|v| v.protect_elapsed_time).unwrap_or(false);
 
         let proto::Dpsgd {
-            learning_rate, noise_scale, group_size, gradient_norm_bound,
-            max_iters, clipping_value, sample_size
+            learning_rate, noise_scale, gradient_norm_bound,
+            max_iters, sample_size, ..
         } = self.clone();
 
-        let theta = take_argument(&mut arguments, "theta")?.array()?.float()?;
-        let theta = Array::from_shape_vec(
-            theta.shape(),
-            sgd(
-                &take_argument(&mut arguments, "data")?.array()?.float()?,
-                &theta,
-                learning_rate, noise_scale, group_size.into(), gradient_norm_bound,
-                max_iters.into(), clipping_value, sample_size as usize, enforce_constant_time)?
-                .remove(max_iters as usize - 1),
-        )?.into_dyn();
+        let max_iters = max_iters as usize;
 
+        let debug = false;
+
+        // unpack
+        // add public_data
+        let public_data: Option<_> = if let Ok(data) = take_argument(&mut arguments, "public_data") {
+            Some(data.array()?.float()?.into_dimensionality()?)
+        } else { None };
+        // println!("public data {:?}", public_data);
+
+        // add (federated) private data
+        let data = take_argument(&mut arguments, "data")?.array()?.float()?.into_dimensionality()?;
+
+        let data_2: Option<_> = if let Ok(data) = take_argument(&mut arguments, "data_2") {
+            Some(data.array()?.float()?.into_dimensionality()?)
+        } else { None };
+
+        // add starting value
+        let mut theta = take_argument(&mut arguments, "theta")?.array()?.float()?.into_dimensionality()?;
+        // println!("(evaluate) Starting theta: {}", theta.clone());
+
+        let history_length = max_iters * if public_data.is_none() { 1 } else { 2 } + 1;
+
+        let mut theta_history: Array2<Float> = Array2::zeros((theta.shape()[0], history_length as usize));
+        let mut counter = 0;
+
+        theta_history.slice_mut(s![.., counter]).assign(&theta);
+        counter += 1;
+
+        // optimize
+        // note sgd takes a theta history, uses the last value, appends any new steps and returns lengthened history
+        // if public data exists, converge theta using public_data
+
+        let private_options = PrivateSGDOptions {
+            noise_scale,
+            gradient_norm_bound,
+            enforce_constant_time
+        };
+        if let Some(public_data) = public_data {
+            let temp_theta = sgd(
+                public_data, theta, learning_rate,
+                max_iters as Integer, sample_size as usize,
+                SGDOptions::Public, private_options.clone(), debug)?.into_dyn();
+            theta_history.slice_mut(s![.., 1..1 + max_iters]).assign(&temp_theta);
+            counter += max_iters;
+            theta = theta_history.index_axis(Axis(1), counter - 1).to_owned();
+            // if debug {
+            //     println!("temp theta: {}" ,temp_theta);
+            //     println!("final public theta! {:?}", theta);
+            // }
+        }
+
+        // if second data source exists, federate by iterating across datasets
+        if let Some(data_2) = data_2 {
+            while counter < history_length - 1 {
+                let temp_hist_theta1 = sgd(
+                    data.clone(), theta.clone(), learning_rate, 1, sample_size as usize, SGDOptions::Private, private_options.clone(), debug)?;
+                theta = temp_hist_theta1.index_axis(Axis(1), 0).to_owned();
+                theta_history.slice_mut(s![.., counter]).assign(&theta);
+                counter += 1;
+
+                let temp_hist_theta2 = sgd(
+                    data_2.clone(), theta.clone(), learning_rate, 1, sample_size as usize, SGDOptions::Private,private_options.clone(), debug)?;
+                theta = temp_hist_theta2.index_axis(Axis(1), 0).to_owned();
+                theta_history.slice_mut(s![.., counter]).assign(&theta);
+                counter += 1;
+            }
+        } else {
+
+            // else run long sgd chain on one dataset
+            let temp_history_theta = sgd(
+                data, theta, learning_rate, max_iters as Integer, sample_size as usize, SGDOptions::Private, private_options, debug)?.into_dyn();
+            theta_history.slice_mut(s![.., counter..]).assign(&temp_history_theta);
+            // counter += max_iters;
+        }
 
         Ok(ReleaseNode {
-            value: theta.into(),
+            value: theta_history.into(),
             // TODO: if the upper bound is not passed in, then I need a privacy usage back from sgd
             privacy_usages: None,
             public: true,
@@ -42,175 +109,229 @@ impl Evaluable for proto::Dpsgd {
     }
 }
 
-fn calculate_gradient(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Vec<Float>> {
-    // TODO: Delta should be parameterized based on how we are scaling the data
-    let delta = 0.0001;
-    let mut gradients: Vec<Vec<Float>> = Vec::new();
-    let initial_value = evaluate_function(theta, x);
-    for i in 0..theta.len_of(Axis(0)) {
-        let mut theta_temp = theta.clone();
-        let mut slice = theta_temp.slice_mut(s![i, ..]);
-        slice += delta.clone();
-        let function_value = evaluate_function(&theta_temp, x);
-        gradients.push(Vec::new());
-        for j in 0..function_value.len() {
-            gradients[i].push((initial_value.clone()[j] - function_value[j]) / delta.clone());
-        }
-    }
-    gradients
+#[derive(Clone)]
+enum SGDOptions {
+    Public,
+    Private
 }
 
-fn evaluate_function(theta: &ArrayD<Float>, x: &ArrayD<Float>) -> Vec<Float> {
-    let col: Vec<Float> = x.clone().into_raw_vec();
-    let mut x_copy: ArrayD<Float> = x.clone();
-    for _ in 0..x.len() {
-        x_copy[[0,0]] = 1.0;
-    }
-    let mut pi = col.clone();
-    let mut llik = pi.clone();
-
-    // println!("theta shape: {:?} x_copy shape: {:?}", theta.shape(), x_copy.shape());
-    let x_unwrapped = x_copy.into_dimensionality::<ndarray::Ix2>().unwrap();
-    let theta_unwrapped = theta.clone().into_dimensionality::<ndarray::Ix2>().unwrap();
-    for i in 0..col.len() {
-        let product = theta_unwrapped.dot(&x_unwrapped.t());
-        let dot_sum = product.scalar_sum();
-        println!("dot sum: {:?}", dot_sum);
-        let tmp_exp = 1.0 / (1.0 + (-1.0 * dot_sum).exp());
-        println!("tmp_exp: {:?}", tmp_exp);
-        pi[i] = tmp_exp;
-        println!("col: {:?} pi: {:?}", col, pi);
-        // TODO: This is to prevent passing 0 into the ln() argument....
-        let mut log_argument = (1.0 - col[i])*(1.0 - pi[i]);
-        if log_argument == 0.0 {
-            log_argument = 1.0;
-        }
-        let llik_tmp = col[i] * pi[i].ln() + log_argument.ln();
-        println!("llik_tmp: {:?}", llik_tmp);
-        llik[i] = llik_tmp;
-    }
-    println!("pi: {:?} llik: {:?}", pi, llik);
-
-    llik
-}
-
-fn sgd(
-    data: &ArrayD<Float>, theta: &ArrayD<Float>,
-    learning_rate: Float, noise_scale: Float, group_size: Integer,
-    gradient_norm_bound: Float, max_iters: Integer, clipping_value: Float,
-    sample_size: usize,
+#[derive(Clone)]
+struct PrivateSGDOptions {
+    noise_scale: Float,
+    gradient_norm_bound: Float,
     enforce_constant_time: bool,
-) -> Result<Vec<Vec<Float>>> {
-    // TODO: Check theta size matches data
-    let data_size = theta.len();
-                 
-    let mut theta_mutable = theta.clone();
-    let mut thetas: Vec<Vec<Float>> = Vec::new();
+}
 
-    for _ in 0..max_iters {
-        // Random sample of observations, without replacement, of fixed size sample_size 
-        // New sample each iteration
-        // TODO: This is used in loop for clipping?
-        let clipping_loop_max: Vec<Float> = Vec::new();
-
-        let range = (0..data_size.clone() - 1).map(|x| x as Integer).collect::<Vec<Integer>>();
-        let mut rng = rand::thread_rng();
-        let mut vec_sample: Vec<Integer> = range.choose_multiple(&mut rng, sample_size.clone()).cloned().collect();
-        vec_sample.shuffle(&mut rng);
-        // let mut data_temp: Vec<Vec<Float>> = Vec::new();
-        // println!("Data Size: {:?}", data.shape().to_vec());
-        let data_temp = data.select(Axis(0), &vec_sample.into_iter().map(|x| x as usize).collect::<Vec<_>>());
-
-        // Compute gradient
-        let gradients: Vec<Vec<Float>> = calculate_gradient(&theta_mutable,
-                                                            &data_temp).to_vec();
-
-        // Clip gradient
-        let mut clipped_gradients = gradients.clone();
-        for j in 0..theta_mutable.len_of(Axis(0)) {
-            let gradient_sums: Vec<Float> = clipped_gradients.clone().iter().map(|x| x.iter().map(|y| y.powi(2)).sum()).collect();
-            let gradients_magnitude: Float = gradient_sums.iter().map(|x| x.powi(2)).sum();
-            if gradients_magnitude > clipping_value {
-                clipped_gradients[j] = gradients[j].iter().map(|&x| x * clipping_value.clone() / gradients_magnitude).collect();
-            } else {
-                clipped_gradients[j] = gradients[j].clone();
-            }
-        }
-        // Add noise
-        let mut noisy_gradients = Vec::new();
-        let mut multidim_gauss_noise = Vec::new();
-        for _ in 0..data_size.clone() {
-            let noise = sample_gaussian(0.0, noise_scale.powi(2) * gradient_norm_bound.powi(2), enforce_constant_time)?;
-            multidim_gauss_noise.push(noise);
-        }
-        let mut gradient_sum: Vec<Float> = Vec::new();
-        for i in 0..clipped_gradients.len() {
-            gradient_sum.push(clipped_gradients[i].iter().sum());
-        }
-        let mut sum = 0.0;
-        for i in 0..gradient_sum.len() {
-            sum += gradient_sum[i] + sample_gaussian(0.0, noise_scale.powi(2) * gradient_norm_bound.powi(2), enforce_constant_time)?;
-        }
-        let noisy_grad = (1.0 / group_size.clone() as Float) * sum;
-        noisy_gradients.push(noisy_grad);
-
-        // Descent
-        for i in 0..theta_mutable.len_of(Axis(0)) {
-            let mut slice = theta_mutable.slice_mut(s![i, ..]);
-            slice -= learning_rate.clone() * noisy_grad;
-        }
-        thetas.push(theta_mutable.clone().into_raw_vec());
+/// Calculates an approximate gradient using (f(x | theta + delta) - f(x |theta)) / delta
+///
+/// # Arguments
+/// * `theta` - network weights to perturb
+/// * `data` - data to evaluate forward pass of function on (x)
+/// * `y` - expected values of the function
+/// * `delta` - amount to perturb theta
+///
+/// # Return
+/// Approximation to gradient
+fn calculate_gradient(
+    mut theta: Array1<Float>, data: &Array2<Float>, y: &Array1<Float>, delta: Float, debug: bool
+) -> Result<Array2<Float>> {
+    let initial_nll = evaluate_nll(&theta, data, y, debug);
+    if debug {
+        println!("initial_nll: {}", initial_nll);
     }
-    Ok(thetas)
+    // each element contains the partials for each user, for one parameter
+    let perturbed_nlls = (0..theta.len_of(Axis(0)))
+        .into_iter()
+        .map(|i_param| {
+            theta[i_param] += delta;
+            let perturbation_value = evaluate_nll(&theta, data, y, debug).insert_axis(Axis(0));
+            theta[i_param] -= delta;
+            perturbation_value
+        })
+        .collect::<Vec<_>>();
+    if debug {
+        println!("perturbed_nll: {:?}", perturbed_nlls);
+    }
+
+    // stack the perturbations into one array
+    let mut output = ndarray::stack(Axis(0), &perturbed_nlls.iter()
+        .map(|v| v.view()).collect::<Vec<_>>())?;
+    output.sub_assign(&initial_nll);
+    Ok(output.mapv(|v| v / delta))
+}
+
+/// Calculates the negative log-likelihood of a logistic regression model
+///
+/// # Arguments
+/// * `theta` - network weights to perturb
+/// * `data` - data to evaluate forward pass of function on (x)
+/// * `y` - expected values of the function
+///
+/// # Return
+/// Negative log-likelihood
+fn evaluate_nll(theta: &Array1<Float>, data: &Array2<Float>, y: &Array1<Float>, debug: bool) -> Array1<Float> {
+    let mut x = data.dot(theta);
+    if debug {
+        println!("(evaluate_nll) theta: {}", theta);
+        println!("x before mapv_inplace: {}", x);
+    }
+    x.mapv_inplace(|v| 1.0 / (1.0 + (-v).exp()));
+    // println!("x after mapv_inplace: {}", x);
+    -(x.mapv(Float::ln) * y + (1.0 - y) * (1.0 - x).mapv(Float::ln))
+}
+
+/// Optimize the parameters of a logistic regression network using privacy-preserving gradient descent
+///
+/// # Arguments
+/// * `data` - dataset where the first column is the target variable
+/// * `theta` - network weights to perturb
+/// * `learning_rate` - scale the gradients at each step
+/// * `noise_scale` - scale the noise at each step
+/// * `gradient_norm_bound` - maximum gradient norm
+/// * `max_iters` - number of steps to run
+/// * `sample_size` - number of records to sample at each iteration
+/// * `enforce_constant_time` - enforce the elapsed time to sample noise is constant
+///
+/// # Return
+/// Approximation to gradient
+fn sgd(
+    mut data: Array2<Float>, mut theta: Array1<Float>,
+    learning_rate: Float,
+    max_iters: Integer,
+    sample_size: usize,
+    options: SGDOptions,
+    private_options: PrivateSGDOptions,
+    debug: bool
+) -> Result<Array2<Float>> {
+    let delta = 0.0001;
+
+    if data.len_of(Axis(1)) != theta.len_of(Axis(0)) {
+        return Err(Error::from("data and theta are non-conformable"))
+    }
+
+    let num_rows = data.len_of(Axis(0));
+    let num_cols = data.len_of(Axis(1));
+    let mut rng = rand::thread_rng();
+    let mut indices: Vec<usize> = (0..num_rows).collect();
+    indices.shuffle(&mut rng);
+
+    // retrieve the target column as the first column of data
+    let y = data.slice(s![.., 0]).to_owned();
+    // repurpose first column as intercept
+    data.slice_mut(s![.., 0]).fill(1.);
+
+    // each column is an iteration
+    // do not put theta into first element of theta_history
+    let mut theta_history: Array2<Float> = Array2::zeros((theta.shape()[0], max_iters as usize));
+
+    for i in 0..max_iters as usize {
+        let indices_sample = indices.choose_multiple(&mut rng, sample_size).cloned().collect::<Vec<_>>();
+        let data_sample = data.select(Axis(0), &indices_sample);
+        let y_sample = y.select(Axis(0), &indices_sample);
+        if debug {
+            println!("data sample: {}", data_sample.clone());
+            println!("y sample: {}", y_sample.clone());
+        }
+        // one column for each sampled index
+        let mut gradients: Array2<Float> = calculate_gradient(theta.clone(), &data_sample, &y_sample, delta, debug)?;
+        // clip - scale down by l2 norm and don't scale small elements
+        // let PrivateSGDOptions { noise_scale, gradient_norm_bound, enforce_constant_time } = private_options.clone();
+        // let orig_gradients = gradients.clone();
+        // println!("original gradients: {}", orig_gradients);
+        // gradients.div_assign(&Array1::from(gradients.gencolumns().into_iter()
+        //     .map(|grad_i| (grad_i.dot(&grad_i).sqrt() / gradient_norm_bound).max(1.))
+        //     .collect::<Vec<Float>>()).insert_axis(Axis(0)));
+        // println!("clipped gradients: {}", gradients.clone());
+        // println!("diff: {}", orig_gradients - gradients.clone());
+
+        theta.sub_assign(&match &options {
+            SGDOptions::Public => gradients.sum_axis(Axis(1)) * (learning_rate / sample_size as Float),
+            SGDOptions::Private => {
+                let PrivateSGDOptions { noise_scale, gradient_norm_bound, enforce_constant_time } = private_options.clone();
+                // clip - scale down by l2 norm and don't scale small elements
+                gradients.div_assign(&Array1::from(gradients.gencolumns().into_iter()
+                    .map(|grad_i| (grad_i.dot(&grad_i).sqrt() / gradient_norm_bound).max(1.))
+                    .collect::<Vec<Float>>()).insert_axis(Axis(0)));
+
+                // noise
+                let sigma = (noise_scale * gradient_norm_bound).powi(2);
+                let noise = Array1::from((0..num_cols)
+                    .map(|_| sample_gaussian(0.0, sigma, enforce_constant_time))
+                    .collect::<Result<Vec<_>>>()?);
+
+                // update
+                (gradients.sum_axis(Axis(1)) + noise) * (learning_rate / sample_size as Float)
+            }
+        });
+
+        if theta.iter().cloned().any(f64::is_nan) {
+            return Err("Undefined theta parameter value".into());
+        }
+
+        theta_history.slice_mut(s![.., i]).assign(&theta);
+    }
+
+    Ok(theta_history)
 }
 
 
 #[cfg(test)]
 mod test_sgd {
-    use ndarray::arr2;
     use ndarray::Array;
+    use ndarray::Array2;
     use ndarray_rand::rand_distr::Uniform;
     use ndarray_rand::RandomExt;
 
     use smartnoise_validator::Float;
 
-    use crate::components::sgd::sgd;
+    use crate::components::sgd::{sgd, SGDOptions, PrivateSGDOptions};
+    use crate::utilities::noise::sample_binomial;
 
-// use ndarray::{arr2, Array};
+    // use ndarray::{arr2, Array};
     // use smartnoise_validator::Float;
 
     #[test]
     fn generate_random_array() {
-        let a = Array::random((2, 5), Uniform::new(0., 10.));
-        println!("{:8.4}", a);
+        let _a = Array::random((2, 5), Uniform::new(0., 10.));
+        // println!("{:8.4}", a);
         // Example Output:
         // [[  8.6900,   6.9824,   3.8922,   6.5861,   2.4890],
         //  [  0.0914,   5.5186,   5.8135,   5.2361,   3.1879]]
     }
-    
+
     #[test]
     fn test_dp_sgd() {
         // Build large test dataset, with n rows, x~uniform; y~binomial(pi); pi = 1/(1+exp(-1 - 1x))
-        let n = 100;
+        let n = 1000;
         let m = 2;
-        let mut data = Array::random((n, m), Uniform::new(0., 10.)); // arr2:random((1000,2), Uniform::new(0.0, 1.0));
-        for i in 0..n-1 {
-            data[[i,0]] = 1.0 /(1.0 + ((-1.0 - data[[i, 1]]) as Float).exp())
+        let mut data = Array::random((n, m), Uniform::new(0.0, 1.0)); // arr2:random((1000,2), Uniform::new(0.0, 1.0));
+        for i in 0..n {
+            let transform = 1.0 / (1.0 + ((1.0 - 3.0 * data[[i, 1]]) as Float).exp());
+            data[[i, 0]] = sample_binomial(1, transform, false).unwrap() as Float;
         }
-        let theta = Array::random((n, m), Uniform::new(0., 10.)).into_dyn();
-        let learning_rate = 0.1;
-        let noise_scale = 1.0;
-        let group_size = 2;
-        let gradient_norm_bound = 0.15;
-        let max_iters = 1;
+        let mut theta = Array::random((m, ), Uniform::new(0.0, 1.0));
+        theta[[0]] = 0.0;
+        theta[[1]] = 0.0;
+        let learning_rate = 1.0;
+        let noise_scale = 0.1;
+        let gradient_norm_bound = 1.0;//0.15;
+        let max_iters = 1000;
         let enforce_constant_time = false;
-        let clipping_value = 1.0;
-        let sample_size = 5 as usize;
-        let theta_final: Vec<Vec<Float>> = sgd(&data.into_dyn(), &theta, learning_rate, noise_scale, group_size,
-                                               gradient_norm_bound, max_iters, clipping_value, sample_size, enforce_constant_time).unwrap();
-        println!("{:?}", theta_final);
+        let sample_size = 100 as usize;
+        let private_options = PrivateSGDOptions {
+            noise_scale,
+            gradient_norm_bound,
+            enforce_constant_time
+        };
+        let debug = false;
+        let thetas: Array2<Float> = sgd(data.into(), theta.into(), learning_rate, max_iters, sample_size,
+                                        SGDOptions::Public,
+                                        private_options.clone(),
+                                        debug).unwrap();
+        if debug {
+            println!("thetas: {:?}", thetas);
+        }
 
-        assert_eq!(theta_final.len(), max_iters as usize);
-
+        assert_eq!(thetas.len(), 2 * max_iters as usize);
     }
 }
