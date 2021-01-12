@@ -1,25 +1,13 @@
 {
   "arguments": {
-      "data": {
-          "type_value": "Array",
-          "description": "Private data to optimize over."
-      },
-      "public_data": {
-          "type_value": "Array",
-          "default_python": "None",
-          "default_rust": "None",
-          "description": "Private data to optimize over."
-      },
-      "data_2": {
-          "type_value": "Array",
-          "default_python": "None",
-          "default_rust": "None",
-          "description": "Private data to optimize over."
-      },
-      "theta": {
-          "type_value": "Array",
-          "description": "Initial weight parameters."
-      }
+    "data": {
+      "type_value": "Array",
+      "description": "Private data to optimize over."
+    },
+    "theta": {
+      "type_value": "Array",
+      "description": "Initial weight parameters."
+    }
   },
   "id": "DPSGD",
   "name": "dp_sgd",
