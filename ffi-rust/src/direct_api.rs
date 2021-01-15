@@ -1,4 +1,4 @@
-use smartnoise_runtime::utilities::mechanisms;
+use smartnoise_runtime::utilities::{mechanisms, noise};
 
 #[no_mangle]
 pub extern "C" fn laplace_mechanism(
@@ -52,4 +52,9 @@ pub extern "C" fn snapping_mechanism_binding(
         value, epsilon, sensitivity,
         min, max, Some(binding_probability),
         enforce_constant_time).unwrap()
+}
+
+#[no_mangle]
+pub extern "C" fn gaussian_noise(sigma: f64) -> f64 {
+    noise::sample_gaussian(0., sigma, false).unwrap()
 }
