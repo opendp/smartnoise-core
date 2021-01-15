@@ -8,7 +8,7 @@
           "type_value": "Array",
           "default_python": "None",
           "default_rust": "None",
-          "description": "Private data to optimize over."
+          "description": "Public data to optimize over."
       },
       "data_2": {
           "type_value": "Array",

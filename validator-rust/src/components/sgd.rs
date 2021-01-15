@@ -46,7 +46,7 @@ impl Component for proto::Dpsgd {
             return Err("theta: atomic type must be float".into());
         }
 
-        println!("{:?}", theta_property);
+        // println!("{:?}", theta_property);
         theta_property.assert_is_releasable()?;
 
         Ok(Warnable(theta_property.into(), vec![]))
