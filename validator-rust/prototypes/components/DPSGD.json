@@ -58,6 +58,16 @@
       "type_proto": "uint32",
         "type_rust": "u32",
         "description": ""
+    },
+    "param_search_step_size": {
+      "type_proto": "double",
+      "type_rust": "f64",
+      "description": ""
+    },
+    "param_search_max_iters": {
+      "type_proto": "uint32",
+      "type_rust": "u32",
+      "description": ""
     }
   },
   "return": {
