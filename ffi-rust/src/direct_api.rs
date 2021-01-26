@@ -1,4 +1,5 @@
 use smartnoise_runtime::utilities::{mechanisms, noise};
+use smartnoise_runtime::utilities::shuffling::{self, Bound};
 
 #[no_mangle]
 pub extern "C" fn laplace_mechanism(
@@ -57,4 +58,20 @@ pub extern "C" fn snapping_mechanism_binding(
 #[no_mangle]
 pub extern "C" fn gaussian_noise(sigma: f64) -> f64 {
     noise::sample_gaussian(0., sigma, false).unwrap()
+}
+
+#[repr(C)]
+pub struct PrivacyUsage {
+    epsilon: f64,
+    delta: f64
+}
+
+#[no_mangle]
+pub extern "C" fn shuffle_amplification(
+    step_epsilon: f64, step_delta: f64, delta: f64, n: u64, empirical: bool
+) -> PrivacyUsage {
+    let (epsilon, delta) = shuffling::shuffle_amplification(
+        step_epsilon, step_delta, delta, n,
+        if empirical {Bound::Empirical} else {Bound::Theoretical}).unwrap();
+    PrivacyUsage {epsilon, delta}
 }

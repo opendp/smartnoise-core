@@ -11,6 +11,7 @@ use smartnoise_validator::utilities::array::{slow_select, slow_stack};
 
 pub mod mechanisms;
 pub mod noise;
+pub mod shuffling;
 
 ///  Accepts an ndarray and returns the number of columns.
 ///
