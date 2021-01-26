@@ -12,8 +12,9 @@ pub enum Bound {
 pub fn shuffle_amplification(
     step_epsilon: f64, step_delta: f64, delta: f64, n: u64, bound: Bound
 ) -> Result<(f64, f64)> {
-    if step_epsilon > (n as f64 / (16. * (2. / delta).ln())).ln() {
-        return Err(Error::from("step_epsilon must be <= ln(n / (16 ln(2 / delta)))"));
+    let epsilon_constraint = (n as f64 / (16. * (2. / delta).ln())).ln();
+    if step_epsilon > epsilon_constraint {
+        return Err(Error::from(format!("step_epsilon ({:?}) must be <= ln(n / (16 ln(2 / delta))) ({:?})", step_epsilon, epsilon_constraint)));
     }
 
     let epoch_epsilon = match bound {
@@ -148,7 +149,7 @@ fn binomial_cdf(x: u64, n: u64, p: f64) -> f64 {
 
 #[cfg(test)]
 mod compositor_tests {
-    use crate::utilities::shuffling::{shuffle_amplification, Bound};
+    use crate::utilities::shuffling::{Bound, shuffle_amplification};
 
     fn shuffle_amplify_both(step_epsilon: f64, step_delta: f64, delta: f64, n: u64) {
         println!("theoretical {:?}", shuffle_amplification(step_epsilon, step_delta, delta, n, Bound::Theoretical).unwrap());
