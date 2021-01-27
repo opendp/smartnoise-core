@@ -1,10 +1,12 @@
+use std::f64::consts::PI;
+use std::ops::Div;
+
+use smartnoise_validator::components::gaussian_mechanism::get_analytic_gaussian_sigma;
 use smartnoise_validator::errors::*;
+use smartnoise_validator::Float;
 
 use crate::utilities;
-use smartnoise_validator::Float;
-use crate::utilities::{noise};
-use smartnoise_validator::components::gaussian_mechanism::get_analytic_gaussian_sigma;
-use std::ops::{Div};
+use crate::utilities::noise;
 
 /// Returns noise drawn according to the Laplace mechanism
 ///
@@ -119,6 +121,8 @@ pub fn snapping_mechanism(
     Ok(value)
 }
 
+// const ADDITIVE_GAUSS_CONST: f64 = 8. / 9. + (2. / PI).ln();
+const ADDITIVE_GAUSS_CONST: f64 = 0.4373061836;
 
 /// Returns noise drawn according to the Gaussian mechanism.
 ///
@@ -163,7 +167,7 @@ pub fn gaussian_mechanism(
     let scale = if analytic {
         get_analytic_gaussian_sigma(epsilon, delta, sensitivity)
     } else {
-        sensitivity * (2. * (1.25 / delta).ln()).sqrt() / epsilon
+        sensitivity * (ADDITIVE_GAUSS_CONST + 2. * (1. / delta).ln()).sqrt() / epsilon
     };
     // this uses mpfr noise if available
     Ok(value + noise::sample_gaussian(0., scale, enforce_constant_time)?)
