@@ -15,4 +15,4 @@ GitHub pages site: https://opendp.github.io/smartnoise-core/
 
 ---
 
-Note: [CI generated documentation](https://github.com/opendifferentialprivacy/smartnoise-core/blob/develop/.travis.yml)
+Note: [CI generated documentation](https://github.com/opendp/smartnoise-core/blob/develop/.travis.yml)

@@ -2,7 +2,7 @@
 
 ## Building a crate
 
-**IMPORTANT NOTE**: This is usually done in conjunction with building a PyPI version. Please look at the [smartnoise-core-python repository](https://github.com/opendifferentialprivacy/smartnoise-core-python), under scripts/README.md)
+**IMPORTANT NOTE**: This is usually done in conjunction with building a PyPI version. Please look at the [smartnoise-core-python repository](https://github.com/opendp/smartnoise-core-python), under scripts/README.md)
 
 The steps below describe how to build releases for crates.io
 

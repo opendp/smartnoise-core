@@ -6,7 +6,7 @@ description = "A library of algorithms for differentially private data analysis.
 readme = "README.md"
 keywords = ["differential-privacy", "data-privacy", "privacy"]
 categories = ["cryptography", "science"] # up to 5 allowed, must match those listed at https://crates.io/category_slugs
-repository = "https://github.com/opendifferentialprivacy/smartnoise-core"
+repository = "https://github.com/opendp/smartnoise-core"
 edition = "2018"
 license = "MIT"
 

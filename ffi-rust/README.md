@@ -1,9 +1,9 @@
-[![Build Status](https://travis-ci.org/opendifferentialprivacy/smartnoise-core.svg?branch=develop)](https://travis-ci.org/opendifferentialprivacy/smartnoise-core)
+[![Build Status](https://travis-ci.org/opendp/smartnoise-core.svg?branch=develop)](https://travis-ci.org/opendp/smartnoise-core)
 
 ## SmartNoise Core <br/> Differential Privacy Library FFI <br/>
 
-The FFI interface is a sub-project of [SmartNoise-Core](https://github.com/opendifferentialprivacy/smartnoise-core).
-See also the accompanying [SmartNoise SDK repository](https://github.com/opendifferentialprivacy/smartnoise-sdk) and [SmartNoise-Samples](https://github.com/opendifferentialprivacy/smartnoise-samples) repositories for this system.
+The FFI interface is a sub-project of [SmartNoise-Core](https://github.com/opendp/smartnoise-core).
+See also the accompanying [SmartNoise SDK repository](https://github.com/opendp/smartnoise-sdk) and [SmartNoise-Samples](https://github.com/opendp/smartnoise-samples) repositories for this system.
 
 ##
 
@@ -19,11 +19,11 @@ To build with the runtime and secure noise:
 To build without the runtime:
 
     cargo build --no-default-features
-    
+
 To build with the runtime and secure noise:
 
     cargo build --no-default-features --features use-mpfr
-    
+
 To build with the runtime and secure noise, where GMP and MPFR are provided by the operating system:
 
     cargo build --no-default-features --features use-system-libs

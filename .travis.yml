@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------
 # Travis CI
-# https://travis-ci.com/github/opendifferentialprivacy/smartnoise-core
+# https://travis-ci.com/github/opendp/smartnoise-core
 #
 # - SmartNoise Core Validator and runtime
 #   - Build and test Rust componets

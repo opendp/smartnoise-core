@@ -55,7 +55,7 @@ impl Component for proto::Sum {
 }
 
 impl Sensitivity for proto::Sum {
-    /// Sum sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/smartnoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/sums/sums.pdf)
+    /// Sum sensitivities [are backed by the the proofs here](https://github.com/opendp/smartnoise-core/blob/master/whitepapers/sensitivities/sums/sums.pdf)
     fn compute_sensitivity(
         &self,
         privacy_definition: &proto::PrivacyDefinition,
