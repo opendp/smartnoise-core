@@ -21,11 +21,11 @@ jobs:
       run: |
         bash scripts/build_docs.sh;
     - name: Deploy docs
-        - uses: peaceiris/actions-gh-pages@v3
-        with:
-          publish_dir: ./docs  # default: public
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_branch: gh-pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        publish_dir: ./docs  # default: public
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_branch: gh-pages
     #- name: Build
     #  #if: ${{ steps.extract_branch.outputs.branch }} == 'hello348-action'
     #  run: |
