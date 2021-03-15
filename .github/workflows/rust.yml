@@ -22,9 +22,11 @@ jobs:
       id: extract_branch
       run: echo "##[set-output name=branch;]${GITHUB_REF#refs/heads/}"
     - name: Show the branch name
-      run: echo "Branch!! ${{ steps.extract_branch.outputs.branch }}"
+      run: |
+        echo "Branch!! ${{ steps.extract_branch.outputs.branch }}";
+        echo "Branch!! ${ steps.extract_branch.outputs.branch }";
     - name: Build docs
-      if: "${{ steps.extract_branch.outputs.branch }}" == 'xx348-action'
+      if: ${{ steps.extract_branch.outputs.branch }} == 'xx348-action'
       run: |
         bash scripts/build_docs.sh;
         with:
