@@ -28,6 +28,8 @@ jobs:
     needs: 01_build_and_test
     #if: ${{ github.ref == '348-doc-fix' }}
     steps:
+      - uses: actions/checkout@v2
+      - name: Build docs
       run: |
         bash scripts/build_docs.sh;
       #with:
