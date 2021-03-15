@@ -1,8 +1,8 @@
 name: Rust
 
-on: [push]  #, pull_request]
-#  push:
-#    branches: [348-action]
+on: #[push, pull_request]
+  push:
+    branches: [348-action]
 #     #pull_request:
 #  #  branches: [ develop ]
 
@@ -17,7 +17,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build docs
-      if: env.BRANCH == '348-action'
+      #if: env.BRANCH == '348-action'
       run: |
         bash scripts/build_docs.sh;
         with:
