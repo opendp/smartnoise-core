@@ -10,9 +10,10 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  01_build_and_test:
-    name: Build and Test
+  build:
+
     runs-on: ubuntu-latest
+
     steps:
     - uses: actions/checkout@v2
     - name: Build
