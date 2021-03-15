@@ -2,7 +2,7 @@
 #set -e -x
 
 # gmp-mpfr-sys requires nightly to build documentation
-#rustup install nightly
+rustup install nightly
 
 # Rust documentation
 # current working directory must be in `smartnoise-core` root.
