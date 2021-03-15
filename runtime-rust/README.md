@@ -26,7 +26,7 @@ Releases include metadata about accuracy of outputs and the complete privacy cos
 
 ### Components
 
-For a full listing of the extensive set of components available in the library [see this documentation.](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_validator/docs/components/index.html)
+For a full listing of the extensive set of components available in the library [see this documentation.](https://opendp.github.io/smartnoise-core/doc/smartnoise_validator/docs/components/index.html)
 
 ### Architecture
 
@@ -36,9 +36,9 @@ This package makes the simplifying assumption that the data is small enough to b
 The broader system is designed, however, to be able to evaluate components on different runtimes.
 For large datasets, it may make more practical sense to conduct non-private transformations and aggregations on a different runtime/backend, and only use the rust runtime for its privatizing mechanisms.  
 
-The necessary public API to use this package is small- only one function, [release](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_runtime/index.html). 
+The necessary public API to use this package is small- only one function, [release](https://opendp.github.io/smartnoise-core/doc/smartnoise_runtime/index.html). 
 The input to this function is an arbitrarily complex description of computation (analysis) and partial execution of the analysis (also called a release).
-Release may be called either [via prost structs](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_runtime/proto/index.html) or serialized protobuf.
+Release may be called either [via prost structs](https://opendp.github.io/smartnoise-core/doc/smartnoise_runtime/proto/index.html) or serialized protobuf.
 Utility libraries to construction of the necessary protobufs are called bindings. Bindings are currently only available in Python.
 
 Logic for determining if a component releases differentially private data, as well as the scaling of noise, property tracking, and accuracy estimates are handled by the Validator.
@@ -47,7 +47,7 @@ Logic for determining if a component releases differentially private data, as we
 
 ### SmartNoise Rust Documentation
 
-The [Rust documentation](https://opendifferentialprivacy.github.io/smartnoise-core/) includes full documentation on all pieces of the library and validator, including extensive [component by component descriptions with examples](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_runtime/components/index.html).
+The [Rust documentation](https://opendp.github.io/smartnoise-core/) includes full documentation on all pieces of the library and validator, including extensive [component by component descriptions with examples](https://opendp.github.io/smartnoise-core/doc/smartnoise_runtime/components/index.html).
 
 ### Communication
 

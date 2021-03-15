@@ -24,7 +24,7 @@ This library provides a language-agnostic set of utilities for running different
 
 ### Components
 
-For a full listing of the extensive set of components available in the library [see this documentation.](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_validator/docs/components/index.html)
+For a full listing of the extensive set of components available in the library [see this documentation.](https://opendp.github.io/smartnoise-core/doc/smartnoise_validator/docs/components/index.html)
 
 ### Architecture
 
@@ -41,7 +41,7 @@ Language bindings are also utility libraries, but for constructing analyses from
 
 ### SmartNoise Rust Documentation
 
-The [Rust documentation](https://opendifferentialprivacy.github.io/smartnoise-core/) includes full documentation on all pieces of the library and validator, including extensive [component by component descriptions with examples](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_runtime/components/index.html).
+The [Rust documentation](https://opendp.github.io/smartnoise-core/) includes full documentation on all pieces of the library and validator, including extensive [component by component descriptions with examples](https://opendp.github.io/smartnoise-core/doc/smartnoise_runtime/components/index.html).
 
 ### Communication
 

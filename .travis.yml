@@ -6,7 +6,7 @@
 #   - Build and test Rust componets
 # - Documentation
 #   - For the master branch, build Rust docs and deploy on:
-#     - https://opendifferentialprivacy.github.io/smartnoise-core/
+#     - https://opendp.github.io/smartnoise-core/
 # ------------------------------------------------------------------
 
 branches:

@@ -13,7 +13,7 @@ patch = 2
 #   - e.g. "/Users/username/github/repos/smartnoise-core-python"
 # ------------------------------------------------------
 #
-python = "/Users/michael/whitenoise/python"
+python = "/Users/michael/smartnoise/python"
 #python = "/Users/ramanprasad/Documents/github-rp/smartnoise-core-python"
 
 #
@@ -23,7 +23,7 @@ python = "/Users/michael/whitenoise/python"
 #   - Normally this is the submodule within smartnoise-core-python
 # ------------------------------------------------------
 #
-core = "/Users/michael/whitenoise/python/smartnoise-core"
+core = "/Users/michael/smartnoise/python/smartnoise-core"
 #core = "/Users/ramanprasad/Documents/github-rp/smartnoise-core-python/smartnoise-core"
 
 #

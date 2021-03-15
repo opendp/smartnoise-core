@@ -4,7 +4,7 @@
 //! statistics, and privatizing mechanisms. These functions are combined in the 
 //! SmartNoise validator to create more complex differentially private analyses.
 //!
-//! - [Top-level documentation](https://opendifferentialprivacy.github.io/smartnoise-core/)
+//! - [Top-level documentation](https://opendp.github.io/smartnoise-core/)
 
 #![warn(unused_extern_crates)]
 // s! macros for slicing from ndarray use unsafe code

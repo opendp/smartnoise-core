@@ -41,7 +41,7 @@ Differentially private computations are specified as an analysis graph that can 
 ### Components
 
 The primary releases available in the library, and the mechanisms for generating these releases, are enumerated below.
-For a full listing of the extensive set of components available in the library [see this documentation.](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_validator/docs/components/index.html)
+For a full listing of the extensive set of components available in the library [see this documentation.](https://opendp.github.io/smartnoise-core/doc/smartnoise_validator/docs/components/index.html)
 
 | Statistics    | Mechanisms | Utilities  |
 | ------------- |------------|------------|
@@ -71,7 +71,7 @@ There must also be a medium to execute the analysis, called a `runtime`. There i
 
 #### 3. Bindings
   - Python Bindings: [core-python](https://github.com/opendifferentialprivacy/smartnoise-core-python)
-  - Rust Bindings (in progress): [core-Rust](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_validator/bindings/index.html)
+  - Rust Bindings (in progress): [core-Rust](https://opendp.github.io/smartnoise-core/doc/smartnoise_validator/bindings/index.html)
 
 Finally, there are helper libraries for building analyses, called `bindings`. Bindings may be written for any language, and are thin wrappers over the validator and/or runtime(s). Language bindings are currently available for Python, with support for at minimum R, Rust and SQL forthcoming.
 
@@ -108,7 +108,7 @@ You may find it easier to use the library with this repository set up as a submo
 In this case, switch to the language bindings setup.
 You can still push commits and branches from the core submodule of whatever bindings language you prefer.
 - [Python](https://github.com/opendifferentialprivacy/smartnoise-core-python#from-source)
-- [Rust (WIP)](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_validator/bindings/index.html)
+- [Rust (WIP)](https://opendp.github.io/smartnoise-core/doc/smartnoise_validator/bindings/index.html)
 
 1. Clone the repository
     
@@ -166,7 +166,7 @@ We have [numerous Jupyter notebooks](https://github.com/opendifferentialprivacy/
 
 ### SmartNoise Core Rust Documentation
 
-The [Rust documentation](https://opendifferentialprivacy.github.io/smartnoise-core/) includes full documentation on all pieces of the library and validator, including extensive [component by component descriptions with examples](https://opendifferentialprivacy.github.io/smartnoise-core/doc/smartnoise_runtime/components/index.html).
+The [Rust documentation](https://opendp.github.io/smartnoise-core/) includes full documentation on all pieces of the library and validator, including extensive [component by component descriptions with examples](https://opendp.github.io/smartnoise-core/doc/smartnoise_runtime/components/index.html).
 
 ## Communication
 
