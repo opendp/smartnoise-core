@@ -16,18 +16,24 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+    - name: Set the branch name
+      shell: bash
+      id: extract_branch
+      run: echo "##[set-output name=branch;]${GITHUB_REF#refs/heads/}"
     - name: Build docs
-      #if: env.BRANCH == '348-action'
+      if: ${{ steps.extract_branch.outputs.branch }} == '348-action'
       run: |
         bash scripts/build_docs.sh;
         with:
           branch: gh-pages # The branch the action should deploy to.
           folder: docs # The folder the action should deploy.
     - name: Build
+      if: {{ github.ref == 'ref/head/develop' }}
       run: |
         cd ffi-rust;
         cargo build --verbose --workspace;
     - name: Run tests
+      if: {{ github.ref == 'ref/head/develop' }}
       run: |
         cd ffi-rust;
         cargo test --verbose --workspace;
