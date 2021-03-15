@@ -24,3 +24,13 @@ jobs:
       run: |
         cd ffi-rust;
         cargo test --verbose --workspace;
+
+  deploy:
+    if: ${{ github.ref == '348-doc-fix' }}
+    needs: build
+    steps:
+      run: |
+        bash scripts/build_docs.sh;
+      with:
+        branch: gh-pages # The branch the action should deploy to.
+        folder: docs # The folder the action should deploy.
