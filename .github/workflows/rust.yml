@@ -1,10 +1,9 @@
 name: Rust
 
-on:
-  push:
-    branches: [ develop, 348-* ]
-  #pull_request:
-  #  branches: [ develop ]
+on: [push]
+#  #  branches: [ develop, 348-* ]
+#  #pull_request:
+#  #  branches: [ develop ]
 
 env:
   CARGO_TERM_COLOR: always
