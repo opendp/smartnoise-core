@@ -1,6 +1,6 @@
 name: Rust
 
-on: [push]
+on: [push, pull]
 #  #  branches: [ develop, 348-* ]
 #  #pull_request:
 #  #  branches: [ develop ]
