@@ -11,7 +11,7 @@ env:
 
 jobs:
   build:
-    if: github.ref == 'refs/heads/x348-action'
+    if: github.ref == 'refs/heads/348-action'
     runs-on: ubuntu-latest
 
     steps:
