@@ -253,7 +253,7 @@ pub fn get_smallest_greater_or_eq_power_of_two(x: f64) -> Result<i16> {
 }
 
 /// Gets functional epsilon for Snapping mechanism such that privacy loss does not exceed the user's proposed budget.
-/// Described in https://github.com/opendifferentialprivacy/smartnoise-core/blob/develop/whitepapers/mechanisms/snapping/snapping_implementation_notes.pdf
+/// Described in https://github.com/opendp/smartnoise-core/blob/develop/whitepapers/mechanisms/snapping/snapping_implementation_notes.pdf
 ///
 /// # Arguments
 /// * `epsilon` - Desired privacy guarantee.
@@ -268,7 +268,7 @@ pub fn redefine_epsilon(epsilon: f64, b: f64, precision: u32) -> f64 {
 }
 
 /// Finds accuracy that is achievable given desired epsilon and confidence requirements. Described in
-/// https://github.com/opendifferentialprivacy/smartnoise-core/blob/develop/whitepapers/mechanisms/snapping/snapping_implementation_notes.pdf
+/// https://github.com/opendp/smartnoise-core/blob/develop/whitepapers/mechanisms/snapping/snapping_implementation_notes.pdf
 ///
 /// # Arguments
 /// * `alpha` - Desired confidence level.
@@ -289,7 +289,7 @@ pub fn epsilon_to_accuracy(
 }
 
 /// Finds epsilon that will achieve desired accuracy and confidence requirements. Described in
-/// https://github.com/opendifferentialprivacy/smartnoise-core/blob/develop/whitepapers/mechanisms/snapping/snapping_implementation_notes.pdf
+/// https://github.com/opendp/smartnoise-core/blob/develop/whitepapers/mechanisms/snapping/snapping_implementation_notes.pdf
 ///
 /// Note that not all accuracies have an epsilon, due to the clamping in the snapping mechanism.
 /// In these cases, accuracy is treated as an upper bound,

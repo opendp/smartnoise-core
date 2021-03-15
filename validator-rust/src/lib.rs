@@ -8,7 +8,7 @@
 //! The validator also takes simple components from the SmartNoise runtime and combines them
 //! into more complex mechanisms.
 //!
-//! - [Top-level documentation](https://opendifferentialprivacy.github.io/smartnoise-core/)
+//! - [Top-level documentation](https://opendp.github.io/smartnoise-core/)
 
 #![warn(unused_extern_crates)]
 #![forbid(unsafe_code)]
