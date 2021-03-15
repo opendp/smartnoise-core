@@ -10,10 +10,9 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-
+  01_build_and_test:
+    name: Build and Test
     runs-on: ubuntu-latest
-
     steps:
     - uses: actions/checkout@v2
     - name: Build
@@ -24,12 +23,13 @@ jobs:
       run: |
         cd ffi-rust;
         cargo test --verbose --workspace;
-  deploy:
-    if: ${{ github.ref == '348-doc-fix' }}
-    needs: build
+  02_create_docs:
+    name: Create Rust documentation
+    needs: 01_build_and_test
+    #if: ${{ github.ref == '348-doc-fix' }}
     steps:
       run: |
         bash scripts/build_docs.sh;
-      with:
-        branch: gh-pages # The branch the action should deploy to.
-        folder: docs # The folder the action should deploy.
+      #with:
+      #  branch: gh-pages # The branch the action should deploy to.
+      #  folder: docs # The folder the action should deploy.
