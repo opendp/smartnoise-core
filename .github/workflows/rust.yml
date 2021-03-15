@@ -16,13 +16,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    #
+
     - name: Build docs
       run: |
         bash scripts/build_docs.sh;
+    - name: Deploy docs
+        - uses: peaceiris/actions-gh-pages@v3
         with:
-          branch: gh-pages # The branch the action should deploy to.
-          folder: docs # The folder the action should deploy.
+          publish_dir: ./docs  # default: public
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: gh-pages
     #- name: Build
     #  #if: ${{ steps.extract_branch.outputs.branch }} == 'hello348-action'
     #  run: |
