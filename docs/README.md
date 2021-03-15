@@ -14,5 +14,3 @@ These pages contain Rust-generated documentation for the Validator and Runtime
 GitHub pages site: https://opendp.github.io/smartnoise-core/
 
 ---
-
-Note: [CI generated documentation](https://github.com/opendp/smartnoise-core/blob/develop/.travis.yml)

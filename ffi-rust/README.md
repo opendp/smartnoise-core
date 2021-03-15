@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/opendp/smartnoise-core.svg?branch=develop)](https://travis-ci.org/opendp/smartnoise-core)
 
 ## SmartNoise Core <br/> Differential Privacy Library FFI <br/>
 
