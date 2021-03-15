@@ -28,12 +28,12 @@ jobs:
           branch: gh-pages # The branch the action should deploy to.
           folder: docs # The folder the action should deploy.
     - name: Build
-      if: {{ github.ref == 'ref/head/develop' }}
+      if: ${{ steps.extract_branch.outputs.branch }} == 'x348-action'
       run: |
         cd ffi-rust;
         cargo build --verbose --workspace;
     - name: Run tests
-      if: {{ github.ref == 'ref/head/develop' }}
+      if: ${{ steps.extract_branch.outputs.branch }} == 'x348-action'
       run: |
         cd ffi-rust;
         cargo test --verbose --workspace;
