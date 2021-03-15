@@ -1,7 +1,7 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/object-0.22.0/src/read/pe/file.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>file.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../../storage.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/object-0.23.0/src/read/pe/file.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>file.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../../storage.js"></script><script src="../../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../../../object/index.html'><div class='logo-container rust-logo'><img src='../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
-                <a id="settings-menu" href="../../../../settings.html"><img src="../../../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../../object/index.html'><div class='logo-container rust-logo'><img src='../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
+                <a id="settings-menu" href="../../../../settings.html"><img src="../../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -772,16 +772,172 @@
 <span id="769">769</span>
 <span id="770">770</span>
 <span id="771">771</span>
+<span id="772">772</span>
+<span id="773">773</span>
+<span id="774">774</span>
+<span id="775">775</span>
+<span id="776">776</span>
+<span id="777">777</span>
+<span id="778">778</span>
+<span id="779">779</span>
+<span id="780">780</span>
+<span id="781">781</span>
+<span id="782">782</span>
+<span id="783">783</span>
+<span id="784">784</span>
+<span id="785">785</span>
+<span id="786">786</span>
+<span id="787">787</span>
+<span id="788">788</span>
+<span id="789">789</span>
+<span id="790">790</span>
+<span id="791">791</span>
+<span id="792">792</span>
+<span id="793">793</span>
+<span id="794">794</span>
+<span id="795">795</span>
+<span id="796">796</span>
+<span id="797">797</span>
+<span id="798">798</span>
+<span id="799">799</span>
+<span id="800">800</span>
+<span id="801">801</span>
+<span id="802">802</span>
+<span id="803">803</span>
+<span id="804">804</span>
+<span id="805">805</span>
+<span id="806">806</span>
+<span id="807">807</span>
+<span id="808">808</span>
+<span id="809">809</span>
+<span id="810">810</span>
+<span id="811">811</span>
+<span id="812">812</span>
+<span id="813">813</span>
+<span id="814">814</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
+<span id="866">866</span>
+<span id="867">867</span>
+<span id="868">868</span>
+<span id="869">869</span>
+<span id="870">870</span>
+<span id="871">871</span>
+<span id="872">872</span>
+<span id="873">873</span>
+<span id="874">874</span>
+<span id="875">875</span>
+<span id="876">876</span>
+<span id="877">877</span>
+<span id="878">878</span>
+<span id="879">879</span>
+<span id="880">880</span>
+<span id="881">881</span>
+<span id="882">882</span>
+<span id="883">883</span>
+<span id="884">884</span>
+<span id="885">885</span>
+<span id="886">886</span>
+<span id="887">887</span>
+<span id="888">888</span>
+<span id="889">889</span>
+<span id="890">890</span>
+<span id="891">891</span>
+<span id="892">892</span>
+<span id="893">893</span>
+<span id="894">894</span>
+<span id="895">895</span>
+<span id="896">896</span>
+<span id="897">897</span>
+<span id="898">898</span>
+<span id="899">899</span>
+<span id="900">900</span>
+<span id="901">901</span>
+<span id="902">902</span>
+<span id="903">903</span>
+<span id="904">904</span>
+<span id="905">905</span>
+<span id="906">906</span>
+<span id="907">907</span>
+<span id="908">908</span>
+<span id="909">909</span>
+<span id="910">910</span>
+<span id="911">911</span>
+<span id="912">912</span>
+<span id="913">913</span>
+<span id="914">914</span>
+<span id="915">915</span>
+<span id="916">916</span>
+<span id="917">917</span>
+<span id="918">918</span>
+<span id="919">919</span>
+<span id="920">920</span>
+<span id="921">921</span>
+<span id="922">922</span>
+<span id="923">923</span>
+<span id="924">924</span>
+<span id="925">925</span>
+<span id="926">926</span>
 </pre><div class="example-wrap"><pre class="rust ">
+<span class="kw">use</span> <span class="ident">alloc</span>::<span class="ident">vec</span>::<span class="ident">Vec</span>;
 <span class="kw">use</span> <span class="ident">core</span>::<span class="ident">fmt</span>::<span class="ident">Debug</span>;
 <span class="kw">use</span> <span class="ident">core</span>::{<span class="ident">mem</span>, <span class="ident">str</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">read</span>::<span class="ident">coff</span>::{<span class="ident">CoffCommon</span>, <span class="ident">CoffSymbol</span>, <span class="ident">CoffSymbolIterator</span>, <span class="ident">CoffSymbolTable</span>, <span class="ident">SymbolTable</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">read</span>::{
-    <span class="self">self</span>, <span class="ident">Architecture</span>, <span class="ident">ComdatKind</span>, <span class="ident">Error</span>, <span class="ident">FileFlags</span>, <span class="ident">Object</span>, <span class="ident">ObjectComdat</span>, <span class="ident">ReadError</span>, <span class="prelude-ty">Result</span>,
-    <span class="ident">SectionIndex</span>, <span class="ident">SymbolIndex</span>,
+    <span class="self">self</span>, <span class="ident">Architecture</span>, <span class="ident">ComdatKind</span>, <span class="ident">Error</span>, <span class="ident">Export</span>, <span class="ident">FileFlags</span>, <span class="ident">Import</span>, <span class="ident">NoDynamicRelocationIterator</span>,
+    <span class="ident">Object</span>, <span class="ident">ObjectComdat</span>, <span class="ident">ReadError</span>, <span class="prelude-ty">Result</span>, <span class="ident">SectionIndex</span>, <span class="ident">SymbolIndex</span>,
 };
-<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">pe</span>, <span class="ident">Bytes</span>, <span class="ident">LittleEndian</span> <span class="kw">as</span> <span class="ident">LE</span>, <span class="ident">Pod</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::{<span class="ident">pe</span>, <span class="ident">ByteString</span>, <span class="ident">Bytes</span>, <span class="ident">LittleEndian</span> <span class="kw">as</span> <span class="ident">LE</span>, <span class="ident">Pod</span>, <span class="ident">U16Bytes</span>, <span class="ident">U32Bytes</span>, <span class="ident">U32</span>, <span class="ident">U64</span>};
 
 <span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">PeSection</span>, <span class="ident">PeSectionIterator</span>, <span class="ident">PeSegment</span>, <span class="ident">PeSegmentIterator</span>, <span class="ident">SectionTable</span>};
 
@@ -840,6 +996,20 @@
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">section_alignment</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u64</span> {
         <span class="ident">u64</span>::<span class="ident">from</span>(<span class="self">self</span>.<span class="ident">nt_headers</span>.<span class="ident">optional_header</span>().<span class="ident">section_alignment</span>())
     }
+
+    <span class="kw">fn</span> <span class="ident">data_directory</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">id</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;data</span> <span class="ident">pe</span>::<span class="ident">ImageDataDirectory</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">data_directories</span>
+            .<span class="ident">get</span>(<span class="ident">id</span>)
+            .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">d</span><span class="op">|</span> <span class="ident">d</span>.<span class="ident">size</span>.<span class="ident">get</span>(<span class="ident">LE</span>) <span class="op">!</span><span class="op">=</span> <span class="number">0</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">data_at</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">va</span>: <span class="ident">u32</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Bytes</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="self">self</span>.<span class="ident">common</span>
+            .<span class="ident">sections</span>
+            .<span class="ident">iter</span>()
+            .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">section</span><span class="op">|</span> <span class="ident">section</span>.<span class="ident">pe_data_at</span>(<span class="self">self</span>.<span class="ident">data</span>, <span class="ident">va</span>))
+            .<span class="ident">next</span>()
+    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Pe</span>: <span class="ident">ImageNtHeaders</span><span class="op">&gt;</span> <span class="ident">read</span>::<span class="ident">private</span>::<span class="ident">Sealed</span> <span class="kw">for</span> <span class="ident">PeFile</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="ident">Pe</span><span class="op">&gt;</span> {}
@@ -858,6 +1028,7 @@
     <span class="kw">type</span> <span class="ident">Symbol</span> <span class="op">=</span> <span class="ident">CoffSymbol</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">SymbolIterator</span> <span class="op">=</span> <span class="ident">CoffSymbolIterator</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span><span class="op">&gt;</span>;
     <span class="kw">type</span> <span class="ident">SymbolTable</span> <span class="op">=</span> <span class="ident">CoffSymbolTable</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span><span class="op">&gt;</span>;
+    <span class="kw">type</span> <span class="ident">DynamicRelocationIterator</span> <span class="op">=</span> <span class="ident">NoDynamicRelocationIterator</span>;
 
     <span class="kw">fn</span> <span class="ident">architecture</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Architecture</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">nt_headers</span>.<span class="ident">file_header</span>().<span class="ident">machine</span>.<span class="ident">get</span>(<span class="ident">LE</span>) {
@@ -947,6 +1118,145 @@
 
     <span class="kw">fn</span> <span class="ident">dynamic_symbol_table</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;file</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CoffSymbolTable</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span>, <span class="lifetime">&#39;file</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="prelude-val">None</span>
+    }
+
+    <span class="kw">fn</span> <span class="ident">dynamic_relocations</span>(<span class="kw-2">&amp;</span><span class="lifetime">&#39;file</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">NoDynamicRelocationIterator</span><span class="op">&gt;</span> {
+        <span class="prelude-val">None</span>
+    }
+
+    <span class="kw">fn</span> <span class="ident">imports</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Import</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">data_dir</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">data_directory</span>(<span class="ident">pe</span>::<span class="ident">IMAGE_DIRECTORY_ENTRY_IMPORT</span>) {
+            <span class="prelude-val">Some</span>(<span class="ident">data_dir</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_dir</span>,
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">Vec</span>::<span class="ident">new</span>()),
+        };
+        <span class="kw">let</span> <span class="ident">import_data</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">data_at</span>(<span class="ident">data_dir</span>.<span class="ident">virtual_address</span>.<span class="ident">get</span>(<span class="ident">LE</span>))
+            .<span class="ident">read_error</span>(<span class="string">&quot;Invalid PE import dir virtual address&quot;</span>)<span class="question-mark">?</span>
+            .<span class="ident">read_bytes</span>(<span class="ident">data_dir</span>.<span class="ident">size</span>.<span class="ident">get</span>(<span class="ident">LE</span>) <span class="kw">as</span> <span class="ident">usize</span>)
+            .<span class="ident">read_error</span>(<span class="string">&quot;Invalid PE import dir size&quot;</span>)<span class="question-mark">?</span>;
+
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">imports</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">import_descriptors</span> <span class="op">=</span> <span class="ident">import_data</span>;
+        <span class="kw">loop</span> {
+            <span class="kw">let</span> <span class="ident">import_desc</span> <span class="op">=</span> <span class="ident">import_descriptors</span>
+                .<span class="ident">read</span>::<span class="op">&lt;</span><span class="ident">pe</span>::<span class="ident">ImageImportDescriptor</span><span class="op">&gt;</span>()
+                .<span class="ident">read_error</span>(<span class="string">&quot;Missing PE null import descriptor&quot;</span>)<span class="question-mark">?</span>;
+            <span class="kw">if</span> <span class="ident">import_desc</span>.<span class="ident">original_first_thunk</span>.<span class="ident">get</span>(<span class="ident">LE</span>) <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+                <span class="kw">break</span>;
+            }
+
+            <span class="kw">let</span> <span class="ident">library</span> <span class="op">=</span> <span class="self">self</span>
+                .<span class="ident">data_at</span>(<span class="ident">import_desc</span>.<span class="ident">name</span>.<span class="ident">get</span>(<span class="ident">LE</span>))
+                .<span class="ident">read_error</span>(<span class="string">&quot;Invalid PE import descriptor name&quot;</span>)<span class="question-mark">?</span>
+                .<span class="ident">read_string</span>()
+                .<span class="ident">read_error</span>(<span class="string">&quot;Invalid PE import descriptor name&quot;</span>)<span class="question-mark">?</span>;
+
+            <span class="kw">let</span> <span class="ident">thunk_va</span> <span class="op">=</span> <span class="ident">import_desc</span>.<span class="ident">original_first_thunk</span>.<span class="ident">get</span>(<span class="ident">LE</span>);
+            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">thunk_data</span> <span class="op">=</span> <span class="self">self</span>
+                .<span class="ident">data_at</span>(<span class="ident">thunk_va</span>)
+                .<span class="ident">read_error</span>(<span class="string">&quot;Invalid PE import thunk address&quot;</span>)<span class="question-mark">?</span>;
+            <span class="kw">loop</span> {
+                <span class="kw">let</span> <span class="ident">hint_name</span> <span class="op">=</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">is_64</span>() {
+                    <span class="kw">let</span> <span class="ident">thunk</span> <span class="op">=</span> <span class="ident">thunk_data</span>
+                        .<span class="ident">read</span>::<span class="op">&lt;</span><span class="ident">U64</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+                        .<span class="ident">read_error</span>(<span class="string">&quot;Missing PE null import thunk&quot;</span>)<span class="question-mark">?</span>
+                        .<span class="ident">get</span>(<span class="ident">LE</span>);
+                    <span class="kw">if</span> <span class="ident">thunk</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+                        <span class="kw">break</span>;
+                    }
+                    <span class="kw">if</span> <span class="ident">thunk</span> <span class="op">&amp;</span> <span class="ident">pe</span>::<span class="ident">IMAGE_ORDINAL_FLAG64</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+                        <span class="comment">// TODO: handle import by ordinal</span>
+                        <span class="kw">continue</span>;
+                    }
+                    <span class="ident">thunk</span> <span class="kw">as</span> <span class="ident">u32</span>
+                } <span class="kw">else</span> {
+                    <span class="kw">let</span> <span class="ident">thunk</span> <span class="op">=</span> <span class="ident">thunk_data</span>
+                        .<span class="ident">read</span>::<span class="op">&lt;</span><span class="ident">U32</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+                        .<span class="ident">read_error</span>(<span class="string">&quot;Missing PE null import thunk&quot;</span>)<span class="question-mark">?</span>
+                        .<span class="ident">get</span>(<span class="ident">LE</span>);
+                    <span class="kw">if</span> <span class="ident">thunk</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+                        <span class="kw">break</span>;
+                    }
+                    <span class="kw">if</span> <span class="ident">thunk</span> <span class="op">&amp;</span> <span class="ident">pe</span>::<span class="ident">IMAGE_ORDINAL_FLAG32</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span> {
+                        <span class="comment">// TODO: handle import by ordinal</span>
+                        <span class="kw">continue</span>;
+                    }
+                    <span class="ident">thunk</span>
+                };
+                <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="self">self</span>
+                    .<span class="ident">data_at</span>(<span class="ident">hint_name</span>)
+                    .<span class="ident">read_error</span>(<span class="string">&quot;Invalid PE import thunk name&quot;</span>)<span class="question-mark">?</span>
+                    .<span class="ident">read_string_at</span>(<span class="number">2</span>)
+                    .<span class="ident">read_error</span>(<span class="string">&quot;Invalid PE import thunk name&quot;</span>)<span class="question-mark">?</span>;
+
+                <span class="ident">imports</span>.<span class="ident">push</span>(<span class="ident">Import</span> {
+                    <span class="ident">name</span>: <span class="ident">ByteString</span>(<span class="ident">name</span>),
+                    <span class="ident">library</span>: <span class="ident">ByteString</span>(<span class="ident">library</span>),
+                });
+            }
+        }
+        <span class="prelude-val">Ok</span>(<span class="ident">imports</span>)
+    }
+
+    <span class="kw">fn</span> <span class="ident">exports</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Export</span><span class="op">&lt;</span><span class="lifetime">&#39;data</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="kw">let</span> <span class="ident">data_dir</span> <span class="op">=</span> <span class="kw">match</span> <span class="self">self</span>.<span class="ident">data_directory</span>(<span class="ident">pe</span>::<span class="ident">IMAGE_DIRECTORY_ENTRY_EXPORT</span>) {
+            <span class="prelude-val">Some</span>(<span class="ident">data_dir</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">data_dir</span>,
+            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">Vec</span>::<span class="ident">new</span>()),
+        };
+        <span class="kw">let</span> <span class="ident">export_va</span> <span class="op">=</span> <span class="ident">data_dir</span>.<span class="ident">virtual_address</span>.<span class="ident">get</span>(<span class="ident">LE</span>);
+        <span class="kw">let</span> <span class="ident">export_size</span> <span class="op">=</span> <span class="ident">data_dir</span>.<span class="ident">size</span>.<span class="ident">get</span>(<span class="ident">LE</span>);
+        <span class="kw">let</span> <span class="ident">export_data</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">data_at</span>(<span class="ident">export_va</span>)
+            .<span class="ident">read_error</span>(<span class="string">&quot;Invalid PE export dir virtual address&quot;</span>)<span class="question-mark">?</span>
+            .<span class="ident">read_bytes</span>(<span class="ident">export_size</span> <span class="kw">as</span> <span class="ident">usize</span>)
+            .<span class="ident">read_error</span>(<span class="string">&quot;Invalid PE export dir size&quot;</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">export_dir</span> <span class="op">=</span> <span class="ident">export_data</span>
+            .<span class="ident">read_at</span>::<span class="op">&lt;</span><span class="ident">pe</span>::<span class="ident">ImageExportDirectory</span><span class="op">&gt;</span>(<span class="number">0</span>)
+            .<span class="ident">read_error</span>(<span class="string">&quot;Invalid PE export dir size&quot;</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">addresses</span> <span class="op">=</span> <span class="ident">export_data</span>
+            .<span class="ident">read_slice_at</span>::<span class="op">&lt;</span><span class="ident">U32Bytes</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+                <span class="ident">export_dir</span>
+                    .<span class="ident">address_of_functions</span>
+                    .<span class="ident">get</span>(<span class="ident">LE</span>)
+                    .<span class="ident">wrapping_sub</span>(<span class="ident">export_va</span>) <span class="kw">as</span> <span class="ident">usize</span>,
+                <span class="ident">export_dir</span>.<span class="ident">number_of_functions</span>.<span class="ident">get</span>(<span class="ident">LE</span>) <span class="kw">as</span> <span class="ident">usize</span>,
+            )
+            .<span class="ident">read_error</span>(<span class="string">&quot;Invalid PE export address table&quot;</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">number</span> <span class="op">=</span> <span class="ident">export_dir</span>.<span class="ident">number_of_names</span>.<span class="ident">get</span>(<span class="ident">LE</span>) <span class="kw">as</span> <span class="ident">usize</span>;
+        <span class="kw">let</span> <span class="ident">names</span> <span class="op">=</span> <span class="ident">export_data</span>
+            .<span class="ident">read_slice_at</span>::<span class="op">&lt;</span><span class="ident">U32Bytes</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+                <span class="ident">export_dir</span>.<span class="ident">address_of_names</span>.<span class="ident">get</span>(<span class="ident">LE</span>).<span class="ident">wrapping_sub</span>(<span class="ident">export_va</span>) <span class="kw">as</span> <span class="ident">usize</span>,
+                <span class="ident">number</span>,
+            )
+            .<span class="ident">read_error</span>(<span class="string">&quot;Invalid PE export name table&quot;</span>)<span class="question-mark">?</span>;
+        <span class="kw">let</span> <span class="ident">ordinals</span> <span class="op">=</span> <span class="ident">export_data</span>
+            .<span class="ident">read_slice_at</span>::<span class="op">&lt;</span><span class="ident">U16Bytes</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>(
+                <span class="ident">export_dir</span>
+                    .<span class="ident">address_of_name_ordinals</span>
+                    .<span class="ident">get</span>(<span class="ident">LE</span>)
+                    .<span class="ident">wrapping_sub</span>(<span class="ident">export_va</span>) <span class="kw">as</span> <span class="ident">usize</span>,
+                <span class="ident">number</span>,
+            )
+            .<span class="ident">read_error</span>(<span class="string">&quot;Invalid PE export ordinal table&quot;</span>)<span class="question-mark">?</span>;
+
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">exports</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">new</span>();
+        <span class="kw">for</span> (<span class="ident">name</span>, <span class="ident">ordinal</span>) <span class="kw">in</span> <span class="ident">names</span>.<span class="ident">iter</span>().<span class="ident">zip</span>(<span class="ident">ordinals</span>.<span class="ident">iter</span>()) {
+            <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">export_data</span>
+                .<span class="ident">read_string_at</span>(<span class="ident">name</span>.<span class="ident">get</span>(<span class="ident">LE</span>).<span class="ident">wrapping_sub</span>(<span class="ident">export_va</span>) <span class="kw">as</span> <span class="ident">usize</span>)
+                .<span class="ident">read_error</span>(<span class="string">&quot;Invalid PE export name entry&quot;</span>)<span class="question-mark">?</span>;
+            <span class="kw">let</span> <span class="ident">address</span> <span class="op">=</span> <span class="ident">addresses</span>
+                .<span class="ident">get</span>(<span class="ident">ordinal</span>.<span class="ident">get</span>(<span class="ident">LE</span>) <span class="kw">as</span> <span class="ident">usize</span>)
+                .<span class="ident">read_error</span>(<span class="string">&quot;Invalid PE export ordinal entry&quot;</span>)<span class="question-mark">?</span>
+                .<span class="ident">get</span>(<span class="ident">LE</span>);
+            <span class="comment">// Check for export address (vs forwarder address).</span>
+            <span class="kw">if</span> <span class="ident">address</span> <span class="op">&lt;</span> <span class="ident">export_va</span> <span class="op">|</span><span class="op">|</span> (<span class="ident">address</span> <span class="op">-</span> <span class="ident">export_va</span>) <span class="op">&gt;</span><span class="op">=</span> <span class="ident">export_size</span> {
+                <span class="ident">exports</span>.<span class="ident">push</span>(<span class="ident">Export</span> {
+                    <span class="ident">name</span>: <span class="ident">ByteString</span>(<span class="ident">name</span>),
+                    <span class="ident">address</span>: <span class="self">self</span>.<span class="ident">common</span>.<span class="ident">image_base</span>.<span class="ident">wrapping_add</span>(<span class="ident">address</span>.<span class="ident">into</span>()),
+                })
+            }
+        }
+        <span class="prelude-val">Ok</span>(<span class="ident">exports</span>)
     }
 
     <span class="kw">fn</span> <span class="ident">has_debug_symbols</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
@@ -1545,4 +1855,5 @@
     }
 }
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../../../";window.currentCrate = "object";</script><script src="../../../../main.js"></script><script src="../../../../source-script.js"></script><script src="../../../../source-files.js"></script><script defer src="../../../../search-index.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="object" data-search-js="../../../../search-index.js"></div>
+    <script src="../../../../main.js"></script><script src="../../../../source-script.js"></script><script src="../../../../source-files.js"></script></body></html>

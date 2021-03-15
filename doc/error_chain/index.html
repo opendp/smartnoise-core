@@ -1,12 +1,12 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `error_chain` crate."><meta name="keywords" content="rust, rustlang, rust-lang, error_chain"><title>error_chain - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../ayu.css" disabled ><script id="default-settings"></script><script src="../storage.js"></script><noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../favicon.svg">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="A library for consistent and reliable error handling"><meta name="keywords" content="rust, rustlang, rust-lang, error_chain"><title>error_chain - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../ayu.css" disabled ><script id="default-settings"></script><script src="../storage.js"></script><script src="../crates.js"></script><noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../error_chain/index.html'><div class='logo-container rust-logo'><img src='../rust-logo.png' alt='logo'></div></a><p class="location">Crate error_chain</p><div class="block version"><p>Version 0.12.4</p></div><div class="sidebar-elems"><a id="all-types" href="all.html"><p>See all error_chain's items</p></a><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li><li><a href="#structs">Structs</a></li><li><a href="#traits">Traits</a></li></ul></div><p class="location"></p><script>window.sidebarCurrent = {name: "error_chain", ty: "mod", relpath: "../"};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
-                <a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span><a class="srclink" href="../src/error_chain/lib.rs.html#1-824" title="goto source code">[src]</a></span><span class="in-band">Crate <a class="mod" href="">error_chain</a></span></h1><div class="docblock"><p>A library for consistent and reliable error handling</p>
-<p>error-chain makes it easy to take full advantage of Rust's
+<link rel="alternate icon" type="image/png" href="../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../error_chain/index.html'><div class='logo-container rust-logo'><img src='../rust-logo.png' alt='logo'></div></a><p class="location">Crate error_chain</p><div class="block version"><p>Version 0.12.4</p></div><div class="sidebar-elems"><a id="all-types" href="all.html"><p>See all error_chain's items</p></a><div class="block items"><ul><li><a href="#modules">Modules</a></li><li><a href="#macros">Macros</a></li><li><a href="#structs">Structs</a></li><li><a href="#traits">Traits</a></li></ul></div><p class="location"></p><div id="sidebar-vars" data-name="error_chain" data-ty="mod" data-relpath="../"></div></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
+                <a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="in-band">Crate <a class="mod" href="">error_chain</a></span><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span><a class="srclink" href="../src/error_chain/lib.rs.html#1-824" title="goto source code">[src]</a></span></h1><div class="docblock"><p>A library for consistent and reliable error handling</p>
+<p>error-chain makes it easy to take full advantage of Rust’s
 powerful error handling features without the overhead of
 maintaining boilerplate error types and conversions. It implements
 an opinionated strategy for defining your own error types, as well
-as conversions from others' error types.</p>
+as conversions from others’ error types.</p>
 <h2 id="quick-start" class="section-header"><a href="#quick-start">Quick start</a></h2>
 <p>If you just want to set up your new project with error-chain,
 follow the <a href="https://github.com/rust-lang-nursery/error-chain/blob/master/examples/quickstart.rs">quickstart.rs</a> template, and read this <a href="http://brson.github.io/2016/11/30/starting-with-error-chain">intro</a>
@@ -22,14 +22,14 @@ rigorous.  Return formatted strings for simple errors, only
 introducing error variants and their strong typing as needed for
 advanced error recovery.</li>
 <li>error-chain makes it trivial to correctly manage the <a href="https://doc.rust-lang.org/std/error/trait.Error.html#method.cause">cause</a> of
-the errors generated by your own code. This is the &quot;chaining&quot;
-in &quot;error-chain&quot;.</li>
+the errors generated by your own code. This is the “chaining”
+in “error-chain”.</li>
 </ul>
 <h2 id="principles-of-error-chain" class="section-header"><a href="#principles-of-error-chain">Principles of error-chain</a></h2>
 <p>error-chain is based on the following principles:</p>
 <ul>
 <li>No error should ever be discarded. This library primarily
-makes it easy to &quot;chain&quot; errors with the <a href="example_generated/trait.ResultExt.html#tymethod.chain_err"><code>chain_err</code></a> method.</li>
+makes it easy to “chain” errors with the <a href="example_generated/trait.ResultExt.html#tymethod.chain_err"><code>chain_err</code></a> method.</li>
 <li>Introducing new errors is trivial. Simple errors can be introduced
 at the error site with just a string.</li>
 <li>Handling errors is possible with pattern matching.</li>
@@ -77,11 +77,11 @@ requiring an <a href="https://doc.rust-lang.org/std/convert/trait.Into.html"><co
 more cumbersome to match on errors with another layer of types
 to match.</li>
 <li>Because the error type contains <a href="https://doc.rust-lang.org/std/error/trait.Error.html"><code>std::error::Error</code></a><code>+</code><a href="https://doc.rust-lang.org/std/marker/trait.Send.html"><code>Send</code></a><code> + 'static</code> objects,
-it can't implement <a href="https://doc.rust-lang.org/std/cmp/trait.PartialEq.html"><code>PartialEq</code></a> for easy comparisons.</li>
+it can’t implement <a href="https://doc.rust-lang.org/std/cmp/trait.PartialEq.html"><code>PartialEq</code></a> for easy comparisons.</li>
 </ul>
 <h2 id="declaring-error-types" class="section-header"><a href="#declaring-error-types">Declaring error types</a></h2>
 <p>Generally, you define one family of error types per crate, though
-it's also perfectly fine to define error types on a finer-grained
+it’s also perfectly fine to define error types on a finer-grained
 basis, such as per module.</p>
 <p>Assuming you are using crate-level error types, typically you will
 define an <code>errors</code> module and inside it call <a href="macro.error_chain.html"><code>error_chain!</code></a>:</p>
@@ -184,7 +184,7 @@ defined by the macro as <code>pub type Result&lt;T&gt; = ::std::result::Result&l
 strings and <a href="example_generated/enum.ErrorKind.html"><code>ErrorKind</code></a> have <a href="https://doc.rust-lang.org/std/convert/trait.From.html"><code>From</code></a> conversions to turn them into
 <a href="example_generated/struct.Error.html"><code>Error</code></a>.</p>
 <p>When the error is emitted behind the <code>?</code> operator, the explicit conversion
-isn't needed; <code>Err(ErrorKind)</code> will automatically be converted to <code>Err(Error)</code>.
+isn’t needed; <code>Err(ErrorKind)</code> will automatically be converted to <code>Err(Error)</code>.
 So the below is equivalent to the previous:</p>
 
 <div class="example-wrap"><pre class="rust rust-example-rendered">
@@ -226,7 +226,7 @@ This can be done on a Result or on an existing Error.</p>
 <span class="kw">let</span> <span class="ident">res</span>: <span class="prelude-ty">Result</span><span class="op">&lt;</span>()<span class="op">&gt;</span> <span class="op">=</span> <span class="ident">do_something</span>().<span class="ident">chain_err</span>(<span class="op">|</span><span class="op">|</span> <span class="string">&quot;something went wrong&quot;</span>);</pre></div>
 <p><a href="example_generated/trait.ResultExt.html#tymethod.chain_err"><code>chain_err</code></a> can be called on any <a href="example_generated/type.Result.html"><code>Result</code></a> type where the contained
 error type implements <a href="https://doc.rust-lang.org/std/error/trait.Error.html"><code>std::error::Error</code></a><code>+</code><a href="https://doc.rust-lang.org/std/marker/trait.Send.html"><code>Send</code></a><code> + 'static</code>, as long as
-the <a href="example_generated/type.Result.html"><code>Result</code></a> type's corresponding <a href="example_generated/trait.ResultExt.html"><code>ResultExt</code></a> trait is in scope.  If
+the <a href="example_generated/type.Result.html"><code>Result</code></a> type’s corresponding <a href="example_generated/trait.ResultExt.html"><code>ResultExt</code></a> trait is in scope.  If
 the <a href="example_generated/type.Result.html"><code>Result</code></a> is an <code>Err</code> then <a href="example_generated/trait.ResultExt.html#tymethod.chain_err"><code>chain_err</code></a> evaluates the closure,
 which returns <em>some type that can be converted to <a href="example_generated/enum.ErrorKind.html"><code>ErrorKind</code></a></em>,
 boxes the original error to store as the cause, then returns a new
@@ -344,8 +344,8 @@ of causing errors. For reporting purposes, this information can be accessed as f
 <p>The <a href="example_generated/struct.Error.html"><code>Error</code></a> and <a href="example_generated/enum.ErrorKind.html"><code>ErrorKind</code></a> types also allow programmatic access to these elements.</p>
 <h2 id="foreign-links" class="section-header"><a href="#foreign-links">Foreign links</a></h2>
 <p>Errors that do not conform to the same conventions as this library
-can still be included in the error chain. They are considered &quot;foreign
-errors&quot;, and are declared using the <code>foreign_links</code> block of the
+can still be included in the error chain. They are considered “foreign
+errors”, and are declared using the <code>foreign_links</code> block of the
 <a href="macro.error_chain.html"><code>error_chain!</code></a> macro. <a href="example_generated/struct.Error.html"><code>Error</code></a>s are automatically created from
 foreign errors by the <code>?</code> operator.</p>
 <p>Foreign links and regular links have one crucial difference:
@@ -357,7 +357,7 @@ presented to the user as a new <a href="example_generated/enum.ErrorKind.html"><
 cause will be the original <a href="https://doc.rust-lang.org/std/fmt/struct.Error.html"><code>std::fmt::Error</code></a> error. In contrast, when
 <code>other_error::Error</code> is converted to <code>Error</code> the two <code>ErrorKind</code>s
 are converted between each other to create a new <code>Error</code> but the
-old error is discarded; there is no &quot;cause&quot; created from the
+old error is discarded; there is no “cause” created from the
 original error.</p>
 <h2 id="backtraces" class="section-header"><a href="#backtraces">Backtraces</a></h2>
 <p>If the <code>RUST_BACKTRACE</code> environment variable is set to anything
@@ -413,4 +413,5 @@ Changes:</p>
 macro.</p>
 </td></tr><tr class="module-item"><td><a class="trait" href="trait.ExitCode.html" title="error_chain::ExitCode trait">ExitCode</a></td><td class="docblock-short"><p>Represents a value that can be used as the exit status of the process.
 See <a href="macro.quick_main.html"><code>quick_main!</code></a>.</p>
-</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../";window.currentCrate = "error_chain";</script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>
+</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../" data-current-crate="error_chain" data-search-js="../search-index.js"></div>
+    <script src="../main.js"></script></body></html>

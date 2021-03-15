@@ -1,7 +1,7 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/travis/.cargo/registry/src/github.com-1ecc6299db9ec823/object-0.22.0/src/elf.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>elf.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `/home/runner/.cargo/registry/src/github.com-1ecc6299db9ec823/object-0.23.0/src/elf.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>elf.rs - source</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../object/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
-                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../object/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
+                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -6026,16 +6026,6 @@
 <span id="6023">6023</span>
 <span id="6024">6024</span>
 <span id="6025">6025</span>
-<span id="6026">6026</span>
-<span id="6027">6027</span>
-<span id="6028">6028</span>
-<span id="6029">6029</span>
-<span id="6030">6030</span>
-<span id="6031">6031</span>
-<span id="6032">6032</span>
-<span id="6033">6033</span>
-<span id="6034">6034</span>
-<span id="6035">6035</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="doccomment">//! ELF definitions.</span>
 <span class="doccomment">//!</span>
@@ -6169,6 +6159,8 @@
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ELFMAG</span>: [<span class="ident">u8</span>; <span class="number">4</span>] <span class="op">=</span> [<span class="number">0x7f</span>, <span class="string">b&#39;E&#39;</span>, <span class="string">b&#39;L&#39;</span>, <span class="string">b&#39;F&#39;</span>];
 
 <span class="comment">// Values for `Ident::class`.</span>
+<span class="doccomment">/// Invalid class.</span>
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ELFCLASSNONE</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0</span>;
 <span class="doccomment">/// 32-bit object.</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">ELFCLASS32</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">1</span>;
 <span class="doccomment">/// 64-bit object.</span>
@@ -7037,14 +7029,14 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endian</span><span class="op">&gt;</span> <span class="ident">Rel32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Get the `r_sym` component of the `r_info` field.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_sym</span>(<span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_sym</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
         <span class="self">self</span>.<span class="ident">r_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>) <span class="op">&gt;</span><span class="op">&gt;</span> <span class="number">8</span>
     }
 
     <span class="doccomment">/// Get the `r_type` component of the `r_info` field.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_type</span>(<span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u8</span> {
-        (<span class="self">self</span>.<span class="ident">r_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>) <span class="op">&amp;</span> <span class="number">0xff</span>) <span class="kw">as</span> <span class="ident">u8</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">r_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">endian</span>: <span class="ident">E</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">u32</span> {
+        <span class="self">self</span>.<span class="ident">r_info</span>.<span class="ident">get</span>(<span class="ident">endian</span>) <span class="op">&amp;</span> <span class="number">0xff</span>
     }
 
     <span class="doccomment">/// Calculate the `r_info` field given the `r_sym` and `r_type` components.</span>
@@ -7279,15 +7271,11 @@
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">PF_MASKPROC</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">0xf000_0000</span>;
 
 <span class="doccomment">/// Note name for core files.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// May also appear without the terminator.</span>
-<span class="kw">pub</span> <span class="kw">static</span> <span class="ident">ELF_NOTE_CORE</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;CORE\0&quot;</span>;
+<span class="kw">pub</span> <span class="kw">static</span> <span class="ident">ELF_NOTE_CORE</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;CORE&quot;</span>;
 <span class="doccomment">/// Note name for linux core files.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// May also appear without the terminator.</span>
-<span class="doccomment">///</span>
 <span class="doccomment">/// Notes in linux core files may also use `ELF_NOTE_CORE`.</span>
-<span class="kw">pub</span> <span class="kw">static</span> <span class="ident">ELF_NOTE_LINUX</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;LINUX\0&quot;</span>;
+<span class="kw">pub</span> <span class="kw">static</span> <span class="ident">ELF_NOTE_LINUX</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;LINUX&quot;</span>;
 
 <span class="comment">// Values for `NoteHeader*::n_type` in core files.</span>
 <span class="comment">//</span>
@@ -7431,7 +7419,7 @@
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Dyn32</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endian</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Dynamic entry type.</span>
-    <span class="kw">pub</span> <span class="ident">d_tag</span>: <span class="ident">I32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">d_tag</span>: <span class="ident">U32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>,
     <span class="doccomment">/// Value (integer or address).</span>
     <span class="kw">pub</span> <span class="ident">d_val</span>: <span class="ident">U32</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>,
 }
@@ -7441,7 +7429,7 @@
 <span class="attribute">#[<span class="ident">repr</span>(<span class="ident">C</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Dyn64</span><span class="op">&lt;</span><span class="ident">E</span>: <span class="ident">Endian</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Dynamic entry type.</span>
-    <span class="kw">pub</span> <span class="ident">d_tag</span>: <span class="ident">I64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">d_tag</span>: <span class="ident">U64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>,
     <span class="doccomment">/// Value (integer or address).</span>
     <span class="kw">pub</span> <span class="ident">d_val</span>: <span class="ident">U64</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>,
 }
@@ -7728,14 +7716,14 @@
 }
 
 <span class="doccomment">/// Solaris entries in the note section have this name.</span>
-<span class="kw">pub</span> <span class="kw">static</span> <span class="ident">ELF_NOTE_SOLARIS</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;SUNW Solaris\0&quot;</span>;
+<span class="kw">pub</span> <span class="kw">static</span> <span class="ident">ELF_NOTE_SOLARIS</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;SUNW Solaris&quot;</span>;
 
 <span class="comment">// Values for `n_type` when the name is `ELF_NOTE_SOLARIS`.</span>
 <span class="doccomment">/// Desired pagesize for the binary.</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">NT_SOLARIS_PAGESIZE_HINT</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">1</span>;
 
 <span class="doccomment">/// GNU entries in the note section have this name.</span>
-<span class="kw">pub</span> <span class="kw">static</span> <span class="ident">ELF_NOTE_GNU</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;GNU\0&quot;</span>;
+<span class="kw">pub</span> <span class="kw">static</span> <span class="ident">ELF_NOTE_GNU</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>] <span class="op">=</span> <span class="string">b&quot;GNU&quot;</span>;
 
 <span class="comment">// Note types for `ELF_NOTE_GNU`.</span>
 
@@ -8348,21 +8336,13 @@
 <span class="comment">// MIPS values for `Sym32::st_other`.</span>
 
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">STO_MIPS_DEFAULT</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x0</span>;
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">STO_MIPS_INTERNAL</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x1</span>;
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">STO_MIPS_HIDDEN</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x2</span>;
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">STO_MIPS_PROTECTED</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x3</span>;
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">STO_MIPS_PLT</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0x8</span>;
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
+<span class="doccomment">/// Only valid for `STB_MIPS_SPLIT_COMMON`.</span>
 <span class="kw">pub</span> <span class="kw">const</span> <span class="ident">STO_MIPS_SC_ALIGN_UNUSED</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">0xff</span>;
 
 <span class="comment">// MIPS values for `Sym32::st_info&#39;.</span>
 <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">missing_docs</span>)]</span>
-<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">STB_MIPS_SPLIT_COMMON</span>: <span class="ident">u32</span> <span class="op">=</span> <span class="number">13</span>;
+<span class="kw">pub</span> <span class="kw">const</span> <span class="ident">STB_MIPS_SPLIT_COMMON</span>: <span class="ident">u8</span> <span class="op">=</span> <span class="number">13</span>;
 
 <span class="comment">// Entries found in sections of type `SHT_MIPS_GPTAB`.</span>
 
@@ -12073,4 +12053,5 @@
     <span class="ident">NoteHeader64</span>,
 );
 </pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "object";</script><script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script><script defer src="../../search-index.js"></script></body></html>
+</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="object" data-search-js="../../search-index.js"></div>
+    <script src="../../main.js"></script><script src="../../source-script.js"></script><script src="../../source-files.js"></script></body></html>

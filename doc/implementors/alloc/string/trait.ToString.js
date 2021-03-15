@@ -1,3 +1,3 @@
 (function() {var implementors = {};
-implementors["smartnoise_validator"] = [{"text":"impl ToString for IndexKey","synthetic":false,"types":[]}];
+implementors["smartnoise_validator"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/alloc/string/trait.ToString.html\" title=\"trait alloc::string::ToString\">ToString</a> for <a class=\"enum\" href=\"smartnoise_validator/base/enum.IndexKey.html\" title=\"enum smartnoise_validator::base::IndexKey\">IndexKey</a>","synthetic":false,"types":["smartnoise_validator::base::IndexKey"]}];
 if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

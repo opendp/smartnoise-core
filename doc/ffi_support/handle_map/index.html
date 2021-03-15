@@ -1,7 +1,7 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `handle_map` mod in crate `ffi_support`."><meta name="keywords" content="rust, rustlang, rust-lang, handle_map"><title>ffi_support::handle_map - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="This module provides a [`Handle`] type, which you can think of something like a dynamically checked, type erased reference/pointer type. Depending on the usage pattern a handle can behave as either a borrowed reference, or an owned pointer."><meta name="keywords" content="rust, rustlang, rust-lang, handle_map"><title>ffi_support::handle_map - Rust</title><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled ><script id="default-settings"></script><script src="../../storage.js"></script><script src="../../crates.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../favicon.svg">
 <link rel="alternate icon" type="image/png" href="../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../../ffi_support/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a><p class="location">Module handle_map</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#constants">Constants</a></li></ul></div><p class="location"><a href="../index.html">ffi_support</a></p><script>window.sidebarCurrent = {name: "handle_map", ty: "mod", relpath: "../"};</script><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
-                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span><a class="srclink" href="../../src/ffi_support/handle_map.rs.html#17-1254" title="goto source code">[src]</a></span><span class="in-band">Module <a href="../index.html">ffi_support</a>::<wbr><a class="mod" href="">handle_map</a></span></h1><div class="docblock"><p>This module provides a <a href="../../ffi_support/handle_map/struct.Handle.html" title="Handle"><code>Handle</code></a> type, which you can think of something
+<link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../ffi_support/index.html'><div class='logo-container rust-logo'><img src='../../rust-logo.png' alt='logo'></div></a><p class="location">Module handle_map</p><div class="sidebar-elems"><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#enums">Enums</a></li><li><a href="#constants">Constants</a></li></ul></div><p class="location"><a href="../index.html">ffi_support</a></p><div id="sidebar-vars" data-name="handle_map" data-ty="mod" data-relpath="../"></div><script defer src="../sidebar-items.js"></script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
+                <a id="settings-menu" href="../../settings.html"><img src="../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="in-band">Module <a href="../index.html">ffi_support</a>::<wbr><a class="mod" href="">handle_map</a></span><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span><a class="srclink" href="../../src/ffi_support/handle_map.rs.html#17-1254" title="goto source code">[src]</a></span></h1><div class="docblock"><p>This module provides a <a href="../../ffi_support/handle_map/struct.Handle.html" title="Handle"><code>Handle</code></a> type, which you can think of something
 like a dynamically checked, type erased reference/pointer type. Depending on
 the usage pattern a handle can behave as either a borrowed reference, or an
 owned pointer.</p>
@@ -20,11 +20,11 @@ it better for our purposes as compared to the types in those crates:</p>
 <ol>
 <li>Unlike <code>slab</code> (but like <code>slotmap</code>), we implement versioning, detecting
 ABA problems, which allows us to detect use after free.</li>
-<li>Unlike <code>slotmap</code>, we don't have the <code>T: Copy</code> restriction.</li>
+<li>Unlike <code>slotmap</code>, we don’t have the <code>T: Copy</code> restriction.</li>
 <li>Unlike either, we can detect when you use a Key in a map that did not
 allocate the key. This is true even when the map is from a <code>.so</code> file
 compiled separately.</li>
-<li>Our implementation of doesn't use any <code>unsafe</code> (at the time of this
+<li>Our implementation of doesn’t use any <code>unsafe</code> (at the time of this
 writing).</li>
 </ol>
 <p>However, it comes with the following drawbacks:</p>
@@ -34,32 +34,33 @@ writing).</li>
 potentially fail to detect an ABA issue, wheras we use a <code>u16</code>, and are
 limited to 2<sup>15</sup>.</li>
 <li>Similarly, we can only hold 2<sup>16</sup> items at once, unlike
-<code>slotmap</code>'s 2<sup>32</sup>. (Considering these items are typically things
+<code>slotmap</code>’s 2<sup>32</sup>. (Considering these items are typically things
 like database handles, this is probably plenty).</li>
 <li>Our implementation is slower, and uses slightly more memory than
 <code>slotmap</code> (which is in part due to the lack of <code>unsafe</code> mentioned above)</li>
 </ol>
 <p>The first two issues seem exceptionally unlikely, even for extremely
-long-lived <code>HandleMap</code>, and we're still memory safe even if they occur (we
+long-lived <code>HandleMap</code>, and we’re still memory safe even if they occur (we
 just might fail to notice a bug). The third issue also seems unimportant for
 our use case.</p>
 </div><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2>
 <table><tr class="module-item"><td><a class="struct" href="struct.ConcurrentHandleMap.html" title="ffi_support::handle_map::ConcurrentHandleMap struct">ConcurrentHandleMap</a></td><td class="docblock-short"><p><code>ConcurrentHandleMap</code> is a relatively thin wrapper around
-<code>RwLock&lt;HandleMap&lt;Mutex&lt;T&gt;&gt;&gt;</code>. Due to the nested locking, it's not possible
+<code>RwLock&lt;HandleMap&lt;Mutex&lt;T&gt;&gt;&gt;</code>. Due to the nested locking, it’s not possible
 to implement the same API as <a href="../../ffi_support/handle_map/struct.HandleMap.html" title="HandleMap"><code>HandleMap</code></a>, however it does implement an API
 that offers equivalent functionality, as well as several functions that
 greatly simplify FFI usage (see example below).</p>
 </td></tr><tr class="module-item"><td><a class="struct" href="struct.Handle.html" title="ffi_support::handle_map::Handle struct">Handle</a></td><td class="docblock-short"><p>A Handle we allow to be returned over the FFI by implementing <a href="../../ffi_support/trait.IntoFfi.html" title="IntoFfi"><code>IntoFfi</code></a>.
 This type is intentionally not <code>#[repr(C)]</code>, and getting the data out of the
-FFI is done using <code>Handle::from_u64</code>, or it's implemetation of <code>From&lt;u64&gt;</code>.</p>
+FFI is done using <code>Handle::from_u64</code>, or it’s implemetation of <code>From&lt;u64&gt;</code>.</p>
 </td></tr><tr class="module-item"><td><a class="struct" href="struct.HandleMap.html" title="ffi_support::handle_map::HandleMap struct">HandleMap</a></td><td class="docblock-short"><p><code>HandleMap</code> is a collection type which can hold any type of value, and
 offers a stable handle which can be used to retrieve it on insertion. These
 handles offer methods for converting <a href="../../ffi_support/handle_map/struct.Handle.html#method.into_u64">to</a> and
-<a href="../../ffi_support/handle_map/struct.Handle.html#method.from_u64">from</a> 64 bit integers, meaning they're very easy to pass
+<a href="../../ffi_support/handle_map/struct.Handle.html#method.from_u64">from</a> 64 bit integers, meaning they’re very easy to pass
 over the FFI (they also implement <a href="../../ffi_support/trait.IntoFfi.html" title="IntoFfi"><code>IntoFfi</code></a> for the same purpose).</p>
 </td></tr></table><h2 id="enums" class="section-header"><a href="#enums">Enums</a></h2>
 <table><tr class="module-item"><td><a class="enum" href="enum.HandleError.html" title="ffi_support::handle_map::HandleError enum">HandleError</a></td><td class="docblock-short"><p>An error representing the ways a <code>Handle</code> may be invalid.</p>
 </td></tr></table><h2 id="constants" class="section-header"><a href="#constants">Constants</a></h2>
 <table><tr class="module-item"><td><a class="constant" href="constant.MAX_CAPACITY.html" title="ffi_support::handle_map::MAX_CAPACITY constant">MAX_CAPACITY</a></td><td class="docblock-short"><p>The maximum capacity of a <a href="../../ffi_support/handle_map/struct.HandleMap.html" title="HandleMap"><code>HandleMap</code></a>. Attempting to instantiate one with
 a larger capacity will cause a panic.</p>
-</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../../";window.currentCrate = "ffi_support";</script><script src="../../main.js"></script><script defer src="../../search-index.js"></script></body></html>
+</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../" data-current-crate="ffi_support" data-search-js="../../search-index.js"></div>
+    <script src="../../main.js"></script></body></html>

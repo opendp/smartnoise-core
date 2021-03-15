@@ -1,5 +1,5 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="API documentation for the Rust `getrandom` crate."><meta name="keywords" content="rust, rustlang, rust-lang, getrandom"><title>getrandom - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../ayu.css" disabled ><script id="default-settings"></script><script src="../storage.js"></script><noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="shortcut icon" href="https://www.rust-lang.org/favicon.ico"><style type="text/css">#crate-search{background-image:url("../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu">&#9776;</div><a href='../getrandom/index.html'><div class='logo-container'><img src='https://www.rust-lang.org/logos/rust-logo-128x128-blk.png' alt='logo'></div></a><p class="location">Crate getrandom</p><div class="block version"><p>Version 0.1.15</p></div><div class="sidebar-elems"><a id="all-types" href="all.html"><p>See all getrandom's items</p></a><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#functions">Functions</a></li></ul></div><p class="location"></p><script>window.sidebarCurrent = {name: "getrandom", ty: "mod", relpath: "../"};</script></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../brush.svg" width="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><span class="help-button">?</span>
-                <a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span><a class="srclink" href="../src/getrandom/lib.rs.html#9-282" title="goto source code">[src]</a></span><span class="in-band">Crate <a class="mod" href="">getrandom</a></span></h1><div class="docblock"><p>Interface to the random number generator of the operating system.</p>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Interface to the random number generator of the operating system."><meta name="keywords" content="rust, rustlang, rust-lang, getrandom"><title>getrandom - Rust</title><link rel="stylesheet" type="text/css" href="../normalize.css"><link rel="stylesheet" type="text/css" href="../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../ayu.css" disabled ><script id="default-settings"></script><script src="../storage.js"></script><script src="../crates.js"></script><noscript><link rel="stylesheet" href="../noscript.css"></noscript><link rel="shortcut icon" href="https://www.rust-lang.org/favicon.ico"><style type="text/css">#crate-search{background-image:url("../down-arrow.svg");}</style></head><body class="rustdoc mod"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../getrandom/index.html'><div class='logo-container'><img src='https://www.rust-lang.org/logos/rust-logo-128x128-blk.png' alt='logo'></div></a><p class="location">Crate getrandom</p><div class="block version"><p>Version 0.1.16</p></div><div class="sidebar-elems"><a id="all-types" href="all.html"><p>See all getrandom's items</p></a><div class="block items"><ul><li><a href="#structs">Structs</a></li><li><a href="#functions">Functions</a></li></ul></div><p class="location"></p><div id="sidebar-vars" data-name="getrandom" data-ty="mod" data-relpath="../"></div></div></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
+                <a id="settings-menu" href="../settings.html"><img src="../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><h1 class="fqn"><span class="in-band">Crate <a class="mod" href="">getrandom</a></span><span class="out-of-band"><span id="render-detail"><a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">[<span class="inner">&#x2212;</span>]</a></span><a class="srclink" href="../src/getrandom/lib.rs.html#9-292" title="goto source code">[src]</a></span></h1><div class="docblock"><p>Interface to the random number generator of the operating system.</p>
 <h1 id="platform-sources" class="section-header"><a href="#platform-sources">Platform sources</a></h1><table><thead><tr><th>OS</th><th>interface</th></tr></thead><tbody>
 <tr><td>Linux, Android</td><td><a href="http://man7.org/linux/man-pages/man2/getrandom.2.html"><code>getrandom</code></a> system call if available, otherwise <a href="http://man7.org/linux/man-pages/man4/urandom.4.html"><code>/dev/urandom</code></a> after successfully polling <code>/dev/random</code></td></tr>
 <tr><td>Windows</td><td><a href="https://docs.microsoft.com/en-us/windows/desktop/api/ntsecapi/nf-ntsecapi-rtlgenrandom"><code>RtlGenRandom</code></a></td></tr>
@@ -21,7 +21,7 @@
 <tr><td>Node.js</td><td><a href="https://nodejs.org/api/crypto.html#crypto_crypto_randombytes_size_callback"><code>crypto.randomBytes</code></a> (see <a href="#support-for-webassembly-and-asmjs">Support for WebAssembly and asm.js</a>)</td></tr>
 <tr><td>WASI</td><td><a href="https://github.com/WebAssembly/WASI/blob/master/design/WASI-core.md#__wasi_random_get"><code>__wasi_random_get</code></a></td></tr>
 </tbody></table>
-<p>Getrandom doesn't have a blanket implementation for all Unix-like operating
+<p>Getrandom doesn’t have a blanket implementation for all Unix-like operating
 systems that reads from <code>/dev/urandom</code>. This ensures all supported operating
 systems are using the recommended interface and respect maximum buffer
 sizes.</p>
@@ -36,10 +36,10 @@ to switch to a custom implementation with a support of your target.</li>
 fails at run-time on unsupported targets.</li>
 </ul>
 <h2 id="support-for-webassembly-and-asmjs" class="section-header"><a href="#support-for-webassembly-and-asmjs">Support for WebAssembly and asm.js</a></h2>
-<p>Getrandom supports all of Rust's current <code>wasm32</code> targets, and it works with
+<p>Getrandom supports all of Rust’s current <code>wasm32</code> targets, and it works with
 both Node.js and web browsers. The three Emscripten targets
 <code>asmjs-unknown-emscripten</code>, <code>wasm32-unknown-emscripten</code>, and
-<code>wasm32-experimental-emscripten</code> use Emscripten's <code>/dev/random</code> emulation.
+<code>wasm32-experimental-emscripten</code> use Emscripten’s <code>/dev/random</code> emulation.
 The WASI target <code>wasm32-wasi</code> uses the <a href="https://github.com/WebAssembly/WASI/blob/master/design/WASI-core.md#__wasi_random_get"><code>__wasi_random_get</code></a> function
 defined by the WASI standard.</p>
 <p>Getrandom also supports <code>wasm32-unknown-unknown</code> by directly calling
@@ -49,21 +49,21 @@ JavaScript methods. Rust currently has two ways to do this: <a href="https://git
 enabled, <code>wasm-bindgen</code> will be used. If neither feature is enabled, calls
 to <code>getrandom</code> will always fail at runtime.</p>
 <h2 id="early-boot" class="section-header"><a href="#early-boot">Early boot</a></h2>
-<p>It is possible that early in the boot process the OS hasn't had enough time
+<p>It is possible that early in the boot process the OS hasn’t had enough time
 yet to collect entropy to securely seed its RNG, especially on virtual
 machines.</p>
 <p>Some operating systems always block the thread until the RNG is securely
 seeded. This can take anywhere from a few seconds to more than a minute.
-Others make a best effort to use a seed from before the shutdown and don't
+Others make a best effort to use a seed from before the shutdown and don’t
 document much.</p>
 <p>A few, Linux, NetBSD and Solaris, offer a choice between blocking and
 getting an error; in these cases we always choose to block.</p>
 <p>On Linux (when the <code>getrandom</code> system call is not available) and on NetBSD
-reading from <code>/dev/urandom</code> never blocks, even when the OS hasn't collected
+reading from <code>/dev/urandom</code> never blocks, even when the OS hasn’t collected
 enough entropy yet. To avoid returning low-entropy bytes, we first read from
 <code>/dev/random</code> and only switch to <code>/dev/urandom</code> once this has succeeded.</p>
 <h1 id="error-handling" class="section-header"><a href="#error-handling">Error handling</a></h1>
-<p>We always choose failure over returning insecure &quot;random&quot; bytes. In general,
+<p>We always choose failure over returning insecure “random” bytes. In general,
 on supported platforms, failure is highly unlikely, though not impossible.
 If an error does occur, then it is likely that it will occur on every call to
 <code>getrandom</code>, hence after the first successful call one can be reasonably
@@ -73,6 +73,7 @@ for more information on what data is returned on failure.</p>
 </div><h2 id="structs" class="section-header"><a href="#structs">Structs</a></h2>
 <table><tr class="module-item"><td><a class="struct" href="struct.Error.html" title="getrandom::Error struct">Error</a></td><td class="docblock-short"><p>A small and <code>no_std</code> compatible error type.</p>
 </td></tr></table><h2 id="functions" class="section-header"><a href="#functions">Functions</a></h2>
-<table><tr class="module-item"><td><a class="fn" href="fn.getrandom.html" title="getrandom::getrandom fn">getrandom</a></td><td class="docblock-short"><p>Fill <code>dest</code> with random bytes from the system's preferred random number
+<table><tr class="module-item"><td><a class="fn" href="fn.getrandom.html" title="getrandom::getrandom fn">getrandom</a></td><td class="docblock-short"><p>Fill <code>dest</code> with random bytes from the system’s preferred random number
 source.</p>
-</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><script>window.rootPath = "../";window.currentCrate = "getrandom";</script><script src="../main.js"></script><script defer src="../search-index.js"></script></body></html>
+</td></tr></table></section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../" data-current-crate="getrandom" data-search-js="../search-index.js"></div>
+    <script src="../main.js"></script></body></html>
