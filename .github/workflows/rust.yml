@@ -1,6 +1,6 @@
 name: Rust
 
-on: [push, pull]
+on: [push]  #, pull_request]
 #  push:
 #    branches: [348-action]
 #     #pull_request:
@@ -16,16 +16,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Build
-      if: env.BRANCH == '348-actionz'
-      run: |
-        cd ffi-rust;
-        cargo build --verbose --workspace;
-    - name: Run tests
-      if: env.BRANCH == '348-actionz'
-      run: |
-        cd ffi-rust;
-        cargo test --verbose --workspace;
     - name: Build docs
       if: env.BRANCH == '348-action'
       run: |
@@ -33,3 +23,11 @@ jobs:
         with:
           branch: gh-pages # The branch the action should deploy to.
           folder: docs # The folder the action should deploy.
+    - name: Build
+      run: |
+        cd ffi-rust;
+        cargo build --verbose --workspace;
+    - name: Run tests
+      run: |
+        cd ffi-rust;
+        cargo test --verbose --workspace;
