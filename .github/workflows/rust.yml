@@ -26,19 +26,19 @@ jobs:
         echo "Branch!! ${{ steps.extract_branch.outputs.branch }}";
         echo "Branch!! ${ steps.extract_branch.outputs.branch }";
     - name: Build docs
-      if: ${ steps.extract_branch.outputs.branch } == 'xx348-action'
+      if: ${{ steps.extract_branch.outputs.branch }} == 'hello348-action'
       run: |
         bash scripts/build_docs.sh;
         with:
           branch: gh-pages # The branch the action should deploy to.
           folder: docs # The folder the action should deploy.
     - name: Build
-      if: ${{ steps.extract_branch.outputs.branch }} == 'xx348-action'
+      if: ${{ steps.extract_branch.outputs.branch }} == 'hello348-action'
       run: |
         cd ffi-rust;
         cargo build --verbose --workspace;
     - name: Run tests
-      if: ${{ steps.extract_branch.outputs.branch }} == 'xx348-action'
+      if: ${{ steps.extract_branch.outputs.branch }} == 'hello348-action'
       run: |
         cd ffi-rust;
         cargo test --verbose --workspace;
