@@ -17,10 +17,19 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Build
+      if: env.BRANCH == '348-actionz'
       run: |
         cd ffi-rust;
         cargo build --verbose --workspace;
     - name: Run tests
+      if: env.BRANCH == '348-actionz'
       run: |
         cd ffi-rust;
         cargo test --verbose --workspace;
+    - name: Build docs
+      if: env.BRANCH == '348-action'
+      run: |
+        bash scripts/build_docs.sh;
+        with:
+          branch: gh-pages # The branch the action should deploy to.
+          folder: docs # The folder the action should deploy.
