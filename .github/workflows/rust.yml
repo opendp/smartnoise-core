@@ -28,7 +28,7 @@ jobs:
         cargo test --verbose --workspace;
 
   make-docs:
-    if: github.ref == 'refs/heads/master'
+    if: github.ref == 'refs/heads/348-action'
     runs-on: ubuntu-latest
 
     steps:
