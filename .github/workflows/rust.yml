@@ -10,14 +10,33 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
-    if: github.ref == 'refs/heads/348-action'
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build
+      id: build_rust_project
+      run: |
+       cd ffi-rust;
+       cargo build --verbose --workspace;
+   - name: Run tests
+      id: run_rust_tests
+      run: |
+      cd ffi-rust;
+      cargo test --verbose --workspace;
+
+  create_docs:
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v2
 
     - name: Build docs
+      #  Note: Doesn't use previous "build_and_test" job.
+      #    - gmp-mpfr-sys requires nightly to build documentation
       run: |
         bash scripts/build_docs.sh;
     - name: Deploy docs
