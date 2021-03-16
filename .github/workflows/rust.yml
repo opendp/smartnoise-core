@@ -1,10 +1,8 @@
 name: Rust
 
-on: #[push, pull_request]
-  push:
-    branches: [348-action]
-#     #pull_request:
-#  #  branches: [ develop ]
+on: [push, pull_request]
+#  push:
+#    branches: [348-action]
 
 env:
   CARGO_TERM_COLOR: always
@@ -28,7 +26,7 @@ jobs:
         cargo test --verbose --workspace;
 
   make-docs:
-    if: github.ref == 'refs/heads/348-action'
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
 
     steps:
