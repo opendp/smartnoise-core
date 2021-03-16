@@ -523,49 +523,14 @@ pub fn expand_mechanism(
     let privacy_definition = privacy_definition.as_ref()
         .ok_or_else(|| "privacy definition must be defined")?;
 
-    // always overwrite sensitivity. This is not something a user may configure
     let data_property: ArrayProperties = properties.get::<IndexKey>(&"data".into())
         .ok_or("data: missing")?.array()
         .map_err(prepend("data:"))?.clone();
 
-    let aggregator = data_property.aggregator.as_ref()
-        .ok_or_else(|| Error::from("aggregator: missing"))?;
-
-    // sensitivity scaling
-    let mut sensitivity_value = aggregator.component.compute_sensitivity(
-        privacy_definition,
-        &aggregator.properties,
-        &sensitivity_type)?;
-
-    match aggregator.lipschitz_constants.clone().array()? {
-        Array::Float(lipschitz) => {
-            if lipschitz.iter().any(|v| v != &1.) {
-                let mut sensitivity = sensitivity_value.array()?.float()?;
-                sensitivity.mul_assign(&lipschitz);
-                sensitivity_value = sensitivity.into();
-            }
-        },
-        Array::Int(lipschitz) => {
-            if lipschitz.iter().any(|v| v != &1) {
-                let mut sensitivity = sensitivity_value.array()?.int()?;
-                sensitivity.mul_assign(&lipschitz);
-                sensitivity_value = sensitivity.into();
-            }
-        },
-        _ => return Err(Error::from("lipschitz constants must be numeric"))
-    };
-
-    maximum_id += 1;
-    let id_sensitivity = maximum_id;
-    let (patch_node, release) = get_literal(sensitivity_value.clone(), component.submission)?;
-    expansion.computation_graph.insert(id_sensitivity, patch_node);
-    expansion.properties.insert(id_sensitivity, infer_property(&release.value, None, id_sensitivity)?);
-    expansion.releases.insert(id_sensitivity, release);
-
     // spread privacy usage over each column
     let spread_usages = spread_privacy_usage(
         // spread usage over each column
-        privacy_usage, sensitivity_value.array()?.num_columns()? as usize)?;
+        privacy_usage, data_property.num_columns()? as usize)?;
 
     // convert to effective usage
     let effective_usages = spread_usages.into_iter()
@@ -578,7 +543,6 @@ pub fn expand_mechanism(
 
     // insert sensitivity and usage
     let mut noise_component = component.clone();
-    noise_component.insert_argument(&"sensitivity".into(), id_sensitivity);
 
     macro_rules! assign_usage {
         ($($variant:ident),*) => {
@@ -591,9 +555,67 @@ pub fn expand_mechanism(
     }
     assign_usage!(LaplaceMechanism, GaussianMechanism, SimpleGeometricMechanism, SnappingMechanism);
 
+    if let Some(sensitivity_property) = properties.get(&IndexKey::from("sensitivity")) {
+        if privacy_definition.protect_sensitivity {
+            return Err(Error::from("custom sensitivities may only be passed if protect_sensitivity is disabled"))
+        }
+        check_sensitivity_properties(sensitivity_property.array()?, &data_property)?;
+    } else {
+        let aggregator = data_property.aggregator.as_ref()
+            .ok_or_else(|| Error::from("aggregator: missing"))?;
+
+        // sensitivity scaling
+        let mut sensitivity_value = aggregator.component.compute_sensitivity(
+            privacy_definition,
+            &aggregator.properties,
+            &sensitivity_type)?;
+
+        match aggregator.lipschitz_constants.clone().array()? {
+            Array::Float(lipschitz) => {
+                if lipschitz.iter().any(|v| v != &1.) {
+                    let mut sensitivity = sensitivity_value.array()?.float()?;
+                    sensitivity.mul_assign(&lipschitz);
+                    sensitivity_value = sensitivity.into();
+                }
+            },
+            Array::Int(lipschitz) => {
+                if lipschitz.iter().any(|v| v != &1) {
+                    let mut sensitivity = sensitivity_value.array()?.int()?;
+                    sensitivity.mul_assign(&lipschitz);
+                    sensitivity_value = sensitivity.into();
+                }
+            },
+            _ => return Err(Error::from("lipschitz constants must be numeric"))
+        };
+
+        maximum_id += 1;
+        let id_sensitivity = maximum_id;
+        let (patch_node, release) = get_literal(sensitivity_value.clone(), component.submission)?;
+        expansion.computation_graph.insert(id_sensitivity, patch_node);
+        expansion.properties.insert(id_sensitivity, infer_property(&release.value, None, id_sensitivity)?);
+        expansion.releases.insert(id_sensitivity, release);
+        noise_component.insert_argument(&"sensitivity".into(), id_sensitivity);
+    }
+
     expansion.computation_graph.insert(component_id, noise_component);
 
     Ok(expansion)
+}
+
+pub fn check_sensitivity_properties(
+    sensitivity_property: &ArrayProperties, data_property: &ArrayProperties
+) -> Result<()> {
+    if sensitivity_property.num_columns()? != data_property.num_columns()? {
+        return Err(Error::from(format!("sensitivity has {:?} columns, while the expected shape has {:?} columns.", sensitivity_property.num_columns()?, data_property.num_columns()?)));
+    }
+    if sensitivity_property.num_records()? != data_property.num_records()? {
+        return Err(Error::from(format!("sensitivity has {:?} records, while the expected shape has {:?} records.", sensitivity_property.num_records()?, data_property.num_records()?)));
+    }
+    if sensitivity_property.dimensionality.map(|dim| dim > 2).unwrap_or(false) {
+        return Err(Error::from("sensitivity may not have dimensionality greater than 2"))
+    }
+
+    Ok(())
 }
 
 /// given a vector of items, return the shared item, or None, if no item is shared

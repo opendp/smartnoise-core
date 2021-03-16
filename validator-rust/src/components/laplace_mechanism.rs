@@ -106,26 +106,13 @@ impl Mechanism for proto::LaplaceMechanism {
 impl Accuracy for proto::LaplaceMechanism {
     fn accuracy_to_privacy_usage(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &base::NodeProperties,
         accuracies: &proto::Accuracies,
-        _public_arguments: IndexMap<base::IndexKey, &Value>
+        mut public_arguments: IndexMap<base::IndexKey, &Value>
     ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
-        let data_property = properties.get::<IndexKey>(&"data".into())
-            .ok_or("data: missing")?.array()
-            .map_err(prepend("data:"))?.clone();
-
-        let aggregator = data_property.aggregator
-            .ok_or_else(|| Error::from("aggregator: missing"))?;
-
-        // sensitivity must be computable
-        let sensitivity_values = aggregator.component.compute_sensitivity(
-            &privacy_definition,
-            &aggregator.properties,
-            &SensitivitySpace::KNorm(1))?;
-
         // take max sensitivity of each column
-        let sensitivities: Vec<_> = sensitivity_values.array()?.cast_float()?
+        let sensitivities: Vec<_> = public_arguments.remove(&IndexKey::from("sensitivity"))
+            .ok_or_else(|| Error::from("sensitivity: missing in accuracy"))?.clone()
+            .array()?.cast_float()?
             .gencolumns().into_iter()
             .map(|sensitivity_col| sensitivity_col.into_iter().copied().fold1(|l, r| l.max(r)).unwrap())
             .collect();
@@ -142,31 +129,19 @@ impl Accuracy for proto::LaplaceMechanism {
 
     fn privacy_usage_to_accuracy(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &base::NodeProperties,
-        _public_arguments: IndexMap<base::IndexKey, &Value>,
+        mut public_arguments: IndexMap<base::IndexKey, &Value>,
         alpha: f64
     ) -> Result<Option<Vec<proto::Accuracy>>> {
-        let data_property = properties.get::<IndexKey>(&"data".into())
-            .ok_or("data: missing")?.array()
-            .map_err(prepend("data:"))?.clone();
-
-        let aggregator = data_property.aggregator.as_ref()
-            .ok_or_else(|| Error::from("aggregator: missing"))?;
-
-        // sensitivity must be computable
-        let sensitivity_values = aggregator.component.compute_sensitivity(
-            &privacy_definition,
-            &aggregator.properties,
-            &SensitivitySpace::KNorm(1))?;
 
         // take max sensitivity of each column
-        let sensitivities: Vec<_> = sensitivity_values.array()?.cast_float()?
+        let sensitivities: Vec<_> = public_arguments.remove(&IndexKey::from("sensitivity"))
+            .ok_or_else(|| Error::from("sensitivity: missing in accuracy"))?.clone()
+            .array()?.cast_float()?
             .gencolumns().into_iter()
             .map(|sensitivity_col| sensitivity_col.into_iter().copied().fold1(|l, r| l.max(r)).unwrap())
             .collect();
 
-        let usages = spread_privacy_usage(&self.privacy_usage, data_property.num_columns()? as usize)?;
+        let usages = spread_privacy_usage(&self.privacy_usage, sensitivities.len())?;
         let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
         Ok(Some(sensitivities.into_iter().zip(epsilons.into_iter())

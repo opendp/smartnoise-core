@@ -1,13 +1,19 @@
 {
   "arguments": {
-    "utilities": {
-      "type_value": "Array",
-      "description": "Respective scores for each candidate. Total number of records must match candidates."
-    },
-    "candidates": {
-      "type_value": "Array",
-      "description": "Set from which the Exponential mechanism will return an element. Total number of records must match utilities."
-    }
+      "utilities": {
+          "type_value": "Array",
+          "description": "Respective scores for each candidate. Total number of records must match candidates."
+      },
+      "candidates": {
+          "type_value": "Array",
+          "description": "Set from which the Exponential mechanism will return an element. Total number of records must match utilities."
+      },
+      "sensitivity": {
+          "type_value": "Array",
+          "default_python": "None",
+          "default_rust": "None",
+          "description": "Override the sensitivity computed by the library. Rejected unless `protect_sensitivity` is disabled."
+      }
   },
   "id": "ExponentialMechanism",
   "name": "exponential_mechanism",

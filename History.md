@@ -1,4 +1,19 @@
+### v0.2.2
+* Custom sensitivities may be passed directly to mechanisms
+    - `protect_sensitivity` must be disabled in the privacy definition
+* Expand documentation for each component as well as Python Analysis class
+* Python Bindings: Analysis initializer only accepts keyword arguments.
+
+### v0.2.0
+* Bump minor version to reflect change in default behavior in v0.1.1
+
+### v0.1.2
+* Minor readme changes
+
 ### v0.1.1
+* Python Bindings: enable `protect_floating_point` by default. 
+    - Real-valued queries are less susceptible to floating-point attacks, at the cost of utility 
+    - Use `sn.Analysis(protect_floating_point=False)` to enable the laplace and (analytic) gaussian mechanisms 
 * Fix noise scaling issues in the Gaussian and Analytic Gaussian mechanism
 * Fixes for Gaussian and Analytic Gaussian accuracy
 * Postprocess geometric mechanism noise with clamping
@@ -19,7 +34,3 @@
 * Tightened c-stability checks to protect against adversarial dataset reordering when unioning data partitions
 * Modified error messages to contain suggested fixes
 * Bugfix to retain statistics when generating reports
-
-### v0.1.1
-* Fixed privacy usage such that delta == 0 is allowed.
-* Split check_params function into check_epsilon and check_delta

@@ -1,27 +1,33 @@
 {
   "arguments": {
-    "data": {
-      "type_value": "Array",
-      "description": "Result to be released privately via the Snapping mechanism. Array members must be of type float or of type integer."
-    },
-    "lower": {
-      "type_value": "Array",
-      "default_python": "None",
-      "default_rust": "None",
-      "description": "Estimated minimum possible value of the data. Only useful for the snapping mechanism. This argument is required."
-    },
-    "upper": {
-      "type_value": "Array",
-      "default_python": "None",
-      "default_rust": "None",
-      "description": "Estimated maximum possible value of the statistic. Only useful for the snapping mechanism. This argument is required."
-    },
-    "binding_probability": {
-      "type_value": "Array",
-      "default_python": "None",
-      "default_rust": "None",
-      "description": "Upper bound on probability that final clamp binds. Must be within [0, 1)."
-    }
+      "data": {
+          "type_value": "Array",
+          "description": "Result to be released privately via the Snapping mechanism. Array members must be of type float or of type integer."
+      },
+      "lower": {
+          "type_value": "Array",
+          "default_python": "None",
+          "default_rust": "None",
+          "description": "Estimated minimum possible value of the data. Only useful for the snapping mechanism. This argument is required."
+      },
+      "upper": {
+          "type_value": "Array",
+          "default_python": "None",
+          "default_rust": "None",
+          "description": "Estimated maximum possible value of the statistic. Only useful for the snapping mechanism. This argument is required."
+      },
+      "binding_probability": {
+          "type_value": "Array",
+          "default_python": "None",
+          "default_rust": "None",
+          "description": "Upper bound on probability that final clamp binds. Must be within [0, 1)."
+      },
+      "sensitivity": {
+          "type_value": "Array",
+          "default_python": "None",
+          "default_rust": "None",
+          "description": "Override the sensitivity computed by the library. Rejected unless `protect_sensitivity` is disabled."
+      }
   },
   "id": "SnappingMechanism",
   "name": "snapping_mechanism",

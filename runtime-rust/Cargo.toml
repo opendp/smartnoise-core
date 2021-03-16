@@ -1,12 +1,12 @@
 [package]
 name = "smartnoise_runtime"
-version = "0.1.1"
-authors = ["OpenDP-SmartNoise <smartnoise@opendp.io>"]
+version = "0.2.2"
+authors = ["OpenDP-SmartNoise <smartnoise@opendp.org>"]
 description = "A library of algorithms for differentially private data analysis."
 readme = "README.md"
 keywords = ["differential-privacy", "data-privacy", "privacy"]
 categories = ["cryptography", "science"] # up to 5 allowed, must match those listed at https://crates.io/category_slugs
-repository = "https://github.com/opendifferentialprivacy/smartnoise-core"
+repository = "https://github.com/opendp/smartnoise-core"
 edition = "2018"
 license = "MIT"
 
@@ -40,7 +40,7 @@ statrs = "0.12.0"
     optional = true
 
     [dependencies.smartnoise_validator]
-    version = "0.1.1"
+    version = "0.2.2"
     path = "../validator-rust/"
 
 [features]

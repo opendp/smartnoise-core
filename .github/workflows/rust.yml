@@ -1,0 +1,55 @@
+name: Rust
+
+on: [push, pull_request]
+#  push:
+#    branches: [348-action]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build
+      id: build_rust_project
+      run: |
+       cd ffi-rust;
+       cargo build --verbose --workspace;
+    - name: Run tests
+      id: run_rust_tests
+      run: |
+        cd ffi-rust;
+        cargo test --verbose --workspace;
+
+  make-docs:
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Build docs
+      #  Note: Doesn't use previous "build_and_test" job.
+      #    - gmp-mpfr-sys requires nightly to build documentation
+      run: |
+        bash scripts/build_docs.sh;
+    - name: Deploy docs
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        publish_dir: ./docs  # default: public
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        publish_branch: gh-pages
+    #- name: Build
+    #  #if: ${{ steps.extract_branch.outputs.branch }} == 'hello348-action'
+    #  run: |
+    #    cd ffi-rust;
+    #    cargo build --verbose --workspace;
+    #- name: Run tests
+    #  if: ${{ steps.extract_branch.outputs.branch }} == 'hello348-action'
+    #  run: |
+    #    cd ffi-rust;
+    #    cargo test --verbose --workspace;

@@ -166,26 +166,13 @@ impl Mechanism for proto::SnappingMechanism {
 impl Accuracy for proto::SnappingMechanism {
     fn accuracy_to_privacy_usage(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &base::NodeProperties,
         accuracies: &proto::Accuracies,
         mut public_arguments: IndexMap<base::IndexKey, &Value>
     ) -> Result<Option<Vec<proto::PrivacyUsage>>> {
-        let data_property = properties.get::<IndexKey>(&"data".into())
-            .ok_or("data: missing")?.array()
-            .map_err(prepend("data:"))?.clone();
-
-        let aggregator = data_property.aggregator.as_ref()
-            .ok_or_else(|| Error::from("aggregator: missing"))?;
-
-        // sensitivity must be computable
-        let sensitivity_values = aggregator.component.compute_sensitivity(
-            &privacy_definition,
-            &aggregator.properties,
-            &SensitivitySpace::KNorm(1))?;
-
         // take max sensitivity of each column
-        let sensitivities: Vec<_> = sensitivity_values.array()?.cast_float()?
+        let sensitivities: Vec<_> = public_arguments.remove(&IndexKey::from("sensitivity"))
+            .ok_or_else(|| Error::from("sensitivity: missing in accuracy"))?.clone()
+            .array()?.cast_float()?
             .gencolumns().into_iter()
             .map(|sensitivity_col| sensitivity_col.into_iter().copied().fold1(|l, r| l.max(r)).unwrap())
             .collect();
@@ -193,13 +180,13 @@ impl Accuracy for proto::SnappingMechanism {
         let lower = standardize_numeric_argument(
             public_arguments.remove(&IndexKey::from("lower"))
                 .ok_or_else(|| Error::from("lower: missing"))?.clone().array()?.cast_float()?,
-            data_property.num_columns()?)?
+            sensitivities.len() as i64)?
             .into_dimensionality::<ndarray::Ix1>()?.to_vec();
 
         let upper = standardize_numeric_argument(
             public_arguments.remove(&IndexKey::from("upper"))
                 .ok_or_else(|| Error::from("upper: missing"))?.clone().array()?.cast_float()?,
-            data_property.num_columns()?)?
+            sensitivities.len() as i64)?
             .into_dimensionality::<ndarray::Ix1>()?.to_vec();
 
         Some(sensitivities.into_iter().zip(accuracies.values.iter())
@@ -215,43 +202,30 @@ impl Accuracy for proto::SnappingMechanism {
 
     fn privacy_usage_to_accuracy(
         &self,
-        privacy_definition: &proto::PrivacyDefinition,
-        properties: &base::NodeProperties,
         mut public_arguments: IndexMap<base::IndexKey, &Value>,
         alpha: f64
     ) -> Result<Option<Vec<proto::Accuracy>>> {
-        let data_property = properties.get::<IndexKey>(&"data".into())
-            .ok_or("data: missing")?.array()
-            .map_err(prepend("data:"))?.clone();
-
-        let aggregator = data_property.aggregator.as_ref()
-            .ok_or_else(|| Error::from("aggregator: missing"))?;
-
-        // sensitivity must be computable
-        let sensitivity_values = aggregator.component.compute_sensitivity(
-            &privacy_definition,
-            &aggregator.properties,
-            &SensitivitySpace::KNorm(1))?;
-
         // take max sensitivity of each column
-        let sensitivities: Vec<_> = sensitivity_values.array()?.cast_float()?
+        let sensitivities: Vec<_> = public_arguments.remove(&IndexKey::from("sensitivity"))
+            .ok_or_else(|| Error::from("sensitivity: missing in accuracy"))?.clone()
+            .array()?.cast_float()?
             .gencolumns().into_iter()
             .map(|sensitivity_col| sensitivity_col.into_iter().copied().fold1(|l, r| l.max(r)).unwrap())
             .collect();
 
-        let usages = spread_privacy_usage(&self.privacy_usage, data_property.num_columns()? as usize)?;
+        let usages = spread_privacy_usage(&self.privacy_usage, sensitivities.len())?;
         let epsilons = usages.iter().map(get_epsilon).collect::<Result<Vec<f64>>>()?;
 
         let lower = standardize_numeric_argument(
             public_arguments.remove(&IndexKey::from("lower"))
                 .ok_or_else(|| Error::from("lower: missing"))?.clone().array()?.cast_float()?,
-            data_property.num_columns()?)?
+            sensitivities.len() as i64)?
             .into_dimensionality::<ndarray::Ix1>()?.to_vec();
 
         let upper = standardize_numeric_argument(
             public_arguments.remove(&IndexKey::from("upper"))
                 .ok_or_else(|| Error::from("upper: missing"))?.clone().array()?.cast_float()?,
-            data_property.num_columns()?)?
+            sensitivities.len() as i64)?
             .into_dimensionality::<ndarray::Ix1>()?.to_vec();
 
         Some(sensitivities.into_iter().zip(epsilons.into_iter())
@@ -279,7 +253,7 @@ pub fn get_smallest_greater_or_eq_power_of_two(x: f64) -> Result<i16> {
 }
 
 /// Gets functional epsilon for Snapping mechanism such that privacy loss does not exceed the user's proposed budget.
-/// Described in https://github.com/opendifferentialprivacy/smartnoise-core/blob/develop/whitepapers/mechanisms/snapping/snapping_implementation_notes.pdf
+/// Described in https://github.com/opendp/smartnoise-core/blob/develop/whitepapers/mechanisms/snapping/snapping_implementation_notes.pdf
 ///
 /// # Arguments
 /// * `epsilon` - Desired privacy guarantee.
@@ -294,7 +268,7 @@ pub fn redefine_epsilon(epsilon: f64, b: f64, precision: u32) -> f64 {
 }
 
 /// Finds accuracy that is achievable given desired epsilon and confidence requirements. Described in
-/// https://github.com/opendifferentialprivacy/smartnoise-core/blob/develop/whitepapers/mechanisms/snapping/snapping_implementation_notes.pdf
+/// https://github.com/opendp/smartnoise-core/blob/develop/whitepapers/mechanisms/snapping/snapping_implementation_notes.pdf
 ///
 /// # Arguments
 /// * `alpha` - Desired confidence level.
@@ -315,7 +289,7 @@ pub fn epsilon_to_accuracy(
 }
 
 /// Finds epsilon that will achieve desired accuracy and confidence requirements. Described in
-/// https://github.com/opendifferentialprivacy/smartnoise-core/blob/develop/whitepapers/mechanisms/snapping/snapping_implementation_notes.pdf
+/// https://github.com/opendp/smartnoise-core/blob/develop/whitepapers/mechanisms/snapping/snapping_implementation_notes.pdf
 ///
 /// Note that not all accuracies have an epsilon, due to the clamping in the snapping mechanism.
 /// In these cases, accuracy is treated as an upper bound,

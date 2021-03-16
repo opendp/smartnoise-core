@@ -42,7 +42,7 @@ impl Component for proto::Mean {
 }
 
 impl Sensitivity for proto::Mean {
-    /// Mean sensitivities [are backed by the the proofs here](https://github.com/opendifferentialprivacy/smartnoise-core/blob/955703e3d80405d175c8f4642597ccdf2c00332a/whitepapers/sensitivities/mean/mean.pdf).
+    /// Mean sensitivities [are backed by the the proofs here](https://github.com/opendp/smartnoise-core/blob/master/whitepapers/sensitivities/mean/mean.pdf).
     fn compute_sensitivity(
         &self,
         _privacy_definition: &proto::PrivacyDefinition,

@@ -1,18 +1,16 @@
-# WhiteNoise Core Differential Privacy
+# smartnoise Core Differential Privacy
 
 ## Documentation
 
-The WhiteNoise Core is built around a data representation for a statistical analysis.
+The smartnoise Core is built around a data representation for a statistical analysis.
 
 These pages contain Rust-generated documentation for the Validator and Runtime
 
-- Validator: [whitenoise_validator](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_validator/index.html)
-- Runtime: [whitenoise_runtime](https://opendifferentialprivacy.github.io/whitenoise-core/doc/whitenoise_runtime/index.html)
+- Validator: [smartnoise_validator](https://opendp.github.io/smartnoise-core/doc/smartnoise_validator/index.html)
+- Runtime: [smartnoise_runtime](https://opendp.github.io/smartnoise-core/doc/smartnoise_runtime/index.html)
 
 ---
 
-GitHub pages site: https://opendifferentialprivacy.github.io/whitenoise-core/
+GitHub pages site: https://opendp.github.io/smartnoise-core/
 
 ---
-
-Note: [CI generated documentation](https://github.com/opendifferentialprivacy/whitenoise-core/blob/develop/.travis.yml)

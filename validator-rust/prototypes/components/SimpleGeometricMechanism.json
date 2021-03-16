@@ -1,19 +1,25 @@
 {
   "arguments": {
-    "data": {
-      "type_value": "Array",
-      "description": "Result to be released privately via the Geometric mechanism. Member data type must be integer."
-    },
-    "lower": {
-      "type_value": "Array",
-      "default_python": "None",
-      "description": "Lower bound of the statistic to be privatized. Member data type must be integer."
-    },
-    "upper": {
-      "type_value": "Array",
-      "default_python": "None",
-      "description": "Upper bound of the statistic to be privatized. Member data type must be integer."
-    }
+      "data": {
+          "type_value": "Array",
+          "description": "Result to be released privately via the Geometric mechanism. Member data type must be integer."
+      },
+      "lower": {
+          "type_value": "Array",
+          "default_python": "None",
+          "description": "Lower bound of the statistic to be privatized. Member data type must be integer."
+      },
+      "upper": {
+          "type_value": "Array",
+          "default_python": "None",
+          "description": "Upper bound of the statistic to be privatized. Member data type must be integer."
+      },
+      "sensitivity": {
+          "type_value": "Array",
+          "default_python": "None",
+          "default_rust": "None",
+          "description": "Override the sensitivity computed by the library. Rejected unless `protect_sensitivity` is disabled."
+      }
   },
   "id": "SimpleGeometricMechanism",
   "name": "simple_geometric_mechanism",
