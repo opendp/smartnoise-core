@@ -1,11 +1,10 @@
 [**Please note that we have recently renamed this system.**](https://projects.iq.harvard.edu/opendp/blog/building-inclusive-community)
 
 ---
+[![.github/workflows/rust.yml](https://github.com/opendp/smartnoise-core/actions/workflows/rust.yml/badge.svg)](https://github.com/opendp/smartnoise-core/actions/workflows/rust.yml)
 
-[![Build Status](https://travis-ci.com/opendp/smartnoise-core.svg?branch=develop)](https://travis-ci.com/opendp/smartnoise-core)
 
-
-<a href="http://opendp.io"><img src="images/SmartNoise_Logos/SVG/LogoMark_color.svg" align="left" height="70" vspace="8" hspace="18"></a>
+<a href="http://opendp.org"><img src="images/SmartNoise_Logos/SVG/LogoMark_color.svg" align="left" height="70" vspace="8" hspace="18"></a>
 
 
 ## <br/>SmartNoise Core Differential Privacy Library <br/>

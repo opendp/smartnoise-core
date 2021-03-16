@@ -1,7 +1,7 @@
 [package]
 name = "smartnoise_ffi"
 version = "0.2.2"
-authors = ["OpenDP-SmartNoise <smartnoise@opendp.io>"]
+authors = ["OpenDP-SmartNoise <smartnoise@opendp.org>"]
 description = "A wrapper library for interfacing with the SmartNoise over ffi."
 readme = "README.md"
 keywords = ["differential-privacy", "data-privacy", "privacy"]
