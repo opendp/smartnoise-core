@@ -10,7 +10,7 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build_and_test:
+  build-and-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -21,13 +21,13 @@ jobs:
       run: |
        cd ffi-rust;
        cargo build --verbose --workspace;
-   - name: Run tests
+    - name: Run tests
       id: run_rust_tests
       run: |
-      cd ffi-rust;
-      cargo test --verbose --workspace;
+        cd ffi-rust;
+        cargo test --verbose --workspace;
 
-  create_docs:
+  make-docs:
     if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
 
