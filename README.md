@@ -1,7 +1,9 @@
 [**Please note that we have recently renamed this system.**](https://projects.iq.harvard.edu/opendp/blog/building-inclusive-community)
 
 ---
-[![.github/workflows/rust.yml](https://github.com/opendp/smartnoise-core/actions/workflows/rust.yml/badge.svg)](https://github.com/opendp/smartnoise-core/actions/workflows/rust.yml)
+[![.github/workflows/rust.yml](https://github.com/opendp/smartnoise-core/actions/workflows/rust.yml/badge.svg)](https://github.com/opendp/smartnoise-core/actions/workflows/rust.yml) [![License: MPL 2.0](https://img.shields.io/badge/License-MPL%202.0-brightgreen.svg)](https://opensource.org/licenses/MPL-2.0)
+
+
 
 
 <a href="http://opendp.org"><img src="images/SmartNoise_Logos/SVG/LogoMark_color.svg" align="left" height="70" vspace="8" hspace="18"></a>
