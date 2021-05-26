@@ -1,6 +1,4 @@
-[**Please note that we have recently renamed this system.**](https://projects.iq.harvard.edu/opendp/blog/building-inclusive-community)
 
----
 [![.github/workflows/rust.yml](https://github.com/opendp/smartnoise-core/actions/workflows/rust.yml/badge.svg)](https://github.com/opendp/smartnoise-core/actions/workflows/rust.yml) 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -12,7 +10,7 @@
 
 ## <br/>SmartNoise Core Differential Privacy Library <br/>
 
-See also the accompanying [SmartNoise SDK repository](https://github.com/opendp/smartnoise-sdk) and [SmartNoise Samples repository](https://github.com/opendp/smartnoise-samples) accompanying repositories for this system.
+Please see the accompanying [SmartNoise Documentation](https://docs.opendp.org/en/latest/smartnoise/), [SmartNoise SDK repository](https://github.com/opendp/smartnoise-sdk), and [SmartNoise Samples repository](https://github.com/opendp/smartnoise-samples) accompanying repositories for this system.
 
 ---
 
