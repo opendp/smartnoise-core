@@ -29,6 +29,9 @@
 The sample mean of database $X$ of size $n$ is defined as 
 $$f(X) = \frac{1}{n} \sum_{i=1}^n x_i.$$
 \end{definition}
+These are restricted-sensitivity proofs that only apply when N is known.
+The library makes use of the Resize component to guarantee this static property.
+If N is unknown, there is an argument on the DPMean component to estimate the mean by postprocessing plug-in estimates for the count and sum.
 
 \section{Neighboring Definition: Change One}
 
