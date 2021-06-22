@@ -508,8 +508,6 @@ pub fn sample_gaussian(shift: f64, scale: f64, enforce_constant_time: bool) -> R
 #[cfg(feature = "use-mpfr")]
 pub fn sample_gaussian(shift: f64, scale: f64, _enforce_constant_time: bool) -> Result<f64> {
     // initialize 64-bit floats within mpfr/rug
-    // NOTE: We square the scale here because we ask for the standard deviation as the function input, but
-    //       the mpfr library wants the variance. We ask for std. dev. to be consistent with the rest of the library.
     let mpfr_shift = Float::with_val(53, shift);
     let mpfr_scale = Float::with_val(53, scale);
 
@@ -688,7 +686,7 @@ pub fn apply_snapping_noise(
     if precision > rug::float::prec_max() {
         return Err("Operating system does not support sufficient precision to use the Snapping Mechanism".into());
     }
-    macro_rules! to_rug {($v:expr) => {rug::Float::with_val(precision, $v)}};
+    macro_rules! to_rug {($v:expr) => {rug::Float::with_val(precision, $v)}}
 
     // effective epsilon is reduced due to snapping mechanism
     epsilon = redefine_epsilon(epsilon, b, precision);
