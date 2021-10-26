@@ -10,7 +10,7 @@
 
 ## <br/>SmartNoise Core Differential Privacy Library <br/>
 
-Please see the accompanying [SmartNoise Documentation](https://docs.opendp.org/en/latest/smartnoise/), [SmartNoise SDK repository](https://github.com/opendp/smartnoise-sdk), and [SmartNoise Samples repository](https://github.com/opendp/smartnoise-samples) accompanying repositories for this system.
+Please see the accompanying [SmartNoise Documentation](https://docs.smartnoise.org), [SmartNoise SDK repository](https://github.com/opendp/smartnoise-sdk), and [SmartNoise Samples repository](https://github.com/opendp/smartnoise-samples) accompanying repositories for this system.
 
 ---
 
