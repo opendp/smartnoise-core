@@ -69,7 +69,6 @@ pub fn laplace_mechanism(
 /// let min: f64 = -50.;
 /// let max: f64 = 150.0;
 /// let sensitivity: f64 = 1.0/1000.0;
-/// let precision: i64 = 118;
 /// snapping_mechanism(value, epsilon, sensitivity, min, max, None, false).unwrap();
 /// println!("snapped value: {}", value);
 /// ```
@@ -193,16 +192,27 @@ pub fn gaussian_mechanism(
 /// let n = simple_geometric_mechanism(4, 0.1, 1., 0, 10, true);
 /// ```
 pub fn simple_geometric_mechanism(
-    value: i64,
+    mut value: i64,
     epsilon: f64, sensitivity: f64,
     min: i64, max: i64,
     enforce_constant_time: bool
 ) -> Result<i64> {
+    // See the OpenDP library for a cleaner, more general implementation.
+
     if epsilon < 0. || sensitivity < 0. {
         return Err(format!("epsilon ({}) and sensitivity ({}) must be positive", epsilon, sensitivity).into());
     }
+    if max - min > i64::MAX / 2 {
+        return Err(format!("Clamping bounds are too wide. i64 does not have sufficient bit depth to reach all values in the output domain.").into())
+    }
+    // clamp the input to avoid an unaccounted delta term for the final truncated bucket
+    value = if value < min {min} else if value > max { max } else { value };
+
     let scale: f64 = sensitivity / epsilon;
-    let noised = value + noise::sample_simple_geometric_mechanism(scale, min, max, enforce_constant_time)?;
+    let noise_sample = noise::sample_simple_geometric_mechanism(scale, min, max, enforce_constant_time)?;
+    // saturating noise addition
+    let noised = value.checked_add(noise_sample)
+        .unwrap_or_else(|| if noise_sample.is_positive() {max} else {min});
 
     Ok(if noised < min {min} else if noised > max { max } else { noised })
 }

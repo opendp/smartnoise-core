@@ -183,7 +183,7 @@ pub fn partition_by(
             },
             _ => return Err("data: must be a dataframe or array".into())
         })
-    };
+    }
 
     value_partitioner(data, &indices)
 }

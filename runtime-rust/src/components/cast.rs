@@ -47,7 +47,7 @@ pub fn cast_bool(data: &Array, positive: &Array) -> Result<ArrayD<bool>> {
         let label = label.first()
             .ok_or_else(|| Error::from("label cannot be empty"))?;
         Ok(data.mapv(|v| v == *label))
-    };
+    }
 
     match (data, positive) {
         (Array::Str(data), Array::Str(label)) => compare(&data, &label),
