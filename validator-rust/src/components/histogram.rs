@@ -212,12 +212,14 @@ impl Sensitivity for proto::Histogram {
                     // one category, unknown N. The sensitivity here is really zero-- artificially raised
                     (Substitute, 1, None) => wrap!(1),
                     // two categories, known N. Knowing N determines the second category
-                    (Substitute, 2, Some(_)) => wrap!(1),
+                    // uncomment if Evaluable is updated to produce [#cat1, n - #cat1]
+                    // (Substitute, 2, Some(_)) => wrap!(1),
 
                     // one category, unknown N
                     (AddRemove, 1, None) => wrap!(1),
                     // two categories, known N
-                    (AddRemove, 2, Some(_)) => wrap!(1),
+                    // uncomment if Evaluable is updated to produce [#cat1, n - #cat1]
+                    // (AddRemove, 2, Some(_)) => wrap!(1),
 
                     // over two categories, N either known or unknown. Record may switch from one bin to another.
                     (Substitute, _, _) => match k {
