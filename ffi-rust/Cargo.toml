@@ -1,6 +1,6 @@
 [package]
 name = "smartnoise_ffi"
-version = "0.2.2"
+version = "0.2.3"
 authors = ["OpenDP-SmartNoise <smartnoise@opendp.org>"]
 description = "A wrapper library for interfacing with the SmartNoise over ffi."
 readme = "README.md"
@@ -9,6 +9,9 @@ categories = ["cryptography", "science"] # up to 5 allowed, must match those lis
 repository = "https://github.com/opendp/smartnoise-core"
 edition = "2018"
 license = "MIT"
+
+[badges]
+maintenance = {status = "deprecated"}
 
 [dependencies]
 prost = "0.6.1"

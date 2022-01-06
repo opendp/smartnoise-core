@@ -1,3 +1,8 @@
+**Notice**: SmartNoise-Core is deprecated. Please migrate to the OpenDP library:
+- [OpenDP Rust Crate](https://crates.io/crates/opendp)
+- [OpenDP GitHub Repo](https://github.com/opendp/opendp/)
+
+----------------------------------------------------
 
 [![.github/workflows/rust.yml](https://github.com/opendp/smartnoise-core/actions/workflows/rust.yml/badge.svg)](https://github.com/opendp/smartnoise-core/actions/workflows/rust.yml) 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
