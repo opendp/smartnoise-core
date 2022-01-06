@@ -1,6 +1,9 @@
-[**Please note that we have recently renamed this system.**](https://projects.iq.harvard.edu/opendp/blog/building-inclusive-community)
+**Notice**: SmartNoise-Core is deprecated. Please migrate to the OpenDP library:
+- [OpenDP Rust Crate](https://crates.io/crates/opendp)
+- [OpenDP GitHub Repo](https://github.com/opendp/opendp/)
 
----
+----------------------------------------------------
+
 [![.github/workflows/rust.yml](https://github.com/opendp/smartnoise-core/actions/workflows/rust.yml/badge.svg)](https://github.com/opendp/smartnoise-core/actions/workflows/rust.yml)
 
 

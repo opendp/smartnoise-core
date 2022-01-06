@@ -1,3 +1,8 @@
+**Notice**: SmartNoise-Core is deprecated. Please migrate to the OpenDP library:
+- [OpenDP Rust Crate](https://crates.io/crates/opendp)
+- [OpenDP GitHub Repo](https://github.com/opendp/opendp/)
+
+----------------------------------------------------
 
 ## SmartNoise Core: Differential Privacy Library Validator 
 
