@@ -1,3 +1,7 @@
+### v0.2.3
+* Deprecated SmartNoise-Core
+* Please migrate to the OpenDP library: docs.opendp.org/
+
 ### v0.2.2
 * Custom sensitivities may be passed directly to mechanisms
     - `protect_sensitivity` must be disabled in the privacy definition

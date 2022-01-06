@@ -19,12 +19,12 @@ ffi-support = "0.4.0"
 indexmap = "1.4.0"
 
 [dependencies.smartnoise_validator]
-path = "../validator-rust/"
-version = "0.2.2"
+path = "../validator-rust"
+version = "0.2.3"
 
 [dependencies.smartnoise_runtime]
-path = "../runtime-rust/"
-version = "0.2.2"
+path = "../runtime-rust"
+version = "0.2.3"
 optional = true
 default-features = false
 
